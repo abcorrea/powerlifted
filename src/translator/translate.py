@@ -8,6 +8,7 @@ import signal
 import sys
 import traceback
 
+
 def python_version_supported():
     major, minor = sys.version_info[:2]
     return (major == 2 and minor >= 7) or (major, minor) >= (3, 2)
@@ -37,7 +38,6 @@ DEBUG = False
 TRANSLATE_OUT_OF_MEMORY = 20
 TRANSLATE_OUT_OF_TIME = 21
 
-
 def main():
     timer = timers.Timer()
     with timers.timing("Parsing", True):
@@ -50,11 +50,11 @@ def main():
     with timers.timing("Compiling types into unary predicates"):
         compile_types.compile_types(task)
 
-    # TODOs:
-    #  - Positive normal form
-    #  - Static predicates
     with timers.timing("Checking static predicates"):
         static_predicates.check(task)
+
+    # TODO:
+    #  - Generate complete initial state
 
     task.dump()
 
