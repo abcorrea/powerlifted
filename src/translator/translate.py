@@ -25,6 +25,7 @@ import normalize
 import options
 import pddl
 import pddl_parser
+import static_predicates
 import timers
 import tools
 
@@ -52,6 +53,8 @@ def main():
     # TODOs:
     #  - Positive normal form
     #  - Static predicates
+    with timers.timing("Checking static predicates"):
+        static_predicates.check(task)
 
     task.dump()
 
