@@ -31,13 +31,6 @@ class TypesGraph(object):
             g[t.name] = t.basetype_name
         return g
 
-def compile_types(task):
-    graph = TypesGraph(task.types)
-    compile_into_unary_predicates(task)
-    add_conditions_to_actions(task, graph)
-    adjust_initial_state(task, graph)
-    return
-
 def compile_into_unary_predicates(task):
     """Create one new unary predicate for each object type."""
     for t in task.types:
@@ -77,3 +70,10 @@ def adjust_initial_state(task, graph):
 
 def _get_type_predicate_name(t):
     return 'type_' + t
+
+def compile_types(task):
+    graph = TypesGraph(task.types)
+    compile_into_unary_predicates(task)
+    add_conditions_to_actions(task, graph)
+    adjust_initial_state(task, graph)
+    return

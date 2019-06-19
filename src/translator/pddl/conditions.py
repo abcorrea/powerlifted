@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import sys
 
 # Conditions (of any type) are immutable, because they need to
 # be hashed occasionally. Immutability also allows more efficient comparison
@@ -33,7 +34,12 @@ class Condition(object):
     def _propagate(self, parts, *args):
         return self.change_parts(parts)
     def add_condition(self,cond):
-        self.parts = self.parts + (cond,)
+        if isinstance(self.parts, (tuple,list)):
+            self.parts = tuple(self.parts) + (cond,)
+        else:
+            print ("Condition is of type %s. We support only literal or a conjunctions as conditions. Exitting." % type(self.parts))
+            print (self.parts)
+            sys.exit()
         return
     def simplified(self):
         return self._postorder_visit("_simplified")
