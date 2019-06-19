@@ -49,6 +49,10 @@ def main():
     with timers.timing("Compiling types into unary predicates"):
         compile_types.compile_types(task)
 
+    # TODOs:
+    #  - Positive normal form
+    #  - Static predicates
+
     task.dump()
 
 def handle_sigxcpu(signum, stackframe):
