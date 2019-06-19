@@ -5,3 +5,9 @@ generator.
 
 ## Components
  - Translator: part of the code from Fast Downward translator.
+
+## Limitations
+ - ~Costs~: ignored
+ - ~Conditional effects~: not supported
+ - ~Axioms~: not supported
+ - ~Quantiied Precondition~: not supported
