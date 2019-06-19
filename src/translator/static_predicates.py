@@ -1,11 +1,5 @@
 #! /usr/bin/env python
 
-import sys
-
-import pddl
-
-from collections import defaultdict
-
 ## Parses all effects and computes which predicates are static
 
 def get_fluent_predicates_from_effects(actions):
