@@ -55,7 +55,7 @@ def main():
         static_predicates.check(task)
 
     # TODO:
-    #  - Generate complete initial state
+    #  - Check that complete initial state is actually correct.  Numbers do not match for Logistics98 task 25
     with timers.timing("Generating complete initial state"):
         complete_state.generate_complete_initial_state(task, g)
 
