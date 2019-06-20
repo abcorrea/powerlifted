@@ -34,8 +34,13 @@ def get_ground_atoms(task, graph):
                 while t != 'object':
                     t = graph.edges[t]
                     obj_supertypes.add(t)
-                if arg.type_name in obj_supertypes:
-                    instantiations[index].append(obj.name)
+                if isinstance(arg.type_name,str):
+                    if arg.type_name in obj_supertypes:
+                        instantiations[index].append(obj.name)
+                else:
+                    # If it falls into this case, then it uses the 'either' type construction
+                    if any(a in obj_supertypes for a in arg.type_name):
+                        instantiations[index].append(obj.name)
         all_combinations = list(itertools.product(*instantiations))
         for comb in all_combinations:
             ground_atoms.add(pddl.Atom(pred.name, comb))
@@ -57,8 +62,9 @@ def modify_initial_state(task, ground_atoms):
             init_set.add(atom.negate())
 
     # Sort initial state in alphabetical order of predicate names
-    new_init = sorted(list(init_set),
-                      key=lambda x: x.key[0])
+    new_init = list(init_set)
+    #sorted(list(init_set),
+               #       key=lambda x: x.key[0])
 
     task.init = new_init
     return
