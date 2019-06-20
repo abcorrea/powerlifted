@@ -14,7 +14,6 @@ def get_fluent_predicates_from_effects(actions):
             l = e.literal
             pred = l.predicate
             fluent_predicates.add(pred)
-    print (fluent_predicates)
     return fluent_predicates
 
 def get_str_predicates(predicates):
