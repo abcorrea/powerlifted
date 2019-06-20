@@ -54,6 +54,9 @@ class TypedObject(object):
     def __repr__(self):
         return "<TypedObject %s: %s>" % (self.name, self.type_name)
 
+    def get_type(self):
+        return self.type_name
+
     def uniquify_name(self, type_map, renamings):
         if self.name not in type_map:
             type_map[self.name] = self.type_name
