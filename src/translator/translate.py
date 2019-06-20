@@ -59,7 +59,8 @@ def main():
     with timers.timing("Generating complete initial state"):
         complete_state.generate_complete_initial_state(task, g)
 
-    task.dump()
+    print ("Initial state length:", len(task.init))
+    #task.dump()
 
 def handle_sigxcpu(signum, stackframe):
     print()
