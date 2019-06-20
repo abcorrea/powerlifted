@@ -22,6 +22,7 @@ from copy import deepcopy
 from itertools import product
 
 import compile_types
+import complete_state
 import normalize
 import options
 import pddl
@@ -48,13 +49,15 @@ def main():
         normalize.normalize(task)
 
     with timers.timing("Compiling types into unary predicates"):
-        compile_types.compile_types(task)
+        g = compile_types.compile_types(task)
 
     with timers.timing("Checking static predicates"):
         static_predicates.check(task)
 
     # TODO:
     #  - Generate complete initial state
+    with timers.timing("Generating complete initial state"):
+        complete_state.generate_complete_initial_state(task, g)
 
     task.dump()
 

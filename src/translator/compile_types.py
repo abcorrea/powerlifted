@@ -76,4 +76,4 @@ def compile_types(task):
     compile_into_unary_predicates(task)
     add_conditions_to_actions(task, graph)
     adjust_initial_state(task, graph)
-    return
+    return graph
