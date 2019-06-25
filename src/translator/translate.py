@@ -17,19 +17,14 @@ def python_version_supported():
 if not python_version_supported():
     sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
 
-from collections import defaultdict
-from copy import deepcopy
-from itertools import product
-
 import compile_types
 import complete_state
 import normalize
 import options
-import pddl
 import pddl_parser
+import reachability
 import static_predicates
 import timers
-import tools
 
 DEBUG = False
 
@@ -55,7 +50,8 @@ def main():
         static_predicates.check(task)
 
     with timers.timing("Generating complete initial state"):
-        complete_state.generate_complete_initial_state(task, g)
+        #complete_state.generate_complete_initial_state(task, g)
+        reachability.generate_overapproximated_reachable_atoms(task)
 
     print("Initial state length:", len(task.init))
     # task.dump()
