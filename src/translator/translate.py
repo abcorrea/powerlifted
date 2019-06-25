@@ -50,6 +50,7 @@ def main():
         static_predicates.check(task)
 
     with timers.timing("Generating complete initial state"):
+        # TODO find bug in reachability analysis with "Assign"
         #complete_state.generate_complete_initial_state(task, g)
         reachability.generate_overapproximated_reachable_atoms(task)
 
