@@ -8,14 +8,11 @@ import os
 import sys
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 import timers
 
-COLORS = ['r','g','b','c','m','y','k','o','p']
-PLOT_INDEX = 0
 
-def generate_curve_plot(info,name):
+def generate_curve_plot(info, name):
     """
     Generate and plot a curve graphic.  Curve is ordered according to the
     row order of the input column.
@@ -28,6 +25,7 @@ def generate_curve_plot(info,name):
 
     # plt.scatter plots dots, plt.plot plots a line
     plt.scatter(x, info, marker="x")
+
 
 def parse(f):
     """
