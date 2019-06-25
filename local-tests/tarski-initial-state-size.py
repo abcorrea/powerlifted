@@ -781,6 +781,7 @@ SUITE = ["airport:p27-airport4halfMUC-p6.pddl", "transport-opt08-strips:p23.pddl
          "freecell:probfreecell-3-2.pddl",]
 
 SUITE = ["logistics98:prob25.pddl"]
+SUITE = ["organic-synthesis-opt18-strips:p20.pddl"]
 
 def find_file(filenames, dir='.'):
     for filename in filenames:
