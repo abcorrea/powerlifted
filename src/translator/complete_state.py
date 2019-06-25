@@ -26,7 +26,8 @@ def get_ground_atoms(task, graph):
             continue
         for index, arg in enumerate(pred.arguments):
             for obj in task.objects:
-                # Gets all supertypes of the object.  If the argument is of one of
+                # Gets all supertypes of the object.  If the argument is of
+                # one of
                 # these supertypes, then we can instantiate it with the object
                 t = obj.type_name
                 obj_supertypes = set()
@@ -34,11 +35,12 @@ def get_ground_atoms(task, graph):
                 while t != 'object':
                     t = graph.edges[t]
                     obj_supertypes.add(t)
-                if isinstance(arg.type_name,str):
+                if isinstance(arg.type_name, str):
                     if arg.type_name in obj_supertypes:
                         instantiations[index].append(obj.name)
                 else:
-                    # If it falls into this case, then it uses the 'either' type construction
+                    # If it falls into this case, then it uses the 'either'
+                    # type construction
                     if any(a in obj_supertypes for a in arg.type_name):
                         instantiations[index].append(obj.name)
         all_combinations = list(itertools.product(*instantiations))
@@ -57,16 +59,8 @@ def modify_initial_state(task, ground_atoms):
     :return: void
     """
     init_set = set(task.init)
-    for atom in ground_atoms:
-        if atom not in init_set:
-            init_set.add(atom.negate())
-
-    # Sort initial state in alphabetical order of predicate names
-    new_init = list(init_set)
-    #sorted(list(init_set),
-               #       key=lambda x: x.key[0])
-
-    task.init = new_init
+    setview = set(ground_atoms)
+    task.init += [atom.negate() for atom in setview - init_set]
     return
 
 
