@@ -58,4 +58,5 @@ if __name__ == "__main__":
             print("File %s does not exist" % filename)
             sys.exit(-1)
 
-    generate_histogram(info)
+    with timers.timing("Generating histogram"):
+        generate_histogram(info)
