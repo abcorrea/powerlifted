@@ -19,3 +19,9 @@ generator.
     - Agricola: negated constants
     - Spider: conditional effects
     - PetriNets, Trucks: pre-grounded action schemas
+
+## Requirements
+
+### Other programs
+
+    - Tarski: e50b956
