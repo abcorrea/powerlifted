@@ -800,7 +800,6 @@ for inst in SUITE:
     domain_file = find_file(domain_basenames, domain_dir)
     domain_path = os.path.join(domain_dir,domain_file)
     problem_path = os.path.join(domain_dir,prob)
-    log = open('output.tmp', 'a')
     command = ' '.join(['python translate.py', domain_path, problem_path])
     print (command)
     os.system(command)
