@@ -53,8 +53,9 @@ def main():
         reachability.generate_overapproximated_reachable_atoms(task, g)
 
     print("Initial state length:", len(task.init))
-    print("%s %s : initial state size %d : time %s" % (
-    task.domain_name, task.task_name, len(task.init), timer))
+    print("%s %s: initial state size %d : time %s" % (
+        os.path.basename(os.path.dirname(options.domain)),
+        os.path.basename(options.task), len(task.init), timer))
     # task.dump()
 
 
