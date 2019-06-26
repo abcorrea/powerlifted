@@ -15,10 +15,10 @@ generator.
  - **Quantiied Precondition**: not supported
 
 #### Domains excluded:
-    - DataNetwork, Snake, Termes, Tetris, TidyBot: negated preconditions
-    - Agricola: negated constants
-    - Spider: conditional effects
-    - PetriNets, Trucks: pre-grounded action schemas
+   - DataNetwork, Snake, Termes, Tetris, TidyBot: negated preconditions
+   - Agricola: negated constants
+   - Spider: conditional effects
+   - PetriNets, Trucks: pre-grounded action schemas
 
 ## Requirements
 
