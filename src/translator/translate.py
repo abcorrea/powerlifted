@@ -18,7 +18,6 @@ if not python_version_supported():
     sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
 
 import compile_types
-import complete_state
 import normalize
 import options
 import pddl_parser
@@ -50,12 +49,12 @@ def main():
         static_predicates.check(task)
 
     with timers.timing("Generating complete initial state"):
-        # TODO find bug in reachability analysis with "Assign"
-        #complete_state.generate_complete_initial_state(task, g)
-        reachability.generate_overapproximated_reachable_atoms(task)
+        # complete_state.generate_complete_initial_state(task, g)
+        reachability.generate_overapproximated_reachable_atoms(task, g)
 
     print("Initial state length:", len(task.init))
-    print("%s %s : initial state size %d : time %s" % (task.domain_name, task.task_name, len(task.init), timer))
+    print("%s %s : initial state size %d : time %s" % (
+    task.domain_name, task.task_name, len(task.init), timer))
     # task.dump()
 
 

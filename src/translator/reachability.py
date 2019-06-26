@@ -1,10 +1,9 @@
 #! /usr/bin/env python
 
 import itertools
+from collections import defaultdict
 
 import pddl
-
-from collections import defaultdict
 
 
 # Generates initial grounded states using overapproximation of the
@@ -57,8 +56,10 @@ def compute_reachability(graph):
     Compute reachability of pairs (P, i) where P is a predicate and i is the
     parameter ith parameter of P.  Use a BFS to compute it.
 
-    :param graph:
-    :return:
+    :param graph: graph structure where each node is a (P, i)
+    :return: dictionary K -> [A,B,...] where K is a pair (P, i),
+    with predicate P and positional argument i, and [A,B,...] are lists of
+    pairs (Q,j) reachable from K
     """
     reachable_atoms = defaultdict(list)
     # Compute reachability using BFS for each node
@@ -75,15 +76,88 @@ def compute_reachability(graph):
     return reachable_atoms
 
 
-def compute_initial_state(task, reachable_atoms, static):
+def compute_dict_obj_types(task, g):
+    """
+    Compute a dictionary {O: t} where O is an object and t is a list of its
+    types.
+
+    :param task: STRIPS task
+    :param g: type graph
+    :return: dictionary object -> list of types
+    """
+    object_types = defaultdict(list)
+    for obj in task.objects:
+        t = obj.type_name
+        object_types[obj.name].append(t)
+        while t != "object":
+            t = g.edges[t]
+            object_types[obj.name].append(t)
+
+    return object_types
+
+
+def compute_dict_arg_types(task):
+    """
+    Creates a dictionary (P: t) where P is a predicate and t is a list of its
+    argument types.
+
+    :param task: STRIPS Task
+    :return: dictionary of predicate -> list of argument types
+    """
+    arg_types = defaultdict(list)
+    for pred in task.predicates:
+        for arg in pred.arguments:
+            if not isinstance(arg, str):
+                arg_types[pred.name].append(arg.type_name)
+
+    return arg_types
+
+
+def compute_initial_state(task, reachable_atoms, type_graph, static):
+    """
+    Modify the initial state of the task.  Start by computing two
+    dictionaries, one to keep track of the object types and supertypes and
+    the other to keep track of the types of the argument of each predicate.
+
+    Then, we create a dictionary of list of lists.  Each key of this
+    dictionary is a predicate of the task and it has one list for each of its
+    parameter.  Thus, we have a list for each argument of each predicate.
+
+    We loop over all atoms in the initial state, check which arguments they
+    might reach (based on the reachable_atoms structure) and insert them to
+    this argument list in the corresponding predicate.
+
+    Last, we generate all combinations of arguments for each predicates and
+    update the initial state accordingly.
+
+    :param task: STRIPS task
+    :param reachable_atoms: dictionary K -> [A,B,...] where K is a pair (P,
+    i), with predicate P and positional argument i, and [A,B,...] are lists
+    of pairs (Q,j) reachable from K
+    :param type_graph: TypeGraph of the task
+    :param static: set of strings representing the static predicates
+    :return: void
+    """
+    # Compute dictionary {O : t*} where O is an object and t* is a list of
+    # types.
+    object_types = compute_dict_obj_types(task, type_graph)
+    # Compute dictionary {P : t1,...,tn} where O is a predicate and t1,...,
+    # tn is a list of types for its n arguments
+    arg_types = compute_dict_arg_types(task)
+
     map_pred_instantiations = defaultdict(list)
     for p in task.predicates:
         for i in p.arguments:
             map_pred_instantiations[p.name].append(set())
     for atom in task.init:
+        if isinstance(atom, pddl.Assign):
+            # If it is a numeric constant, we skip it
+            continue
         for index, arg in enumerate(atom.args):
             for p, i in reachable_atoms[(atom.predicate, index)]:
-                map_pred_instantiations[p][i].add(arg)
+                if p not in static:
+                    if arg_types[p][i] in object_types[arg]:
+                        map_pred_instantiations[p][i].add(arg)
 
     ground_atoms = set()
     for pred, instantiations in map_pred_instantiations.items():
@@ -91,13 +165,32 @@ def compute_initial_state(task, reachable_atoms, static):
         for comb in combinations:
             ground_atoms.add(pddl.Atom(pred, comb))
 
-    task.init = list(set(task.init).union(ground_atoms))
+    init_set = set(task.init)
+    task.init += [atom.negate() for atom in ground_atoms - init_set]
 
     return
 
 
-def generate_overapproximated_reachable_atoms(task):
+def generate_overapproximated_reachable_atoms(task, type_graph):
+    """
+    Computes a overapproximation of the reachability, where an object O is
+    considered reachable to argument j of a predicate Q if O occurs as the
+    ith argument of a predicate P and there is an action schema such that P
+    appears in the precondition with ith argument '?x' and Q is in the effect
+    with '?x' as its jth argument.
+
+    This computation is done in several steps.  This reachability analysis is
+    done using a BFS in lifted representation and then we loop over the
+    initial state to instantiate all possible combinations given this analysis.
+
+    This function also modifies the initial state accordingly to the
+    reachability of the objects.
+
+    :param task: STRIPS task
+    :param type_graph:  TypeGraph of the task
+    :return: void
+    """
     graph, static = create_flow_graph(task)
     reachable_atoms = compute_reachability(graph)
-    compute_initial_state(task, reachable_atoms, static)
+    compute_initial_state(task, reachable_atoms, type_graph, static)
     return
