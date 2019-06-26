@@ -8,6 +8,8 @@ import signal
 import sys
 import traceback
 
+from collections import defaultdict
+
 
 def python_version_supported():
     major, minor = sys.version_info[:2]
@@ -50,14 +52,54 @@ def main():
         static_predicates.check(task)
 
     with timers.timing("Generating complete initial state"):
-        #complete_state.generate_complete_initial_state(task, g)
+        # complete_state.generate_complete_initial_state(task, g)
         reachability.generate_overapproximated_reachable_atoms(task, g)
 
     print("Initial state length:", len(task.init))
-    print("%s %s: initial state size %d : time %s" % (
-        os.path.basename(os.path.dirname(options.domain)),
-        os.path.basename(options.task), len(task.init), timer))
-    # task.dump()
+
+    domain = os.path.basename(os.path.dirname(options.domain))
+    inst = os.path.basename(options.task)
+    # Print task in easy-to-parse format
+    #   1. Print domain and instance names
+    print("%s:%s" % (domain, inst))
+
+    #   2. Print canary and number of types, followed by type names and their
+    #  type indexes
+    # TODO do we need to keep track of types at all?
+    print("TYPES %d" % len(task.types))
+    type_index = {}
+    for index, t in enumerate(task.types):
+        type_index[t.name] = index
+        print("%s %d" % (t.name, index))
+
+    #   3. Print canary and number of predicates, followed by list of
+    # predicates.  Each predicate number if followed by three numbers:
+    #      - J, its predicate index,
+    #      - N, its arity and then N numbers,
+    #      - S, a boolean value indicating if the predicate is static or not
+    print("PREDICATES %d" % len(task.predicates))
+    predicate_index = {}
+    for index, p in enumerate(task.predicates):
+        predicate_index[p.name] = index
+        print("%s %d %d %d" % (p.name, index, len(p.arguments), p.static))
+
+    #   4. Print a canary and the number of objects, followed by a list of
+    # objects.  Each object has a name, an index, and the index of its type.
+    # TODO do we need to keep track of types at all?
+    print("OBJECTS %d" % len(task.objects))
+    object_index = {}
+    for index, obj in enumerate(task.objects):
+        object_index[obj.name] = index
+        print ('%s %d %d' % (obj.name, index, type_index[obj.type_name]))
+
+    #   5. Print canary and the number N of ground atoms in the initial
+    # state. It is followed by a list of N lines, where each line has
+
+    #   6. Print the goal
+
+    #   7. Print the set of action schemas
+
+    return
 
 
 def handle_sigxcpu(signum, stackframe):
