@@ -15,5 +15,5 @@
 #
 
 while IFS= read -r line; do
-    echo $line | sed "s/: initial state size//" | sed "s/: time \[//" | sed "s/s CPU,//" | sed "s/s wall-clock\]//" | column -t
+    echo $line | sed "s/: initial state size//" | sed "s/: time \[//" | sed "s/s CPU,//" | sed "s/s wall-clock\]//"
 done < "$1"
