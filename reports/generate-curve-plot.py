@@ -1,79 +1,74 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-
-# Create a curve plot using matplotlib from an input file containing a single
-# column of numerical data
-
 import os
 import sys
+from collections import defaultdict
 
-import matplotlib.pyplot as plt
+import numpy as np
+from utils.plots import generate_curve_plot, generate_scatter_plot
 
-import timers
 
+# Gets two tables with initial columns key = (domain, problem) and plots the
+# columns corresponding to (key, attribute for first file, attribute for
+# second file).
+# First column after key has index 0.
 
-def generate_curve_plot(info, name):
+def split_table(f, r):
     """
-    Generate and plot a curve graphic.  Curve is ordered according to the
-    row order of the input column.
-    :param info: list containing numerical values
-    :return: void
-    """
+    Create dict from table file where each key is assigned to the first two
+    attributes of each row.
 
-    # Transform creates auxiliary list
-    x = [i for i in range(1, len(info) + 1)]
-
-    # plt.scatter plots dots, plt.plot plots a line
-    plt.scatter(x, info, marker="x")
-
-
-def parse(f):
-    """
-    Parse single column file into a list
     :param f: file
-    :return: list where each element is a row-value of
+    :return: dict with key corresponding to first two attributes of each line
     """
-    return [int(line.rstrip('\n')) for line in f]
+    for line in f:
+        l = line.rstrip('\n').split()
+        key = (l[0], l[1])
+        r[key].append(tuple(l[2:]))
+
+
+def extract_file_info(filename, r):
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            try:
+                info = split_table(f, r)
+            except IOError:
+                print("File could not be opened or read.")
+                sys.exit(-1)
+    else:
+        print("File %s does not exist" % filename)
+        sys.exit(-1)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: ./generate-curve-plot.py N [FILES]")
-        print("\t where N is the number of files that are passed in FILES")
+    if len(sys.argv) != 4:
+        print("Usage: ./merge-two-tables.py I FILE1 FILE2")
+        print(
+            "\t where I represents the ith column of interest to be merged "
+            "from FILE1 and FILE2. First column after the key has index 0.")
         sys.exit()
 
-    try:
-        number_of_files = int(sys.argv[1])
-    except ValueError:
-        print("First parameter must be the number of files to be read.")
-        print("Usage: ./generate-curve-plot.py N [FILES]")
-        print("\t where N is the number of files that are passed in FILES")
-        sys.exit(-1)
+    attr = int(sys.argv[1])
 
-    if len(sys.argv) < number_of_files + 2:
-        print("ERROR: first parameter must match the number of files passed")
-        print("Usage: ./generate-curve-plot.py N [FILES]")
-        print("\t where N is the number of files that are passed in FILES")
-        sys.exit(-1)
+    file1 = sys.argv[2]
+    file2 = sys.argv[3]
 
-    timer = timers.Timer()
-    info = []
+    r = defaultdict(list)
+    extract_file_info(file1, r)
+    extract_file_info(file2, r)
 
-    with timers.timing("Parsing file"):
-        for i in range(number_of_files):
-            filename = sys.argv[i + 2]
-            if os.path.exists(filename):
-                with open(filename, 'r') as f:
-                    try:
-                        info = parse(f)
-                        generate_curve_plot(info, filename)
-                    except IOError:
-                        print("File could not be opened or read.")
-                        sys.exit(-1)
-            else:
-                print("File %s does not exist" % filename)
-                sys.exit(-1)
+    x = []
+    y = []
+    for key, data in r.items():
+        assert len(data) == 2
+        x.append(float(data[0][attr]))
+        y.append(float(data[1][attr]))
 
-    # Add legends.  This might also need a bit of handcraft.
-    plt.legend(['Original', 'Modified'])
-    plt.show()
+    # Order based on attribute
+    sorted_l = [(i,j) for i,j in sorted(zip(x,y), key=lambda n : n[0])]
+
+    x = np.array([x for x, y in sorted_l])
+    y = np.array([y for x, y in sorted_l])
+
+
+    generate_curve_plot([x, y], ['Types', 'Reachability + Types'])
