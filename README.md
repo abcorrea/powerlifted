@@ -22,6 +22,10 @@ generator.
 
 ## Requirements
 
+### Paths, etc.
+
+  - Add the folder `planner/reports/utils/` to the `PYTHONPATH` variable  
+
 ### Other programs
 
-    - Tarski: e50b956
+   - Tarski: a31c455
