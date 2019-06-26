@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import timers
 
 from tarski.grounding import LPGroundingStrategy
 from tarski.io import FstripsReader
@@ -780,8 +781,7 @@ SUITE = ["airport:p27-airport4halfMUC-p6.pddl", "transport-opt08-strips:p23.pddl
          "visitall-opt11-strips:problem05-half.pddl", "nurikabe-opt18-adl:p13.pddl",
          "freecell:probfreecell-3-2.pddl",]
 
-SUITE = ["logistics98:prob25.pddl"]
-SUITE = ["organic-synthesis-opt18-strips:p20.pddl"]
+#SUITE = ["transport-opt08-strips:p23.pddl"]
 
 def find_file(filenames, dir='.'):
     for filename in filenames:
@@ -793,6 +793,7 @@ def find_file(filenames, dir='.'):
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 
 for inst in SUITE:
+    timer = timers.Timer()
     prob = inst.split(':')[1]
     domain = inst.split(':')[0]
     domain_basenames = [
@@ -812,4 +813,5 @@ for inst in SUITE:
 
     grounding = LPGroundingStrategy(problem)
     lpvariables = grounding.ground_state_variables()
-    print("Initial state length:", len(lpvariables.objects))
+    print("%s %s : initial state size %d : time %s" % (
+    domain, prob, len(lpvariables.objects), timer))
