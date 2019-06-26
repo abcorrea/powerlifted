@@ -1,11 +1,8 @@
 #! /usr/bin/env python
 
-import copy
-import sys
+from collections import defaultdict
 
 import pddl
-
-from collections import defaultdict
 
 ## Preprocess object types of the task.
 ## The following operations are performed:
@@ -13,15 +10,21 @@ from collections import defaultdict
 ##   - Compile types into unary predicates;
 ##   - Add unary type predicates as action preconditions;
 ##   - Add unary type and supertype predicates to initial state;
-##   - Remove types from action parameters (see comment in __str__ of TypedObject);
+##   - Remove types from action parameters (see comment in __str__ of
+# TypedObject);
 
 name_to_type_pred = {}
 
+
 class TypesGraph(object):
-    """Create a graph representing the hierarchy of types and supertypes.  Every
+    """
+    Create a graph representing the hierarchy of types and supertypes.  Every
     type points to its supertype.
     """
+
     def __init__(self, types):
+        # self.type is list of types and self.edges is a dictionary where
+        # each type points to its supertype.
         self.types = types
         self.edges = self.create_graph(self.types)
 
@@ -31,6 +34,7 @@ class TypesGraph(object):
             g[t.name] = t.basetype_name
         return g
 
+
 def compile_into_unary_predicates(task):
     """Create one new unary predicate for each object type."""
     for t in task.types:
@@ -38,6 +42,7 @@ def compile_into_unary_predicates(task):
         task.predicates.append(pddl.Predicate(pred_name, ['?x']))
         name_to_type_pred[pred_name] = task.predicates[-1]
     return
+
 
 def add_conditions_to_actions(task, graph):
     """Add unary type conditions to each action schema according to their
@@ -49,7 +54,9 @@ def add_conditions_to_actions(task, graph):
             name = param.name
             param_type = param.type_name
             types = []
-            action.precondition.add_condition(pddl.Atom(_get_type_predicate_name(param_type), [name]))
+            action.precondition.add_condition(
+                pddl.Atom(_get_type_predicate_name(param_type), [name]))
+
 
 def adjust_initial_state(task, graph):
     """Creates the unary predicates for types and supertypes of each object and
@@ -68,10 +75,22 @@ def adjust_initial_state(task, graph):
         for t in types:
             task.init.append(pddl.Atom(_get_type_predicate_name(t), [name]))
 
+
 def _get_type_predicate_name(t):
     return 'type_' + t
 
+
 def compile_types(task):
+    """
+    Compile types into static unary predicates, modify the precondition of
+    actions and the initial state accordingly.
+
+    It also creates a graph where each node is a type and it has an outgoing
+    edge to its unique supertype.
+
+    :param task: STRIPS task
+    :return: void
+    """
     graph = TypesGraph(task.types)
     compile_into_unary_predicates(task)
     add_conditions_to_actions(task, graph)
