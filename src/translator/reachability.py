@@ -156,8 +156,15 @@ def compute_initial_state(task, reachable_atoms, type_graph, static):
         for index, arg in enumerate(atom.args):
             for p, i in reachable_atoms[(atom.predicate, index)]:
                 if p not in static:
-                    if arg_types[p][i] in object_types[arg]:
-                        map_pred_instantiations[p][i].add(arg)
+                    if isinstance(arg_types[p][i], list):
+                        # If it is an either-typed predicate
+                        assert arg_types[p][i][0] == "either"
+                        for a in arg_types[p][i][1:]:
+                            if a in object_types[arg]:
+                                map_pred_instantiations[p][i].add(arg)
+                    else:
+                        if arg_types[p][i] in object_types[arg]:
+                            map_pred_instantiations[p][i].add(arg)
 
     ground_atoms = set()
     for pred, instantiations in map_pred_instantiations.items():
