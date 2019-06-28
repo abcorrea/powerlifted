@@ -36,6 +36,9 @@ DEBUG = False
 TRANSLATE_OUT_OF_MEMORY = 20
 TRANSLATE_OUT_OF_TIME = 21
 
+def test_if_experiment(test):
+    if test:
+        sys.exit(0)
 
 def main():
     timer = timers.Timer()
@@ -47,16 +50,20 @@ def main():
         normalize.normalize(task)
 
     with timers.timing("Compiling types into unary predicates"):
+        # TODO add type predicates to constants as well
         g = compile_types.compile_types(task)
 
     with timers.timing("Checking static predicates"):
         static_predicates.check(task)
 
     with timers.timing("Generating complete initial state"):
-        # complete_state.generate_complete_initial_state(task, g)
-        reachability.generate_overapproximated_reachable_atoms(task, g)
+        complete_state.generate_complete_initial_state(task, g)
+        #reachability.generate_overapproximated_reachable_atoms(task, g)
 
-    print("Initial state length:", len(task.init))
+    print ("Initial state size: %d" % len(task.init))
+    print("%s %s: initial state size %d : time %s" % (
+        os.path.basename(os.path.dirname(options.domain)),
+        os.path.basename(options.task), len(task.init), timer))
 
     # Preprocess a dict of supertypes for every type from the TypeGraph
     types_dict = defaultdict(set)
@@ -67,11 +74,20 @@ def main():
             t_name = g.edges[t_name]
             types_dict[current_type.name].add(t_name)
 
+    # Sets output file from options
+    if os.path.isfile(options.output_file):
+        print(
+            "WARNING: file %s already exists, it will be overwritten" %
+            options.output_file)
+    output = open(options.output_file, "w")
+    native_stdout = sys.stdout
+    sys.stdout = output
+
     domain = os.path.basename(os.path.dirname(options.domain))
     inst = os.path.basename(options.task)
     # Print task in easy-to-parse format
     #   1. Print domain and instance names
-    print("%s:%s" % (domain, inst))
+    print("{} {}".format(domain, inst))
 
     #   2. Print canary and number of types, followed by type names and their
     #  type indexes
@@ -100,14 +116,15 @@ def main():
         if not p.static:
             # If p is fluent, then we care about the types of its parameters
             args = []
+            # Assertion catches predicates with 'either'
             for arg in p.arguments:
-                if not isinstance(arg.type_name, list):
-                    args += ['s', str(type_index[arg.type_name])]
-                else:
-                    # If the predicate is either-typed, add flag 'e' and skip
-                    #  reserved word 'either'
-                    args += ['e'] + [str(type_index[a]) for a in
-                                     arg.type_name[1:]]
+                try:
+                    assert (not isinstance(arg.type_name, list))
+                except AssertionError:
+                    raise NotImplementedError("Your task probably has an "
+                                              "'either'-typed predicate, "
+                                              "which is not implemented.")
+                args.append(str(type_index[arg.type_name]))
             print(' '.join(args))
         else:
             # If it is static, we can assume that all its parameters are of
@@ -155,17 +172,69 @@ def main():
         goal_list = [task.goal]
     print("GOAL %d" % len(goal_list))
     for index, atom in enumerate(goal_list):
-        print(atom, atom_index[str(atom)])
+        print(atom, atom_index[str(atom)], int(atom.negated))
 
-    #   7. Print the set of action schemas
+    #   7. Action schemas are defined as follow
+    # - First, a canary and the number of action schemas
+    # - Then a list of action schemas, each one having
+    #    - action name
+    #    - action cost
+    #    - number of action parameters
+    #    - size of precondition
+    #    - size of effect
+    # - Then we list all parameters, one in each line, containing
+    #    - parameter name
+    #    - parameter index
+    #    - index of the parameter type
+    # - We then list all precondition of the action schema. one in each line
+    # printing the following attributes
+    #    - predicate name
+    #    - predicate index
+    #    - boolean variable saying if its negated or not
+    #    - number of predicate arguments
+    #    - list of parameter indices, one for each argument of the predicate
+    # - Next, we output similar information for the effects
+    #    - predicate name
+    #    - predicate index
+    #    - boolean variable saying if its negated or not
+    #    - number of predicate arguments
+    #    - list of parameter indices, one for each argument of the predicate
+    print("ACTION-SCHEMAS %d" % len(task.actions))
+    for action in task.actions:
+        parameter_index = {}
+        if action.cost is None or isinstance(action.cost, pddl.Increase):
+            action.cost = 1
+        precond = action.get_action_preconditions
+        assert isinstance(action.effects, list)
+        print(action.name, action.cost, len(list(action.parameters)),
+              len(precond), len(list(action.effects)))
+        for index, par in enumerate(action.parameters):
+            parameter_index[par.name] = index
+            print(par.name, index, type_index[par.type_name])
+        for cond in precond:
+            assert isinstance(cond, pddl.Literal)
+            print(cond.predicate, predicate_index[cond.predicate],
+                  int(cond.negated),
+                  len(cond.args),
+                  ' '.join(str(parameter_index[x]) for x in cond.args))
+        for eff in action.effects:
+            assert isinstance(eff, pddl.Effect)
+            print(eff.literal.predicate,
+            predicate_index[eff.literal.predicate],
+            int(eff.literal.negated),
+            len(eff.literal.args),
+            ' '.join(
+            str(parameter_index[x]) for x in eff.literal.args))
 
+    test_if_experiment(options.test_experiment)
     return
 
 
 def handle_sigxcpu(signum, stackframe):
     print()
     print("Translator hit the time limit")
-    # sys.exit() is not safe to be called from within signal handlers, but
+    # sys.exit() is not safe to be called from within signal
+    # handlers, but
     # os._exit() is.
     os._exit(TRANSLATE_OUT_OF_TIME)
 
@@ -175,7 +244,8 @@ if __name__ == "__main__":
         signal.signal(signal.SIGXCPU, handle_sigxcpu)
     except AttributeError:
         print("Warning! SIGXCPU is not available on your platform. "
-              "This means that the planner cannot be gracefully terminated "
+              "This means that the planner cannot be gracefully "
+              "terminated "
               "when using a time limit, which, however, is probably "
               "supported on your platform anyway.")
     try:
