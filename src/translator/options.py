@@ -14,8 +14,18 @@ def parse_args():
         "--output-file", default="output.lifted",
         help="path to the output file (default: %(default)s)")
     argparser.add_argument(
+        "--ground-state-representation", action="store_true",
+        help="use a complete ground state representation, where each possible "
+             "ground atom corresponds to a bit of the state, instead of a "
+             "sparse representation.")
+    argparser.add_argument(
         "--test-experiment", action="store_true",
         help="flag if the run is an experiment or not")
+    argparser.add_argument(
+        "--verbose-data", action="store_true",
+        help="flag if the translator should output more statistical data than "
+             "normal, in a format that is easier to parse for our evaluation "
+             "scripts.")
     return argparser.parse_args()
 
 

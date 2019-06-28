@@ -36,9 +36,11 @@ DEBUG = False
 TRANSLATE_OUT_OF_MEMORY = 20
 TRANSLATE_OUT_OF_TIME = 21
 
+
 def test_if_experiment(test):
     if test:
         sys.exit(0)
+
 
 def main():
     timer = timers.Timer()
@@ -50,20 +52,22 @@ def main():
         normalize.normalize(task)
 
     with timers.timing("Compiling types into unary predicates"):
-        # TODO add type predicates to constants as well
         g = compile_types.compile_types(task)
 
     with timers.timing("Checking static predicates"):
         static_predicates.check(task)
 
-    with timers.timing("Generating complete initial state"):
-        complete_state.generate_complete_initial_state(task, g)
-        #reachability.generate_overapproximated_reachable_atoms(task, g)
+    if options.ground_state_representation:
+        with timers.timing("Generating complete initial state"):
+            reachability.generate_overapproximated_reachable_atoms(task, g)
 
-    print ("Initial state size: %d" % len(task.init))
-    print("%s %s: initial state size %d : time %s" % (
-        os.path.basename(os.path.dirname(options.domain)),
-        os.path.basename(options.task), len(task.init), timer))
+    print("Initial state size: %d" % len(task.init))
+
+    if options.verbose_data:
+        print("%s %s: initial state size %d : time %s" % (
+            os.path.basename(os.path.dirname(options.domain)),
+            os.path.basename(options.task), len(task.init), timer))
+    test_if_experiment(options.test_experiment)
 
     # Preprocess a dict of supertypes for every type from the TypeGraph
     types_dict = defaultdict(set)
@@ -81,13 +85,18 @@ def main():
             options.output_file)
     output = open(options.output_file, "w")
     native_stdout = sys.stdout
-    sys.stdout = output
+    # sys.stdout = output
 
     domain = os.path.basename(os.path.dirname(options.domain))
     inst = os.path.basename(options.task)
-    # Print task in easy-to-parse format
-    #   1. Print domain and instance names
+
+    #   1. Print domain and instance names and which kind of state
+    # representation we are using.
     print("{} {}".format(domain, inst))
+    if options.ground_state_representation:
+        print("GROUND-REPRESENTATION")
+    else:
+        print("SPARSE-REPRESENTATION")
 
     #   2. Print canary and number of types, followed by type names and their
     #  type indexes
@@ -98,16 +107,12 @@ def main():
         print("%s %d" % (t.name, index))
 
     #   3. Print canary and number of predicates, followed by list of
-    # predicates.  Each predicate number is followed by three numbers:
+    # predicates.  Each predicate number is followed by:
     #      - J, its predicate index,
     #      - N, its arity and then N numbers,
     #      - S, a boolean value indicating if the predicate is static or not
-    #
-    # After each predicate line, there is a line containing N tuples. Each
-    # pair is in the format 'X A', where X can be 'e' or 's', indicating that
-    #  the argument is either-typed or single-typed. If it is either typed,
-    # it is followed by a pair of type indices. Otherwise, it is followed by
-    # a single number, representing the type index.
+    #      - (if it is not static) a sequence of N type indices,
+    # corresponding to the indices of the predicate arguments
     print("PREDICATES %d" % len(task.predicates))
     predicate_index = {}
     for index, p in enumerate(task.predicates):
@@ -142,7 +147,8 @@ def main():
     object_index = {}
     for index, obj in enumerate(task.objects):
         object_index[obj.name] = index
-        print('%s %d %d' % (obj.name, index, len(types_dict[obj.type_name])))
+        print('%s %d %d' % (obj.name, index, len(types_dict[obj.type_name])),
+              end=' ')
         print(' '.join(str(type_index[t]) for t in types_dict[obj.type_name]))
 
     #   5. Print canary and the number N of ground atoms in the initial
@@ -164,15 +170,28 @@ def main():
             len(atom.args)),
               ' '.join(str(object_index[o]) for o in atom.args))
 
-    #   6. Print canary and the number of atoms in the goal, each atom is
-    # followed by its index in the state.
+    #   6. Print canary and the number of atoms in the goal, the output of each
+    # individual goal atom depends on the representation we are using. See below
     if isinstance(task.goal, pddl.Conjunction):
         goal_list = task.goal.parts
     else:
         goal_list = [task.goal]
     print("GOAL %d" % len(goal_list))
     for index, atom in enumerate(goal_list):
-        print(atom, atom_index[str(atom)], int(atom.negated))
+        if options.ground_state_representation:
+            # If we use ground state representation, we simply output the
+            # atom name, followed by its atom index and whether it is negated
+            # or not in the goal.
+            print(atom, atom_index[str(atom)], int(atom.negated))
+        else:
+            # If we use sparse state representation, we output the atom name,
+            # its predicate index, a boolean flag indicating whether it is
+            # negated in the goal condition or not, the number of arguments
+            # in the predicate, and the indices of the objects instantiating
+            # the arguments.
+            print(atom, predicate_index[atom.predicate], int(atom.negated),
+                  len(atom.args),
+                  ' '.join(str(object_index[o]) for o in atom.args))
 
     #   7. Action schemas are defined as follow
     # - First, a canary and the number of action schemas
@@ -192,13 +211,17 @@ def main():
     #    - predicate index
     #    - boolean variable saying if its negated or not
     #    - number of predicate arguments
-    #    - list of parameter indices, one for each argument of the predicate
+    #    - list of pairs in the format (O, i), where O is 'c' if it is a
+    # constant and 'p' if it is a parameter. In the case it is a constant, 'i'
+    # is its object index; otherwise it is the parameter index
     # - Next, we output similar information for the effects
     #    - predicate name
     #    - predicate index
     #    - boolean variable saying if its negated or not
     #    - number of predicate arguments
-    #    - list of parameter indices, one for each argument of the predicate
+    #    - list of pairs in the format (O, i), where O is 'c' if it is a
+    # constant and 'p' if it is a parameter. In the case it is a constant, 'i'
+    # is its object index; otherwise it is the parameter index
     print("ACTION-SCHEMAS %d" % len(task.actions))
     for action in task.actions:
         parameter_index = {}
@@ -213,18 +236,33 @@ def main():
             print(par.name, index, type_index[par.type_name])
         for cond in precond:
             assert isinstance(cond, pddl.Literal)
+            args_list = []
+            for x in cond.args:
+                if x in parameter_index:
+                    # If it is a parameter
+                    args_list += ['p', str(parameter_index[x])]
+                else:
+                    # Otherwise, it is a constant
+                    args_list += ['c', str(object_index[x])]
             print(cond.predicate, predicate_index[cond.predicate],
                   int(cond.negated),
                   len(cond.args),
-                  ' '.join(str(parameter_index[x]) for x in cond.args))
+                  ' '.join(i for i in args_list))
         for eff in action.effects:
             assert isinstance(eff, pddl.Effect)
+            args_list = []
+            for x in eff.literal.args:
+                if x in parameter_index:
+                    # If it is a parameter
+                    args_list += ['p', str(parameter_index[x])]
+                else:
+                    # Otherwise, it is a constant
+                    args_list += ['c', str(object_index[x])]
             print(eff.literal.predicate,
-            predicate_index[eff.literal.predicate],
-            int(eff.literal.negated),
-            len(eff.literal.args),
-            ' '.join(
-            str(parameter_index[x]) for x in eff.literal.args))
+                  predicate_index[eff.literal.predicate],
+                  int(eff.literal.negated),
+                  len(eff.literal.args),
+                  ' '.join(i for i in args_list))
 
     test_if_experiment(options.test_experiment)
     return
