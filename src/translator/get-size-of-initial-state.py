@@ -1152,6 +1152,6 @@ for inst in SUITE:
     domain_path = os.path.join(domain_dir, domain_file)
     problem_path = os.path.join(domain_dir, prob)
     command = ' '.join(
-        ['python translate.py', domain_path, problem_path, '--test-experiment'])
+        ['python translate.py', domain_path, problem_path, '--test-experiment', '--verbose-data'])
     print(command)
     os.system(command)

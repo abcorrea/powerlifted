@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def generate_scatter_plot(x, y, xlab, ylab, log=False):
+def generate_scatter_plot(x, y, xlab, ylab, log=False, color=True):
     """
     Generate and scatter plot.
     :param x: np.array
@@ -16,10 +16,13 @@ def generate_scatter_plot(x, y, xlab, ylab, log=False):
 
     # Set scatter plot with color schema
     fig, ax = plt.subplots()
-    if log:
-        color_schema = (np.log10(x) - np.log10(y))
+    if color:
+        if log:
+            color_schema = (np.log10(x) - np.log10(y))
+        else:
+            color_schema = (x-y)
     else:
-        color_schema = (x-y)
+        color_schema = None
     ax.scatter(x,y, c=color_schema, cmap='coolwarm', marker='x')
     if log:
         ax.set_xscale('log')

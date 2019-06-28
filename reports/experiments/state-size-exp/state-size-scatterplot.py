@@ -72,6 +72,6 @@ if __name__ == "__main__":
     x = np.array([x for x, y in sorted_l])
     y = np.array([y for x, y in sorted_l])
 
-    xlab = 'Types'
-    ylab = 'Types + Reachability Analysis'
-    generate_scatter_plot(x,y, xlab, ylab, log=True)
+    ylab = 'Sparse Representation'
+    xlab = 'Types + Reachability Analysis'
+    generate_scatter_plot(x,y, xlab, ylab, log=True, color=False)
