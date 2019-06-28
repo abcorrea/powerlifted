@@ -1,0 +1,8 @@
+(define (problem naive-1)
+   (:domain naive)
+   (:objects x y)
+   (:init (P x))
+   (:goal (and (Q x)
+               (Q y)
+               (P x)
+               (P y))))
