@@ -191,7 +191,7 @@ def compute_initial_state(task, reachable_atoms, type_graph, static):
 
 def generate_overapproximated_reachable_atoms(task, type_graph):
     """
-    Computes a overapproximation of the reachability, where an object O is
+    Computes an overapproximation of the reachability, where an object O is
     considered reachable to argument j of a predicate Q if O occurs as the
     ith argument of a predicate P and there is an action schema such that P
     appears in the precondition with ith argument '?x' and Q is in the effect
