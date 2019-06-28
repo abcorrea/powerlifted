@@ -3,3 +3,4 @@ syntax: glob
 *.pyc
 src/translator/.idea/*
 .idea/*
+src/translator/output.lifted
