@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import subprocess
 
 SUITE = ["airport:p27-airport4halfMUC-p6.pddl",
          "transport-opt08-strips:p23.pddl",
@@ -1114,12 +1113,12 @@ SUITE = ["airport:p27-airport4halfMUC-p6.pddl",
          "freecell:probfreecell-3-2.pddl", ]
 
 
-def find_file(filenames, dir='.'):
+def find_file(filenames, directory='.'):
     for filename in filenames:
-        path = os.path.join(dir, filename)
+        path = os.path.join(directory, filename)
         if os.path.exists(path):
             return path
-    raise IOError('none found in %r: %r' % (dir, filenames))
+    raise IOError('none found in %r: %r' % (directory, filenames))
 
 
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
@@ -1152,6 +1151,10 @@ for inst in SUITE:
     domain_path = os.path.join(domain_dir, domain_file)
     problem_path = os.path.join(domain_dir, prob)
     command = ' '.join(
-        ['python translate.py', domain_path, problem_path, '--test-experiment', '--verbose-data'])
+        ['python translate.py',
+         domain_path,
+         problem_path,
+         '--test-experiment',
+         '--verbose-data'])
     print(command)
     os.system(command)
