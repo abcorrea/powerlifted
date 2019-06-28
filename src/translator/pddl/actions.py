@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import copy
 
+from . import effects
 from . import conditions
 
 
@@ -20,7 +21,7 @@ class Action(object):
         self.precondition = precondition
         self.effects = effects
         self.cost = cost
-        self.uniquify_variables() # TODO: uniquify variables in cost?
+        self.uniquify_variables()  # TODO: uniquify variables in cost?
 
     def __repr__(self):
         return "<Action %r at %#x>" % (self.name, id(self))
@@ -33,7 +34,7 @@ class Action(object):
         for eff in self.effects:
             eff.dump()
         print("Cost:")
-        if(self.cost):
+        if (self.cost):
             self.cost.dump()
         else:
             print("  None")
@@ -62,6 +63,56 @@ class Action(object):
         result = copy.copy(self)
         parameter_atoms = [par.to_untyped_strips() for par in self.parameters]
         new_precondition = self.precondition.untyped()
-        result.precondition = conditions.Conjunction(parameter_atoms + [new_precondition])
+        result.precondition = conditions.Conjunction(
+            parameter_atoms + [new_precondition])
         result.effects = [eff.untyped() for eff in self.effects]
         return result
+
+    @property
+    def get_action_preconditions(self):
+        """
+        Return a list of preconditions of an action
+
+        :return: list of preconditions
+        """
+        precond = []
+        if isinstance(self.precondition, conditions.Atom):
+            precond = [self.precondition]
+        else:
+            precond = list(self.precondition.parts)
+        try:
+            assert isinstance(precond, list)
+        except AssertionError:
+            raise NotImplementedError(
+                'Preconditions must be a single atom or a conjunction of '
+                'atoms.')
+        return precond
+
+    @property
+    def get_literals_in_effects(self):
+        """
+        Return set with all literals occurring in effects, but not in effect
+        conditions.
+
+        :return: set of literals
+        """
+        literals = set()
+        for eff in self.effects:
+            try:
+                assert isinstance(eff, effects.Effect)
+            except AssertionError:
+                raise NotImplementedError(
+                    "Conditional effects are not supported.")
+            for arg in eff.literal.args:
+                literals.add(arg)
+        return literals
+
+    def transform_precondition_into_list(self):
+        """
+        Transform atomic precondition into list
+
+        :return: void
+        """
+        if isinstance(self.precondition, conditions.Literal):
+            self.precondition = conditions.Conjunction([self.precondition])
+        return
