@@ -60,9 +60,11 @@ if __name__ == "__main__":
     x = []
     y = []
     for key, data in r.items():
-        assert len(data) == 2
-        x.append(float(data[0][attr]))
-        y.append(float(data[1][attr]))
+        if len(data) == 2:
+            x.append(float(data[0][attr]))
+            y.append(float(data[1][attr]))
+            if int(data[0][attr]) < int(data[1][attr]):
+                print (key, data[0][attr], data[1][attr])
 
     # Order based on attribute
     sorted_l = [(i,j) for i,j in sorted(zip(x,y), key=lambda n : n[0])]

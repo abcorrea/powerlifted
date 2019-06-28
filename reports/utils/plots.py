@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -17,7 +16,11 @@ def generate_scatter_plot(x, y, xlab, ylab, log=False):
 
     # Set scatter plot with color schema
     fig, ax = plt.subplots()
-    ax.scatter(x,y, c=(x-y), cmap='coolwarm', marker='x')
+    if log:
+        color_schema = (np.log10(x) - np.log10(y))
+    else:
+        color_schema = (x-y)
+    ax.scatter(x,y, c=color_schema, cmap='coolwarm', marker='x')
     if log:
         ax.set_xscale('log')
         ax.set_yscale('log')
