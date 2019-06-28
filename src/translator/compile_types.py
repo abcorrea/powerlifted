@@ -50,12 +50,49 @@ def add_conditions_to_actions(task, graph):
 
     """
     for action in task.actions:
+        obj_in_action = set()
         for param in action.parameters:
             name = param.name
             param_type = param.type_name
-            types = []
+            obj_in_action.add((param_type, name))
+        # Loop over preconditions and effects, collect all parameters
+        # and constants, and add types to that in the precondition
+        precond = action.get_action_preconditions
+        for cond in precond:
+            assert isinstance(cond, pddl.Literal)
+            for arg in cond.args:
+                name = arg
+                param_type = next(
+                    (x.type_name for x in action.parameters if x.name == arg),
+                    None)
+                if param_type is None:
+                    # If the type is none, then it is not a parameter and
+                    # it must be constant.  THus, we search for its type in the
+                    # obj list.
+                    param_type = next(
+                        (x.type_name for x in task.objects if x.name == arg),
+                        None)
+                obj_in_action.add((param_type, name))
+        literals_in_effects = action.get_literals_in_effects
+        for l in literals_in_effects:
+            name = l
+            param_type = next(
+                (x.type_name for x in action.parameters if x.name == l), None)
+            if param_type is None:
+                # If the type is none, then it is not a parameter and
+                # it must be constant.  THus, we search for its type in the
+                # obj list.
+                param_type = next(
+                    (x.type_name for x in task.objects if x.name == l), None)
+            obj_in_action.add((param_type, name))
+
+        action.transform_precondition_into_list()
+        for obj in obj_in_action:
+            param_type = obj[0]
+            name = obj[1]
             action.precondition.add_condition(
                 pddl.Atom(_get_type_predicate_name(param_type), [name]))
+    return
 
 
 def adjust_initial_state(task, graph):
@@ -66,11 +103,12 @@ def adjust_initial_state(task, graph):
     for obj in task.objects:
         type_name = obj.type_name
         name = obj.name
-        types = []
+        types = set()
+        types.add(type_name)
         while type_name != 'object':
             # While there is a supertype, append this to the list of predicates
             # being added in the initial state.
-            types.append(type_name)
+            types.add(type_name)
             type_name = graph.edges[type_name]
         for t in types:
             task.init.append(pddl.Atom(_get_type_predicate_name(t), [name]))
