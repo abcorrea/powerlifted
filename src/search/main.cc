@@ -94,6 +94,7 @@ bool parse(Task &task, const ifstream &in) {
         task.addPredicate(predicate_name, index, number_args, static_pred, types);
     }
 
+    // Read Objects
     int number_objects;
     cin >> canary >> number_objects;
     if (canary != "OBJECTS") {
@@ -113,6 +114,27 @@ bool parse(Task &task, const ifstream &in) {
         }
         task.addObject(name, index, types);
     }
+
+    // Read Initial State
+    task.initializeEmptyInitialState();
+    int initial_state_size;
+    cin >> canary >> initial_state_size;
+    for (int i = 0; i < initial_state_size; ++i) {
+        string name;
+        int index;
+        int predicate_index;
+        bool negated;
+        int number_args;
+        cin >> name >> index >> predicate_index >> negated >> number_args;
+        vector<int> args;
+        for (int j = 0; j < number_args; ++j) {
+            int arg;
+            cin >> arg;
+            args.push_back(arg);
+        }
+        task.initial_state.addTuple(predicate_index, args);
+    }
+
 
     return true;
 

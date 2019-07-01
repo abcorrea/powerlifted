@@ -8,10 +8,15 @@
 
 #include "predicate.h"
 #include "object.h"
+#include "state.h"
 
 class Task {
 
 public:
+
+    std::vector<Predicate> predicates;
+    std::vector<Object> objects;
+    State initial_state; // TODO setter
 
     Task(const std::string& domain_name, const std::string& task_name) :
             domain_name(domain_name), task_name(task_name) {
@@ -33,8 +38,9 @@ public:
 
     const void addObject(const std::string& name, int index, const std::vector<int>& types);
 
-    std::vector<Predicate> predicates;
-    std::vector<Object> objects;
+    void initializeEmptyInitialState();
+
+    void dumpState(State s);
 
 private:
     const std::string &domain_name;
