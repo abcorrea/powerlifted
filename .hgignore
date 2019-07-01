@@ -4,3 +4,5 @@ syntax: glob
 src/translator/.idea/*
 .idea/*
 src/translator/output.lifted
+src/search/cmake-build-debug/
+output.lifted
