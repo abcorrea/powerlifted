@@ -7,7 +7,7 @@
 using namespace std;
 
 
-const vector<int> &State::getObjects() {
+const vector<int> State::getObjects() {
      /*
      * Return a set of all objects occurring in any tuple of any relation in the state
      */

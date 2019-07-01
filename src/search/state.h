@@ -28,7 +28,7 @@ public:
         return relations;
     }
 
-    const std::vector<int> &getObjects();
+    const std::vector<int> getObjects();
 
     void addTuple(int relation, const GroundAtom& args);
 };
