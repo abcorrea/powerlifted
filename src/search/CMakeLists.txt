@@ -8,4 +8,4 @@ add_executable(search
         task.cc task.h
         predicate.cc predicate.h
         object.cc object.h
-        state.cc state.h parser.cc parser.h)
+        state.cc state.h parser.cc parser.h goal_condition.cc goal_condition.h)

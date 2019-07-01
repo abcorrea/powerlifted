@@ -9,6 +9,7 @@
 #include "predicate.h"
 #include "object.h"
 #include "state.h"
+#include "goal_condition.h"
 
 class Task {
 
@@ -17,6 +18,7 @@ public:
     std::vector<Predicate> predicates;
     std::vector<Object> objects;
     State initial_state; // TODO setter
+    GoalCondition goal;
 
     Task(const std::string& domain_name, const std::string& task_name) :
             domain_name(domain_name), task_name(task_name) {
@@ -40,7 +42,11 @@ public:
 
     void initializeEmptyInitialState();
 
+    void initializeGoal(std::vector<AtomicGoal> goals);
+
     void dumpState(State s);
+
+    void dumpGoal();
 
 private:
     const std::string &domain_name;

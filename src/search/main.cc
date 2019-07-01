@@ -38,6 +38,8 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    task.dumpGoal();
+
     /*
      * TODO
      * We probably want to create some more refined data structures. For example, it would be nice to have an easy way

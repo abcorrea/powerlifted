@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "parser.h"
+#include "goal_condition.h"
 
 using namespace std;
 
@@ -75,6 +76,10 @@ bool parse(Task &task, const ifstream &in) {
     task.initializeEmptyInitialState();
     int initial_state_size;
     cin >> canary >> initial_state_size;
+    if (canary != "INITIAL-STATE") {
+        cerr << "Error while reading initial state section." << endl;
+        return false;
+    }
     for (int i = 0; i < initial_state_size; ++i) {
         string name;
         int index;
@@ -91,6 +96,30 @@ bool parse(Task &task, const ifstream &in) {
         task.initial_state.addTuple(predicate_index, args);
     }
 
+    // Read Goal State
+    int goal_size;
+    cin >> canary >> goal_size;
+    if (canary != "GOAL") {
+        cerr << "Error while reading goal description section." << endl;
+        return false;
+    }
+    vector<AtomicGoal> goals;
+    for (int i = 0; i < goal_size; ++i) {
+        string name;
+        int predicate_index;
+        bool negated;
+        int number_args;
+        cin >> name >> predicate_index >> negated >> number_args;
+        vector<int> args;
+        for (int j = 0; j < number_args; ++j) {
+            int arg;
+            cin >> arg;
+            args.push_back(arg);
+        }
+        goals.emplace_back(predicate_index, args, negated);
+    }
+
+    task.initializeGoal(goals);
 
     return true;
 

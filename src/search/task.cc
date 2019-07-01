@@ -1,3 +1,5 @@
+#include <utility>
+
 #include <vector>
 #include <cassert>
 #include <iostream>
@@ -52,5 +54,26 @@ void Task::dumpState(State s) {
         }
     }
 }
+
+void Task::dumpGoal() {
+    /*
+     * Output goal condition in a readable format.
+     */
+    for (auto g : goal.goal) {
+        if (g.negated) {
+            cout << "Not ";
+        }
+        cout << predicates[g.predicate].getName() << " ";
+        for (int arg : g.args) {
+            cout << objects[arg].getName() << " ";
+        }
+        cout << endl;
+    }
+}
+
 #pragma clang diagnostic pop
+
+void Task::initializeGoal(std::vector<AtomicGoal> goals) {
+    goal = GoalCondition(std::move(goals));
+}
 
