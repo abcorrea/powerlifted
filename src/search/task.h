@@ -1,0 +1,47 @@
+#ifndef SEARCH_TASK_H
+#define SEARCH_TASK_H
+
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <ostream>
+
+#include "predicate.h"
+#include "object.h"
+
+class Task {
+
+public:
+
+    Task(const std::string& domain_name, const std::string& task_name) :
+            domain_name(domain_name), task_name(task_name) {
+        // Create class only with task and domain names
+    }
+
+    const std::string &getDomainName() const {
+        return domain_name;
+    }
+
+    const std::string &getTaskName() const {
+        return task_name;
+    }
+
+    const void addType(const std::string& type_name);
+
+    const void
+    addPredicate(const std::string &name, int index, int arity, bool static_predicate, const std::vector<int> &types);
+
+    const void addObject(const std::string& name, int index, const std::vector<int>& types);
+
+    std::vector<Predicate> predicates;
+    std::vector<Object> objects;
+
+private:
+    const std::string &domain_name;
+    const std::string &task_name;
+
+    std::vector<std::string> type_names;
+};
+
+
+#endif //SEARCH_TASK_H
