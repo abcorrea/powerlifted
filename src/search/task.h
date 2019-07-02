@@ -48,7 +48,7 @@ public:
 
     void initializeActionSchemas(const std::vector<ActionSchema> &action_list);
 
-    void dumpState(State s);
+    void dumpState(State s) const;
 
     void dumpGoal();
 

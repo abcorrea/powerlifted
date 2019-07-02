@@ -4,14 +4,16 @@
 
 #include "parser.h"
 #include "task.h"
+#include "search.h"
+#include "successor_generators/successor_generator.h"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
     cout << "Initializing planner" << endl;
 
-    if (argc != 2) {
-        cerr << "Usage: ./planner [TASK INPUT]" << endl;
+    if (argc != 3) {
+        cerr << "Usage: ./planner [TASK INPUT] [SUCCESSOR GENERATOR METHOD]" << endl;
         exit(-1);
     }
 
@@ -38,6 +40,9 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    Search search;
+    SuccessorGenerator successorGenerator;
+    search.search(task, successorGenerator);
 
     /*
      * TODO

@@ -38,7 +38,7 @@ void Task::initializeEmptyInitialState() {
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-void Task::dumpState(State s) {
+void Task::dumpState(State s) const {
     /*
      * Output initial state in a human readable way.
      */
