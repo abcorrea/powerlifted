@@ -59,7 +59,7 @@ void Task::dumpGoal() {
     /*
      * Output goal condition in a readable format.
      */
-    for (auto g : goal.goal) {
+    for (const auto& g : goal.goal) {
         if (g.negated) {
             cout << "Not ";
         }
@@ -75,5 +75,9 @@ void Task::dumpGoal() {
 
 void Task::initializeGoal(std::vector<AtomicGoal> goals) {
     goal = GoalCondition(std::move(goals));
+}
+
+void Task::initializeActionSchemas(const std::vector<ActionSchema>& action_list) {
+    actions = action_list;
 }
 

@@ -10,6 +10,7 @@
 #include "object.h"
 #include "state.h"
 #include "goal_condition.h"
+#include "action_schema.h"
 
 class Task {
 
@@ -19,6 +20,7 @@ public:
     std::vector<Object> objects;
     State initial_state; // TODO setter
     GoalCondition goal;
+    std::vector<ActionSchema> actions;
 
     Task(const std::string& domain_name, const std::string& task_name) :
             domain_name(domain_name), task_name(task_name) {
@@ -43,6 +45,8 @@ public:
     void initializeEmptyInitialState();
 
     void initializeGoal(std::vector<AtomicGoal> goals);
+
+    void initializeActionSchemas(const std::vector<ActionSchema> &action_list);
 
     void dumpState(State s);
 

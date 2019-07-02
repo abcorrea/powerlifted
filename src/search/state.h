@@ -6,12 +6,7 @@
 #include <utility>
 #include <vector>
 
-typedef std::vector<int> GroundAtom;
-
-struct Relation {
-    int predicate_symbol;
-    std::vector<GroundAtom> tuples;
-};
+#include "structures.h"
 
 class State {
 

@@ -4,6 +4,7 @@
 
 #include "parser.h"
 #include "goal_condition.h"
+#include "action_schema.h"
 
 using namespace std;
 
@@ -118,8 +119,82 @@ bool parse(Task &task, const ifstream &in) {
         }
         goals.emplace_back(predicate_index, args, negated);
     }
-
     task.initializeGoal(goals);
+
+    // Read Action Schemas
+    int number_action_schemas;
+    cin >> canary >> number_action_schemas;
+    if (canary != "ACTION-SCHEMAS") {
+        cerr << "Error while reading action schemas section." << endl;
+        return false;
+    }
+    vector<ActionSchema> actions;
+    for (int i = 0; i < number_action_schemas; ++i) {
+        string name;
+        int cost, args, precond_size, eff_size;
+        cin >> name >> cost >> args >> precond_size >> eff_size;
+        vector<Parameter> parameters;
+        vector<Atom> preconditions, effects;
+        for (int j = 0; j < args; ++j) {
+            string param_name;
+            int index, type;
+            cin >> param_name >> index >> type;
+            parameters.emplace_back(param_name, index, type);
+        }
+        for (int j = 0; j <  precond_size; ++j) {
+            string precond_name;
+            int index;
+            bool negated;
+            int arguments_size;
+            cin >> precond_name >> index >> negated >> arguments_size;
+            vector<Argument> arguments;
+            for (int k = 0; k < arguments_size; ++k) {
+                char c;
+                int obj_index;
+                cin >> c >> obj_index;
+                if (c == 'c') {
+                    arguments.emplace_back(obj_index, true);
+                }
+                else if (c == 'p') {
+                    arguments.emplace_back(obj_index, false);
+                }
+                else {
+                    cerr << "Error while reading action schema " << name << ". Argument is neither constant or "
+                                                                            "object"<< endl;
+                    exit(-1);
+                }
+            }
+            preconditions.emplace_back(precond_name, index, arguments, negated);
+        }
+        for (int j = 0; j <  precond_size; ++j) {
+            string eff_name;
+            int index;
+            bool negated;
+            int arguments_size;
+            cin >> eff_name >> index >> negated >> arguments_size;
+            vector<Argument> arguments;
+            for (int k = 0; k < arguments_size; ++k) {
+                char c;
+                int obj_index;
+                cin >> c >> obj_index;
+                if (c == 'c') {
+                    arguments.emplace_back(obj_index, true);
+                }
+                else if (c == 'p') {
+                    arguments.emplace_back(obj_index, false);
+                }
+                else {
+                    cerr << "Error while reading action schema " << name << ". Argument is neither constant or "
+                                                                            "object"<< endl;
+                    exit(-1);
+                }
+            }
+            effects.emplace_back(eff_name, index, arguments, negated);
+        }
+        ActionSchema a(name, i, cost, parameters, preconditions, effects);
+        actions.push_back(a);
+    }
+    task.initializeActionSchemas(actions);
 
     return true;
 
