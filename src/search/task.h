@@ -12,15 +12,23 @@
 #include "goal_condition.h"
 #include "action_schema.h"
 
+
+/*
+ * The initial state and the static info have info for all predicates. However, the static predicates
+ * will always be empty in any state and the fluents are always empty in the static_info variable.
+ */
+
 class Task {
 
 public:
 
     std::vector<Predicate> predicates;
     std::vector<Object> objects;
-    State initial_state; // TODO setter
+    State initial_state;
+    StaticInformation static_info;
     GoalCondition goal;
     std::vector<ActionSchema> actions;
+    std::vector<std::string> type_names;
 
     Task(const std::string& domain_name, const std::string& task_name) :
             domain_name(domain_name), task_name(task_name) {
@@ -55,8 +63,6 @@ public:
 private:
     const std::string &domain_name;
     const std::string &task_name;
-
-    std::vector<std::string> type_names;
 };
 
 

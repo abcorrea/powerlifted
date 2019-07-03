@@ -8,4 +8,13 @@ add_executable(search
         task.cc task.h
         predicate.cc predicate.h
         object.cc object.h
-        state.cc state.h parser.cc parser.h goal_condition.cc goal_condition.h action_schema.cc action_schema.h structures.h search.cc search.h action.h successor_generators/successor_generator.cc successor_generators/successor_generator.h)
+        state.cc state.h
+        parser.cc parser.h
+        goal_condition.cc goal_condition.h
+        action_schema.cc action_schema.h
+        structures.h
+        search.cc search.h
+        action.h
+        successor_generators/successor_generator.cc successor_generators/successor_generator.h
+        database/table.cc database/table.h
+        database/join.h)

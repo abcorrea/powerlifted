@@ -1,11 +1,10 @@
 #include <utility>
 
-#include <utility>
-
 #ifndef SEARCH_STRUCTURES_H
 #define SEARCH_STRUCTURES_H
 
 #include <string>
+#include <utility>
 #include <vector>
 
 typedef std::vector<int> GroundAtom; // Ground atom is a list of object indices.
@@ -30,6 +29,13 @@ struct Argument {
 };
 
 struct Relation {
+    Relation(int predicate_symbol, std::vector<GroundAtom> tuples) : predicate_symbol(predicate_symbol),
+                                                                     tuples (std::move(tuples)) {}
+
+    Relation(const Relation &rhs) = default;
+
+    Relation() = default;
+
     int predicate_symbol;
     std::vector<GroundAtom> tuples;
 };
@@ -46,7 +52,7 @@ struct Atom {
      */
     std::string name;
     int predicate_symbol;
-    std::vector<Argument> tuples;
+    std::vector<Argument> tuples; // TODO change name to "arguments"
     bool negated;
 };
 

@@ -94,7 +94,10 @@ bool parse(Task &task, const ifstream &in) {
             cin >> arg;
             args.push_back(arg);
         }
-        task.initial_state.addTuple(predicate_index, args);
+        if (!task.predicates[predicate_index].isStaticPredicate())
+            task.initial_state.addTuple(predicate_index, args);
+        else
+            task.static_info.addTuple(predicate_index, args);
     }
 
     // Read Goal State
@@ -166,7 +169,7 @@ bool parse(Task &task, const ifstream &in) {
             }
             preconditions.emplace_back(precond_name, index, arguments, negated);
         }
-        for (int j = 0; j <  precond_size; ++j) {
+        for (int j = 0; j <  eff_size; ++j) {
             string eff_name;
             int index;
             bool negated;

@@ -48,7 +48,7 @@ const vector<Action> &Search::search(const Task &task, SuccessorGenerator genera
             return plan;
         }
         // TODO implement successor
-        vector<State> successors = generator.generate_successors(task.actions, state);
+        vector<State> successors = generator.generate_successors(task.actions, state, task.static_info);
     }
 
 

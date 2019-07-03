@@ -26,14 +26,16 @@ void Task::initializeEmptyInitialState() {
     /*
      * Creates one empty relation for every predicate of the task in the initial state.
      */
-    vector<Relation> vec;
+    vector<Relation> fluents, static_preds;
     for (int i = 0; i < predicates.size(); ++i) {
         Relation r;
         r.predicate_symbol = i;
         assert (r.tuples.empty());
-        vec.push_back(r);
+        static_preds.push_back(r);
+        fluents.push_back(r);
     }
-    initial_state = State(vec);
+    initial_state = State(fluents);
+    static_info = StaticInformation(static_preds);
 }
 
 #pragma clang diagnostic push

@@ -8,6 +8,14 @@
 
 #include "structures.h"
 
+/*
+ * State is not very useful as a class, but we expect it to have further utility once we
+ * start the search.
+ *
+ * The StaticInformation class right now is only syntatic sugar so we do not keep passing
+ * static predicates in every single successor.
+ */
+
 class State {
 
 public:
@@ -19,14 +27,13 @@ public:
 
     State() = default;
 
-    const std::vector<Relation> &getRelations() const {
-        return relations;
-    }
 
     const std::vector<int> getObjects();
 
     void addTuple(int relation, const GroundAtom& args);
 };
+
+typedef State StaticInformation;
 
 
 #endif //SEARCH_STATE_H
