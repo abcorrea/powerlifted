@@ -85,7 +85,7 @@ def main():
             options.output_file)
     output = open(options.output_file, "w")
     native_stdout = sys.stdout
-    sys.stdout = output
+    #sys.stdout = output
 
     domain = os.path.basename(os.path.dirname(options.domain))
     inst = os.path.basename(options.task)
@@ -248,6 +248,8 @@ def main():
                   int(cond.negated),
                   len(cond.args),
                   ' '.join(i for i in args_list))
+        # Delete effects first to guarantee add-after-delete semantics
+        action.effects.sort(key=lambda x : int(x.literal.negated), reverse=True)
         for eff in action.effects:
             assert isinstance(eff, pddl.Effect)
             args_list = []
