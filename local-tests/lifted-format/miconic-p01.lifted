@@ -1,0 +1,90 @@
+miconic s1-0.pddl
+SPARSE-REPRESENTATION
+TYPES 1
+object 0
+PREDICATES 10
+origin 0 2 1
+0 0
+floor 1 1 1
+0
+passenger 2 1 1
+0
+destin 3 2 1
+0 0
+above 4 2 1
+0 0
+boarded 5 1 0
+0
+served 6 1 0
+0
+lift-at 7 1 0
+0
+= 8 2 1
+0 0
+type_object 9 1 1
+0
+OBJECTS 3
+p0 0 1 0
+f0 1 1 0
+f1 2 1 0
+INITIAL-STATE 13
+floor(f0) 0 1 0 1 1
+above(f0,f1) 1 4 0 2 1 2
+passenger(p0) 2 2 0 1 0
+origin(p0,f1) 3 0 0 2 0 2
+destin(p0,f0) 4 3 0 2 0 1
+lift-at(f0) 5 7 0 1 1
+floor(f1) 6 1 0 1 2
+=(p0,p0) 7 8 0 2 0 0
+=(f0,f0) 8 8 0 2 1 1
+=(f1,f1) 9 8 0 2 2 2
+type_object(p0) 10 9 0 1 0
+type_object(f0) 11 9 0 1 1
+type_object(f1) 12 9 0 1 2
+GOAL 1
+served(p0) 6 0 1 0
+ACTION-SCHEMAS 4
+board 1 2 6 1
+?f 0 0
+?p 1 0
+floor 1 0 1 p 0
+passenger 2 0 1 p 1
+lift-at 7 0 1 p 0
+origin 0 0 2 p 1 p 0
+type_object 9 0 1 p 0
+type_object 9 0 1 p 1
+boarded 5 0 1 p 1
+depart 1 2 7 2
+?f 0 0
+?p 1 0
+floor 1 0 1 p 0
+passenger 2 0 1 p 1
+lift-at 7 0 1 p 0
+destin 3 0 2 p 1 p 0
+boarded 5 0 1 p 1
+type_object 9 0 1 p 0
+type_object 9 0 1 p 1
+boarded 5 1 1 p 1
+served 6 0 1 p 1
+up 1 2 6 2
+?f1 0 0
+?f2 1 0
+floor 1 0 1 p 0
+floor 1 0 1 p 1
+lift-at 7 0 1 p 0
+above 4 0 2 p 0 p 1
+type_object 9 0 1 p 0
+type_object 9 0 1 p 1
+lift-at 7 1 1 p 0
+lift-at 7 0 1 p 1
+down 1 2 6 2
+?f1 0 0
+?f2 1 0
+floor 1 0 1 p 0
+floor 1 0 1 p 1
+lift-at 7 0 1 p 0
+above 4 0 2 p 1 p 0
+type_object 9 0 1 p 0
+type_object 9 0 1 p 1
+lift-at 7 1 1 p 0
+lift-at 7 0 1 p 1
