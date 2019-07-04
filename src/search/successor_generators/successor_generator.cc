@@ -92,7 +92,7 @@ Table SuccessorGenerator::instantiate(const ActionSchema &action, const State &s
     assert (!tables.empty());
     Table working_table = tables[0];
     for (int i = 1; i < tables.size(); ++i) {
-        working_table = join(working_table, tables[i]);
+        join(working_table, tables[i]);
         if (working_table.tuples.empty()) {
             return working_table;
         }
@@ -107,24 +107,23 @@ vector<Table> SuccessorGenerator::parse_precond_into_join_program(const vector<A
      * We first parse the state and the atom preconditions into a set of tables
      * to perform the join-program more easily.
      */
-    vector<Table> parsed_tables;
+    vector<Table> parsed_tables;//(precond.size());
+    parsed_tables.reserve(precond.size());
     for (const Atom& a : precond) {
         vector<int> indices;
         for (Argument arg : a.tuples) {
             indices.push_back(arg.index);
         }
-        vector<vector<int>> data;
         if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
             // If this predicate has information in the static information table,
             // then it must be a static predicate
-            data = staticInformation.relations[a.predicate_symbol].tuples;
+            parsed_tables.emplace_back(staticInformation.relations[a.predicate_symbol].tuples, indices);
         }
         else {
             // If this predicate does not have information in the static information table,
             // then it must be a fluent
-            data = state.relations[a.predicate_symbol].tuples;
+            parsed_tables.emplace_back(state.relations[a.predicate_symbol].tuples, indices);
         }
-        parsed_tables.emplace_back(data, indices);
     }
     return parsed_tables;
 }
