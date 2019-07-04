@@ -3,6 +3,8 @@ project(search)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_CXX_FLAGS "-O3")
+
 add_executable(search
         main.cc
         task.cc task.h
@@ -17,4 +19,4 @@ add_executable(search
         action.h
         successor_generators/successor_generator.cc successor_generators/successor_generator.h
         database/table.cc database/table.h
-        database/join.h)
+        database/join.h heuristics/goalcount.cc heuristics/goalcount.h)
