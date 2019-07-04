@@ -1,0 +1,159 @@
+gripper prob05.pddl
+SPARSE-REPRESENTATION
+TYPES 1
+object 0
+PREDICATES 9
+room 0 1 1
+0
+ball 1 1 1
+0
+gripper 2 1 1
+0
+at-robby 3 1 0
+0
+at 4 2 0
+0 0
+free 5 1 0
+0
+carry 6 2 0
+0 0
+= 7 2 1
+0 0
+type_object 8 1 1
+0
+OBJECTS 16
+rooma 0 1 0
+roomb 1 1 0
+ball12 2 1 0
+ball11 3 1 0
+ball10 4 1 0
+ball9 5 1 0
+ball8 6 1 0
+ball7 7 1 0
+ball6 8 1 0
+ball5 9 1 0
+ball4 10 1 0
+ball3 11 1 0
+ball2 12 1 0
+ball1 13 1 0
+left 14 1 0
+right 15 1 0
+INITIAL-STATE 63
+ball(ball3) 0 1 0 1 11
+ball(ball6) 1 1 0 1 8
+gripper(left) 2 2 0 1 14
+at(ball3,rooma) 3 4 0 2 11 0
+at(ball8,rooma) 4 4 0 2 6 0
+ball(ball9) 5 1 0 1 5
+ball(ball12) 6 1 0 1 2
+free(right) 7 5 0 1 15
+at(ball9,rooma) 8 4 0 2 5 0
+at-robby(rooma) 9 3 0 1 0
+room(rooma) 10 0 0 1 0
+ball(ball5) 11 1 0 1 9
+at(ball1,rooma) 12 4 0 2 13 0
+ball(ball1) 13 1 0 1 13
+ball(ball4) 14 1 0 1 10
+ball(ball7) 15 1 0 1 7
+ball(ball10) 16 1 0 1 4
+at(ball2,rooma) 17 4 0 2 12 0
+free(left) 18 5 0 1 14
+at(ball12,rooma) 19 4 0 2 2 0
+at(ball6,rooma) 20 4 0 2 8 0
+gripper(right) 21 2 0 1 15
+ball(ball2) 22 1 0 1 12
+at(ball10,rooma) 23 4 0 2 4 0
+at(ball11,rooma) 24 4 0 2 3 0
+ball(ball11) 25 1 0 1 3
+at(ball4,rooma) 26 4 0 2 10 0
+room(roomb) 27 0 0 1 1
+at(ball7,rooma) 28 4 0 2 7 0
+ball(ball8) 29 1 0 1 6
+at(ball5,rooma) 30 4 0 2 9 0
+=(rooma,rooma) 31 7 0 2 0 0
+=(roomb,roomb) 32 7 0 2 1 1
+=(ball12,ball12) 33 7 0 2 2 2
+=(ball11,ball11) 34 7 0 2 3 3
+=(ball10,ball10) 35 7 0 2 4 4
+=(ball9,ball9) 36 7 0 2 5 5
+=(ball8,ball8) 37 7 0 2 6 6
+=(ball7,ball7) 38 7 0 2 7 7
+=(ball6,ball6) 39 7 0 2 8 8
+=(ball5,ball5) 40 7 0 2 9 9
+=(ball4,ball4) 41 7 0 2 10 10
+=(ball3,ball3) 42 7 0 2 11 11
+=(ball2,ball2) 43 7 0 2 12 12
+=(ball1,ball1) 44 7 0 2 13 13
+=(left,left) 45 7 0 2 14 14
+=(right,right) 46 7 0 2 15 15
+type_object(rooma) 47 8 0 1 0
+type_object(roomb) 48 8 0 1 1
+type_object(ball12) 49 8 0 1 2
+type_object(ball11) 50 8 0 1 3
+type_object(ball10) 51 8 0 1 4
+type_object(ball9) 52 8 0 1 5
+type_object(ball8) 53 8 0 1 6
+type_object(ball7) 54 8 0 1 7
+type_object(ball6) 55 8 0 1 8
+type_object(ball5) 56 8 0 1 9
+type_object(ball4) 57 8 0 1 10
+type_object(ball3) 58 8 0 1 11
+type_object(ball2) 59 8 0 1 12
+type_object(ball1) 60 8 0 1 13
+type_object(left) 61 8 0 1 14
+type_object(right) 62 8 0 1 15
+GOAL 12
+at(ball12,roomb) 4 0 2 2 1
+at(ball11,roomb) 4 0 2 3 1
+at(ball10,roomb) 4 0 2 4 1
+at(ball9,roomb) 4 0 2 5 1
+at(ball8,roomb) 4 0 2 6 1
+at(ball7,roomb) 4 0 2 7 1
+at(ball6,roomb) 4 0 2 8 1
+at(ball5,roomb) 4 0 2 9 1
+at(ball4,roomb) 4 0 2 10 1
+at(ball3,roomb) 4 0 2 11 1
+at(ball2,roomb) 4 0 2 12 1
+at(ball1,roomb) 4 0 2 13 1
+ACTION-SCHEMAS 3
+move 1 2 5 2
+?from 0 0
+?to 1 0
+room 0 0 1 p 0
+room 0 0 1 p 1
+at-robby 3 0 1 p 0
+type_object 8 0 1 p 1
+type_object 8 0 1 p 0
+at-robby 3 1 1 p 0
+at-robby 3 0 1 p 1
+pick 1 3 9 3
+?obj 0 0
+?room 1 0
+?gripper 2 0
+ball 1 0 1 p 0
+room 0 0 1 p 1
+gripper 2 0 1 p 2
+at 4 0 2 p 0 p 1
+at-robby 3 0 1 p 1
+free 5 0 1 p 2
+type_object 8 0 1 p 0
+type_object 8 0 1 p 2
+type_object 8 0 1 p 1
+at 4 1 2 p 0 p 1
+free 5 1 1 p 2
+carry 6 0 2 p 0 p 2
+drop 1 3 8 3
+?obj 0 0
+?room 1 0
+?gripper 2 0
+ball 1 0 1 p 0
+room 0 0 1 p 1
+gripper 2 0 1 p 2
+carry 6 0 2 p 0 p 2
+at-robby 3 0 1 p 1
+type_object 8 0 1 p 0
+type_object 8 0 1 p 2
+type_object 8 0 1 p 1
+carry 6 1 2 p 0 p 2
+at 4 0 2 p 0 p 1
+free 5 0 1 p 2

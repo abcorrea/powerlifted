@@ -1,0 +1,2598 @@
+logistics98 prob28.pddl
+SPARSE-REPRESENTATION
+TYPES 1
+object 0
+PREDICATES 11
+obj 0 1 1
+0
+truck 1 1 1
+0
+location 2 1 1
+0
+airplane 3 1 1
+0
+city 4 1 1
+0
+airport 5 1 1
+0
+at 6 2 0
+0 0
+in 7 2 0
+0 0
+in-city 8 2 1
+0 0
+= 9 2 1
+0 0
+type_object 10 1 1
+0
+OBJECTS 490
+package42 0 1 0
+package41 1 1 0
+package40 2 1 0
+package39 3 1 0
+package38 4 1 0
+package37 5 1 0
+package36 6 1 0
+package35 7 1 0
+package34 8 1 0
+package33 9 1 0
+package32 10 1 0
+package31 11 1 0
+package30 12 1 0
+package29 13 1 0
+package28 14 1 0
+package27 15 1 0
+package26 16 1 0
+package25 17 1 0
+package24 18 1 0
+package23 19 1 0
+package22 20 1 0
+package21 21 1 0
+package20 22 1 0
+package19 23 1 0
+package18 24 1 0
+package17 25 1 0
+package16 26 1 0
+package15 27 1 0
+package14 28 1 0
+package13 29 1 0
+package12 30 1 0
+package11 31 1 0
+package10 32 1 0
+package9 33 1 0
+package8 34 1 0
+package7 35 1 0
+package6 36 1 0
+package5 37 1 0
+package4 38 1 0
+package3 39 1 0
+package2 40 1 0
+package1 41 1 0
+city20 42 1 0
+city19 43 1 0
+city18 44 1 0
+city17 45 1 0
+city16 46 1 0
+city15 47 1 0
+city14 48 1 0
+city13 49 1 0
+city12 50 1 0
+city11 51 1 0
+city10 52 1 0
+city9 53 1 0
+city8 54 1 0
+city7 55 1 0
+city6 56 1 0
+city5 57 1 0
+city4 58 1 0
+city3 59 1 0
+city2 60 1 0
+city1 61 1 0
+truck83 62 1 0
+truck82 63 1 0
+truck81 64 1 0
+truck80 65 1 0
+truck79 66 1 0
+truck78 67 1 0
+truck77 68 1 0
+truck76 69 1 0
+truck75 70 1 0
+truck74 71 1 0
+truck73 72 1 0
+truck72 73 1 0
+truck71 74 1 0
+truck70 75 1 0
+truck69 76 1 0
+truck68 77 1 0
+truck67 78 1 0
+truck66 79 1 0
+truck65 80 1 0
+truck64 81 1 0
+truck63 82 1 0
+truck62 83 1 0
+truck61 84 1 0
+truck60 85 1 0
+truck59 86 1 0
+truck58 87 1 0
+truck57 88 1 0
+truck56 89 1 0
+truck55 90 1 0
+truck54 91 1 0
+truck53 92 1 0
+truck52 93 1 0
+truck51 94 1 0
+truck50 95 1 0
+truck49 96 1 0
+truck48 97 1 0
+truck47 98 1 0
+truck46 99 1 0
+truck45 100 1 0
+truck44 101 1 0
+truck43 102 1 0
+truck42 103 1 0
+truck41 104 1 0
+truck40 105 1 0
+truck39 106 1 0
+truck38 107 1 0
+truck37 108 1 0
+truck36 109 1 0
+truck35 110 1 0
+truck34 111 1 0
+truck33 112 1 0
+truck32 113 1 0
+truck31 114 1 0
+truck30 115 1 0
+truck29 116 1 0
+truck28 117 1 0
+truck27 118 1 0
+truck26 119 1 0
+truck25 120 1 0
+truck24 121 1 0
+truck23 122 1 0
+truck22 123 1 0
+truck21 124 1 0
+truck20 125 1 0
+truck19 126 1 0
+truck18 127 1 0
+truck17 128 1 0
+truck16 129 1 0
+truck15 130 1 0
+truck14 131 1 0
+truck13 132 1 0
+truck12 133 1 0
+truck11 134 1 0
+truck10 135 1 0
+truck9 136 1 0
+truck8 137 1 0
+truck7 138 1 0
+truck6 139 1 0
+truck5 140 1 0
+truck4 141 1 0
+truck3 142 1 0
+truck2 143 1 0
+truck1 144 1 0
+plane5 145 1 0
+plane4 146 1 0
+plane3 147 1 0
+plane2 148 1 0
+plane1 149 1 0
+city20-16 150 1 0
+city20-15 151 1 0
+city20-14 152 1 0
+city20-13 153 1 0
+city20-12 154 1 0
+city20-11 155 1 0
+city20-10 156 1 0
+city20-9 157 1 0
+city20-8 158 1 0
+city20-7 159 1 0
+city20-6 160 1 0
+city20-5 161 1 0
+city20-4 162 1 0
+city20-3 163 1 0
+city20-2 164 1 0
+city20-1 165 1 0
+city19-16 166 1 0
+city19-15 167 1 0
+city19-14 168 1 0
+city19-13 169 1 0
+city19-12 170 1 0
+city19-11 171 1 0
+city19-10 172 1 0
+city19-9 173 1 0
+city19-8 174 1 0
+city19-7 175 1 0
+city19-6 176 1 0
+city19-5 177 1 0
+city19-4 178 1 0
+city19-3 179 1 0
+city19-2 180 1 0
+city19-1 181 1 0
+city18-16 182 1 0
+city18-15 183 1 0
+city18-14 184 1 0
+city18-13 185 1 0
+city18-12 186 1 0
+city18-11 187 1 0
+city18-10 188 1 0
+city18-9 189 1 0
+city18-8 190 1 0
+city18-7 191 1 0
+city18-6 192 1 0
+city18-5 193 1 0
+city18-4 194 1 0
+city18-3 195 1 0
+city18-2 196 1 0
+city18-1 197 1 0
+city17-16 198 1 0
+city17-15 199 1 0
+city17-14 200 1 0
+city17-13 201 1 0
+city17-12 202 1 0
+city17-11 203 1 0
+city17-10 204 1 0
+city17-9 205 1 0
+city17-8 206 1 0
+city17-7 207 1 0
+city17-6 208 1 0
+city17-5 209 1 0
+city17-4 210 1 0
+city17-3 211 1 0
+city17-2 212 1 0
+city17-1 213 1 0
+city16-16 214 1 0
+city16-15 215 1 0
+city16-14 216 1 0
+city16-13 217 1 0
+city16-12 218 1 0
+city16-11 219 1 0
+city16-10 220 1 0
+city16-9 221 1 0
+city16-8 222 1 0
+city16-7 223 1 0
+city16-6 224 1 0
+city16-5 225 1 0
+city16-4 226 1 0
+city16-3 227 1 0
+city16-2 228 1 0
+city16-1 229 1 0
+city15-16 230 1 0
+city15-15 231 1 0
+city15-14 232 1 0
+city15-13 233 1 0
+city15-12 234 1 0
+city15-11 235 1 0
+city15-10 236 1 0
+city15-9 237 1 0
+city15-8 238 1 0
+city15-7 239 1 0
+city15-6 240 1 0
+city15-5 241 1 0
+city15-4 242 1 0
+city15-3 243 1 0
+city15-2 244 1 0
+city15-1 245 1 0
+city14-16 246 1 0
+city14-15 247 1 0
+city14-14 248 1 0
+city14-13 249 1 0
+city14-12 250 1 0
+city14-11 251 1 0
+city14-10 252 1 0
+city14-9 253 1 0
+city14-8 254 1 0
+city14-7 255 1 0
+city14-6 256 1 0
+city14-5 257 1 0
+city14-4 258 1 0
+city14-3 259 1 0
+city14-2 260 1 0
+city14-1 261 1 0
+city13-16 262 1 0
+city13-15 263 1 0
+city13-14 264 1 0
+city13-13 265 1 0
+city13-12 266 1 0
+city13-11 267 1 0
+city13-10 268 1 0
+city13-9 269 1 0
+city13-8 270 1 0
+city13-7 271 1 0
+city13-6 272 1 0
+city13-5 273 1 0
+city13-4 274 1 0
+city13-3 275 1 0
+city13-2 276 1 0
+city13-1 277 1 0
+city12-16 278 1 0
+city12-15 279 1 0
+city12-14 280 1 0
+city12-13 281 1 0
+city12-12 282 1 0
+city12-11 283 1 0
+city12-10 284 1 0
+city12-9 285 1 0
+city12-8 286 1 0
+city12-7 287 1 0
+city12-6 288 1 0
+city12-5 289 1 0
+city12-4 290 1 0
+city12-3 291 1 0
+city12-2 292 1 0
+city12-1 293 1 0
+city11-16 294 1 0
+city11-15 295 1 0
+city11-14 296 1 0
+city11-13 297 1 0
+city11-12 298 1 0
+city11-11 299 1 0
+city11-10 300 1 0
+city11-9 301 1 0
+city11-8 302 1 0
+city11-7 303 1 0
+city11-6 304 1 0
+city11-5 305 1 0
+city11-4 306 1 0
+city11-3 307 1 0
+city11-2 308 1 0
+city11-1 309 1 0
+city10-16 310 1 0
+city10-15 311 1 0
+city10-14 312 1 0
+city10-13 313 1 0
+city10-12 314 1 0
+city10-11 315 1 0
+city10-10 316 1 0
+city10-9 317 1 0
+city10-8 318 1 0
+city10-7 319 1 0
+city10-6 320 1 0
+city10-5 321 1 0
+city10-4 322 1 0
+city10-3 323 1 0
+city10-2 324 1 0
+city10-1 325 1 0
+city9-16 326 1 0
+city9-15 327 1 0
+city9-14 328 1 0
+city9-13 329 1 0
+city9-12 330 1 0
+city9-11 331 1 0
+city9-10 332 1 0
+city9-9 333 1 0
+city9-8 334 1 0
+city9-7 335 1 0
+city9-6 336 1 0
+city9-5 337 1 0
+city9-4 338 1 0
+city9-3 339 1 0
+city9-2 340 1 0
+city9-1 341 1 0
+city8-16 342 1 0
+city8-15 343 1 0
+city8-14 344 1 0
+city8-13 345 1 0
+city8-12 346 1 0
+city8-11 347 1 0
+city8-10 348 1 0
+city8-9 349 1 0
+city8-8 350 1 0
+city8-7 351 1 0
+city8-6 352 1 0
+city8-5 353 1 0
+city8-4 354 1 0
+city8-3 355 1 0
+city8-2 356 1 0
+city8-1 357 1 0
+city7-16 358 1 0
+city7-15 359 1 0
+city7-14 360 1 0
+city7-13 361 1 0
+city7-12 362 1 0
+city7-11 363 1 0
+city7-10 364 1 0
+city7-9 365 1 0
+city7-8 366 1 0
+city7-7 367 1 0
+city7-6 368 1 0
+city7-5 369 1 0
+city7-4 370 1 0
+city7-3 371 1 0
+city7-2 372 1 0
+city7-1 373 1 0
+city6-16 374 1 0
+city6-15 375 1 0
+city6-14 376 1 0
+city6-13 377 1 0
+city6-12 378 1 0
+city6-11 379 1 0
+city6-10 380 1 0
+city6-9 381 1 0
+city6-8 382 1 0
+city6-7 383 1 0
+city6-6 384 1 0
+city6-5 385 1 0
+city6-4 386 1 0
+city6-3 387 1 0
+city6-2 388 1 0
+city6-1 389 1 0
+city5-16 390 1 0
+city5-15 391 1 0
+city5-14 392 1 0
+city5-13 393 1 0
+city5-12 394 1 0
+city5-11 395 1 0
+city5-10 396 1 0
+city5-9 397 1 0
+city5-8 398 1 0
+city5-7 399 1 0
+city5-6 400 1 0
+city5-5 401 1 0
+city5-4 402 1 0
+city5-3 403 1 0
+city5-2 404 1 0
+city5-1 405 1 0
+city4-16 406 1 0
+city4-15 407 1 0
+city4-14 408 1 0
+city4-13 409 1 0
+city4-12 410 1 0
+city4-11 411 1 0
+city4-10 412 1 0
+city4-9 413 1 0
+city4-8 414 1 0
+city4-7 415 1 0
+city4-6 416 1 0
+city4-5 417 1 0
+city4-4 418 1 0
+city4-3 419 1 0
+city4-2 420 1 0
+city4-1 421 1 0
+city3-16 422 1 0
+city3-15 423 1 0
+city3-14 424 1 0
+city3-13 425 1 0
+city3-12 426 1 0
+city3-11 427 1 0
+city3-10 428 1 0
+city3-9 429 1 0
+city3-8 430 1 0
+city3-7 431 1 0
+city3-6 432 1 0
+city3-5 433 1 0
+city3-4 434 1 0
+city3-3 435 1 0
+city3-2 436 1 0
+city3-1 437 1 0
+city2-16 438 1 0
+city2-15 439 1 0
+city2-14 440 1 0
+city2-13 441 1 0
+city2-12 442 1 0
+city2-11 443 1 0
+city2-10 444 1 0
+city2-9 445 1 0
+city2-8 446 1 0
+city2-7 447 1 0
+city2-6 448 1 0
+city2-5 449 1 0
+city2-4 450 1 0
+city2-3 451 1 0
+city2-2 452 1 0
+city2-1 453 1 0
+city1-16 454 1 0
+city1-15 455 1 0
+city1-14 456 1 0
+city1-13 457 1 0
+city1-12 458 1 0
+city1-11 459 1 0
+city1-10 460 1 0
+city1-9 461 1 0
+city1-8 462 1 0
+city1-7 463 1 0
+city1-6 464 1 0
+city1-5 465 1 0
+city1-4 466 1 0
+city1-3 467 1 0
+city1-2 468 1 0
+city1-1 469 1 0
+city20-17 470 1 0
+city19-17 471 1 0
+city18-17 472 1 0
+city17-17 473 1 0
+city16-17 474 1 0
+city15-17 475 1 0
+city14-17 476 1 0
+city13-17 477 1 0
+city12-17 478 1 0
+city11-17 479 1 0
+city10-17 480 1 0
+city9-17 481 1 0
+city8-17 482 1 0
+city7-17 483 1 0
+city6-17 484 1 0
+city5-17 485 1 0
+city4-17 486 1 0
+city3-17 487 1 0
+city2-17 488 1 0
+city1-17 489 1 0
+INITIAL-STATE 1960
+in-city(city9-5,city9) 0 8 0 2 337 53
+in-city(city7-15,city7) 1 8 0 2 359 55
+location(city20-4) 2 2 0 1 162
+location(city16-8) 3 2 0 1 222
+at(truck36,city12-6) 4 6 0 2 109 288
+location(city12-13) 5 2 0 1 281
+location(city14-13) 6 2 0 1 249
+location(city20-1) 7 2 0 1 165
+obj(package16) 8 0 0 1 26
+in-city(city13-13,city13) 9 8 0 2 265 49
+location(city11-11) 10 2 0 1 299
+location(city19-14) 11 2 0 1 168
+obj(package21) 12 0 0 1 21
+airport(city14-17) 13 5 0 1 476
+truck(truck45) 14 1 0 1 100
+in-city(city8-7,city8) 15 8 0 2 351 54
+in-city(city18-16,city18) 16 8 0 2 182 44
+location(city19-3) 17 2 0 1 179
+city(city7) 18 4 0 1 55
+in-city(city5-5,city5) 19 8 0 2 401 57
+truck(truck5) 20 1 0 1 140
+in-city(city18-11,city18) 21 8 0 2 187 44
+truck(truck56) 22 1 0 1 89
+location(city13-1) 23 2 0 1 277
+in-city(city13-17,city13) 24 8 0 2 477 49
+location(city16-4) 25 2 0 1 226
+in-city(city20-7,city20) 26 8 0 2 159 42
+truck(truck36) 27 1 0 1 109
+location(city6-14) 28 2 0 1 376
+truck(truck29) 29 1 0 1 116
+in-city(city11-13,city11) 30 8 0 2 297 51
+location(city5-14) 31 2 0 1 392
+city(city13) 32 4 0 1 49
+at(truck80,city17-14) 33 6 0 2 65 200
+obj(package40) 34 0 0 1 2
+in-city(city20-9,city20) 35 8 0 2 157 42
+in-city(city15-7,city15) 36 8 0 2 239 47
+location(city1-11) 37 2 0 1 459
+at(truck69,city6-2) 38 6 0 2 76 388
+in-city(city17-15,city17) 39 8 0 2 199 45
+in-city(city11-9,city11) 40 8 0 2 301 51
+in-city(city6-12,city6) 41 8 0 2 378 56
+in-city(city10-1,city10) 42 8 0 2 325 52
+truck(truck72) 43 1 0 1 73
+in-city(city14-5,city14) 44 8 0 2 257 48
+location(city15-4) 45 2 0 1 242
+in-city(city18-8,city18) 46 8 0 2 190 44
+location(city17-11) 47 2 0 1 203
+truck(truck68) 48 1 0 1 77
+at(truck50,city2-8) 49 6 0 2 95 446
+in-city(city14-2,city14) 50 8 0 2 260 48
+location(city13-3) 51 2 0 1 275
+location(city8-2) 52 2 0 1 356
+at(plane5,city19-17) 53 6 0 2 145 471
+at(truck66,city3-15) 54 6 0 2 79 423
+in-city(city1-16,city1) 55 8 0 2 454 61
+location(city11-13) 56 2 0 1 297
+in-city(city2-16,city2) 57 8 0 2 438 60
+location(city8-1) 58 2 0 1 357
+in-city(city6-15,city6) 59 8 0 2 375 56
+at(truck57,city7-13) 60 6 0 2 88 361
+in-city(city4-16,city4) 61 8 0 2 406 58
+in-city(city15-12,city15) 62 8 0 2 234 47
+truck(truck12) 63 1 0 1 133
+location(city8-4) 64 2 0 1 354
+location(city7-6) 65 2 0 1 368
+in-city(city19-2,city19) 66 8 0 2 180 43
+location(city10-4) 67 2 0 1 322
+location(city20-2) 68 2 0 1 164
+in-city(city5-11,city5) 69 8 0 2 395 57
+airplane(plane1) 70 3 0 1 149
+in-city(city19-7,city19) 71 8 0 2 175 43
+in-city(city16-3,city16) 72 8 0 2 227 46
+obj(package7) 73 0 0 1 35
+in-city(city10-15,city10) 74 8 0 2 311 52
+in-city(city20-14,city20) 75 8 0 2 152 42
+location(city1-1) 76 2 0 1 469
+at(truck11,city13-2) 77 6 0 2 134 276
+truck(truck11) 78 1 0 1 134
+at(package40,city3-6) 79 6 0 2 2 432
+location(city9-4) 80 2 0 1 338
+in-city(city3-16,city3) 81 8 0 2 422 59
+in-city(city19-6,city19) 82 8 0 2 176 43
+in-city(city18-3,city18) 83 8 0 2 195 44
+truck(truck46) 84 1 0 1 99
+in-city(city4-3,city4) 85 8 0 2 419 58
+in-city(city4-7,city4) 86 8 0 2 415 58
+truck(truck28) 87 1 0 1 117
+in-city(city6-7,city6) 88 8 0 2 383 56
+location(city8-8) 89 2 0 1 350
+location(city17-9) 90 2 0 1 205
+in-city(city15-15,city15) 91 8 0 2 231 47
+at(truck73,city10-13) 92 6 0 2 72 313
+location(city11-9) 93 2 0 1 301
+airport(city10-17) 94 5 0 1 480
+in-city(city13-5,city13) 95 8 0 2 273 49
+obj(package19) 96 0 0 1 23
+at(truck20,city15-13) 97 6 0 2 125 233
+at(truck43,city2-8) 98 6 0 2 102 446
+in-city(city6-2,city6) 99 8 0 2 388 56
+at(package37,city10-13) 100 6 0 2 5 313
+in-city(city7-12,city7) 101 8 0 2 362 55
+obj(package37) 102 0 0 1 5
+location(city5-12) 103 2 0 1 394
+city(city3) 104 4 0 1 59
+location(city7-15) 105 2 0 1 359
+in-city(city1-9,city1) 106 8 0 2 461 61
+location(city7-4) 107 2 0 1 370
+in-city(city13-15,city13) 108 8 0 2 263 49
+in-city(city1-13,city1) 109 8 0 2 457 61
+at(truck83,city20-7) 110 6 0 2 62 159
+at(truck4,city13-8) 111 6 0 2 141 270
+truck(truck79) 112 1 0 1 66
+in-city(city18-5,city18) 113 8 0 2 193 44
+location(city15-2) 114 2 0 1 244
+location(city20-9) 115 2 0 1 157
+location(city13-13) 116 2 0 1 265
+at(plane3,city18-17) 117 6 0 2 147 472
+in-city(city4-1,city4) 118 8 0 2 421 58
+location(city12-9) 119 2 0 1 285
+at(truck52,city16-11) 120 6 0 2 93 219
+in-city(city11-4,city11) 121 8 0 2 306 51
+at(package41,city19-8) 122 6 0 2 1 174
+location(city15-13) 123 2 0 1 233
+location(city9-6) 124 2 0 1 336
+in-city(city20-4,city20) 125 8 0 2 162 42
+location(city13-16) 126 2 0 1 262
+location(city19-13) 127 2 0 1 169
+in-city(city3-4,city3) 128 8 0 2 434 59
+in-city(city9-11,city9) 129 8 0 2 331 53
+location(city4-13) 130 2 0 1 409
+at(truck15,city10-16) 131 6 0 2 130 310
+location(city20-15) 132 2 0 1 151
+obj(package6) 133 0 0 1 36
+location(city15-16) 134 2 0 1 230
+location(city14-9) 135 2 0 1 253
+city(city16) 136 4 0 1 46
+in-city(city17-8,city17) 137 8 0 2 206 45
+at(package5,city14-3) 138 6 0 2 37 259
+location(city3-14) 139 2 0 1 424
+location(city4-16) 140 2 0 1 406
+truck(truck6) 141 1 0 1 139
+in-city(city8-5,city8) 142 8 0 2 353 54
+truck(truck57) 143 1 0 1 88
+truck(truck50) 144 1 0 1 95
+location(city2-5) 145 2 0 1 449
+in-city(city20-10,city20) 146 8 0 2 156 42
+airport(city12-17) 147 5 0 1 478
+at(truck13,city15-15) 148 6 0 2 132 231
+in-city(city10-14,city10) 149 8 0 2 312 52
+in-city(city19-1,city19) 150 8 0 2 181 43
+location(city12-15) 151 2 0 1 279
+location(city2-10) 152 2 0 1 444
+at(truck3,city17-17) 153 6 0 2 142 473
+location(city15-9) 154 2 0 1 237
+in-city(city3-8,city3) 155 8 0 2 430 59
+airport(city8-17) 156 5 0 1 482
+in-city(city10-6,city10) 157 8 0 2 320 52
+obj(package27) 158 0 0 1 15
+location(city10-8) 159 2 0 1 318
+truck(truck70) 160 1 0 1 75
+location(city2-13) 161 2 0 1 441
+at(truck67,city4-5) 162 6 0 2 78 417
+at(truck21,city11-11) 163 6 0 2 124 299
+in-city(city2-8,city2) 164 8 0 2 446 60
+obj(package36) 165 0 0 1 6
+location(city12-12) 166 2 0 1 282
+in-city(city8-9,city8) 167 8 0 2 349 54
+location(city3-5) 168 2 0 1 433
+location(city10-15) 169 2 0 1 311
+location(city6-17) 170 2 0 1 484
+location(city19-16) 171 2 0 1 166
+airport(city6-17) 172 5 0 1 484
+at(package9,city12-4) 173 6 0 2 33 290
+location(city11-7) 174 2 0 1 303
+location(city6-1) 175 2 0 1 389
+in-city(city16-10,city16) 176 8 0 2 220 46
+location(city7-12) 177 2 0 1 362
+at(package25,city13-6) 178 6 0 2 17 272
+location(city1-12) 179 2 0 1 458
+location(city17-4) 180 2 0 1 210
+location(city6-4) 181 2 0 1 386
+location(city1-9) 182 2 0 1 461
+in-city(city12-3,city12) 183 8 0 2 291 50
+location(city3-16) 184 2 0 1 422
+truck(truck14) 185 1 0 1 131
+location(city10-6) 186 2 0 1 320
+location(city16-14) 187 2 0 1 216
+location(city17-12) 188 2 0 1 202
+location(city12-2) 189 2 0 1 292
+location(city14-2) 190 2 0 1 260
+in-city(city16-6,city16) 191 8 0 2 224 46
+at(truck17,city17-15) 192 6 0 2 128 199
+location(city4-3) 193 2 0 1 419
+at(truck47,city11-2) 194 6 0 2 98 308
+location(city9-15) 195 2 0 1 327
+location(city13-6) 196 2 0 1 272
+location(city9-9) 197 2 0 1 333
+location(city11-10) 198 2 0 1 300
+location(city10-1) 199 2 0 1 325
+at(package31,city16-8) 200 6 0 2 11 222
+city(city1) 201 4 0 1 61
+in-city(city4-13,city4) 202 8 0 2 409 58
+truck(truck38) 203 1 0 1 107
+airplane(plane4) 204 3 0 1 146
+truck(truck48) 205 1 0 1 97
+obj(package28) 206 0 0 1 14
+location(city4-15) 207 2 0 1 407
+truck(truck44) 208 1 0 1 101
+airport(city13-17) 209 5 0 1 477
+in-city(city3-17,city3) 210 8 0 2 487 59
+at(truck10,city19-5) 211 6 0 2 135 177
+location(city15-10) 212 2 0 1 236
+in-city(city7-8,city7) 213 8 0 2 366 55
+in-city(city4-10,city4) 214 8 0 2 412 58
+in-city(city8-13,city8) 215 8 0 2 345 54
+in-city(city9-8,city9) 216 8 0 2 334 53
+obj(package18) 217 0 0 1 24
+location(city2-3) 218 2 0 1 451
+at(truck31,city3-13) 219 6 0 2 114 425
+at(package38,city16-7) 220 6 0 2 4 223
+location(city5-8) 221 2 0 1 398
+in-city(city5-3,city5) 222 8 0 2 403 57
+in-city(city7-3,city7) 223 8 0 2 371 55
+location(city17-6) 224 2 0 1 208
+at(truck70,city7-15) 225 6 0 2 75 359
+in-city(city11-11,city11) 226 8 0 2 299 51
+location(city19-7) 227 2 0 1 175
+location(city8-15) 228 2 0 1 343
+location(city16-16) 229 2 0 1 214
+location(city4-8) 230 2 0 1 414
+location(city1-3) 231 2 0 1 467
+in-city(city1-12,city1) 232 8 0 2 458 61
+in-city(city11-1,city11) 233 8 0 2 309 51
+in-city(city15-2,city15) 234 8 0 2 244 47
+in-city(city12-13,city12) 235 8 0 2 281 50
+in-city(city6-8,city6) 236 8 0 2 382 56
+location(city6-10) 237 2 0 1 380
+in-city(city18-12,city18) 238 8 0 2 186 44
+truck(truck18) 239 1 0 1 127
+in-city(city16-13,city16) 240 8 0 2 217 46
+in-city(city10-16,city10) 241 8 0 2 310 52
+location(city14-3) 242 2 0 1 259
+obj(package14) 243 0 0 1 28
+in-city(city11-16,city11) 244 8 0 2 294 51
+location(city19-17) 245 2 0 1 471
+location(city6-7) 246 2 0 1 383
+in-city(city3-14,city3) 247 8 0 2 424 59
+in-city(city8-2,city8) 248 8 0 2 356 54
+obj(package9) 249 0 0 1 33
+location(city20-10) 250 2 0 1 156
+airport(city4-17) 251 5 0 1 486
+in-city(city2-6,city2) 252 8 0 2 448 60
+truck(truck7) 253 1 0 1 138
+in-city(city18-6,city18) 254 8 0 2 192 44
+location(city4-4) 255 2 0 1 418
+in-city(city12-11,city12) 256 8 0 2 283 50
+in-city(city12-6,city12) 257 8 0 2 288 50
+location(city13-9) 258 2 0 1 269
+in-city(city11-2,city11) 259 8 0 2 308 51
+in-city(city15-3,city15) 260 8 0 2 243 47
+at(truck37,city7-7) 261 6 0 2 108 367
+truck(truck34) 262 1 0 1 111
+location(city11-6) 263 2 0 1 304
+in-city(city17-16,city17) 264 8 0 2 198 45
+in-city(city9-7,city9) 265 8 0 2 335 53
+in-city(city8-17,city8) 266 8 0 2 482 54
+obj(package42) 267 0 0 1 0
+location(city1-8) 268 2 0 1 462
+location(city14-17) 269 2 0 1 476
+location(city13-2) 270 2 0 1 276
+obj(package13) 271 0 0 1 29
+location(city9-16) 272 2 0 1 326
+in-city(city20-16,city20) 273 8 0 2 150 42
+in-city(city4-2,city4) 274 8 0 2 420 58
+in-city(city5-13,city5) 275 8 0 2 393 57
+truck(truck37) 276 1 0 1 108
+in-city(city7-10,city7) 277 8 0 2 364 55
+at(truck33,city13-16) 278 6 0 2 112 262
+at(package16,city9-1) 279 6 0 2 26 341
+in-city(city16-14,city16) 280 8 0 2 216 46
+location(city2-16) 281 2 0 1 438
+in-city(city9-13,city9) 282 8 0 2 329 53
+in-city(city13-11,city13) 283 8 0 2 267 49
+location(city13-14) 284 2 0 1 264
+truck(truck73) 285 1 0 1 72
+location(city19-8) 286 2 0 1 174
+location(city18-5) 287 2 0 1 193
+at(package11,city13-8) 288 6 0 2 31 270
+in-city(city1-10,city1) 289 8 0 2 460 61
+city(city19) 290 4 0 1 43
+location(city20-12) 291 2 0 1 154
+at(truck24,city13-16) 292 6 0 2 121 262
+location(city4-6) 293 2 0 1 416
+in-city(city7-17,city7) 294 8 0 2 483 55
+in-city(city3-12,city3) 295 8 0 2 426 59
+at(truck25,city10-17) 296 6 0 2 120 480
+location(city9-5) 297 2 0 1 337
+in-city(city17-2,city17) 298 8 0 2 212 45
+airplane(plane5) 299 3 0 1 145
+at(truck32,city11-2) 300 6 0 2 113 308
+location(city6-6) 301 2 0 1 384
+city(city14) 302 4 0 1 48
+truck(truck13) 303 1 0 1 132
+location(city14-15) 304 2 0 1 247
+at(package13,city15-6) 305 6 0 2 29 240
+in-city(city5-14,city5) 306 8 0 2 392 57
+in-city(city5-16,city5) 307 8 0 2 390 57
+truck(truck51) 308 1 0 1 94
+at(package36,city13-17) 309 6 0 2 6 477
+in-city(city14-15,city14) 310 8 0 2 247 48
+in-city(city4-4,city4) 311 8 0 2 418 58
+location(city5-3) 312 2 0 1 403
+airport(city9-17) 313 5 0 1 481
+in-city(city14-12,city14) 314 8 0 2 250 48
+in-city(city2-11,city2) 315 8 0 2 443 60
+truck(truck25) 316 1 0 1 120
+location(city19-1) 317 2 0 1 181
+at(truck5,city18-3) 318 6 0 2 140 195
+in-city(city16-8,city16) 319 8 0 2 222 46
+in-city(city12-9,city12) 320 8 0 2 285 50
+in-city(city3-11,city3) 321 8 0 2 427 59
+in-city(city10-10,city10) 322 8 0 2 316 52
+at(package2,city2-7) 323 6 0 2 40 447
+at(truck7,city15-16) 324 6 0 2 138 230
+in-city(city10-4,city10) 325 8 0 2 322 52
+in-city(city12-12,city12) 326 8 0 2 282 50
+in-city(city1-7,city1) 327 8 0 2 463 61
+location(city19-2) 328 2 0 1 180
+location(city18-11) 329 2 0 1 187
+location(city18-2) 330 2 0 1 196
+in-city(city16-12,city16) 331 8 0 2 218 46
+location(city5-5) 332 2 0 1 401
+truck(truck61) 333 1 0 1 84
+in-city(city14-6,city14) 334 8 0 2 256 48
+location(city16-5) 335 2 0 1 225
+at(plane4,city9-17) 336 6 0 2 146 481
+in-city(city20-12,city20) 337 8 0 2 154 42
+at(package35,city18-8) 338 6 0 2 7 190
+in-city(city5-10,city5) 339 8 0 2 396 57
+in-city(city20-1,city20) 340 8 0 2 165 42
+at(truck65,city2-7) 341 6 0 2 80 447
+location(city3-6) 342 2 0 1 432
+at(package17,city8-13) 343 6 0 2 25 345
+airport(city7-17) 344 5 0 1 483
+location(city8-10) 345 2 0 1 348
+in-city(city4-6,city4) 346 8 0 2 416 58
+location(city19-11) 347 2 0 1 171
+in-city(city2-5,city2) 348 8 0 2 449 60
+location(city16-13) 349 2 0 1 217
+at(truck62,city9-15) 350 6 0 2 83 327
+airport(city18-17) 351 5 0 1 472
+location(city20-8) 352 2 0 1 158
+location(city10-13) 353 2 0 1 313
+in-city(city17-11,city17) 354 8 0 2 203 45
+location(city1-2) 355 2 0 1 468
+city(city6) 356 4 0 1 56
+in-city(city2-10,city2) 357 8 0 2 444 60
+location(city8-3) 358 2 0 1 355
+in-city(city2-14,city2) 359 8 0 2 440 60
+at(package26,city12-7) 360 6 0 2 16 287
+obj(package8) 361 0 0 1 34
+in-city(city2-4,city2) 362 8 0 2 450 60
+in-city(city9-12,city9) 363 8 0 2 330 53
+in-city(city18-15,city18) 364 8 0 2 183 44
+location(city16-9) 365 2 0 1 221
+in-city(city20-15,city20) 366 8 0 2 151 42
+in-city(city7-9,city7) 367 8 0 2 365 55
+truck(truck52) 368 1 0 1 93
+in-city(city13-7,city13) 369 8 0 2 271 49
+location(city1-6) 370 2 0 1 464
+at(truck34,city2-2) 371 6 0 2 111 452
+location(city13-4) 372 2 0 1 274
+obj(package20) 373 0 0 1 22
+truck(truck32) 374 1 0 1 113
+at(truck22,city5-9) 375 6 0 2 123 397
+location(city18-16) 376 2 0 1 182
+in-city(city12-14,city12) 377 8 0 2 280 50
+location(city2-8) 378 2 0 1 446
+location(city8-17) 379 2 0 1 482
+location(city17-8) 380 2 0 1 206
+at(package6,city5-4) 381 6 0 2 36 402
+obj(package12) 382 0 0 1 30
+obj(package25) 383 0 0 1 17
+at(truck41,city7-15) 384 6 0 2 104 359
+truck(truck76) 385 1 0 1 69
+location(city8-12) 386 2 0 1 346
+at(package1,city4-10) 387 6 0 2 41 412
+location(city14-6) 388 2 0 1 256
+at(truck30,city8-5) 389 6 0 2 115 353
+at(package42,city16-15) 390 6 0 2 0 215
+obj(package3) 391 0 0 1 39
+airport(city2-17) 392 5 0 1 488
+in-city(city6-13,city6) 393 8 0 2 377 56
+at(package7,city13-5) 394 6 0 2 35 273
+location(city10-11) 395 2 0 1 315
+at(package27,city11-2) 396 6 0 2 15 308
+city(city11) 397 4 0 1 51
+obj(package24) 398 0 0 1 18
+location(city8-9) 399 2 0 1 349
+truck(truck71) 400 1 0 1 74
+location(city2-1) 401 2 0 1 453
+in-city(city2-9,city2) 402 8 0 2 445 60
+in-city(city18-2,city18) 403 8 0 2 196 44
+at(truck2,city10-6) 404 6 0 2 143 320
+location(city5-10) 405 2 0 1 396
+in-city(city11-3,city11) 406 8 0 2 307 51
+in-city(city10-9,city10) 407 8 0 2 317 52
+location(city7-17) 408 2 0 1 483
+truck(truck16) 409 1 0 1 129
+at(truck14,city12-4) 410 6 0 2 131 290
+at(package22,city16-7) 411 6 0 2 20 223
+in-city(city17-3,city17) 412 8 0 2 211 45
+location(city17-1) 413 2 0 1 213
+location(city7-14) 414 2 0 1 360
+location(city16-15) 415 2 0 1 215
+location(city13-11) 416 2 0 1 267
+obj(package33) 417 0 0 1 9
+in-city(city4-11,city4) 418 8 0 2 411 58
+at(truck1,city13-11) 419 6 0 2 144 267
+location(city14-1) 420 2 0 1 261
+truck(truck1) 421 1 0 1 144
+location(city3-9) 422 2 0 1 429
+location(city9-14) 423 2 0 1 328
+location(city6-13) 424 2 0 1 377
+truck(truck53) 425 1 0 1 92
+at(plane2,city18-17) 426 6 0 2 148 472
+in-city(city2-2,city2) 427 8 0 2 452 60
+location(city8-5) 428 2 0 1 353
+at(truck60,city12-8) 429 6 0 2 85 286
+airport(city20-17) 430 5 0 1 470
+location(city4-5) 431 2 0 1 417
+location(city20-17) 432 2 0 1 470
+truck(truck24) 433 1 0 1 121
+location(city12-4) 434 2 0 1 290
+in-city(city19-10,city19) 435 8 0 2 172 43
+location(city6-8) 436 2 0 1 382
+at(truck81,city18-5) 437 6 0 2 64 193
+location(city7-2) 438 2 0 1 372
+location(city11-15) 439 2 0 1 295
+location(city16-6) 440 2 0 1 224
+in-city(city1-2,city1) 441 8 0 2 468 61
+in-city(city5-1,city5) 442 8 0 2 405 57
+city(city2) 443 4 0 1 60
+truck(truck60) 444 1 0 1 85
+in-city(city12-8,city12) 445 8 0 2 286 50
+truck(truck63) 446 1 0 1 82
+obj(package31) 447 0 0 1 11
+in-city(city17-9,city17) 448 8 0 2 205 45
+location(city2-6) 449 2 0 1 448
+in-city(city14-1,city14) 450 8 0 2 261 48
+in-city(city4-14,city4) 451 8 0 2 408 58
+truck(truck83) 452 1 0 1 62
+in-city(city16-17,city16) 453 8 0 2 474 46
+location(city10-2) 454 2 0 1 324
+in-city(city8-14,city8) 455 8 0 2 344 54
+location(city14-8) 456 2 0 1 254
+at(truck38,city16-6) 457 6 0 2 107 224
+at(truck42,city19-12) 458 6 0 2 103 170
+in-city(city18-10,city18) 459 8 0 2 188 44
+in-city(city6-16,city6) 460 8 0 2 374 56
+location(city10-16) 461 2 0 1 310
+location(city4-9) 462 2 0 1 413
+location(city12-1) 463 2 0 1 293
+in-city(city3-13,city3) 464 8 0 2 425 59
+truck(truck17) 465 1 0 1 128
+airport(city5-17) 466 5 0 1 485
+location(city6-11) 467 2 0 1 379
+location(city20-7) 468 2 0 1 159
+location(city9-3) 469 2 0 1 339
+location(city11-8) 470 2 0 1 302
+truck(truck43) 471 1 0 1 102
+location(city7-9) 472 2 0 1 365
+in-city(city16-7,city16) 473 8 0 2 223 46
+in-city(city10-13,city10) 474 8 0 2 313 52
+truck(truck19) 475 1 0 1 126
+location(city8-6) 476 2 0 1 352
+at(truck76,city13-9) 477 6 0 2 69 269
+truck(truck15) 478 1 0 1 130
+in-city(city20-5,city20) 479 8 0 2 161 42
+truck(truck2) 480 1 0 1 143
+location(city18-6) 481 2 0 1 192
+location(city11-17) 482 2 0 1 479
+in-city(city1-17,city1) 483 8 0 2 489 61
+at(truck23,city3-13) 484 6 0 2 122 425
+in-city(city6-1,city6) 485 8 0 2 389 56
+in-city(city14-9,city14) 486 8 0 2 253 48
+at(package3,city15-1) 487 6 0 2 39 245
+location(city13-8) 488 2 0 1 270
+location(city10-5) 489 2 0 1 321
+in-city(city16-1,city16) 490 8 0 2 229 46
+location(city1-17) 491 2 0 1 489
+at(package15,city15-4) 492 6 0 2 27 242
+obj(package11) 493 0 0 1 31
+location(city12-10) 494 2 0 1 284
+at(truck19,city8-1) 495 6 0 2 126 357
+in-city(city1-3,city1) 496 8 0 2 467 61
+in-city(city9-2,city9) 497 8 0 2 340 53
+location(city16-2) 498 2 0 1 228
+location(city3-8) 499 2 0 1 430
+truck(truck35) 500 1 0 1 110
+truck(truck74) 501 1 0 1 71
+in-city(city14-4,city14) 502 8 0 2 258 48
+at(package10,city2-17) 503 6 0 2 32 488
+in-city(city7-6,city7) 504 8 0 2 368 55
+obj(package2) 505 0 0 1 40
+in-city(city16-15,city16) 506 8 0 2 215 46
+at(package14,city3-17) 507 6 0 2 28 487
+in-city(city9-3,city9) 508 8 0 2 339 53
+in-city(city20-2,city20) 509 8 0 2 164 42
+in-city(city19-12,city19) 510 8 0 2 170 43
+in-city(city9-14,city9) 511 8 0 2 328 53
+in-city(city15-1,city15) 512 8 0 2 245 47
+in-city(city17-12,city17) 513 8 0 2 202 45
+location(city5-7) 514 2 0 1 399
+location(city10-9) 515 2 0 1 317
+in-city(city7-2,city7) 516 8 0 2 372 55
+at(truck35,city15-17) 517 6 0 2 110 475
+location(city19-5) 518 2 0 1 177
+in-city(city9-9,city9) 519 8 0 2 333 53
+location(city17-17) 520 2 0 1 473
+location(city3-4) 521 2 0 1 434
+in-city(city8-6,city8) 522 8 0 2 352 54
+at(truck49,city19-8) 523 6 0 2 96 174
+obj(package32) 524 0 0 1 10
+city(city9) 525 4 0 1 53
+truck(truck21) 526 1 0 1 124
+location(city11-5) 527 2 0 1 305
+location(city7-11) 528 2 0 1 363
+in-city(city12-16,city12) 529 8 0 2 278 50
+in-city(city11-6,city11) 530 8 0 2 304 51
+truck(truck58) 531 1 0 1 87
+truck(truck3) 532 1 0 1 142
+in-city(city4-5,city4) 533 8 0 2 417 58
+in-city(city16-4,city16) 534 8 0 2 226 46
+location(city6-5) 535 2 0 1 385
+location(city15-6) 536 2 0 1 240
+location(city14-4) 537 2 0 1 258
+in-city(city17-4,city17) 538 8 0 2 210 45
+in-city(city14-11,city14) 539 8 0 2 251 48
+in-city(city12-7,city12) 540 8 0 2 287 50
+location(city7-7) 541 2 0 1 367
+in-city(city15-13,city15) 542 8 0 2 233 47
+truck(truck27) 543 1 0 1 118
+location(city19-15) 544 2 0 1 167
+in-city(city13-10,city13) 545 8 0 2 268 49
+in-city(city12-17,city12) 546 8 0 2 478 50
+in-city(city16-16,city16) 547 8 0 2 214 46
+in-city(city1-6,city1) 548 8 0 2 464 61
+in-city(city5-8,city5) 549 8 0 2 398 57
+in-city(city6-3,city6) 550 8 0 2 387 56
+in-city(city7-1,city7) 551 8 0 2 373 55
+in-city(city18-13,city18) 552 8 0 2 185 44
+at(truck18,city5-17) 553 6 0 2 127 485
+truck(truck62) 554 1 0 1 83
+obj(package30) 555 0 0 1 12
+city(city12) 556 4 0 1 50
+location(city17-10) 557 2 0 1 204
+at(package34,city15-1) 558 6 0 2 8 245
+location(city18-14) 559 2 0 1 184
+in-city(city5-12,city5) 560 8 0 2 394 57
+location(city20-14) 561 2 0 1 152
+in-city(city3-1,city3) 562 8 0 2 437 59
+in-city(city11-14,city11) 563 8 0 2 296 51
+location(city17-15) 564 2 0 1 199
+location(city2-11) 565 2 0 1 443
+truck(truck77) 566 1 0 1 68
+location(city18-17) 567 2 0 1 472
+in-city(city3-9,city3) 568 8 0 2 429 59
+in-city(city15-4,city15) 569 8 0 2 242 47
+in-city(city11-12,city11) 570 8 0 2 298 51
+location(city3-3) 571 2 0 1 435
+location(city2-14) 572 2 0 1 440
+location(city18-12) 573 2 0 1 186
+in-city(city11-5,city11) 574 8 0 2 305 51
+location(city1-5) 575 2 0 1 465
+in-city(city19-3,city19) 576 8 0 2 179 43
+location(city18-1) 577 2 0 1 197
+in-city(city16-5,city16) 578 8 0 2 225 46
+location(city19-6) 579 2 0 1 176
+location(city1-10) 580 2 0 1 460
+in-city(city14-7,city14) 581 8 0 2 255 48
+in-city(city2-1,city2) 582 8 0 2 453 60
+in-city(city17-7,city17) 583 8 0 2 207 45
+location(city11-1) 584 2 0 1 309
+in-city(city12-2,city12) 585 8 0 2 292 50
+in-city(city1-14,city1) 586 8 0 2 456 61
+location(city2-7) 587 2 0 1 447
+truck(truck59) 588 1 0 1 86
+in-city(city13-9,city13) 589 8 0 2 269 49
+location(city3-11) 590 2 0 1 427
+in-city(city5-15,city5) 591 8 0 2 391 57
+at(truck56,city11-1) 592 6 0 2 89 309
+location(city6-15) 593 2 0 1 375
+in-city(city15-17,city15) 594 8 0 2 475 47
+truck(truck30) 595 1 0 1 115
+location(city9-13) 596 2 0 1 329
+at(truck6,city8-14) 597 6 0 2 139 344
+in-city(city17-17,city17) 598 8 0 2 473 45
+location(city11-12) 599 2 0 1 298
+in-city(city7-11,city7) 600 8 0 2 363 55
+obj(package10) 601 0 0 1 32
+in-city(city4-12,city4) 602 8 0 2 410 58
+location(city13-12) 603 2 0 1 266
+in-city(city3-3,city3) 604 8 0 2 435 59
+at(truck51,city19-10) 605 6 0 2 94 172
+in-city(city2-7,city2) 606 8 0 2 447 60
+in-city(city12-4,city12) 607 8 0 2 290 50
+at(truck82,city19-2) 608 6 0 2 63 180
+location(city15-12) 609 2 0 1 234
+obj(package5) 610 0 0 1 37
+in-city(city14-3,city14) 611 8 0 2 259 48
+location(city12-3) 612 2 0 1 291
+city(city5) 613 4 0 1 57
+in-city(city15-5,city15) 614 8 0 2 241 47
+at(truck64,city1-2) 615 6 0 2 81 468
+truck(truck82) 616 1 0 1 63
+in-city(city9-6,city9) 617 8 0 2 336 53
+location(city7-5) 618 2 0 1 369
+city(city18) 619 4 0 1 44
+location(city11-3) 620 2 0 1 307
+obj(package22) 621 0 0 1 20
+location(city12-6) 622 2 0 1 288
+in-city(city10-8,city10) 623 8 0 2 318 52
+in-city(city10-3,city10) 624 8 0 2 323 52
+in-city(city14-17,city14) 625 8 0 2 476 48
+in-city(city3-7,city3) 626 8 0 2 431 59
+in-city(city13-6,city13) 627 8 0 2 272 49
+in-city(city19-11,city19) 628 8 0 2 171 43
+at(truck71,city8-3) 629 6 0 2 74 355
+location(city18-4) 630 2 0 1 194
+in-city(city1-4,city1) 631 8 0 2 466 61
+at(package12,city3-3) 632 6 0 2 30 435
+in-city(city15-10,city15) 633 8 0 2 236 47
+location(city3-13) 634 2 0 1 425
+in-city(city8-10,city8) 635 8 0 2 348 54
+location(city2-17) 636 2 0 1 488
+obj(package29) 637 0 0 1 13
+obj(package1) 638 0 0 1 41
+location(city18-9) 639 2 0 1 189
+location(city16-11) 640 2 0 1 219
+obj(package35) 641 0 0 1 7
+in-city(city13-4,city13) 642 8 0 2 274 49
+in-city(city4-17,city4) 643 8 0 2 486 58
+truck(truck8) 644 1 0 1 137
+at(truck77,city14-14) 645 6 0 2 68 248
+at(truck79,city16-15) 646 6 0 2 66 215
+location(city13-10) 647 2 0 1 268
+in-city(city20-3,city20) 648 8 0 2 163 42
+location(city1-16) 649 2 0 1 454
+truck(truck31) 650 1 0 1 114
+location(city12-17) 651 2 0 1 478
+truck(truck26) 652 1 0 1 119
+location(city4-10) 653 2 0 1 412
+in-city(city19-16,city19) 654 8 0 2 166 43
+in-city(city19-15,city19) 655 8 0 2 167 43
+in-city(city10-17,city10) 656 8 0 2 480 52
+in-city(city8-1,city8) 657 8 0 2 357 54
+at(package28,city8-4) 658 6 0 2 14 354
+at(package19,city3-13) 659 6 0 2 23 425
+in-city(city12-15,city12) 660 8 0 2 279 50
+location(city19-10) 661 2 0 1 172
+at(package32,city12-6) 662 6 0 2 10 288
+in-city(city15-8,city15) 663 8 0 2 238 47
+in-city(city1-15,city1) 664 8 0 2 455 61
+truck(truck33) 665 1 0 1 112
+in-city(city4-15,city4) 666 8 0 2 407 58
+location(city11-14) 667 2 0 1 296
+obj(package4) 668 0 0 1 38
+at(truck16,city3-11) 669 6 0 2 129 427
+at(truck48,city19-9) 670 6 0 2 97 173
+in-city(city7-7,city7) 671 8 0 2 367 55
+at(truck45,city2-17) 672 6 0 2 100 488
+location(city1-7) 673 2 0 1 463
+truck(truck81) 674 1 0 1 64
+in-city(city2-15,city2) 675 8 0 2 439 60
+location(city9-8) 676 2 0 1 334
+in-city(city8-12,city8) 677 8 0 2 346 54
+in-city(city3-15,city3) 678 8 0 2 423 59
+location(city13-5) 679 2 0 1 273
+in-city(city18-17,city18) 680 8 0 2 472 44
+location(city5-2) 681 2 0 1 404
+in-city(city17-14,city17) 682 8 0 2 200 45
+in-city(city18-9,city18) 683 8 0 2 189 44
+in-city(city7-14,city7) 684 8 0 2 360 55
+in-city(city20-13,city20) 685 8 0 2 153 42
+location(city5-17) 686 2 0 1 485
+location(city17-3) 687 2 0 1 211
+truck(truck41) 688 1 0 1 104
+obj(package34) 689 0 0 1 8
+location(city8-11) 690 2 0 1 347
+in-city(city6-6,city6) 691 8 0 2 384 56
+location(city7-8) 692 2 0 1 366
+at(truck61,city19-9) 693 6 0 2 84 173
+location(city19-12) 694 2 0 1 170
+location(city18-3) 695 2 0 1 195
+at(package20,city3-6) 696 6 0 2 22 432
+location(city16-17) 697 2 0 1 474
+location(city13-17) 698 2 0 1 477
+at(truck12,city13-7) 699 6 0 2 133 271
+in-city(city13-3,city13) 700 8 0 2 275 49
+in-city(city14-8,city14) 701 8 0 2 254 48
+in-city(city17-13,city17) 702 8 0 2 201 45
+location(city4-2) 703 2 0 1 420
+airport(city15-17) 704 5 0 1 475
+in-city(city12-1,city12) 705 8 0 2 293 50
+location(city15-17) 706 2 0 1 475
+location(city14-12) 707 2 0 1 250
+in-city(city13-16,city13) 708 8 0 2 262 49
+in-city(city11-15,city11) 709 8 0 2 295 51
+in-city(city12-10,city12) 710 8 0 2 284 50
+city(city20) 711 4 0 1 42
+location(city12-11) 712 2 0 1 283
+location(city9-17) 713 2 0 1 481
+truck(truck64) 714 1 0 1 81
+in-city(city5-17,city5) 715 8 0 2 485 57
+city(city10) 716 4 0 1 52
+in-city(city18-4,city18) 717 8 0 2 194 44
+location(city20-3) 718 2 0 1 163
+location(city5-15) 719 2 0 1 391
+airport(city1-17) 720 5 0 1 489
+truck(truck80) 721 1 0 1 65
+in-city(city3-10,city3) 722 8 0 2 428 59
+location(city2-9) 723 2 0 1 445
+location(city6-9) 724 2 0 1 381
+airplane(plane3) 725 3 0 1 147
+in-city(city17-1,city17) 726 8 0 2 213 45
+in-city(city7-16,city7) 727 8 0 2 358 55
+in-city(city14-16,city14) 728 8 0 2 246 48
+in-city(city17-6,city17) 729 8 0 2 208 45
+at(truck72,city9-4) 730 6 0 2 73 338
+at(truck27,city4-8) 731 6 0 2 118 414
+location(city8-13) 732 2 0 1 345
+location(city14-7) 733 2 0 1 255
+at(plane1,city14-17) 734 6 0 2 149 476
+location(city15-5) 735 2 0 1 241
+location(city5-6) 736 2 0 1 400
+in-city(city4-8,city4) 737 8 0 2 414 58
+location(city1-15) 738 2 0 1 455
+location(city6-16) 739 2 0 1 374
+in-city(city6-14,city6) 740 8 0 2 376 56
+at(package21,city5-3) 741 6 0 2 21 403
+location(city1-4) 742 2 0 1 466
+location(city10-14) 743 2 0 1 312
+truck(truck23) 744 1 0 1 122
+in-city(city10-11,city10) 745 8 0 2 315 52
+in-city(city15-9,city15) 746 8 0 2 237 47
+at(package30,city16-3) 747 6 0 2 12 227
+in-city(city20-6,city20) 748 8 0 2 160 42
+in-city(city2-13,city2) 749 8 0 2 441 60
+location(city14-10) 750 2 0 1 252
+in-city(city14-14,city14) 751 8 0 2 248 48
+location(city18-7) 752 2 0 1 191
+in-city(city20-8,city20) 753 8 0 2 158 42
+location(city17-13) 754 2 0 1 201
+in-city(city1-8,city1) 755 8 0 2 462 61
+in-city(city9-10,city9) 756 8 0 2 332 53
+airport(city17-17) 757 5 0 1 473
+in-city(city9-17,city9) 758 8 0 2 481 53
+in-city(city19-4,city19) 759 8 0 2 178 43
+in-city(city18-1,city18) 760 8 0 2 197 44
+location(city13-7) 761 2 0 1 271
+in-city(city13-8,city13) 762 8 0 2 270 49
+location(city16-10) 763 2 0 1 220
+in-city(city15-16,city15) 764 8 0 2 230 47
+location(city6-3) 765 2 0 1 387
+in-city(city13-1,city13) 766 8 0 2 277 49
+in-city(city20-11,city20) 767 8 0 2 155 42
+location(city9-11) 768 2 0 1 331
+truck(truck67) 769 1 0 1 78
+at(package4,city5-3) 770 6 0 2 38 403
+in-city(city2-3,city2) 771 8 0 2 451 60
+location(city15-15) 772 2 0 1 231
+in-city(city8-4,city8) 773 8 0 2 354 54
+truck(truck75) 774 1 0 1 70
+in-city(city8-16,city8) 775 8 0 2 342 54
+location(city3-15) 776 2 0 1 423
+in-city(city5-2,city5) 777 8 0 2 404 57
+location(city15-8) 778 2 0 1 238
+airport(city3-17) 779 5 0 1 487
+in-city(city1-5,city1) 780 8 0 2 465 61
+in-city(city11-8,city11) 781 8 0 2 302 51
+at(truck78,city15-7) 782 6 0 2 67 239
+obj(package23) 783 0 0 1 19
+location(city7-1) 784 2 0 1 373
+in-city(city7-4,city7) 785 8 0 2 370 55
+truck(truck47) 786 1 0 1 98
+in-city(city20-17,city20) 787 8 0 2 470 42
+location(city16-1) 788 2 0 1 229
+location(city10-3) 789 2 0 1 323
+in-city(city8-11,city8) 790 8 0 2 347 54
+in-city(city8-3,city8) 791 8 0 2 355 54
+in-city(city8-15,city8) 792 8 0 2 343 54
+location(city5-4) 793 2 0 1 402
+location(city6-2) 794 2 0 1 388
+in-city(city5-7,city5) 795 8 0 2 399 57
+truck(truck54) 796 1 0 1 91
+location(city16-12) 797 2 0 1 218
+city(city17) 798 4 0 1 45
+in-city(city19-9,city19) 799 8 0 2 173 43
+location(city7-16) 800 2 0 1 358
+at(truck75,city12-8) 801 6 0 2 70 286
+in-city(city5-9,city5) 802 8 0 2 397 57
+truck(truck20) 803 1 0 1 125
+location(city20-5) 804 2 0 1 161
+location(city9-2) 805 2 0 1 340
+location(city7-13) 806 2 0 1 361
+location(city3-12) 807 2 0 1 426
+truck(truck9) 808 1 0 1 136
+in-city(city11-17,city11) 809 8 0 2 479 51
+in-city(city15-6,city15) 810 8 0 2 240 47
+location(city15-1) 811 2 0 1 245
+in-city(city2-12,city2) 812 8 0 2 442 60
+location(city17-5) 813 2 0 1 209
+location(city20-6) 814 2 0 1 160
+at(truck8,city13-6) 815 6 0 2 137 272
+location(city8-7) 816 2 0 1 351
+in-city(city18-14,city18) 817 8 0 2 184 44
+location(city3-17) 818 2 0 1 487
+location(city4-7) 819 2 0 1 415
+obj(package39) 820 0 0 1 3
+location(city15-7) 821 2 0 1 239
+at(package24,city16-9) 822 6 0 2 18 221
+at(truck28,city5-10) 823 6 0 2 117 396
+in-city(city19-13,city19) 824 8 0 2 169 43
+in-city(city17-5,city17) 825 8 0 2 209 45
+in-city(city8-8,city8) 826 8 0 2 350 54
+at(truck46,city14-7) 827 6 0 2 99 255
+at(package23,city11-9) 828 6 0 2 19 301
+in-city(city16-9,city16) 829 8 0 2 221 46
+at(truck9,city6-10) 830 6 0 2 136 380
+location(city15-14) 831 2 0 1 232
+location(city2-4) 832 2 0 1 450
+location(city16-3) 833 2 0 1 227
+at(truck29,city5-7) 834 6 0 2 116 399
+in-city(city9-16,city9) 835 8 0 2 326 53
+location(city4-14) 836 2 0 1 408
+truck(truck10) 837 1 0 1 135
+at(truck40,city2-4) 838 6 0 2 105 450
+in-city(city9-15,city9) 839 8 0 2 327 53
+in-city(city6-5,city6) 840 8 0 2 385 56
+city(city8) 841 4 0 1 54
+location(city12-14) 842 2 0 1 280
+location(city18-15) 843 2 0 1 183
+location(city5-16) 844 2 0 1 390
+in-city(city2-17,city2) 845 8 0 2 488 60
+location(city17-2) 846 2 0 1 212
+location(city2-2) 847 2 0 1 452
+in-city(city19-5,city19) 848 8 0 2 177 43
+location(city2-12) 849 2 0 1 442
+in-city(city6-9,city6) 850 8 0 2 381 56
+location(city17-7) 851 2 0 1 207
+in-city(city1-1,city1) 852 8 0 2 469 61
+location(city19-4) 853 2 0 1 178
+in-city(city13-14,city13) 854 8 0 2 264 49
+in-city(city14-13,city14) 855 8 0 2 249 48
+location(city10-12) 856 2 0 1 314
+in-city(city19-17,city19) 857 8 0 2 471 43
+in-city(city15-11,city15) 858 8 0 2 235 47
+location(city17-16) 859 2 0 1 198
+in-city(city10-5,city10) 860 8 0 2 321 52
+in-city(city15-14,city15) 861 8 0 2 232 47
+location(city5-13) 862 2 0 1 393
+location(city10-17) 863 2 0 1 480
+location(city11-4) 864 2 0 1 306
+in-city(city12-5,city12) 865 8 0 2 289 50
+location(city7-10) 866 2 0 1 364
+truck(truck78) 867 1 0 1 67
+at(package39,city7-6) 868 6 0 2 3 368
+at(truck63,city1-16) 869 6 0 2 82 454
+in-city(city13-12,city13) 870 8 0 2 266 49
+in-city(city3-6,city3) 871 8 0 2 432 59
+location(city16-7) 872 2 0 1 223
+location(city3-10) 873 2 0 1 428
+in-city(city7-13,city7) 874 8 0 2 361 55
+location(city14-5) 875 2 0 1 257
+in-city(city6-11,city6) 876 8 0 2 379 56
+location(city15-3) 877 2 0 1 243
+in-city(city11-10,city11) 878 8 0 2 300 51
+at(truck74,city11-1) 879 6 0 2 71 309
+location(city20-11) 880 2 0 1 155
+location(city12-16) 881 2 0 1 278
+in-city(city9-4,city9) 882 8 0 2 338 53
+location(city4-1) 883 2 0 1 421
+airport(city16-17) 884 5 0 1 474
+location(city11-2) 885 2 0 1 308
+in-city(city16-2,city16) 886 8 0 2 228 46
+at(truck44,city9-17) 887 6 0 2 101 481
+in-city(city17-10,city17) 888 8 0 2 204 45
+in-city(city3-2,city3) 889 8 0 2 436 59
+at(truck54,city13-7) 890 6 0 2 91 271
+in-city(city11-7,city11) 891 8 0 2 303 51
+location(city9-12) 892 2 0 1 330
+location(city14-16) 893 2 0 1 246
+at(truck58,city15-5) 894 6 0 2 87 241
+at(package18,city1-12) 895 6 0 2 24 458
+location(city5-1) 896 2 0 1 405
+in-city(city3-5,city3) 897 8 0 2 433 59
+location(city18-8) 898 2 0 1 190
+location(city17-14) 899 2 0 1 200
+location(city5-9) 900 2 0 1 397
+truck(truck4) 901 1 0 1 141
+in-city(city18-7,city18) 902 8 0 2 191 44
+in-city(city5-4,city5) 903 8 0 2 402 57
+truck(truck55) 904 1 0 1 90
+location(city5-11) 905 2 0 1 395
+obj(package26) 906 0 0 1 16
+truck(truck40) 907 1 0 1 105
+location(city2-15) 908 2 0 1 439
+location(city8-14) 909 2 0 1 344
+location(city18-13) 910 2 0 1 185
+in-city(city1-11,city1) 911 8 0 2 459 61
+location(city12-5) 912 2 0 1 289
+truck(truck22) 913 1 0 1 123
+location(city20-16) 914 2 0 1 150
+airplane(plane2) 915 3 0 1 148
+at(truck55,city2-11) 916 6 0 2 90 443
+in-city(city6-17,city6) 917 8 0 2 484 56
+in-city(city19-8,city19) 918 8 0 2 174 43
+location(city12-8) 919 2 0 1 286
+city(city4) 920 4 0 1 58
+location(city20-13) 921 2 0 1 153
+at(truck26,city2-5) 922 6 0 2 119 449
+at(truck39,city18-1) 923 6 0 2 106 197
+truck(truck39) 924 1 0 1 106
+location(city1-14) 925 2 0 1 456
+obj(package38) 926 0 0 1 4
+truck(truck66) 927 1 0 1 79
+location(city6-12) 928 2 0 1 378
+truck(truck69) 929 1 0 1 76
+location(city4-12) 930 2 0 1 410
+in-city(city19-14,city19) 931 8 0 2 168 43
+location(city14-11) 932 2 0 1 251
+location(city4-17) 933 2 0 1 486
+in-city(city5-6,city5) 934 8 0 2 400 57
+location(city9-10) 935 2 0 1 332
+location(city4-11) 936 2 0 1 411
+in-city(city10-7,city10) 937 8 0 2 319 52
+at(truck53,city18-13) 938 6 0 2 92 185
+location(city14-14) 939 2 0 1 248
+location(city7-3) 940 2 0 1 371
+location(city9-7) 941 2 0 1 335
+location(city11-16) 942 2 0 1 294
+at(truck68,city5-8) 943 6 0 2 77 398
+in-city(city7-5,city7) 944 8 0 2 369 55
+truck(truck65) 945 1 0 1 80
+obj(package17) 946 0 0 1 25
+at(package8,city3-1) 947 6 0 2 34 437
+truck(truck42) 948 1 0 1 103
+location(city10-10) 949 2 0 1 316
+obj(package15) 950 0 0 1 27
+in-city(city4-9,city4) 951 8 0 2 413 58
+at(truck59,city7-10) 952 6 0 2 86 364
+truck(truck49) 953 1 0 1 96
+in-city(city13-2,city13) 954 8 0 2 276 49
+location(city8-16) 955 2 0 1 342
+airport(city19-17) 956 5 0 1 471
+location(city9-1) 957 2 0 1 341
+location(city3-1) 958 2 0 1 437
+location(city12-7) 959 2 0 1 287
+location(city18-10) 960 2 0 1 188
+obj(package41) 961 0 0 1 1
+location(city15-11) 962 2 0 1 235
+location(city3-2) 963 2 0 1 436
+city(city15) 964 4 0 1 47
+location(city10-7) 965 2 0 1 319
+in-city(city14-10,city14) 966 8 0 2 252 48
+at(package33,city6-7) 967 6 0 2 9 383
+location(city3-7) 968 2 0 1 431
+in-city(city6-4,city6) 969 8 0 2 386 56
+location(city19-9) 970 2 0 1 173
+in-city(city16-11,city16) 971 8 0 2 219 46
+in-city(city6-10,city6) 972 8 0 2 380 56
+in-city(city9-1,city9) 973 8 0 2 341 53
+at(package29,city11-14) 974 6 0 2 13 296
+location(city13-15) 975 2 0 1 263
+in-city(city10-2,city10) 976 8 0 2 324 52
+in-city(city10-12,city10) 977 8 0 2 314 52
+airport(city11-17) 978 5 0 1 479
+location(city1-13) 979 2 0 1 457
+=(package42,package42) 980 9 0 2 0 0
+=(package41,package41) 981 9 0 2 1 1
+=(package40,package40) 982 9 0 2 2 2
+=(package39,package39) 983 9 0 2 3 3
+=(package38,package38) 984 9 0 2 4 4
+=(package37,package37) 985 9 0 2 5 5
+=(package36,package36) 986 9 0 2 6 6
+=(package35,package35) 987 9 0 2 7 7
+=(package34,package34) 988 9 0 2 8 8
+=(package33,package33) 989 9 0 2 9 9
+=(package32,package32) 990 9 0 2 10 10
+=(package31,package31) 991 9 0 2 11 11
+=(package30,package30) 992 9 0 2 12 12
+=(package29,package29) 993 9 0 2 13 13
+=(package28,package28) 994 9 0 2 14 14
+=(package27,package27) 995 9 0 2 15 15
+=(package26,package26) 996 9 0 2 16 16
+=(package25,package25) 997 9 0 2 17 17
+=(package24,package24) 998 9 0 2 18 18
+=(package23,package23) 999 9 0 2 19 19
+=(package22,package22) 1000 9 0 2 20 20
+=(package21,package21) 1001 9 0 2 21 21
+=(package20,package20) 1002 9 0 2 22 22
+=(package19,package19) 1003 9 0 2 23 23
+=(package18,package18) 1004 9 0 2 24 24
+=(package17,package17) 1005 9 0 2 25 25
+=(package16,package16) 1006 9 0 2 26 26
+=(package15,package15) 1007 9 0 2 27 27
+=(package14,package14) 1008 9 0 2 28 28
+=(package13,package13) 1009 9 0 2 29 29
+=(package12,package12) 1010 9 0 2 30 30
+=(package11,package11) 1011 9 0 2 31 31
+=(package10,package10) 1012 9 0 2 32 32
+=(package9,package9) 1013 9 0 2 33 33
+=(package8,package8) 1014 9 0 2 34 34
+=(package7,package7) 1015 9 0 2 35 35
+=(package6,package6) 1016 9 0 2 36 36
+=(package5,package5) 1017 9 0 2 37 37
+=(package4,package4) 1018 9 0 2 38 38
+=(package3,package3) 1019 9 0 2 39 39
+=(package2,package2) 1020 9 0 2 40 40
+=(package1,package1) 1021 9 0 2 41 41
+=(city20,city20) 1022 9 0 2 42 42
+=(city19,city19) 1023 9 0 2 43 43
+=(city18,city18) 1024 9 0 2 44 44
+=(city17,city17) 1025 9 0 2 45 45
+=(city16,city16) 1026 9 0 2 46 46
+=(city15,city15) 1027 9 0 2 47 47
+=(city14,city14) 1028 9 0 2 48 48
+=(city13,city13) 1029 9 0 2 49 49
+=(city12,city12) 1030 9 0 2 50 50
+=(city11,city11) 1031 9 0 2 51 51
+=(city10,city10) 1032 9 0 2 52 52
+=(city9,city9) 1033 9 0 2 53 53
+=(city8,city8) 1034 9 0 2 54 54
+=(city7,city7) 1035 9 0 2 55 55
+=(city6,city6) 1036 9 0 2 56 56
+=(city5,city5) 1037 9 0 2 57 57
+=(city4,city4) 1038 9 0 2 58 58
+=(city3,city3) 1039 9 0 2 59 59
+=(city2,city2) 1040 9 0 2 60 60
+=(city1,city1) 1041 9 0 2 61 61
+=(truck83,truck83) 1042 9 0 2 62 62
+=(truck82,truck82) 1043 9 0 2 63 63
+=(truck81,truck81) 1044 9 0 2 64 64
+=(truck80,truck80) 1045 9 0 2 65 65
+=(truck79,truck79) 1046 9 0 2 66 66
+=(truck78,truck78) 1047 9 0 2 67 67
+=(truck77,truck77) 1048 9 0 2 68 68
+=(truck76,truck76) 1049 9 0 2 69 69
+=(truck75,truck75) 1050 9 0 2 70 70
+=(truck74,truck74) 1051 9 0 2 71 71
+=(truck73,truck73) 1052 9 0 2 72 72
+=(truck72,truck72) 1053 9 0 2 73 73
+=(truck71,truck71) 1054 9 0 2 74 74
+=(truck70,truck70) 1055 9 0 2 75 75
+=(truck69,truck69) 1056 9 0 2 76 76
+=(truck68,truck68) 1057 9 0 2 77 77
+=(truck67,truck67) 1058 9 0 2 78 78
+=(truck66,truck66) 1059 9 0 2 79 79
+=(truck65,truck65) 1060 9 0 2 80 80
+=(truck64,truck64) 1061 9 0 2 81 81
+=(truck63,truck63) 1062 9 0 2 82 82
+=(truck62,truck62) 1063 9 0 2 83 83
+=(truck61,truck61) 1064 9 0 2 84 84
+=(truck60,truck60) 1065 9 0 2 85 85
+=(truck59,truck59) 1066 9 0 2 86 86
+=(truck58,truck58) 1067 9 0 2 87 87
+=(truck57,truck57) 1068 9 0 2 88 88
+=(truck56,truck56) 1069 9 0 2 89 89
+=(truck55,truck55) 1070 9 0 2 90 90
+=(truck54,truck54) 1071 9 0 2 91 91
+=(truck53,truck53) 1072 9 0 2 92 92
+=(truck52,truck52) 1073 9 0 2 93 93
+=(truck51,truck51) 1074 9 0 2 94 94
+=(truck50,truck50) 1075 9 0 2 95 95
+=(truck49,truck49) 1076 9 0 2 96 96
+=(truck48,truck48) 1077 9 0 2 97 97
+=(truck47,truck47) 1078 9 0 2 98 98
+=(truck46,truck46) 1079 9 0 2 99 99
+=(truck45,truck45) 1080 9 0 2 100 100
+=(truck44,truck44) 1081 9 0 2 101 101
+=(truck43,truck43) 1082 9 0 2 102 102
+=(truck42,truck42) 1083 9 0 2 103 103
+=(truck41,truck41) 1084 9 0 2 104 104
+=(truck40,truck40) 1085 9 0 2 105 105
+=(truck39,truck39) 1086 9 0 2 106 106
+=(truck38,truck38) 1087 9 0 2 107 107
+=(truck37,truck37) 1088 9 0 2 108 108
+=(truck36,truck36) 1089 9 0 2 109 109
+=(truck35,truck35) 1090 9 0 2 110 110
+=(truck34,truck34) 1091 9 0 2 111 111
+=(truck33,truck33) 1092 9 0 2 112 112
+=(truck32,truck32) 1093 9 0 2 113 113
+=(truck31,truck31) 1094 9 0 2 114 114
+=(truck30,truck30) 1095 9 0 2 115 115
+=(truck29,truck29) 1096 9 0 2 116 116
+=(truck28,truck28) 1097 9 0 2 117 117
+=(truck27,truck27) 1098 9 0 2 118 118
+=(truck26,truck26) 1099 9 0 2 119 119
+=(truck25,truck25) 1100 9 0 2 120 120
+=(truck24,truck24) 1101 9 0 2 121 121
+=(truck23,truck23) 1102 9 0 2 122 122
+=(truck22,truck22) 1103 9 0 2 123 123
+=(truck21,truck21) 1104 9 0 2 124 124
+=(truck20,truck20) 1105 9 0 2 125 125
+=(truck19,truck19) 1106 9 0 2 126 126
+=(truck18,truck18) 1107 9 0 2 127 127
+=(truck17,truck17) 1108 9 0 2 128 128
+=(truck16,truck16) 1109 9 0 2 129 129
+=(truck15,truck15) 1110 9 0 2 130 130
+=(truck14,truck14) 1111 9 0 2 131 131
+=(truck13,truck13) 1112 9 0 2 132 132
+=(truck12,truck12) 1113 9 0 2 133 133
+=(truck11,truck11) 1114 9 0 2 134 134
+=(truck10,truck10) 1115 9 0 2 135 135
+=(truck9,truck9) 1116 9 0 2 136 136
+=(truck8,truck8) 1117 9 0 2 137 137
+=(truck7,truck7) 1118 9 0 2 138 138
+=(truck6,truck6) 1119 9 0 2 139 139
+=(truck5,truck5) 1120 9 0 2 140 140
+=(truck4,truck4) 1121 9 0 2 141 141
+=(truck3,truck3) 1122 9 0 2 142 142
+=(truck2,truck2) 1123 9 0 2 143 143
+=(truck1,truck1) 1124 9 0 2 144 144
+=(plane5,plane5) 1125 9 0 2 145 145
+=(plane4,plane4) 1126 9 0 2 146 146
+=(plane3,plane3) 1127 9 0 2 147 147
+=(plane2,plane2) 1128 9 0 2 148 148
+=(plane1,plane1) 1129 9 0 2 149 149
+=(city20-16,city20-16) 1130 9 0 2 150 150
+=(city20-15,city20-15) 1131 9 0 2 151 151
+=(city20-14,city20-14) 1132 9 0 2 152 152
+=(city20-13,city20-13) 1133 9 0 2 153 153
+=(city20-12,city20-12) 1134 9 0 2 154 154
+=(city20-11,city20-11) 1135 9 0 2 155 155
+=(city20-10,city20-10) 1136 9 0 2 156 156
+=(city20-9,city20-9) 1137 9 0 2 157 157
+=(city20-8,city20-8) 1138 9 0 2 158 158
+=(city20-7,city20-7) 1139 9 0 2 159 159
+=(city20-6,city20-6) 1140 9 0 2 160 160
+=(city20-5,city20-5) 1141 9 0 2 161 161
+=(city20-4,city20-4) 1142 9 0 2 162 162
+=(city20-3,city20-3) 1143 9 0 2 163 163
+=(city20-2,city20-2) 1144 9 0 2 164 164
+=(city20-1,city20-1) 1145 9 0 2 165 165
+=(city19-16,city19-16) 1146 9 0 2 166 166
+=(city19-15,city19-15) 1147 9 0 2 167 167
+=(city19-14,city19-14) 1148 9 0 2 168 168
+=(city19-13,city19-13) 1149 9 0 2 169 169
+=(city19-12,city19-12) 1150 9 0 2 170 170
+=(city19-11,city19-11) 1151 9 0 2 171 171
+=(city19-10,city19-10) 1152 9 0 2 172 172
+=(city19-9,city19-9) 1153 9 0 2 173 173
+=(city19-8,city19-8) 1154 9 0 2 174 174
+=(city19-7,city19-7) 1155 9 0 2 175 175
+=(city19-6,city19-6) 1156 9 0 2 176 176
+=(city19-5,city19-5) 1157 9 0 2 177 177
+=(city19-4,city19-4) 1158 9 0 2 178 178
+=(city19-3,city19-3) 1159 9 0 2 179 179
+=(city19-2,city19-2) 1160 9 0 2 180 180
+=(city19-1,city19-1) 1161 9 0 2 181 181
+=(city18-16,city18-16) 1162 9 0 2 182 182
+=(city18-15,city18-15) 1163 9 0 2 183 183
+=(city18-14,city18-14) 1164 9 0 2 184 184
+=(city18-13,city18-13) 1165 9 0 2 185 185
+=(city18-12,city18-12) 1166 9 0 2 186 186
+=(city18-11,city18-11) 1167 9 0 2 187 187
+=(city18-10,city18-10) 1168 9 0 2 188 188
+=(city18-9,city18-9) 1169 9 0 2 189 189
+=(city18-8,city18-8) 1170 9 0 2 190 190
+=(city18-7,city18-7) 1171 9 0 2 191 191
+=(city18-6,city18-6) 1172 9 0 2 192 192
+=(city18-5,city18-5) 1173 9 0 2 193 193
+=(city18-4,city18-4) 1174 9 0 2 194 194
+=(city18-3,city18-3) 1175 9 0 2 195 195
+=(city18-2,city18-2) 1176 9 0 2 196 196
+=(city18-1,city18-1) 1177 9 0 2 197 197
+=(city17-16,city17-16) 1178 9 0 2 198 198
+=(city17-15,city17-15) 1179 9 0 2 199 199
+=(city17-14,city17-14) 1180 9 0 2 200 200
+=(city17-13,city17-13) 1181 9 0 2 201 201
+=(city17-12,city17-12) 1182 9 0 2 202 202
+=(city17-11,city17-11) 1183 9 0 2 203 203
+=(city17-10,city17-10) 1184 9 0 2 204 204
+=(city17-9,city17-9) 1185 9 0 2 205 205
+=(city17-8,city17-8) 1186 9 0 2 206 206
+=(city17-7,city17-7) 1187 9 0 2 207 207
+=(city17-6,city17-6) 1188 9 0 2 208 208
+=(city17-5,city17-5) 1189 9 0 2 209 209
+=(city17-4,city17-4) 1190 9 0 2 210 210
+=(city17-3,city17-3) 1191 9 0 2 211 211
+=(city17-2,city17-2) 1192 9 0 2 212 212
+=(city17-1,city17-1) 1193 9 0 2 213 213
+=(city16-16,city16-16) 1194 9 0 2 214 214
+=(city16-15,city16-15) 1195 9 0 2 215 215
+=(city16-14,city16-14) 1196 9 0 2 216 216
+=(city16-13,city16-13) 1197 9 0 2 217 217
+=(city16-12,city16-12) 1198 9 0 2 218 218
+=(city16-11,city16-11) 1199 9 0 2 219 219
+=(city16-10,city16-10) 1200 9 0 2 220 220
+=(city16-9,city16-9) 1201 9 0 2 221 221
+=(city16-8,city16-8) 1202 9 0 2 222 222
+=(city16-7,city16-7) 1203 9 0 2 223 223
+=(city16-6,city16-6) 1204 9 0 2 224 224
+=(city16-5,city16-5) 1205 9 0 2 225 225
+=(city16-4,city16-4) 1206 9 0 2 226 226
+=(city16-3,city16-3) 1207 9 0 2 227 227
+=(city16-2,city16-2) 1208 9 0 2 228 228
+=(city16-1,city16-1) 1209 9 0 2 229 229
+=(city15-16,city15-16) 1210 9 0 2 230 230
+=(city15-15,city15-15) 1211 9 0 2 231 231
+=(city15-14,city15-14) 1212 9 0 2 232 232
+=(city15-13,city15-13) 1213 9 0 2 233 233
+=(city15-12,city15-12) 1214 9 0 2 234 234
+=(city15-11,city15-11) 1215 9 0 2 235 235
+=(city15-10,city15-10) 1216 9 0 2 236 236
+=(city15-9,city15-9) 1217 9 0 2 237 237
+=(city15-8,city15-8) 1218 9 0 2 238 238
+=(city15-7,city15-7) 1219 9 0 2 239 239
+=(city15-6,city15-6) 1220 9 0 2 240 240
+=(city15-5,city15-5) 1221 9 0 2 241 241
+=(city15-4,city15-4) 1222 9 0 2 242 242
+=(city15-3,city15-3) 1223 9 0 2 243 243
+=(city15-2,city15-2) 1224 9 0 2 244 244
+=(city15-1,city15-1) 1225 9 0 2 245 245
+=(city14-16,city14-16) 1226 9 0 2 246 246
+=(city14-15,city14-15) 1227 9 0 2 247 247
+=(city14-14,city14-14) 1228 9 0 2 248 248
+=(city14-13,city14-13) 1229 9 0 2 249 249
+=(city14-12,city14-12) 1230 9 0 2 250 250
+=(city14-11,city14-11) 1231 9 0 2 251 251
+=(city14-10,city14-10) 1232 9 0 2 252 252
+=(city14-9,city14-9) 1233 9 0 2 253 253
+=(city14-8,city14-8) 1234 9 0 2 254 254
+=(city14-7,city14-7) 1235 9 0 2 255 255
+=(city14-6,city14-6) 1236 9 0 2 256 256
+=(city14-5,city14-5) 1237 9 0 2 257 257
+=(city14-4,city14-4) 1238 9 0 2 258 258
+=(city14-3,city14-3) 1239 9 0 2 259 259
+=(city14-2,city14-2) 1240 9 0 2 260 260
+=(city14-1,city14-1) 1241 9 0 2 261 261
+=(city13-16,city13-16) 1242 9 0 2 262 262
+=(city13-15,city13-15) 1243 9 0 2 263 263
+=(city13-14,city13-14) 1244 9 0 2 264 264
+=(city13-13,city13-13) 1245 9 0 2 265 265
+=(city13-12,city13-12) 1246 9 0 2 266 266
+=(city13-11,city13-11) 1247 9 0 2 267 267
+=(city13-10,city13-10) 1248 9 0 2 268 268
+=(city13-9,city13-9) 1249 9 0 2 269 269
+=(city13-8,city13-8) 1250 9 0 2 270 270
+=(city13-7,city13-7) 1251 9 0 2 271 271
+=(city13-6,city13-6) 1252 9 0 2 272 272
+=(city13-5,city13-5) 1253 9 0 2 273 273
+=(city13-4,city13-4) 1254 9 0 2 274 274
+=(city13-3,city13-3) 1255 9 0 2 275 275
+=(city13-2,city13-2) 1256 9 0 2 276 276
+=(city13-1,city13-1) 1257 9 0 2 277 277
+=(city12-16,city12-16) 1258 9 0 2 278 278
+=(city12-15,city12-15) 1259 9 0 2 279 279
+=(city12-14,city12-14) 1260 9 0 2 280 280
+=(city12-13,city12-13) 1261 9 0 2 281 281
+=(city12-12,city12-12) 1262 9 0 2 282 282
+=(city12-11,city12-11) 1263 9 0 2 283 283
+=(city12-10,city12-10) 1264 9 0 2 284 284
+=(city12-9,city12-9) 1265 9 0 2 285 285
+=(city12-8,city12-8) 1266 9 0 2 286 286
+=(city12-7,city12-7) 1267 9 0 2 287 287
+=(city12-6,city12-6) 1268 9 0 2 288 288
+=(city12-5,city12-5) 1269 9 0 2 289 289
+=(city12-4,city12-4) 1270 9 0 2 290 290
+=(city12-3,city12-3) 1271 9 0 2 291 291
+=(city12-2,city12-2) 1272 9 0 2 292 292
+=(city12-1,city12-1) 1273 9 0 2 293 293
+=(city11-16,city11-16) 1274 9 0 2 294 294
+=(city11-15,city11-15) 1275 9 0 2 295 295
+=(city11-14,city11-14) 1276 9 0 2 296 296
+=(city11-13,city11-13) 1277 9 0 2 297 297
+=(city11-12,city11-12) 1278 9 0 2 298 298
+=(city11-11,city11-11) 1279 9 0 2 299 299
+=(city11-10,city11-10) 1280 9 0 2 300 300
+=(city11-9,city11-9) 1281 9 0 2 301 301
+=(city11-8,city11-8) 1282 9 0 2 302 302
+=(city11-7,city11-7) 1283 9 0 2 303 303
+=(city11-6,city11-6) 1284 9 0 2 304 304
+=(city11-5,city11-5) 1285 9 0 2 305 305
+=(city11-4,city11-4) 1286 9 0 2 306 306
+=(city11-3,city11-3) 1287 9 0 2 307 307
+=(city11-2,city11-2) 1288 9 0 2 308 308
+=(city11-1,city11-1) 1289 9 0 2 309 309
+=(city10-16,city10-16) 1290 9 0 2 310 310
+=(city10-15,city10-15) 1291 9 0 2 311 311
+=(city10-14,city10-14) 1292 9 0 2 312 312
+=(city10-13,city10-13) 1293 9 0 2 313 313
+=(city10-12,city10-12) 1294 9 0 2 314 314
+=(city10-11,city10-11) 1295 9 0 2 315 315
+=(city10-10,city10-10) 1296 9 0 2 316 316
+=(city10-9,city10-9) 1297 9 0 2 317 317
+=(city10-8,city10-8) 1298 9 0 2 318 318
+=(city10-7,city10-7) 1299 9 0 2 319 319
+=(city10-6,city10-6) 1300 9 0 2 320 320
+=(city10-5,city10-5) 1301 9 0 2 321 321
+=(city10-4,city10-4) 1302 9 0 2 322 322
+=(city10-3,city10-3) 1303 9 0 2 323 323
+=(city10-2,city10-2) 1304 9 0 2 324 324
+=(city10-1,city10-1) 1305 9 0 2 325 325
+=(city9-16,city9-16) 1306 9 0 2 326 326
+=(city9-15,city9-15) 1307 9 0 2 327 327
+=(city9-14,city9-14) 1308 9 0 2 328 328
+=(city9-13,city9-13) 1309 9 0 2 329 329
+=(city9-12,city9-12) 1310 9 0 2 330 330
+=(city9-11,city9-11) 1311 9 0 2 331 331
+=(city9-10,city9-10) 1312 9 0 2 332 332
+=(city9-9,city9-9) 1313 9 0 2 333 333
+=(city9-8,city9-8) 1314 9 0 2 334 334
+=(city9-7,city9-7) 1315 9 0 2 335 335
+=(city9-6,city9-6) 1316 9 0 2 336 336
+=(city9-5,city9-5) 1317 9 0 2 337 337
+=(city9-4,city9-4) 1318 9 0 2 338 338
+=(city9-3,city9-3) 1319 9 0 2 339 339
+=(city9-2,city9-2) 1320 9 0 2 340 340
+=(city9-1,city9-1) 1321 9 0 2 341 341
+=(city8-16,city8-16) 1322 9 0 2 342 342
+=(city8-15,city8-15) 1323 9 0 2 343 343
+=(city8-14,city8-14) 1324 9 0 2 344 344
+=(city8-13,city8-13) 1325 9 0 2 345 345
+=(city8-12,city8-12) 1326 9 0 2 346 346
+=(city8-11,city8-11) 1327 9 0 2 347 347
+=(city8-10,city8-10) 1328 9 0 2 348 348
+=(city8-9,city8-9) 1329 9 0 2 349 349
+=(city8-8,city8-8) 1330 9 0 2 350 350
+=(city8-7,city8-7) 1331 9 0 2 351 351
+=(city8-6,city8-6) 1332 9 0 2 352 352
+=(city8-5,city8-5) 1333 9 0 2 353 353
+=(city8-4,city8-4) 1334 9 0 2 354 354
+=(city8-3,city8-3) 1335 9 0 2 355 355
+=(city8-2,city8-2) 1336 9 0 2 356 356
+=(city8-1,city8-1) 1337 9 0 2 357 357
+=(city7-16,city7-16) 1338 9 0 2 358 358
+=(city7-15,city7-15) 1339 9 0 2 359 359
+=(city7-14,city7-14) 1340 9 0 2 360 360
+=(city7-13,city7-13) 1341 9 0 2 361 361
+=(city7-12,city7-12) 1342 9 0 2 362 362
+=(city7-11,city7-11) 1343 9 0 2 363 363
+=(city7-10,city7-10) 1344 9 0 2 364 364
+=(city7-9,city7-9) 1345 9 0 2 365 365
+=(city7-8,city7-8) 1346 9 0 2 366 366
+=(city7-7,city7-7) 1347 9 0 2 367 367
+=(city7-6,city7-6) 1348 9 0 2 368 368
+=(city7-5,city7-5) 1349 9 0 2 369 369
+=(city7-4,city7-4) 1350 9 0 2 370 370
+=(city7-3,city7-3) 1351 9 0 2 371 371
+=(city7-2,city7-2) 1352 9 0 2 372 372
+=(city7-1,city7-1) 1353 9 0 2 373 373
+=(city6-16,city6-16) 1354 9 0 2 374 374
+=(city6-15,city6-15) 1355 9 0 2 375 375
+=(city6-14,city6-14) 1356 9 0 2 376 376
+=(city6-13,city6-13) 1357 9 0 2 377 377
+=(city6-12,city6-12) 1358 9 0 2 378 378
+=(city6-11,city6-11) 1359 9 0 2 379 379
+=(city6-10,city6-10) 1360 9 0 2 380 380
+=(city6-9,city6-9) 1361 9 0 2 381 381
+=(city6-8,city6-8) 1362 9 0 2 382 382
+=(city6-7,city6-7) 1363 9 0 2 383 383
+=(city6-6,city6-6) 1364 9 0 2 384 384
+=(city6-5,city6-5) 1365 9 0 2 385 385
+=(city6-4,city6-4) 1366 9 0 2 386 386
+=(city6-3,city6-3) 1367 9 0 2 387 387
+=(city6-2,city6-2) 1368 9 0 2 388 388
+=(city6-1,city6-1) 1369 9 0 2 389 389
+=(city5-16,city5-16) 1370 9 0 2 390 390
+=(city5-15,city5-15) 1371 9 0 2 391 391
+=(city5-14,city5-14) 1372 9 0 2 392 392
+=(city5-13,city5-13) 1373 9 0 2 393 393
+=(city5-12,city5-12) 1374 9 0 2 394 394
+=(city5-11,city5-11) 1375 9 0 2 395 395
+=(city5-10,city5-10) 1376 9 0 2 396 396
+=(city5-9,city5-9) 1377 9 0 2 397 397
+=(city5-8,city5-8) 1378 9 0 2 398 398
+=(city5-7,city5-7) 1379 9 0 2 399 399
+=(city5-6,city5-6) 1380 9 0 2 400 400
+=(city5-5,city5-5) 1381 9 0 2 401 401
+=(city5-4,city5-4) 1382 9 0 2 402 402
+=(city5-3,city5-3) 1383 9 0 2 403 403
+=(city5-2,city5-2) 1384 9 0 2 404 404
+=(city5-1,city5-1) 1385 9 0 2 405 405
+=(city4-16,city4-16) 1386 9 0 2 406 406
+=(city4-15,city4-15) 1387 9 0 2 407 407
+=(city4-14,city4-14) 1388 9 0 2 408 408
+=(city4-13,city4-13) 1389 9 0 2 409 409
+=(city4-12,city4-12) 1390 9 0 2 410 410
+=(city4-11,city4-11) 1391 9 0 2 411 411
+=(city4-10,city4-10) 1392 9 0 2 412 412
+=(city4-9,city4-9) 1393 9 0 2 413 413
+=(city4-8,city4-8) 1394 9 0 2 414 414
+=(city4-7,city4-7) 1395 9 0 2 415 415
+=(city4-6,city4-6) 1396 9 0 2 416 416
+=(city4-5,city4-5) 1397 9 0 2 417 417
+=(city4-4,city4-4) 1398 9 0 2 418 418
+=(city4-3,city4-3) 1399 9 0 2 419 419
+=(city4-2,city4-2) 1400 9 0 2 420 420
+=(city4-1,city4-1) 1401 9 0 2 421 421
+=(city3-16,city3-16) 1402 9 0 2 422 422
+=(city3-15,city3-15) 1403 9 0 2 423 423
+=(city3-14,city3-14) 1404 9 0 2 424 424
+=(city3-13,city3-13) 1405 9 0 2 425 425
+=(city3-12,city3-12) 1406 9 0 2 426 426
+=(city3-11,city3-11) 1407 9 0 2 427 427
+=(city3-10,city3-10) 1408 9 0 2 428 428
+=(city3-9,city3-9) 1409 9 0 2 429 429
+=(city3-8,city3-8) 1410 9 0 2 430 430
+=(city3-7,city3-7) 1411 9 0 2 431 431
+=(city3-6,city3-6) 1412 9 0 2 432 432
+=(city3-5,city3-5) 1413 9 0 2 433 433
+=(city3-4,city3-4) 1414 9 0 2 434 434
+=(city3-3,city3-3) 1415 9 0 2 435 435
+=(city3-2,city3-2) 1416 9 0 2 436 436
+=(city3-1,city3-1) 1417 9 0 2 437 437
+=(city2-16,city2-16) 1418 9 0 2 438 438
+=(city2-15,city2-15) 1419 9 0 2 439 439
+=(city2-14,city2-14) 1420 9 0 2 440 440
+=(city2-13,city2-13) 1421 9 0 2 441 441
+=(city2-12,city2-12) 1422 9 0 2 442 442
+=(city2-11,city2-11) 1423 9 0 2 443 443
+=(city2-10,city2-10) 1424 9 0 2 444 444
+=(city2-9,city2-9) 1425 9 0 2 445 445
+=(city2-8,city2-8) 1426 9 0 2 446 446
+=(city2-7,city2-7) 1427 9 0 2 447 447
+=(city2-6,city2-6) 1428 9 0 2 448 448
+=(city2-5,city2-5) 1429 9 0 2 449 449
+=(city2-4,city2-4) 1430 9 0 2 450 450
+=(city2-3,city2-3) 1431 9 0 2 451 451
+=(city2-2,city2-2) 1432 9 0 2 452 452
+=(city2-1,city2-1) 1433 9 0 2 453 453
+=(city1-16,city1-16) 1434 9 0 2 454 454
+=(city1-15,city1-15) 1435 9 0 2 455 455
+=(city1-14,city1-14) 1436 9 0 2 456 456
+=(city1-13,city1-13) 1437 9 0 2 457 457
+=(city1-12,city1-12) 1438 9 0 2 458 458
+=(city1-11,city1-11) 1439 9 0 2 459 459
+=(city1-10,city1-10) 1440 9 0 2 460 460
+=(city1-9,city1-9) 1441 9 0 2 461 461
+=(city1-8,city1-8) 1442 9 0 2 462 462
+=(city1-7,city1-7) 1443 9 0 2 463 463
+=(city1-6,city1-6) 1444 9 0 2 464 464
+=(city1-5,city1-5) 1445 9 0 2 465 465
+=(city1-4,city1-4) 1446 9 0 2 466 466
+=(city1-3,city1-3) 1447 9 0 2 467 467
+=(city1-2,city1-2) 1448 9 0 2 468 468
+=(city1-1,city1-1) 1449 9 0 2 469 469
+=(city20-17,city20-17) 1450 9 0 2 470 470
+=(city19-17,city19-17) 1451 9 0 2 471 471
+=(city18-17,city18-17) 1452 9 0 2 472 472
+=(city17-17,city17-17) 1453 9 0 2 473 473
+=(city16-17,city16-17) 1454 9 0 2 474 474
+=(city15-17,city15-17) 1455 9 0 2 475 475
+=(city14-17,city14-17) 1456 9 0 2 476 476
+=(city13-17,city13-17) 1457 9 0 2 477 477
+=(city12-17,city12-17) 1458 9 0 2 478 478
+=(city11-17,city11-17) 1459 9 0 2 479 479
+=(city10-17,city10-17) 1460 9 0 2 480 480
+=(city9-17,city9-17) 1461 9 0 2 481 481
+=(city8-17,city8-17) 1462 9 0 2 482 482
+=(city7-17,city7-17) 1463 9 0 2 483 483
+=(city6-17,city6-17) 1464 9 0 2 484 484
+=(city5-17,city5-17) 1465 9 0 2 485 485
+=(city4-17,city4-17) 1466 9 0 2 486 486
+=(city3-17,city3-17) 1467 9 0 2 487 487
+=(city2-17,city2-17) 1468 9 0 2 488 488
+=(city1-17,city1-17) 1469 9 0 2 489 489
+type_object(package42) 1470 10 0 1 0
+type_object(package41) 1471 10 0 1 1
+type_object(package40) 1472 10 0 1 2
+type_object(package39) 1473 10 0 1 3
+type_object(package38) 1474 10 0 1 4
+type_object(package37) 1475 10 0 1 5
+type_object(package36) 1476 10 0 1 6
+type_object(package35) 1477 10 0 1 7
+type_object(package34) 1478 10 0 1 8
+type_object(package33) 1479 10 0 1 9
+type_object(package32) 1480 10 0 1 10
+type_object(package31) 1481 10 0 1 11
+type_object(package30) 1482 10 0 1 12
+type_object(package29) 1483 10 0 1 13
+type_object(package28) 1484 10 0 1 14
+type_object(package27) 1485 10 0 1 15
+type_object(package26) 1486 10 0 1 16
+type_object(package25) 1487 10 0 1 17
+type_object(package24) 1488 10 0 1 18
+type_object(package23) 1489 10 0 1 19
+type_object(package22) 1490 10 0 1 20
+type_object(package21) 1491 10 0 1 21
+type_object(package20) 1492 10 0 1 22
+type_object(package19) 1493 10 0 1 23
+type_object(package18) 1494 10 0 1 24
+type_object(package17) 1495 10 0 1 25
+type_object(package16) 1496 10 0 1 26
+type_object(package15) 1497 10 0 1 27
+type_object(package14) 1498 10 0 1 28
+type_object(package13) 1499 10 0 1 29
+type_object(package12) 1500 10 0 1 30
+type_object(package11) 1501 10 0 1 31
+type_object(package10) 1502 10 0 1 32
+type_object(package9) 1503 10 0 1 33
+type_object(package8) 1504 10 0 1 34
+type_object(package7) 1505 10 0 1 35
+type_object(package6) 1506 10 0 1 36
+type_object(package5) 1507 10 0 1 37
+type_object(package4) 1508 10 0 1 38
+type_object(package3) 1509 10 0 1 39
+type_object(package2) 1510 10 0 1 40
+type_object(package1) 1511 10 0 1 41
+type_object(city20) 1512 10 0 1 42
+type_object(city19) 1513 10 0 1 43
+type_object(city18) 1514 10 0 1 44
+type_object(city17) 1515 10 0 1 45
+type_object(city16) 1516 10 0 1 46
+type_object(city15) 1517 10 0 1 47
+type_object(city14) 1518 10 0 1 48
+type_object(city13) 1519 10 0 1 49
+type_object(city12) 1520 10 0 1 50
+type_object(city11) 1521 10 0 1 51
+type_object(city10) 1522 10 0 1 52
+type_object(city9) 1523 10 0 1 53
+type_object(city8) 1524 10 0 1 54
+type_object(city7) 1525 10 0 1 55
+type_object(city6) 1526 10 0 1 56
+type_object(city5) 1527 10 0 1 57
+type_object(city4) 1528 10 0 1 58
+type_object(city3) 1529 10 0 1 59
+type_object(city2) 1530 10 0 1 60
+type_object(city1) 1531 10 0 1 61
+type_object(truck83) 1532 10 0 1 62
+type_object(truck82) 1533 10 0 1 63
+type_object(truck81) 1534 10 0 1 64
+type_object(truck80) 1535 10 0 1 65
+type_object(truck79) 1536 10 0 1 66
+type_object(truck78) 1537 10 0 1 67
+type_object(truck77) 1538 10 0 1 68
+type_object(truck76) 1539 10 0 1 69
+type_object(truck75) 1540 10 0 1 70
+type_object(truck74) 1541 10 0 1 71
+type_object(truck73) 1542 10 0 1 72
+type_object(truck72) 1543 10 0 1 73
+type_object(truck71) 1544 10 0 1 74
+type_object(truck70) 1545 10 0 1 75
+type_object(truck69) 1546 10 0 1 76
+type_object(truck68) 1547 10 0 1 77
+type_object(truck67) 1548 10 0 1 78
+type_object(truck66) 1549 10 0 1 79
+type_object(truck65) 1550 10 0 1 80
+type_object(truck64) 1551 10 0 1 81
+type_object(truck63) 1552 10 0 1 82
+type_object(truck62) 1553 10 0 1 83
+type_object(truck61) 1554 10 0 1 84
+type_object(truck60) 1555 10 0 1 85
+type_object(truck59) 1556 10 0 1 86
+type_object(truck58) 1557 10 0 1 87
+type_object(truck57) 1558 10 0 1 88
+type_object(truck56) 1559 10 0 1 89
+type_object(truck55) 1560 10 0 1 90
+type_object(truck54) 1561 10 0 1 91
+type_object(truck53) 1562 10 0 1 92
+type_object(truck52) 1563 10 0 1 93
+type_object(truck51) 1564 10 0 1 94
+type_object(truck50) 1565 10 0 1 95
+type_object(truck49) 1566 10 0 1 96
+type_object(truck48) 1567 10 0 1 97
+type_object(truck47) 1568 10 0 1 98
+type_object(truck46) 1569 10 0 1 99
+type_object(truck45) 1570 10 0 1 100
+type_object(truck44) 1571 10 0 1 101
+type_object(truck43) 1572 10 0 1 102
+type_object(truck42) 1573 10 0 1 103
+type_object(truck41) 1574 10 0 1 104
+type_object(truck40) 1575 10 0 1 105
+type_object(truck39) 1576 10 0 1 106
+type_object(truck38) 1577 10 0 1 107
+type_object(truck37) 1578 10 0 1 108
+type_object(truck36) 1579 10 0 1 109
+type_object(truck35) 1580 10 0 1 110
+type_object(truck34) 1581 10 0 1 111
+type_object(truck33) 1582 10 0 1 112
+type_object(truck32) 1583 10 0 1 113
+type_object(truck31) 1584 10 0 1 114
+type_object(truck30) 1585 10 0 1 115
+type_object(truck29) 1586 10 0 1 116
+type_object(truck28) 1587 10 0 1 117
+type_object(truck27) 1588 10 0 1 118
+type_object(truck26) 1589 10 0 1 119
+type_object(truck25) 1590 10 0 1 120
+type_object(truck24) 1591 10 0 1 121
+type_object(truck23) 1592 10 0 1 122
+type_object(truck22) 1593 10 0 1 123
+type_object(truck21) 1594 10 0 1 124
+type_object(truck20) 1595 10 0 1 125
+type_object(truck19) 1596 10 0 1 126
+type_object(truck18) 1597 10 0 1 127
+type_object(truck17) 1598 10 0 1 128
+type_object(truck16) 1599 10 0 1 129
+type_object(truck15) 1600 10 0 1 130
+type_object(truck14) 1601 10 0 1 131
+type_object(truck13) 1602 10 0 1 132
+type_object(truck12) 1603 10 0 1 133
+type_object(truck11) 1604 10 0 1 134
+type_object(truck10) 1605 10 0 1 135
+type_object(truck9) 1606 10 0 1 136
+type_object(truck8) 1607 10 0 1 137
+type_object(truck7) 1608 10 0 1 138
+type_object(truck6) 1609 10 0 1 139
+type_object(truck5) 1610 10 0 1 140
+type_object(truck4) 1611 10 0 1 141
+type_object(truck3) 1612 10 0 1 142
+type_object(truck2) 1613 10 0 1 143
+type_object(truck1) 1614 10 0 1 144
+type_object(plane5) 1615 10 0 1 145
+type_object(plane4) 1616 10 0 1 146
+type_object(plane3) 1617 10 0 1 147
+type_object(plane2) 1618 10 0 1 148
+type_object(plane1) 1619 10 0 1 149
+type_object(city20-16) 1620 10 0 1 150
+type_object(city20-15) 1621 10 0 1 151
+type_object(city20-14) 1622 10 0 1 152
+type_object(city20-13) 1623 10 0 1 153
+type_object(city20-12) 1624 10 0 1 154
+type_object(city20-11) 1625 10 0 1 155
+type_object(city20-10) 1626 10 0 1 156
+type_object(city20-9) 1627 10 0 1 157
+type_object(city20-8) 1628 10 0 1 158
+type_object(city20-7) 1629 10 0 1 159
+type_object(city20-6) 1630 10 0 1 160
+type_object(city20-5) 1631 10 0 1 161
+type_object(city20-4) 1632 10 0 1 162
+type_object(city20-3) 1633 10 0 1 163
+type_object(city20-2) 1634 10 0 1 164
+type_object(city20-1) 1635 10 0 1 165
+type_object(city19-16) 1636 10 0 1 166
+type_object(city19-15) 1637 10 0 1 167
+type_object(city19-14) 1638 10 0 1 168
+type_object(city19-13) 1639 10 0 1 169
+type_object(city19-12) 1640 10 0 1 170
+type_object(city19-11) 1641 10 0 1 171
+type_object(city19-10) 1642 10 0 1 172
+type_object(city19-9) 1643 10 0 1 173
+type_object(city19-8) 1644 10 0 1 174
+type_object(city19-7) 1645 10 0 1 175
+type_object(city19-6) 1646 10 0 1 176
+type_object(city19-5) 1647 10 0 1 177
+type_object(city19-4) 1648 10 0 1 178
+type_object(city19-3) 1649 10 0 1 179
+type_object(city19-2) 1650 10 0 1 180
+type_object(city19-1) 1651 10 0 1 181
+type_object(city18-16) 1652 10 0 1 182
+type_object(city18-15) 1653 10 0 1 183
+type_object(city18-14) 1654 10 0 1 184
+type_object(city18-13) 1655 10 0 1 185
+type_object(city18-12) 1656 10 0 1 186
+type_object(city18-11) 1657 10 0 1 187
+type_object(city18-10) 1658 10 0 1 188
+type_object(city18-9) 1659 10 0 1 189
+type_object(city18-8) 1660 10 0 1 190
+type_object(city18-7) 1661 10 0 1 191
+type_object(city18-6) 1662 10 0 1 192
+type_object(city18-5) 1663 10 0 1 193
+type_object(city18-4) 1664 10 0 1 194
+type_object(city18-3) 1665 10 0 1 195
+type_object(city18-2) 1666 10 0 1 196
+type_object(city18-1) 1667 10 0 1 197
+type_object(city17-16) 1668 10 0 1 198
+type_object(city17-15) 1669 10 0 1 199
+type_object(city17-14) 1670 10 0 1 200
+type_object(city17-13) 1671 10 0 1 201
+type_object(city17-12) 1672 10 0 1 202
+type_object(city17-11) 1673 10 0 1 203
+type_object(city17-10) 1674 10 0 1 204
+type_object(city17-9) 1675 10 0 1 205
+type_object(city17-8) 1676 10 0 1 206
+type_object(city17-7) 1677 10 0 1 207
+type_object(city17-6) 1678 10 0 1 208
+type_object(city17-5) 1679 10 0 1 209
+type_object(city17-4) 1680 10 0 1 210
+type_object(city17-3) 1681 10 0 1 211
+type_object(city17-2) 1682 10 0 1 212
+type_object(city17-1) 1683 10 0 1 213
+type_object(city16-16) 1684 10 0 1 214
+type_object(city16-15) 1685 10 0 1 215
+type_object(city16-14) 1686 10 0 1 216
+type_object(city16-13) 1687 10 0 1 217
+type_object(city16-12) 1688 10 0 1 218
+type_object(city16-11) 1689 10 0 1 219
+type_object(city16-10) 1690 10 0 1 220
+type_object(city16-9) 1691 10 0 1 221
+type_object(city16-8) 1692 10 0 1 222
+type_object(city16-7) 1693 10 0 1 223
+type_object(city16-6) 1694 10 0 1 224
+type_object(city16-5) 1695 10 0 1 225
+type_object(city16-4) 1696 10 0 1 226
+type_object(city16-3) 1697 10 0 1 227
+type_object(city16-2) 1698 10 0 1 228
+type_object(city16-1) 1699 10 0 1 229
+type_object(city15-16) 1700 10 0 1 230
+type_object(city15-15) 1701 10 0 1 231
+type_object(city15-14) 1702 10 0 1 232
+type_object(city15-13) 1703 10 0 1 233
+type_object(city15-12) 1704 10 0 1 234
+type_object(city15-11) 1705 10 0 1 235
+type_object(city15-10) 1706 10 0 1 236
+type_object(city15-9) 1707 10 0 1 237
+type_object(city15-8) 1708 10 0 1 238
+type_object(city15-7) 1709 10 0 1 239
+type_object(city15-6) 1710 10 0 1 240
+type_object(city15-5) 1711 10 0 1 241
+type_object(city15-4) 1712 10 0 1 242
+type_object(city15-3) 1713 10 0 1 243
+type_object(city15-2) 1714 10 0 1 244
+type_object(city15-1) 1715 10 0 1 245
+type_object(city14-16) 1716 10 0 1 246
+type_object(city14-15) 1717 10 0 1 247
+type_object(city14-14) 1718 10 0 1 248
+type_object(city14-13) 1719 10 0 1 249
+type_object(city14-12) 1720 10 0 1 250
+type_object(city14-11) 1721 10 0 1 251
+type_object(city14-10) 1722 10 0 1 252
+type_object(city14-9) 1723 10 0 1 253
+type_object(city14-8) 1724 10 0 1 254
+type_object(city14-7) 1725 10 0 1 255
+type_object(city14-6) 1726 10 0 1 256
+type_object(city14-5) 1727 10 0 1 257
+type_object(city14-4) 1728 10 0 1 258
+type_object(city14-3) 1729 10 0 1 259
+type_object(city14-2) 1730 10 0 1 260
+type_object(city14-1) 1731 10 0 1 261
+type_object(city13-16) 1732 10 0 1 262
+type_object(city13-15) 1733 10 0 1 263
+type_object(city13-14) 1734 10 0 1 264
+type_object(city13-13) 1735 10 0 1 265
+type_object(city13-12) 1736 10 0 1 266
+type_object(city13-11) 1737 10 0 1 267
+type_object(city13-10) 1738 10 0 1 268
+type_object(city13-9) 1739 10 0 1 269
+type_object(city13-8) 1740 10 0 1 270
+type_object(city13-7) 1741 10 0 1 271
+type_object(city13-6) 1742 10 0 1 272
+type_object(city13-5) 1743 10 0 1 273
+type_object(city13-4) 1744 10 0 1 274
+type_object(city13-3) 1745 10 0 1 275
+type_object(city13-2) 1746 10 0 1 276
+type_object(city13-1) 1747 10 0 1 277
+type_object(city12-16) 1748 10 0 1 278
+type_object(city12-15) 1749 10 0 1 279
+type_object(city12-14) 1750 10 0 1 280
+type_object(city12-13) 1751 10 0 1 281
+type_object(city12-12) 1752 10 0 1 282
+type_object(city12-11) 1753 10 0 1 283
+type_object(city12-10) 1754 10 0 1 284
+type_object(city12-9) 1755 10 0 1 285
+type_object(city12-8) 1756 10 0 1 286
+type_object(city12-7) 1757 10 0 1 287
+type_object(city12-6) 1758 10 0 1 288
+type_object(city12-5) 1759 10 0 1 289
+type_object(city12-4) 1760 10 0 1 290
+type_object(city12-3) 1761 10 0 1 291
+type_object(city12-2) 1762 10 0 1 292
+type_object(city12-1) 1763 10 0 1 293
+type_object(city11-16) 1764 10 0 1 294
+type_object(city11-15) 1765 10 0 1 295
+type_object(city11-14) 1766 10 0 1 296
+type_object(city11-13) 1767 10 0 1 297
+type_object(city11-12) 1768 10 0 1 298
+type_object(city11-11) 1769 10 0 1 299
+type_object(city11-10) 1770 10 0 1 300
+type_object(city11-9) 1771 10 0 1 301
+type_object(city11-8) 1772 10 0 1 302
+type_object(city11-7) 1773 10 0 1 303
+type_object(city11-6) 1774 10 0 1 304
+type_object(city11-5) 1775 10 0 1 305
+type_object(city11-4) 1776 10 0 1 306
+type_object(city11-3) 1777 10 0 1 307
+type_object(city11-2) 1778 10 0 1 308
+type_object(city11-1) 1779 10 0 1 309
+type_object(city10-16) 1780 10 0 1 310
+type_object(city10-15) 1781 10 0 1 311
+type_object(city10-14) 1782 10 0 1 312
+type_object(city10-13) 1783 10 0 1 313
+type_object(city10-12) 1784 10 0 1 314
+type_object(city10-11) 1785 10 0 1 315
+type_object(city10-10) 1786 10 0 1 316
+type_object(city10-9) 1787 10 0 1 317
+type_object(city10-8) 1788 10 0 1 318
+type_object(city10-7) 1789 10 0 1 319
+type_object(city10-6) 1790 10 0 1 320
+type_object(city10-5) 1791 10 0 1 321
+type_object(city10-4) 1792 10 0 1 322
+type_object(city10-3) 1793 10 0 1 323
+type_object(city10-2) 1794 10 0 1 324
+type_object(city10-1) 1795 10 0 1 325
+type_object(city9-16) 1796 10 0 1 326
+type_object(city9-15) 1797 10 0 1 327
+type_object(city9-14) 1798 10 0 1 328
+type_object(city9-13) 1799 10 0 1 329
+type_object(city9-12) 1800 10 0 1 330
+type_object(city9-11) 1801 10 0 1 331
+type_object(city9-10) 1802 10 0 1 332
+type_object(city9-9) 1803 10 0 1 333
+type_object(city9-8) 1804 10 0 1 334
+type_object(city9-7) 1805 10 0 1 335
+type_object(city9-6) 1806 10 0 1 336
+type_object(city9-5) 1807 10 0 1 337
+type_object(city9-4) 1808 10 0 1 338
+type_object(city9-3) 1809 10 0 1 339
+type_object(city9-2) 1810 10 0 1 340
+type_object(city9-1) 1811 10 0 1 341
+type_object(city8-16) 1812 10 0 1 342
+type_object(city8-15) 1813 10 0 1 343
+type_object(city8-14) 1814 10 0 1 344
+type_object(city8-13) 1815 10 0 1 345
+type_object(city8-12) 1816 10 0 1 346
+type_object(city8-11) 1817 10 0 1 347
+type_object(city8-10) 1818 10 0 1 348
+type_object(city8-9) 1819 10 0 1 349
+type_object(city8-8) 1820 10 0 1 350
+type_object(city8-7) 1821 10 0 1 351
+type_object(city8-6) 1822 10 0 1 352
+type_object(city8-5) 1823 10 0 1 353
+type_object(city8-4) 1824 10 0 1 354
+type_object(city8-3) 1825 10 0 1 355
+type_object(city8-2) 1826 10 0 1 356
+type_object(city8-1) 1827 10 0 1 357
+type_object(city7-16) 1828 10 0 1 358
+type_object(city7-15) 1829 10 0 1 359
+type_object(city7-14) 1830 10 0 1 360
+type_object(city7-13) 1831 10 0 1 361
+type_object(city7-12) 1832 10 0 1 362
+type_object(city7-11) 1833 10 0 1 363
+type_object(city7-10) 1834 10 0 1 364
+type_object(city7-9) 1835 10 0 1 365
+type_object(city7-8) 1836 10 0 1 366
+type_object(city7-7) 1837 10 0 1 367
+type_object(city7-6) 1838 10 0 1 368
+type_object(city7-5) 1839 10 0 1 369
+type_object(city7-4) 1840 10 0 1 370
+type_object(city7-3) 1841 10 0 1 371
+type_object(city7-2) 1842 10 0 1 372
+type_object(city7-1) 1843 10 0 1 373
+type_object(city6-16) 1844 10 0 1 374
+type_object(city6-15) 1845 10 0 1 375
+type_object(city6-14) 1846 10 0 1 376
+type_object(city6-13) 1847 10 0 1 377
+type_object(city6-12) 1848 10 0 1 378
+type_object(city6-11) 1849 10 0 1 379
+type_object(city6-10) 1850 10 0 1 380
+type_object(city6-9) 1851 10 0 1 381
+type_object(city6-8) 1852 10 0 1 382
+type_object(city6-7) 1853 10 0 1 383
+type_object(city6-6) 1854 10 0 1 384
+type_object(city6-5) 1855 10 0 1 385
+type_object(city6-4) 1856 10 0 1 386
+type_object(city6-3) 1857 10 0 1 387
+type_object(city6-2) 1858 10 0 1 388
+type_object(city6-1) 1859 10 0 1 389
+type_object(city5-16) 1860 10 0 1 390
+type_object(city5-15) 1861 10 0 1 391
+type_object(city5-14) 1862 10 0 1 392
+type_object(city5-13) 1863 10 0 1 393
+type_object(city5-12) 1864 10 0 1 394
+type_object(city5-11) 1865 10 0 1 395
+type_object(city5-10) 1866 10 0 1 396
+type_object(city5-9) 1867 10 0 1 397
+type_object(city5-8) 1868 10 0 1 398
+type_object(city5-7) 1869 10 0 1 399
+type_object(city5-6) 1870 10 0 1 400
+type_object(city5-5) 1871 10 0 1 401
+type_object(city5-4) 1872 10 0 1 402
+type_object(city5-3) 1873 10 0 1 403
+type_object(city5-2) 1874 10 0 1 404
+type_object(city5-1) 1875 10 0 1 405
+type_object(city4-16) 1876 10 0 1 406
+type_object(city4-15) 1877 10 0 1 407
+type_object(city4-14) 1878 10 0 1 408
+type_object(city4-13) 1879 10 0 1 409
+type_object(city4-12) 1880 10 0 1 410
+type_object(city4-11) 1881 10 0 1 411
+type_object(city4-10) 1882 10 0 1 412
+type_object(city4-9) 1883 10 0 1 413
+type_object(city4-8) 1884 10 0 1 414
+type_object(city4-7) 1885 10 0 1 415
+type_object(city4-6) 1886 10 0 1 416
+type_object(city4-5) 1887 10 0 1 417
+type_object(city4-4) 1888 10 0 1 418
+type_object(city4-3) 1889 10 0 1 419
+type_object(city4-2) 1890 10 0 1 420
+type_object(city4-1) 1891 10 0 1 421
+type_object(city3-16) 1892 10 0 1 422
+type_object(city3-15) 1893 10 0 1 423
+type_object(city3-14) 1894 10 0 1 424
+type_object(city3-13) 1895 10 0 1 425
+type_object(city3-12) 1896 10 0 1 426
+type_object(city3-11) 1897 10 0 1 427
+type_object(city3-10) 1898 10 0 1 428
+type_object(city3-9) 1899 10 0 1 429
+type_object(city3-8) 1900 10 0 1 430
+type_object(city3-7) 1901 10 0 1 431
+type_object(city3-6) 1902 10 0 1 432
+type_object(city3-5) 1903 10 0 1 433
+type_object(city3-4) 1904 10 0 1 434
+type_object(city3-3) 1905 10 0 1 435
+type_object(city3-2) 1906 10 0 1 436
+type_object(city3-1) 1907 10 0 1 437
+type_object(city2-16) 1908 10 0 1 438
+type_object(city2-15) 1909 10 0 1 439
+type_object(city2-14) 1910 10 0 1 440
+type_object(city2-13) 1911 10 0 1 441
+type_object(city2-12) 1912 10 0 1 442
+type_object(city2-11) 1913 10 0 1 443
+type_object(city2-10) 1914 10 0 1 444
+type_object(city2-9) 1915 10 0 1 445
+type_object(city2-8) 1916 10 0 1 446
+type_object(city2-7) 1917 10 0 1 447
+type_object(city2-6) 1918 10 0 1 448
+type_object(city2-5) 1919 10 0 1 449
+type_object(city2-4) 1920 10 0 1 450
+type_object(city2-3) 1921 10 0 1 451
+type_object(city2-2) 1922 10 0 1 452
+type_object(city2-1) 1923 10 0 1 453
+type_object(city1-16) 1924 10 0 1 454
+type_object(city1-15) 1925 10 0 1 455
+type_object(city1-14) 1926 10 0 1 456
+type_object(city1-13) 1927 10 0 1 457
+type_object(city1-12) 1928 10 0 1 458
+type_object(city1-11) 1929 10 0 1 459
+type_object(city1-10) 1930 10 0 1 460
+type_object(city1-9) 1931 10 0 1 461
+type_object(city1-8) 1932 10 0 1 462
+type_object(city1-7) 1933 10 0 1 463
+type_object(city1-6) 1934 10 0 1 464
+type_object(city1-5) 1935 10 0 1 465
+type_object(city1-4) 1936 10 0 1 466
+type_object(city1-3) 1937 10 0 1 467
+type_object(city1-2) 1938 10 0 1 468
+type_object(city1-1) 1939 10 0 1 469
+type_object(city20-17) 1940 10 0 1 470
+type_object(city19-17) 1941 10 0 1 471
+type_object(city18-17) 1942 10 0 1 472
+type_object(city17-17) 1943 10 0 1 473
+type_object(city16-17) 1944 10 0 1 474
+type_object(city15-17) 1945 10 0 1 475
+type_object(city14-17) 1946 10 0 1 476
+type_object(city13-17) 1947 10 0 1 477
+type_object(city12-17) 1948 10 0 1 478
+type_object(city11-17) 1949 10 0 1 479
+type_object(city10-17) 1950 10 0 1 480
+type_object(city9-17) 1951 10 0 1 481
+type_object(city8-17) 1952 10 0 1 482
+type_object(city7-17) 1953 10 0 1 483
+type_object(city6-17) 1954 10 0 1 484
+type_object(city5-17) 1955 10 0 1 485
+type_object(city4-17) 1956 10 0 1 486
+type_object(city3-17) 1957 10 0 1 487
+type_object(city2-17) 1958 10 0 1 488
+type_object(city1-17) 1959 10 0 1 489
+GOAL 30
+at(package42,city13-8) 6 0 2 0 270
+at(package41,city3-16) 6 0 2 1 422
+at(package40,city8-9) 6 0 2 2 349
+at(package39,city3-8) 6 0 2 3 430
+at(package38,city12-4) 6 0 2 4 290
+at(package37,city19-7) 6 0 2 5 175
+at(package36,city19-16) 6 0 2 6 166
+at(package35,city17-15) 6 0 2 7 199
+at(package34,city8-4) 6 0 2 8 354
+at(package33,city9-12) 6 0 2 9 330
+at(package32,city2-16) 6 0 2 10 438
+at(package31,city4-12) 6 0 2 11 410
+at(package30,city17-2) 6 0 2 12 212
+at(package29,city11-7) 6 0 2 13 303
+at(package28,city10-17) 6 0 2 14 480
+at(package27,city15-14) 6 0 2 15 232
+at(package26,city12-11) 6 0 2 16 283
+at(package25,city8-12) 6 0 2 17 346
+at(package24,city18-5) 6 0 2 18 193
+at(package23,city16-16) 6 0 2 19 214
+at(package22,city4-11) 6 0 2 20 411
+at(package21,city11-2) 6 0 2 21 308
+at(package20,city9-2) 6 0 2 22 340
+at(package19,city17-4) 6 0 2 23 210
+at(package18,city10-16) 6 0 2 24 310
+at(package17,city1-3) 6 0 2 25 467
+at(package16,city20-11) 6 0 2 26 155
+at(package15,city11-16) 6 0 2 27 294
+at(package14,city2-6) 6 0 2 28 448
+at(package13,city10-14) 6 0 2 29 312
+ACTION-SCHEMAS 6
+load-truck 1 3 8 2
+?obj 0 0
+?truck 1 0
+?loc 2 0
+obj 0 0 1 p 0
+truck 1 0 1 p 1
+location 2 0 1 p 2
+at 6 0 2 p 1 p 2
+at 6 0 2 p 0 p 2
+type_object 10 0 1 p 0
+type_object 10 0 1 p 2
+type_object 10 0 1 p 1
+at 6 1 2 p 0 p 2
+in 7 0 2 p 0 p 1
+load-airplane 1 3 8 2
+?obj 0 0
+?airplane 1 0
+?loc 2 0
+obj 0 0 1 p 0
+airplane 3 0 1 p 1
+location 2 0 1 p 2
+at 6 0 2 p 0 p 2
+at 6 0 2 p 1 p 2
+type_object 10 0 1 p 0
+type_object 10 0 1 p 1
+type_object 10 0 1 p 2
+at 6 1 2 p 0 p 2
+in 7 0 2 p 0 p 1
+unload-truck 1 3 8 2
+?obj 0 0
+?truck 1 0
+?loc 2 0
+obj 0 0 1 p 0
+truck 1 0 1 p 1
+location 2 0 1 p 2
+at 6 0 2 p 1 p 2
+in 7 0 2 p 0 p 1
+type_object 10 0 1 p 0
+type_object 10 0 1 p 2
+type_object 10 0 1 p 1
+in 7 1 2 p 0 p 1
+at 6 0 2 p 0 p 2
+unload-airplane 1 3 8 2
+?obj 0 0
+?airplane 1 0
+?loc 2 0
+obj 0 0 1 p 0
+airplane 3 0 1 p 1
+location 2 0 1 p 2
+in 7 0 2 p 0 p 1
+at 6 0 2 p 1 p 2
+type_object 10 0 1 p 0
+type_object 10 0 1 p 1
+type_object 10 0 1 p 2
+in 7 1 2 p 0 p 1
+at 6 0 2 p 0 p 2
+drive-truck 1 4 11 2
+?truck 0 0
+?loc-from 1 0
+?loc-to 2 0
+?city 3 0
+truck 1 0 1 p 0
+location 2 0 1 p 1
+location 2 0 1 p 2
+city 4 0 1 p 3
+at 6 0 2 p 0 p 1
+in-city 8 0 2 p 1 p 3
+in-city 8 0 2 p 2 p 3
+type_object 10 0 1 p 1
+type_object 10 0 1 p 2
+type_object 10 0 1 p 3
+type_object 10 0 1 p 0
+at 6 1 2 p 0 p 1
+at 6 0 2 p 0 p 2
+fly-airplane 1 3 7 2
+?airplane 0 0
+?loc-from 1 0
+?loc-to 2 0
+airplane 3 0 1 p 0
+airport 5 0 1 p 1
+airport 5 0 1 p 2
+at 6 0 2 p 0 p 1
+type_object 10 0 1 p 2
+type_object 10 0 1 p 1
+type_object 10 0 1 p 0
+at 6 1 2 p 0 p 1
+at 6 0 2 p 0 p 2
