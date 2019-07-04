@@ -93,6 +93,9 @@ Table SuccessorGenerator::instantiate(const ActionSchema &action, const State &s
     Table working_table = tables[0];
     for (int i = 1; i < tables.size(); ++i) {
         working_table = join(working_table, tables[i]);
+        if (working_table.tuples.empty()) {
+            return working_table;
+        }
     }
 
     return working_table;

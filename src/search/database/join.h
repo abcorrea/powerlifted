@@ -73,6 +73,7 @@ Table join(Table t1, Table &t2) {
                 for (pair<int, int> m : matches) {
                     if (tuple_t1[m.first] != tuple_t2[m.second]) {
                          match = false;
+                         break;
                     }
                 }
                 if (match) {
