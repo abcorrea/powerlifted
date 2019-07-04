@@ -4,9 +4,11 @@
 
 #include <algorithm>
 #include <cassert>
-#include <queue>
-#include <unordered_map>
 #include <iostream>
+#include <queue>
+#include <stack>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "search.h"
 #include "successor_generators/successor_generator.h"
@@ -27,28 +29,63 @@ const vector<Action> &Search::search(const Task &task, SuccessorGenerator genera
      */
 
     int state_counter = 0;
-    queue<int> q;
-    unordered_map<int, State> index_to_state;
+    int generations = 1;
+    queue<pair<int, int>> q; // Queue has pairs (N, C) where N is the node index and C its cost
     unordered_map<int, pair<int, Action>> cheapest_parent;
-    index_to_state[0] = task.initial_state;
-    cheapest_parent[0] = make_pair(-1, Action());
-    q.push(0);
+    unordered_map<int, State> index_to_state;
+    unordered_map<State, int, boost::hash<State>> visited;
 
+    index_to_state[state_counter] = task.initial_state;
+    cheapest_parent[state_counter] = make_pair(-1, Action());
+    q.emplace(state_counter, 0);
+    visited[task.initial_state] = state_counter++;
+
+    int statistics_counter = 0;
 
     // TODO add computation of statistics
     while (not q.empty()) {
-        int next = q.front();
+        pair<int,int> head = q.front();
+        int next = head.first;
+        int cost = head.second;
         q.pop();
+        if ((statistics_counter - state_counter) <=  0) {
+            cout << "Expanded " << state_counter << " states at layer " << cost << endl;
+            cout << "Generate " << generations << " states at layer " << cost << endl;
+            statistics_counter += 10000;
+        }
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
         if (is_goal(state, task.goal)) {
             cout << "Goal state found!" << endl;
-            task.dumpState(state);
+            cout << "Total number of states visited:" << state_counter << endl;
+            cout << "Total number of states generated:" << generations << endl;
+            cout << "Total plan cost:" << cost << endl;
+            stack<State> states_in_the_plan;
+            states_in_the_plan.push(state);
+            while (cheapest_parent[visited[state]].first != -1) {
+                state = index_to_state[cheapest_parent[visited[state]].first];
+                states_in_the_plan.push(state);
+            }
+            while (!states_in_the_plan.empty()) {
+                state = states_in_the_plan.top();
+                cout << "##################" << endl;
+                task.dumpState(state);
+                states_in_the_plan.pop();
+            }
             // TODO extract plan, somehow.
             return plan;
         }
         // TODO implement successor
         vector<State> successors = generator.generate_successors(task.actions, state, task.static_info);
+        for (const State &s : successors) {
+            generations++;
+            if (visited.find(s) == visited.end()) {
+                cheapest_parent[state_counter] = make_pair(next, Action());
+                q.emplace(state_counter, cost+1);
+                index_to_state[state_counter] = s;
+                visited[s] = state_counter++;
+            }
+        }
     }
 
 

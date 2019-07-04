@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include <boost/functional/hash.hpp>
+
 typedef std::vector<int> GroundAtom; // Ground atom is a list of object indices.
 
 struct Parameter {
@@ -29,12 +31,29 @@ struct Argument {
 };
 
 struct Relation {
+    /*
+     * A relation is a "table" corresponding to some predicate in a state.  The predicate_symbol attribute indicates
+     * its corresponding predicate and the tuples attribute is a list of tuples, represented as a vector of vectors.
+     */
     Relation(int predicate_symbol, std::vector<GroundAtom> tuples) : predicate_symbol(predicate_symbol),
                                                                      tuples (std::move(tuples)) {}
 
     Relation(const Relation &rhs) = default;
 
     Relation() = default;
+
+    bool operator==(const Relation &other) const {
+        bool vector_equal = true;
+        if (tuples.size() != other.tuples.size()) {
+            vector_equal = false;
+        }
+        for (int i = 0; i < tuples.size(); ++i) {
+            if (tuples[i] != other.tuples[i])
+                vector_equal = false;
+        }
+        return predicate_symbol == other.predicate_symbol
+                && vector_equal;
+    }
 
     int predicate_symbol;
     std::vector<GroundAtom> tuples;
@@ -56,5 +75,13 @@ struct Atom {
     bool negated;
 };
 
+/*
+ * Hash functions
+ */
+/*
+std::size_t hash_value(const Relation &r) {
+    boost::hash<std::vector<std::vector<int>>> h1;
+    return h1(r.tuples);
+}*/
 
 #endif //SEARCH_STRUCTURES_H
