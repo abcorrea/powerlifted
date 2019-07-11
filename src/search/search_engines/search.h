@@ -4,12 +4,12 @@
 #include <utility>
 #include <vector>
 
-#include "action_schema.h"
-#include "action.h"
-#include "state.h"
-#include "structures.h"
-#include "task.h"
-#include "successor_generators/successor_generator.h"
+#include "../action_schema.h"
+#include "../action.h"
+#include "../state.h"
+#include "../structures.h"
+#include "../task.h"
+#include "../successor_generators/successor_generator.h"
 
 class Node {
 public:
@@ -36,13 +36,7 @@ public:
 
     int getNumberGeneratedStates() const;
 
-    const vector<Action> &search(const Task &task, SuccessorGenerator generator) const;
-
-private:
-    int number_explored_states = 0;
-    int number_generated_states = 0;
-    std::vector<Action> plan;
-
+    virtual const vector<Action> &search(const Task &task, SuccessorGenerator generator) const = 0;
 
     bool is_goal(const State &state, const GoalCondition &goal) const;
 
@@ -50,6 +44,13 @@ private:
                       unordered_map<int, pair<int, Action>> &cheapest_parent,
                       unordered_map<State, int, boost::hash<State>> &visited,
                       unordered_map<int, State> &index_to_state, const Task &task) const;
+
+    std::vector<Action> plan;
+private:
+    int number_explored_states = 0;
+    int number_generated_states = 0;
+
+
 };
 
 

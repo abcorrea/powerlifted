@@ -4,8 +4,11 @@
 
 #include "parser.h"
 #include "task.h"
-#include "search.h"
+#include "search_engines/search.h"
 #include "successor_generators/successor_generator.h"
+
+#include "search_engines/breadth_first_search.h"
+#include "search_engines/search_factory.h"
 
 using namespace std;
 
@@ -25,6 +28,13 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
+    Search *search = SearchFactory::new_search_engine(argv[2]);
+
+    if (!search) {
+        cerr << "Invalid search method." << endl;
+        return -1;
+    }
+
     cout << "Reading task description file." << endl;
     cin.rdbuf(in.rdbuf());
 
@@ -42,9 +52,8 @@ int main(int argc, char *argv[]) {
 
     cout << "IMPORTANT: Search component assumes that negative effects are always listed first." << endl;
 
-    Search search;
     SuccessorGenerator successorGenerator(task);
-    search.search(task, successorGenerator);
+    search->search(task, successorGenerator);
 
     /*
      * TODO

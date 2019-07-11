@@ -45,7 +45,7 @@ struct Relation {
     bool operator==(const Relation &other) const {
         bool vector_equal = true;
         if (tuples.size() != other.tuples.size()) {
-            vector_equal = false;
+            return false;
         }
         for (int i = 0; i < tuples.size(); ++i) {
             if (tuples[i] != other.tuples[i])
