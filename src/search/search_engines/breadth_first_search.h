@@ -5,7 +5,9 @@
 
 class BreadthFirstSearch: public Search {
 public:
-    const std::vector<Action> &search(const Task &task, SuccessorGenerator generator) const override;
+    const std::vector<Action> &search(const Task &task,
+                                      SuccessorGenerator generator,
+                                      Heuristic &heuristic) const override;
 
 };
 

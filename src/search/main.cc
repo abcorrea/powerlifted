@@ -9,14 +9,16 @@
 
 #include "search_engines/breadth_first_search.h"
 #include "search_engines/search_factory.h"
+#include "heuristics/heuristic.h"
+#include "heuristics/heuristic_factory.h"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
     cout << "Initializing planner" << endl;
 
-    if (argc != 3) {
-        cerr << "Usage: ./planner [TASK INPUT] [SUCCESSOR GENERATOR METHOD]" << endl;
+    if (argc != 4) {
+        cerr << "Usage: ./planner [TASK INPUT] [SEARCH METHOD] [HEURISTIC]" << endl;
         exit(-1);
     }
 
@@ -29,9 +31,14 @@ int main(int argc, char *argv[]) {
     }
 
     Search *search = SearchFactory::new_search_engine(argv[2]);
-
     if (!search) {
         cerr << "Invalid search method." << endl;
+        return -1;
+    }
+
+    Heuristic *heuristic = HeuristicFactory::new_heuristic(argv[3]);
+    if (!heuristic) {
+        cerr << "Invalid heuristic." << endl;
         return -1;
     }
 
@@ -53,7 +60,7 @@ int main(int argc, char *argv[]) {
     cout << "IMPORTANT: Search component assumes that negative effects are always listed first." << endl;
 
     SuccessorGenerator successorGenerator(task);
-    search->search(task, successorGenerator);
+    search->search(task, successorGenerator, *heuristic);
 
     /*
      * TODO

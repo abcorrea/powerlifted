@@ -9,7 +9,7 @@
 class SearchFactory {
 public:
     static Search *new_search_engine(const std::string& method) {
-        cout << "Creating search factory..." << endl;
+        std::cout << "Creating search factory..." << std::endl;
         if (boost::iequals(method, "naive")) {
             return new BreadthFirstSearch;
         }

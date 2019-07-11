@@ -66,6 +66,8 @@ void Search::extract_goal(int state_counter, int generations, State state,
 
 }
 
-const vector<Action> &Search::search(const Task &task, SuccessorGenerator generator) const {
+const vector<Action> &Search::search(const Task &task,
+                                     SuccessorGenerator generator,
+                                     Heuristic &heuristic) const {
     return plan;
 }

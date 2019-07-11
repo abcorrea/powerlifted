@@ -2,18 +2,17 @@
 #include <queue>
 #include <vector>
 
-#include "breadth_first_search.h"
+#include "astar_search.h"
 
 using namespace std;
 
-const vector<Action> &BreadthFirstSearch::search(const Task &task,
-                                                 SuccessorGenerator generator,
-                                                 Heuristic &heuristic) const {
+const std::vector<Action> &AStarSearch::search(const Task &task,
+                                               SuccessorGenerator generator,
+                                               Heuristic &heuristic) const {
     /*
-     * Simple Breadth first search
+     * TODO change BFS to A*
      */
-
-    cout << "Starting breadth first search" << endl;
+    cout << "Starting A* search" << endl;
     clock_t timer_start = clock();
 
     int state_counter = 0;
@@ -26,7 +25,7 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
     unordered_map<int, int> real_dist;
 
     index_to_state[state_counter] = task.initial_state;
-    cheapest_parent[state_counter] = make_pair(-1, Action());
+    cheapest_parent[state_counter] = make_pair(heuristic.compute_heuristic(task.initial_state, task), Action());
 
     int statistics_counter = 0;
 
@@ -43,6 +42,7 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
     while (not q.empty()) {
         Node head = q.front();
         int next = head.id;
+        int g = head.g;
         int h = head.h;
         q.pop();
         if ((statistics_counter - generations) <= 0) {
@@ -57,6 +57,7 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
         //task.dumpState(state);
         generations += successors.size();
         for (const State &s : successors) {
+            // TODO implement the heuristic and g-values update correctly
             if (visited.find(s) == visited.end()) {
                 cheapest_parent[state_counter] = make_pair(next, Action());
                 q.emplace(0, 0, state_counter);

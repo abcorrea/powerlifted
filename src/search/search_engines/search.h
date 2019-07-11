@@ -10,6 +10,7 @@
 #include "../structures.h"
 #include "../task.h"
 #include "../successor_generators/successor_generator.h"
+#include "../heuristics/heuristic.h"
 
 class Node {
 public:
@@ -36,7 +37,9 @@ public:
 
     int getNumberGeneratedStates() const;
 
-    virtual const vector<Action> &search(const Task &task, SuccessorGenerator generator) const = 0;
+    virtual const vector<Action> &search(const Task &task,
+                                         SuccessorGenerator generator,
+                                         Heuristic &heuristic) const = 0;
 
     bool is_goal(const State &state, const GoalCondition &goal) const;
 
