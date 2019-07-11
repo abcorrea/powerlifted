@@ -50,11 +50,11 @@ void Task::dumpState(State s) const {
         for (auto & tuple : tuples) {
             cout << relation_name << " ";
             for (auto obj : tuple) {
-                cout << objects[obj].getName() << " ";
+                cout << objects[obj].getName() << ", ";
             }
-            cout << endl;
         }
     }
+    cout << endl;
 }
 
 void Task::dumpGoal() {
