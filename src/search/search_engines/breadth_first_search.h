@@ -8,7 +8,7 @@ public:
     const std::vector<Action> &search(const Task &task,
                                       SuccessorGenerator generator,
                                       Heuristic &heuristic) const override;
-
+    std::vector<Action> plan;
 };
 
 

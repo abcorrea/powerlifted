@@ -8,6 +8,7 @@
 #include "../action_schema.h"
 #include "../task.h"
 #include "../database/table.h"
+#include "../action.h"
 
 /*
  * This base class implements a join-successor using the join of all positive preconditions in the
@@ -27,7 +28,7 @@ public:
 
     }
 
-    std::vector<State> generate_successors(const std::vector<ActionSchema> &actions, const State &state,
+    std::vector<std::pair<State, Action>> generate_successors(const std::vector<ActionSchema> &actions, const State &state,
                                            const StaticInformation &staticInformation);
 
 private:

@@ -6,12 +6,13 @@
 
 #include "../database/join.h"
 #include "../database/table.h"
+#include "../action.h"
 
 using namespace std;
 
-vector<State> SuccessorGenerator::generate_successors(const vector<ActionSchema> &actions,
+vector<pair<State,Action>> SuccessorGenerator::generate_successors(const vector<ActionSchema> &actions,
                                                       const State &state, const StaticInformation &staticInformation) {
-    vector<State> successors;
+    vector<pair<State, Action>> successors;
 
     for (const ActionSchema &action : actions) {
         Table instantiations = instantiate(action, state, staticInformation);
@@ -56,7 +57,7 @@ vector<State> SuccessorGenerator::generate_successors(const vector<ActionSchema>
                         }
                     }
                 }
-                successors.emplace_back(new_relation);
+                successors.emplace_back(new_relation, Action(action.getIndex(), tuple));
             }
         }
     }

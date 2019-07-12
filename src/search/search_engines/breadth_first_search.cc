@@ -26,7 +26,7 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
     unordered_map<int, int> real_dist;
 
     index_to_state[state_counter] = task.initial_state;
-    cheapest_parent[state_counter] = make_pair(-1, Action());
+    cheapest_parent[state_counter] = make_pair(-1, Action(-1, vector<int>()));
 
     int statistics_counter = 0;
 
@@ -36,7 +36,6 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
     if (is_goal(task.initial_state, task.goal)) {
         cout << "Initial state is a goal" << endl;
         extract_goal(state_counter, generations, task.initial_state, cheapest_parent, visited, index_to_state, task);
-        // TODO extract plan, somehow.
         return plan;
     }
 
@@ -52,20 +51,22 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
         }
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
-        vector<State> successors = generator.generate_successors(task.actions, state, task.static_info);
+        vector<pair<State, Action>> successors = generator.generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
         //task.dumpState(state);
         generations += successors.size();
-        for (const State &s : successors) {
+        for (const pair<State, Action> &successor : successors) {
+            State s = successor.first;
+            Action a = successor.second;
             if (visited.find(s) == visited.end()) {
-                cheapest_parent[state_counter] = make_pair(next, Action());
+                cheapest_parent[state_counter] = make_pair(next, a);
                 q.emplace(0, 0, state_counter);
                 index_to_state[state_counter] = s;
                 visited[s] = state_counter;
                 state_counter++;
                 if (is_goal(s, task.goal)) {
                     extract_goal(state_counter, generations, s, cheapest_parent, visited, index_to_state, task);
-                    // TODO extract plan, somehow.
+                    extract_plan(cheapest_parent, s, visited, index_to_state, task);
                     return plan;
                 }
                 //cout << "SUCCESSOR:" << " ";

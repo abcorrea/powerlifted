@@ -48,6 +48,13 @@ public:
                       unordered_map<State, int, boost::hash<State>> &visited,
                       unordered_map<int, State> &index_to_state, const Task &task) const;
 
+    static void extract_plan(unordered_map<int, pair<int, Action>> &cheapest_parent,
+                             State state,
+                             unordered_map<State, int, boost::hash<State>> &visited,
+                             unordered_map<int, State> &index_to_state,
+                             const Task &task);
+
+
     std::vector<Action> plan;
 private:
     int number_explored_states = 0;
