@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const std::vector<Action> &AStarSearch::search(const Task &task,
+const int AStarSearch::search(const Task &task,
                                                SuccessorGenerator generator,
                                                Heuristic &heuristic) const {
     /*
@@ -14,5 +14,5 @@ const std::vector<Action> &AStarSearch::search(const Task &task,
      */
     cout << "Starting A* search" << endl;
     clock_t timer_start = clock();
-    return plan;
+    return NOT_SOLVED;
 }

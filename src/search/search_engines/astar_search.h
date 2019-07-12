@@ -5,7 +5,7 @@
 
 class AStarSearch: public Search {
 public:
-const std::vector<Action> &search(const Task &task,
+const int search(const Task &task,
                                   SuccessorGenerator generator,
                                   Heuristic &heuristic) const override;
 

@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     cout << "IMPORTANT: Search component assumes that negative effects are always listed first." << endl;
 
     SuccessorGenerator successorGenerator(task);
-    vector<Action> plan = search->search(task, successorGenerator, *heuristic);
+    int result = search->search(task, successorGenerator, *heuristic);
 
     /*
      * TODO
@@ -70,5 +70,5 @@ int main(int argc, char *argv[]) {
      *
      */
 
-    return 0;
+    return result;
 }

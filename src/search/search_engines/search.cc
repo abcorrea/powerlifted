@@ -68,10 +68,10 @@ void Search::extract_goal(int state_counter, int generations, State state,
 
 }
 
-const vector<Action> &Search::search(const Task &task,
+const int Search::search(const Task &task,
                                      SuccessorGenerator generator,
                                      Heuristic &heuristic) const {
-    return plan;
+    return NOT_SOLVED;
 }
 
 void Search::extract_plan(unordered_map<int, pair<int, Action>> &cheapest_parent, State state,

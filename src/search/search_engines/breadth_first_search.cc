@@ -6,9 +6,9 @@
 
 using namespace std;
 
-const vector<Action> &BreadthFirstSearch::search(const Task &task,
-                                                 SuccessorGenerator generator,
-                                                 Heuristic &heuristic) const {
+const int BreadthFirstSearch::search(const Task &task,
+                                     SuccessorGenerator generator,
+                                     Heuristic &heuristic) const {
     /*
      * Simple Breadth first search
      */
@@ -36,7 +36,7 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
     if (is_goal(task.initial_state, task.goal)) {
         cout << "Initial state is a goal" << endl;
         extract_goal(state_counter, generations, task.initial_state, cheapest_parent, visited, index_to_state, task);
-        return plan;
+        return SOLVED;
     }
 
     while (not q.empty()) {
@@ -67,7 +67,7 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
                 if (is_goal(s, task.goal)) {
                     extract_goal(state_counter, generations, s, cheapest_parent, visited, index_to_state, task);
                     extract_plan(cheapest_parent, s, visited, index_to_state, task);
-                    return plan;
+                    return SOLVED;
                 }
                 //cout << "SUCCESSOR:" << " ";
                 //task.dumpState(s);
@@ -76,5 +76,5 @@ const vector<Action> &BreadthFirstSearch::search(const Task &task,
     }
 
 
-    return plan;
+    return NOT_SOLVED;
 }

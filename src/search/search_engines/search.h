@@ -12,6 +12,9 @@
 #include "../successor_generators/successor_generator.h"
 #include "../heuristics/heuristic.h"
 
+#define SOLVED 1
+#define NOT_SOLVED 2
+
 class Node {
 public:
     Node(int g, int h, int id) : g(g), h(h), id(id) {}
@@ -37,7 +40,7 @@ public:
 
     int getNumberGeneratedStates() const;
 
-    virtual const vector<Action> &search(const Task &task,
+    virtual const int search(const Task &task,
                                          SuccessorGenerator generator,
                                          Heuristic &heuristic) const = 0;
 
