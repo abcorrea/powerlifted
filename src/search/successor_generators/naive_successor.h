@@ -1,20 +1,11 @@
 #ifndef SEARCH_NAIVE_SUCCESSOR_H
 #define SEARCH_NAIVE_SUCCESSOR_H
 
+#include "generic_join_successor.h"
 
-#include "successor_generator.h"
-
-class NaiveSuccessorGenerator : public SuccessorGenerator{
+class NaiveSuccessorGenerator : public GenericJoinSuccessor {
 public:
-    explicit NaiveSuccessorGenerator(const Task &task) : SuccessorGenerator(task) {}
-
-    std::vector<std::pair<State, Action>> generate_successors(const std::vector<ActionSchema> &actions, const State &state,
-                                                              const StaticInformation &staticInformation) override;
-
-    std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
-
-    Table instantiate(const ActionSchema &action, const State &state,
-                      const StaticInformation &staticInformation) override;
+    explicit NaiveSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {}
 
     std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
