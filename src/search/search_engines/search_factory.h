@@ -3,8 +3,9 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "search.h"
 #include "breadth_first_search.h"
+#include "greedy_best_first_search.h"
+#include "search.h"
 
 class SearchFactory {
 public:
@@ -12,6 +13,9 @@ public:
         std::cout << "Creating search factory..." << std::endl;
         if (boost::iequals(method, "naive")) {
             return new BreadthFirstSearch;
+        }
+        else if (boost::iequals(method, "gbfs")) {
+            return new GreedyBestFirstSearch;
         }
         else {
             return nullptr;

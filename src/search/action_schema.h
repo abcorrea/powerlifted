@@ -14,9 +14,8 @@ public:
                           int cost,
                           std::vector<Parameter> parameters,
                           std::vector<Atom> precondition,
-                          std::vector<Atom> effects) :
-                          name(std::move(name)), index(index), cost(cost), parameters(std::move(parameters)),
-                          precondition(std::move(precondition)), effects(std::move(effects)) {}
+                          std::vector<Atom> effects,
+                          std::vector<std::pair<int,int>> inequalities);
 
     const std::string &getName() const {
         return name;
@@ -42,6 +41,10 @@ public:
         return effects;
     }
 
+    const std::vector<std::pair<int, int>> &getInequalities() const {
+        return inequalities;
+    }
+
 private:
     std::string name;
     int index;
@@ -49,6 +52,8 @@ private:
     std::vector<Parameter> parameters;
     std::vector<Atom> precondition;
     std::vector<Atom> effects;
+    std::vector<std::pair<int,int>> inequalities;
+
 };
 
 

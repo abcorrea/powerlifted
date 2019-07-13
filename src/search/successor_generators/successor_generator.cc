@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <vector>
+#include <queue>
 
 #include "successor_generator.h"
 
@@ -94,6 +95,33 @@ Table SuccessorGenerator::instantiate(const ActionSchema &action, const State &s
     Table working_table = tables[0];
     for (int i = 1; i < tables.size(); ++i) {
         join(working_table, tables[i]);
+        // Filter out equalities
+        for (const pair<int, int> ineq : action.getInequalities()) {
+            auto it_1 = find(working_table.tuple_index.begin(),
+                                              working_table.tuple_index.end(),
+                                              ineq.first);
+            auto it_2 = find(working_table.tuple_index.begin(),
+                             working_table.tuple_index.end(),
+                             ineq.second);
+            if (it_1 != working_table.tuple_index.end() and it_2 != working_table.tuple_index.end()) {
+                // Loop over all tuples and remove duplicates
+                // This is a late removal but there is no easy way to do it before
+                int index1 = distance(working_table.tuple_index.begin(), it_1);
+                int index2 = distance(working_table.tuple_index.begin(), it_2);
+                int cont = 0;
+                vector<int> equal_tuples;
+                for (vector<int> tuple : working_table.tuples) {
+                    if (tuple[index1] == tuple[index2]) {
+                        equal_tuples.push_back(cont);
+                    }
+                    cont++;
+                }
+                reverse(equal_tuples.begin(), equal_tuples.end());
+                for (int n : equal_tuples) {
+                    working_table.tuples.erase(working_table.tuples.begin() + n);
+                }
+            }
+        }
         if (working_table.tuples.empty()) {
             return working_table;
         }
@@ -108,6 +136,7 @@ vector<Table> SuccessorGenerator::parse_precond_into_join_program(const vector<A
      * We first parse the state and the atom preconditions into a set of tables
      * to perform the join-program more easily.
      */
+    priority_queue<Table, vector<Table>, OrderTable> ordered_tables;
     vector<Table> parsed_tables;//(precond.size());
     parsed_tables.reserve(precond.size());
     for (const Atom& a : precond) {
@@ -118,13 +147,17 @@ vector<Table> SuccessorGenerator::parse_precond_into_join_program(const vector<A
         if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
             // If this predicate has information in the static information table,
             // then it must be a static predicate
-            parsed_tables.emplace_back(staticInformation.relations[a.predicate_symbol].tuples, indices);
+            ordered_tables.emplace(staticInformation.relations[a.predicate_symbol].tuples, indices);
         }
         else {
             // If this predicate does not have information in the static information table,
             // then it must be a fluent
-            parsed_tables.emplace_back(state.relations[a.predicate_symbol].tuples, indices);
+            ordered_tables.emplace(state.relations[a.predicate_symbol].tuples, indices);
         }
+    }
+    while (!ordered_tables.empty()) {
+        parsed_tables.push_back(ordered_tables.top());
+        ordered_tables.pop();
     }
     return parsed_tables;
 }

@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <boost/algorithm/string.hpp>
 
 #include "parser.h"
 #include "goal_condition.h"
@@ -138,6 +139,7 @@ bool parse(Task &task, const ifstream &in) {
         cin >> name >> cost >> args >> precond_size >> eff_size;
         vector<Parameter> parameters;
         vector<Atom> preconditions, effects;
+        vector<pair<int,int>> inequalities;
         for (int j = 0; j < args; ++j) {
             string param_name;
             int index, type;
@@ -150,21 +152,31 @@ bool parse(Task &task, const ifstream &in) {
             bool negated;
             int arguments_size;
             cin >> precond_name >> index >> negated >> arguments_size;
+            bool is_inequality = (boost::iequals(precond_name, "=") and negated);
             vector<Argument> arguments;
-            for (int k = 0; k < arguments_size; ++k) {
-                char c;
-                int obj_index;
-                cin >> c >> obj_index;
-                if (c == 'c') {
-                    arguments.emplace_back(obj_index, true);
-                }
-                else if (c == 'p') {
-                    arguments.emplace_back(obj_index, false);
-                }
-                else {
-                    cerr << "Error while reading action schema " << name << ". Argument is neither constant or "
-                                                                            "object"<< endl;
-                    exit(-1);
+            if (is_inequality) {
+                assert (arguments_size == 2);
+                int obj1, obj2;
+                char c, d;
+                cin >> c >> obj1 >> d >> obj2;
+                arguments.emplace_back(obj1, c == 'c');
+                arguments.emplace_back(obj2, d == 'c');
+                inequalities.emplace_back(obj1, obj2);
+            }
+            else {
+                for (int k = 0; k < arguments_size; ++k) {
+                    char c;
+                    int obj_index;
+                    cin >> c >> obj_index;
+                    if (c == 'c') {
+                        arguments.emplace_back(obj_index, true);
+                    } else if (c == 'p') {
+                        arguments.emplace_back(obj_index, false);
+                    } else {
+                        cerr << "Error while reading action schema " << name << ". Argument is neither constant or "
+                                                                                "object" << endl;
+                        exit(-1);
+                    }
                 }
             }
             preconditions.emplace_back(precond_name, index, arguments, negated);
@@ -194,7 +206,7 @@ bool parse(Task &task, const ifstream &in) {
             }
             effects.emplace_back(eff_name, index, arguments, negated);
         }
-        ActionSchema a(name, i, cost, parameters, preconditions, effects);
+        ActionSchema a(name, i, cost, parameters, preconditions, effects, inequalities);
         actions.push_back(a);
     }
     task.initializeActionSchemas(actions);
