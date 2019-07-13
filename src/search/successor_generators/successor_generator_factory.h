@@ -6,6 +6,7 @@
 
 #include "naive_successor.h"
 #include "ordered_join_successor.h"
+#include "inverse_ordered_join_successor.h"
 
 class SuccessorGeneratorFactory {
 public:
@@ -16,6 +17,9 @@ public:
         }
         else if (boost::iequals(method, "ordered_join")) {
             return new OrderedJoinSuccessorGenerator(task);
+        }
+        else if (boost::iequals(method, "inverse_ordered_join")) {
+            return new InverseOrderedJoinSuccessorGenerator(task);
         }
         else {
             return nullptr;
