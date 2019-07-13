@@ -12,6 +12,7 @@ vector<Table> InverseOrderedJoinSuccessorGenerator::parse_precond_into_join_prog
     /*
      * We first parse the state and the atom preconditions into a set of tables
      * to perform the join-program more easily.
+     *
      */
     priority_queue<Table, vector<Table>, InverseOrderTable> ordered_tables;
     vector<Table> parsed_tables;//(precond.size());

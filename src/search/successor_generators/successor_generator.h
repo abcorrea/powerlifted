@@ -15,6 +15,11 @@
 /*
  * This base class implements a join-successor using the join of all positive preconditions in the
  * action schema.
+ *
+ *
+ * Note that successor generators might change the number of generated states. This happens simply because
+ * the order of the tuples produced differs depending on the order of the joins.
+ *
  */
 
 class SuccessorGenerator {
