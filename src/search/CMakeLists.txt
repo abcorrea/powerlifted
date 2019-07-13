@@ -26,4 +26,4 @@ add_executable(search
         search_engines/astar_search.cc search_engines/astar_search.h
         heuristics/heuristic.cc heuristics/heuristic.h
         heuristics/heuristic_factory.h
-        heuristics/blind_heuristic.h)
+        heuristics/blind_heuristic.h search_engines/greedy_best_first_search.cc search_engines/greedy_best_first_search.h successor_generators/successor_generator_factory.h successor_generators/naive_successor.cc successor_generators/naive_successor.h successor_generators/ordered_join_successor.cc successor_generators/ordered_join_successor.h database/join.cc)

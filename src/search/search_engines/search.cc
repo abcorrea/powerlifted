@@ -69,8 +69,8 @@ void Search::extract_goal(int state_counter, int generations, State state,
 }
 
 const int Search::search(const Task &task,
-                                     SuccessorGenerator generator,
-                                     Heuristic &heuristic) const {
+                         SuccessorGenerator *generator,
+                         Heuristic &heuristic) const {
     return NOT_SOLVED;
 }
 

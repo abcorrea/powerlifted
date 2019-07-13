@@ -10,6 +10,8 @@
 #include "../database/table.h"
 #include "../action.h"
 
+#include "../database/join.h"
+
 /*
  * This base class implements a join-successor using the join of all positive preconditions in the
  * action schema.
@@ -17,6 +19,7 @@
 
 class SuccessorGenerator {
 public:
+    std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
 
     explicit SuccessorGenerator(const Task &task) {
         obj_per_type.resize(task.type_names.size());
@@ -28,19 +31,16 @@ public:
 
     }
 
-    std::vector<std::pair<State, Action>> generate_successors(const std::vector<ActionSchema> &actions, const State &state,
-                                           const StaticInformation &staticInformation);
+    virtual std::vector<std::pair<State, Action>> generate_successors(const std::vector<ActionSchema> &actions, const State &state,
+                                           const StaticInformation &staticInformation) = 0;
 
-private:
-    std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
+    virtual Table instantiate(const ActionSchema &action, const State &state,
+                                    const StaticInformation &staticInformation) = 0;
 
-    Table instantiate(const ActionSchema &action, const State &state,
-                                    const StaticInformation &staticInformation);
-
-    std::vector<Table>
+    virtual std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
                                     const State &state,
-                                    const StaticInformation &staticInformation);
+                                    const StaticInformation &staticInformation) = 0;
 
     GroundAtom tuple_to_atom(const std::vector<int> &tuple, const std::vector<int> &indices, const Atom &eff);
 };

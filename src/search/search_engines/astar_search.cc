@@ -7,7 +7,7 @@
 using namespace std;
 
 const int AStarSearch::search(const Task &task,
-                                               SuccessorGenerator generator,
+                                               SuccessorGenerator *generator,
                                                Heuristic &heuristic) const {
     /*
      * TODO implement A*

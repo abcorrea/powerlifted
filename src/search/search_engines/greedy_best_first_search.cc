@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator generator, Heuristic &heuristic) const {
+const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *generator, Heuristic &heuristic) const {
     /*
      * Greedy best first search
      *
@@ -51,7 +51,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator gen
         }
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
-        vector<pair<State, Action>> successors = generator.generate_successors(task.actions, state, task.static_info);
+        vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
         //task.dumpState(state);
         generations += successors.size();

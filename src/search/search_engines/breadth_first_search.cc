@@ -7,7 +7,7 @@
 using namespace std;
 
 const int BreadthFirstSearch::search(const Task &task,
-                                     SuccessorGenerator generator,
+                                     SuccessorGenerator *generator,
                                      Heuristic &heuristic) const {
     /*
      * Simple Breadth first search
@@ -50,7 +50,7 @@ const int BreadthFirstSearch::search(const Task &task,
         }
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
-        vector<pair<State, Action>> successors = generator.generate_successors(task.actions, state, task.static_info);
+        vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
         //task.dumpState(state);
         generations += successors.size();

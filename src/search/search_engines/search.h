@@ -41,8 +41,8 @@ public:
     int getNumberGeneratedStates() const;
 
     virtual const int search(const Task &task,
-                                         SuccessorGenerator generator,
-                                         Heuristic &heuristic) const = 0;
+                             SuccessorGenerator *generator,
+                             Heuristic &heuristic) const = 0;
 
     bool is_goal(const State &state, const GoalCondition &goal) const;
 
