@@ -8,6 +8,7 @@
 #include "heuristic.h"
 #include "blind_heuristic.h"
 #include "goalcount.h"
+#include "iterated_width.h"
 
 class HeuristicFactory {
 public:
@@ -18,6 +19,9 @@ public:
         }
         else if (boost::iequals(method, "goalcount")) {
             return new Goalcount;
+        }
+        else if (boost::iequals(method, "iw1")) {
+            return new IteratedWidth;
         }
         else {
             return nullptr;
