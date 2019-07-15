@@ -32,7 +32,7 @@ const int BreadthFirstSearch::search(const Task &task,
     q.emplace(0, 0, state_counter);
     visited[task.initial_state] = state_counter++;
 
-    if (is_goal(task.initial_state, task.goal)) {
+    if (task.is_goal(task.initial_state, task.goal)) {
         cout << "Initial state is a goal" << endl;
         extract_goal(state_counter, generations, task.initial_state, cheapest_parent, visited, index_to_state, task);
         return SOLVED;
@@ -63,7 +63,7 @@ const int BreadthFirstSearch::search(const Task &task,
                 index_to_state[state_counter] = s;
                 visited[s] = state_counter;
                 state_counter++;
-                if (is_goal(s, task.goal)) {
+                if (task.is_goal(s, task.goal)) {
                     extract_goal(state_counter, generations, s, cheapest_parent, visited, index_to_state, task);
                     extract_plan(cheapest_parent, s, visited, index_to_state, task);
                     return SOLVED;

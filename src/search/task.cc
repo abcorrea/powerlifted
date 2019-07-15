@@ -83,3 +83,25 @@ void Task::initializeActionSchemas(const std::vector<ActionSchema>& action_list)
     actions = action_list;
 }
 
+bool Task::is_goal(const State &state, const GoalCondition &goal_condition) const {
+    for (const AtomicGoal &atomicGoal : goal_condition.goal) {
+        int goal_predicate = atomicGoal.predicate;
+        Relation relation_at_goal_predicate = state.relations[goal_predicate];
+        assert (goal_predicate == relation_at_goal_predicate.predicate_symbol);
+        if (!atomicGoal.negated) {
+            // Positive goal_condition
+            if (find(relation_at_goal_predicate.tuples.begin(), relation_at_goal_predicate.tuples.end(),
+                     atomicGoal.args) == relation_at_goal_predicate.tuples.end()) {
+                return false;
+            }
+        } else {
+            // Negative goal_condition
+            if (find(relation_at_goal_predicate.tuples.begin(), relation_at_goal_predicate.tuples.end(),
+                     atomicGoal.args) != relation_at_goal_predicate.tuples.end()) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+

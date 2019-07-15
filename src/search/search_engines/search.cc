@@ -22,28 +22,6 @@ int Search::getNumberGeneratedStates() const {
     return number_generated_states;
 }
 
-bool Search::is_goal(const State &state, const GoalCondition &goal) const {
-    for (const AtomicGoal &atomicGoal : goal.goal) {
-        int goal_predicate = atomicGoal.predicate;
-        Relation relation_at_goal_predicate = state.relations[goal_predicate];
-        assert (goal_predicate == relation_at_goal_predicate.predicate_symbol);
-        if (!atomicGoal.negated) {
-            // Positive goal
-            if (find(relation_at_goal_predicate.tuples.begin(), relation_at_goal_predicate.tuples.end(),
-                     atomicGoal.args) == relation_at_goal_predicate.tuples.end()) {
-                return false;
-            }
-        } else {
-            // Negative goal
-            if (find(relation_at_goal_predicate.tuples.begin(), relation_at_goal_predicate.tuples.end(),
-                     atomicGoal.args) != relation_at_goal_predicate.tuples.end()) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 void Search::extract_goal(int state_counter, int generations, State state,
                           unordered_map<int, pair<int, Action>> &cheapest_parent,
                           unordered_map<State, int, boost::hash<State>> &visited,
