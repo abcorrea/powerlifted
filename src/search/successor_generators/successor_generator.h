@@ -45,7 +45,8 @@ public:
     virtual std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
                                     const State &state,
-                                    const StaticInformation &staticInformation) = 0;
+                                    const StaticInformation &staticInformation,
+                                    int action_index) = 0;
 
     GroundAtom tuple_to_atom(const std::vector<int> &tuple, const std::vector<int> &indices, const Atom &eff);
 };

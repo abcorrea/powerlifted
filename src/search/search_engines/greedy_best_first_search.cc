@@ -61,18 +61,17 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
             int dist = g + task.actions[a.index].getCost();
             if (visited.find(s) == visited.end()) {
                 cheapest_parent[state_counter] = make_pair(next, a);
-                q.emplace(0, heuristic.compute_heuristic(s, task), state_counter);
+                q.emplace(task.actions[a.index].getCost(), heuristic.compute_heuristic(s, task), state_counter);
                 shortest_distance[state_counter] = dist;
                 index_to_state[state_counter] = s;
                 visited[s] = state_counter;
                 state_counter++;
                 if (task.is_goal(s, task.goal)) {
+                    cout << "Goal found at:" << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
                     extract_goal(state_counter, generations, s, cheapest_parent, visited, index_to_state, task);
                     extract_plan(cheapest_parent, s, visited, index_to_state, task);
                     return SOLVED;
                 }
-                //cout << "SUCCESSOR:" << " ";
-                //task.dumpState(s);
             }
             else {
                 size_t index = visited[s];

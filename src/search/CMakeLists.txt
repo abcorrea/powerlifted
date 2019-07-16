@@ -19,11 +19,18 @@ add_executable(search
         action.h
         successor_generators/successor_generator.cc successor_generators/successor_generator.h
         database/table.cc database/table.h
-        database/join.h
+        database/join.cc database/join.h
         heuristics/goalcount.cc heuristics/goalcount.h
         search_engines/breadth_first_search.cc search_engines/breadth_first_search.h
         search_engines/search_factory.h
         search_engines/astar_search.cc search_engines/astar_search.h
         heuristics/heuristic.cc heuristics/heuristic.h
         heuristics/heuristic_factory.h
-        heuristics/blind_heuristic.h search_engines/greedy_best_first_search.cc search_engines/greedy_best_first_search.h successor_generators/successor_generator_factory.h successor_generators/naive_successor.cc successor_generators/naive_successor.h successor_generators/ordered_join_successor.cc successor_generators/ordered_join_successor.h database/join.cc)
+        heuristics/blind_heuristic.h
+        search_engines/greedy_best_first_search.cc search_engines/greedy_best_first_search.h
+        successor_generators/successor_generator_factory.h
+        successor_generators/naive_successor.cc successor_generators/naive_successor.h
+        successor_generators/ordered_join_successor.cc successor_generators/ordered_join_successor.h
+        successor_generators/inverse_ordered_join_successor.cc successor_generators/inverse_ordered_join_successor.h
+        successor_generators/generic_join_successor.cc successor_generators/generic_join_successor.h
+        heuristics/iterated_width.cc heuristics/iterated_width.h successor_generators/full_reducer_successor_generator.cc successor_generators/full_reducer_successor_generator.h database/semi_join.h database/semi_join.cc)

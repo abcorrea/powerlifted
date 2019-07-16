@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 
+#include "full_reducer_successor_generator.h"
 #include "naive_successor.h"
 #include "ordered_join_successor.h"
 #include "inverse_ordered_join_successor.h"
@@ -20,6 +21,9 @@ public:
         }
         else if (boost::iequals(method, "inverse_ordered_join")) {
             return new InverseOrderedJoinSuccessorGenerator(task);
+        }
+        else if (boost::iequals(method, "full_reducer")) {
+            return new FullReducerSuccessorGenerator(task);
         }
         else {
             return nullptr;

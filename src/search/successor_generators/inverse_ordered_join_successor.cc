@@ -7,8 +7,11 @@
 
 using namespace std;
 
-vector<Table> InverseOrderedJoinSuccessorGenerator::parse_precond_into_join_program(const vector<Atom> &precond, const State &state,
-                                                                             const StaticInformation &staticInformation) {
+vector<Table> InverseOrderedJoinSuccessorGenerator::parse_precond_into_join_program(
+        const vector<Atom> &precond,
+        const State &state,
+        const StaticInformation &staticInformation,
+        int action_index) {
     /*
      * We first parse the state and the atom preconditions into a set of tables
      * to perform the join-program more easily.

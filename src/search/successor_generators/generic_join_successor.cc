@@ -7,8 +7,8 @@
 #include "generic_join_successor.h"
 
 vector<pair<State, Action>> GenericJoinSuccessor::generate_successors(const vector<ActionSchema> &actions,
-                                                                         const State &state,
-                                                                         const StaticInformation &staticInformation) {
+                                                                      const State &state,
+                                                                      const StaticInformation &staticInformation) {
     vector<pair<State, Action>> successors;
 
     for (const ActionSchema &action : actions) {
@@ -84,7 +84,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
 
     assert (!precond.empty());
 
-    vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation);
+    vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation, action.getIndex());
     assert (!tables.empty());
     Table working_table = tables[0];
     for (int i = 1; i < tables.size(); ++i) {
