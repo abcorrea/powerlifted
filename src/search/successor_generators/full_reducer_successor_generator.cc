@@ -67,18 +67,18 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
          * GYO algorithm.
          * We probably should have a better method to order cyclic precond
          */
-        bool acyclic = true;
+        bool has_ear = true;
         stack<pair<int,int>> full_reducer_back;
         vector<bool> removed(hyperedges.size(), false);
-        while (acyclic and !hyperedges.empty()) {
-            acyclic = false;
+        while (has_ear and !hyperedges.empty()) {
+            has_ear = false;
             int ear = -1;
             int in_favor = -1;
-            for (int i = 0; i < hyperedges.size()-1 and !acyclic; ++i) {
+            for (int i = 0; i < hyperedges.size()-1 and !has_ear; ++i) {
                 if (removed[i]) {
                     continue;
                 }
-                for (int j = i+1; j < hyperedges.size() and !acyclic; ++j) {
+                for (int j = i+1; j < hyperedges.size() and !has_ear; ++j) {
                     if (removed[j]) {
                         continue;
                     }
@@ -87,23 +87,23 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                                    hyperedges[j].begin(), hyperedges[j].end(),
                                    inserter(diff, diff.end()));
                     // Contained only in the first hyperedge, then it is an ear
-                    acyclic = true;
+                    has_ear = true;
                     ear = i;
                     in_favor = j;
                     for (int n : diff) {
                         if (node_counter[n] > 1) {
-                            acyclic = false;
+                            has_ear = false;
                             ear = -1;
                             in_favor = -1;
                         }
                     }
-                    if (acyclic) {
+                    if (has_ear) {
                         for (int n : diff) {
                             node_counter[n]--;
                         }
                     }
                 }
-                if (acyclic) {
+                if (has_ear) {
                     assert (ear != -1 and in_favor != -1);
                     removed[ear] =true;
                     full_reducer_order[action.getIndex()].emplace_back(edge_to_precond[ear], edge_to_precond[in_favor]);
