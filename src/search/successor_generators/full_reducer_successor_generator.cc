@@ -62,7 +62,11 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                 full_join_order[action.getIndex()].push_back(0);
             return;
         }
-        // TODO Implement GYO
+
+        /*
+         * GYO algorithm.
+         * We probably should have a better method to order cyclic precond
+         */
         bool acyclic = true;
         stack<pair<int,int>> full_reducer_back;
         vector<bool> removed(hyperedges.size(), false);
