@@ -37,7 +37,7 @@ vector<pair<State, Action>> GenericJoinSuccessor::generate_successors(const vect
                 // TODO test case with constants (should work?)
                 vector<Relation> new_relation(state.relations);
                 for (const Atom &eff : action.getEffects()) {
-                    GroundAtom ground_atom = tuple_to_atom(tuple, instantiations.tuple_index, eff);
+                    const GroundAtom &ground_atom = tuple_to_atom(tuple, instantiations.tuple_index, eff);
                     assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
                     if (eff.negated) {
                         // Remove from relation

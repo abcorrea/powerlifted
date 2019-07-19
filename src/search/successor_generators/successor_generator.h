@@ -48,7 +48,9 @@ public:
                                     const StaticInformation &staticInformation,
                                     int action_index) = 0;
 
-    GroundAtom tuple_to_atom(const std::vector<int> &tuple, const std::vector<int> &indices, const Atom &eff);
+    const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const std::vector<int> &indices, const Atom &eff);
+
+    GroundAtom ground_atom;
 };
 
 

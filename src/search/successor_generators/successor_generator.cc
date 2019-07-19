@@ -8,14 +8,17 @@
 
 using namespace std;
 
-GroundAtom SuccessorGenerator::tuple_to_atom(const vector<int> &tuple, const vector<int> &indices, const Atom &eff) {
+const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
+                                                    const vector<int> &indices,
+                                                    const Atom &eff) {
     vector<int> ordered_tuple(tuple.size(), -1);
     assert (tuple.size() == indices.size());
     for (int i = 0; i < indices.size(); ++i) {
         ordered_tuple[indices[i]] = tuple[i];
     }
 
-    GroundAtom ground_atom(eff.tuples.size(), -1);
+    ground_atom.clear();
+    ground_atom.resize(eff.tuples.size(), -1);
     for (int i = 0; i < ground_atom.size(); i++) {
         ground_atom[i] = ordered_tuple[eff.tuples[i].index];
     }
