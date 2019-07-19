@@ -6,6 +6,8 @@
 
 #include "generic_join_successor.h"
 
+#include "../database/hash_join.h"
+
 vector<pair<State, Action>> GenericJoinSuccessor::generate_successors(const vector<ActionSchema> &actions,
                                                                       const State &state,
                                                                       const StaticInformation &staticInformation) {

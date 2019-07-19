@@ -51,6 +51,12 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
         }
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
+        if (task.is_goal(state, task.goal)) {
+            cout << "Goal found at:" << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
+            extract_goal(state_counter, generations, state, cheapest_parent, visited, index_to_state, task);
+            extract_plan(cheapest_parent, state, visited, index_to_state, task);
+            return SOLVED;
+        }
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
         //task.dumpState(state);
@@ -58,6 +64,8 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
         for (const pair<State, Action> &successor : successors) {
             State s = successor.first;
             Action a = successor.second;
+            //cout << "SUCCESSOR (" << task.actions[a.index].getName() << "): ";
+            //task.dumpState(s);
             int dist = g + task.actions[a.index].getCost();
             if (visited.find(s) == visited.end()) {
                 cheapest_parent[state_counter] = make_pair(next, a);
@@ -66,12 +74,6 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
                 index_to_state[state_counter] = s;
                 visited[s] = state_counter;
                 state_counter++;
-                if (task.is_goal(s, task.goal)) {
-                    cout << "Goal found at:" << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
-                    extract_goal(state_counter, generations, s, cheapest_parent, visited, index_to_state, task);
-                    extract_plan(cheapest_parent, s, visited, index_to_state, task);
-                    return SOLVED;
-                }
             }
             else {
                 size_t index = visited[s];
