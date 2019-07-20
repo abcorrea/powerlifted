@@ -56,7 +56,7 @@ void hash_join(Table &t1, Table &t2) {
         vector<int> old_indices_t2(t2.tuple_index);
         vector<int> to_remove;
         to_remove.reserve(matches.size());
-        for (pair<int, int> m : matches) {
+        for (const pair<int, int> &m : matches) {
             to_remove.push_back(m.second);
         }
         sort(to_remove.begin(), to_remove.end());
@@ -66,7 +66,7 @@ void hash_join(Table &t1, Table &t2) {
         t1.tuple_index.insert(t1.tuple_index.end(), t2.tuple_index.begin(), t2.tuple_index.end());
 
         // Probe phase
-        for (vector<int> tuple : t2.tuples) {
+        for (vector<int> &tuple : t2.tuples) {
             vector<int> key(matches.size());
             for (int i = 0; i < matches.size(); i++) {
                 key[i] = tuple[matches[i].second];

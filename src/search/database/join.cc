@@ -49,7 +49,7 @@ void join(Table &t1, Table &t2) {
          */
         vector<int> to_remove;
         to_remove.reserve(matches.size());
-        for (pair<int, int> m : matches) {
+        for (const pair<int, int> &m : matches) {
             to_remove.push_back(m.second);
         }
         sort(to_remove.begin(), to_remove.end());
@@ -61,7 +61,7 @@ void join(Table &t1, Table &t2) {
         for (vector<int> &tuple_t1 : t1.tuples) {
             for (vector<int> tuple_t2 : t2.tuples) {
                 bool match = true;
-                for (pair<int, int> m : matches) {
+                for (const pair<int, int> &m : matches) {
                     if (tuple_t1[m.first] != tuple_t2[m.second]) {
                         match = false;
                         break;

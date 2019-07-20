@@ -14,8 +14,9 @@ class GenericJoinSuccessor : public SuccessorGenerator {
 public:
     explicit GenericJoinSuccessor(const Task &task) : SuccessorGenerator(task) {}
 
-    std::vector<std::pair<State, Action>> generate_successors(const std::vector<ActionSchema> &actions, const State &state,
-                                                              const StaticInformation &staticInformation) override;
+    const std::vector<std::pair<State, Action>> &generate_successors(const std::vector<ActionSchema> &actions,
+                                                                     const State &state,
+                                                                     const StaticInformation &staticInformation) override;
 
     std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
 

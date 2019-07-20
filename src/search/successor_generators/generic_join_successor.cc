@@ -8,10 +8,11 @@
 
 #include "../database/hash_join.h"
 
-vector<pair<State, Action>> GenericJoinSuccessor::generate_successors(const vector<ActionSchema> &actions,
-                                                                      const State &state,
-                                                                      const StaticInformation &staticInformation) {
-    vector<pair<State, Action>> successors;
+const vector<pair<State, Action>> &GenericJoinSuccessor::generate_successors(
+        const vector<ActionSchema> &actions,
+        const State &state,
+        const StaticInformation &staticInformation) {
+    successors.clear();
 
     for (const ActionSchema &action : actions) {
         Table instantiations = instantiate(action, state, staticInformation);
@@ -88,9 +89,9 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
 
     vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation, action.getIndex());
     assert (!tables.empty());
-    Table working_table = tables[0];
+    Table &working_table = tables[0];
     for (int i = 1; i < tables.size(); ++i) {
-        join(working_table, tables[i]);
+        hash_join(working_table, tables[i]);
         // Filter out equalities
         for (const pair<int, int> ineq : action.getInequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),
@@ -106,7 +107,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
                 int index2 = distance(working_table.tuple_index.begin(), it_2);
                 int cont = 0;
                 vector<int> equal_tuples;
-                for (vector<int> tuple : working_table.tuples) {
+                for (const vector<int> &tuple : working_table.tuples) {
                     if (tuple[index1] == tuple[index2]) {
                         equal_tuples.push_back(cont);
                     }

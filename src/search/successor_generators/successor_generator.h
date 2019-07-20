@@ -36,8 +36,10 @@ public:
 
     }
 
-    virtual std::vector<std::pair<State, Action>> generate_successors(const std::vector<ActionSchema> &actions, const State &state,
-                                           const StaticInformation &staticInformation) = 0;
+    const
+    virtual std::vector<std::pair<State, Action>> &generate_successors(const std::vector<ActionSchema> &actions,
+                                                                       const State &state,
+                                                                       const StaticInformation &staticInformation) = 0;
 
     virtual Table instantiate(const ActionSchema &action, const State &state,
                                     const StaticInformation &staticInformation) = 0;
@@ -51,6 +53,7 @@ public:
     const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const std::vector<int> &indices, const Atom &eff);
 
     GroundAtom ground_atom;
+    vector<pair<State, Action>> successors;
 };
 
 

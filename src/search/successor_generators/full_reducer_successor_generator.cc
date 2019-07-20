@@ -127,13 +127,12 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
     }
 }
 
-std::vector<std::pair<State, Action>>
-FullReducerSuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions, const State &state,
+const std::vector<std::pair<State, Action>>
+&FullReducerSuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions, const State &state,
                                                    const StaticInformation &staticInformation) {
 
+    successors.clear();
     // Duplicate code from generic join implementation
-    vector<pair<State, Action>> successors;
-
     for (const ActionSchema &action : actions) {
         Table instantiations = instantiate(action, state, staticInformation);
         /*
@@ -203,7 +202,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
         semi_join(tables[sj.first], tables[sj.second]);
     }
 
-    Table working_table = tables[full_join_order[action.getIndex()][0]];
+    Table &working_table = tables[full_join_order[action.getIndex()][0]];
     for (int i = 1; i < full_join_order[action.getIndex()].size(); ++i) {
         join(working_table, tables[full_join_order[action.getIndex()][i]]);
         // Filter out equalities
@@ -221,7 +220,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
                 int index2 = distance(working_table.tuple_index.begin(), it_2);
                 int cont = 0;
                 vector<int> equal_tuples;
-                for (vector<int> tuple : working_table.tuples) {
+                for (const vector<int> &tuple : working_table.tuples) {
                     if (tuple[index1] == tuple[index2]) {
                         equal_tuples.push_back(cont);
                     }
