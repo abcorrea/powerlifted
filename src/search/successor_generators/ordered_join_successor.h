@@ -22,7 +22,7 @@ public:
     parse_precond_into_join_program(const std::vector<Atom> &precond,
                                     const State &state,
                                     const StaticInformation &staticInformation,
-                                    int action_index) override;
+                                    int action_index) final;
 };
 
 

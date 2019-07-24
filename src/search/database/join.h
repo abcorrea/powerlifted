@@ -6,6 +6,8 @@
 
 #include "table.h"
 
+#include "../hash_structures.h"
+
 void join(Table &t1, Table &t2);
 
 

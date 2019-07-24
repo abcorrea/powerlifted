@@ -5,11 +5,7 @@
 
 #include "table.h"
 
-struct TupleHash {
-    std::size_t operator() (const std::vector<int> &c) const {
-        return boost::hash_range(c.begin(), c.end());
-    }
-};
+#include "../hash_structures.h"
 
 void hash_join(Table &t1, Table &t2);
 

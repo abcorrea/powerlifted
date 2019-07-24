@@ -8,7 +8,7 @@
 
 class Goalcount : public Heuristic {
 public:
-    int compute_heuristic(const State &s, const Task &task) override;
+    int compute_heuristic(const State &s, const Task &task) final;
 };
 
 

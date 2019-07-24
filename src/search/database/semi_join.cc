@@ -23,7 +23,7 @@ void semi_join(Table &t1, Table &t2) {
         }
     }
 
-    vector<vector<int>> new_tuples;
+    unordered_set<vector<int>, TupleHash> new_tuples;
     if (matches.empty()) {
         /*
          * If no attribute matches, then we return
@@ -46,7 +46,7 @@ void semi_join(Table &t1, Table &t2) {
                 if (match) {
                     // If a tuple matches at least one other tuple, than it is sufficient for the semi-join
                     vector<int> aux(tuple_t1);
-                    new_tuples.push_back(aux);
+                    new_tuples.insert(aux);
                     break;
                 }
             }

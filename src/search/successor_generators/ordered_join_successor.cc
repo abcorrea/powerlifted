@@ -16,8 +16,7 @@ vector<Table> OrderedJoinSuccessorGenerator::parse_precond_into_join_program(con
      * to perform the join-program more easily.
      */
     priority_queue<Table, vector<Table>, OrderTable> ordered_tables;
-    vector<Table> parsed_tables;//(precond.size());
-    parsed_tables.reserve(precond.size());
+    vector<Table> parsed_tables(precond.size());
     for (const Atom &a : precond) {
         vector<int> indices;
         for (Argument arg : a.tuples) {
@@ -33,9 +32,11 @@ vector<Table> OrderedJoinSuccessorGenerator::parse_precond_into_join_program(con
             ordered_tables.emplace(state.relations[a.predicate_symbol].tuples, indices);
         }
     }
+    int cont = 0;
     while (!ordered_tables.empty()) {
-        parsed_tables.push_back(ordered_tables.top());
+        parsed_tables[cont] = ordered_tables.top();
         ordered_tables.pop();
+        ++cont;
     }
     return parsed_tables;
 }

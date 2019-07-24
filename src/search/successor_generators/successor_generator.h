@@ -36,8 +36,8 @@ public:
 
     }
 
-    const
-    virtual std::vector<std::pair<State, Action>> &generate_successors(const std::vector<ActionSchema> &actions,
+    virtual const
+    std::vector<std::pair<State, Action>> &generate_successors(const std::vector<ActionSchema> &actions,
                                                                        const State &state,
                                                                        const StaticInformation &staticInformation) = 0;
 

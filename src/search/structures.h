@@ -5,9 +5,11 @@
 
 #include <string>
 #include <utility>
+#include <unordered_set>
 #include <vector>
 
 #include <boost/functional/hash.hpp>
+#include "hash_structures.h"
 
 typedef std::vector<int> GroundAtom; // Ground atom is a list of object indices.
 
@@ -35,8 +37,8 @@ struct Relation {
      * A relation is a "table" corresponding to some predicate in a state.  The predicate_symbol attribute indicates
      * its corresponding predicate and the tuples attribute is a list of tuples, represented as a vector of vectors.
      */
-    Relation(int predicate_symbol, std::vector<GroundAtom> tuples) : predicate_symbol(predicate_symbol),
-                                                                     tuples (std::move(tuples)) {}
+    Relation(int predicate_symbol, std::unordered_set<GroundAtom, TupleHash> tuples) : predicate_symbol(predicate_symbol),
+                                                                                       tuples (std::move(tuples)) {}
 
     Relation(const Relation &rhs) = default;
 
@@ -47,16 +49,15 @@ struct Relation {
         if (tuples.size() != other.tuples.size()) {
             return false;
         }
-        for (int i = 0; i < tuples.size(); ++i) {
-            if (tuples[i] != other.tuples[i])
-                vector_equal = false;
+        if (tuples == other.tuples) {
+            vector_equal = false;
         }
         return predicate_symbol == other.predicate_symbol
                 && vector_equal;
     }
 
     int predicate_symbol;
-    std::vector<GroundAtom> tuples;
+    std::unordered_set<GroundAtom, TupleHash> tuples;
 };
 
 struct Atom {

@@ -24,5 +24,5 @@ const vector<int> State::getObjects() {
 
 
 void State::addTuple(int  relation, const GroundAtom& args) {
-    relations[relation].tuples.push_back(args);
+    relations[relation].tuples.insert(args);
 }

@@ -26,18 +26,18 @@ void hash_join(Table &t1, Table &t2) {
         }
     }
 
-    vector<vector<int>> new_tuples;
+    unordered_set<vector<int>, TupleHash> new_tuples;
     if (matches.empty()) {
         /*
          * If no attribute matches, then we apply a cartesian product
          * TODO this code is duplicate from join.cc, make it an auxiliary function
          */
         t1.tuple_index.insert(t1.tuple_index.end(), t2.tuple_index.begin(), t2.tuple_index.end());
-        for (vector<int> &tuple_t1 : t1.tuples) {
-            for (vector<int> &tuple_t2 : t2.tuples) {
+        for (const vector<int> &tuple_t1 : t1.tuples) {
+            for (const vector<int> &tuple_t2 : t2.tuples) {
                 vector<int> aux(tuple_t1);
                 aux.insert(aux.end(), tuple_t2.begin(), tuple_t2.end());
-                new_tuples.push_back(aux);
+                new_tuples.insert(aux);
             }
         }
     }
@@ -66,7 +66,7 @@ void hash_join(Table &t1, Table &t2) {
         t1.tuple_index.insert(t1.tuple_index.end(), t2.tuple_index.begin(), t2.tuple_index.end());
 
         // Probe phase
-        for (vector<int> &tuple : t2.tuples) {
+        for (vector<int> tuple : t2.tuples) {
             vector<int> key(matches.size());
             for (int i = 0; i < matches.size(); i++) {
                 key[i] = tuple[matches[i].second];
@@ -78,7 +78,7 @@ void hash_join(Table &t1, Table &t2) {
                 for (const vector<int> &t : hash_join_map[key]) {
                     vector<int> aux(t);
                     aux.insert(aux.end(), tuple.begin(), tuple.end());
-                    new_tuples.push_back(aux);
+                    new_tuples.insert(move(aux));
                 }
 
             }

@@ -14,7 +14,7 @@ public:
 
     const std::vector<std::pair<State, Action>> &generate_successors(const std::vector<ActionSchema> &actions,
                                                               const State &state,
-                                                              const StaticInformation &staticInformation) override;
+                                                              const StaticInformation &staticInformation) final;
 
     Table instantiate(const ActionSchema &action, const State &state,
                       const StaticInformation &staticInformation) override;

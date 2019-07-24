@@ -42,16 +42,13 @@ const vector<pair<State, Action>> &GenericJoinSuccessor::generate_successors(
                     assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
                     if (eff.negated) {
                         // Remove from relation
-                        new_relation[eff.predicate_symbol].tuples.erase(remove(
-                                new_relation[eff.predicate_symbol].tuples.begin(),
-                                new_relation[eff.predicate_symbol].tuples.end(), ground_atom),
-                                                                        new_relation[eff.predicate_symbol].tuples.end());
+                        new_relation[eff.predicate_symbol].tuples.erase(ground_atom);
                     } else {
                         if (find(new_relation[eff.predicate_symbol].tuples.begin(),
                                  new_relation[eff.predicate_symbol].tuples.end(), ground_atom)
                             == new_relation[eff.predicate_symbol].tuples.end()) {
                             // If ground atom is not in the state, we add it
-                            new_relation[eff.predicate_symbol].tuples.push_back(ground_atom);
+                            new_relation[eff.predicate_symbol].tuples.insert(ground_atom);
                         }
                     }
                 }
@@ -106,16 +103,13 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
                 int index1 = distance(working_table.tuple_index.begin(), it_1);
                 int index2 = distance(working_table.tuple_index.begin(), it_2);
                 int cont = 0;
-                vector<int> equal_tuples;
-                for (const vector<int> &tuple : working_table.tuples) {
-                    if (tuple[index1] == tuple[index2]) {
-                        equal_tuples.push_back(cont);
+                for (auto it = working_table.tuples.begin(); it != working_table.tuples.end();) {
+                    if ((*it)[index1] == (*it)[index2]) {
+                        working_table.tuples.erase(it);
                     }
-                    cont++;
-                }
-                reverse(equal_tuples.begin(), equal_tuples.end());
-                for (int n : equal_tuples) {
-                    working_table.tuples.erase(working_table.tuples.begin() + n);
+                    else {
+                        ++it;
+                    }
                 }
             }
         }

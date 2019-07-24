@@ -46,7 +46,7 @@ void Task::dumpState(State s) const {
      */
     for (int i = 0; i < s.relations.size(); ++i) {
         string relation_name = predicates[i].getName();
-        vector<GroundAtom> tuples = s.relations[i].tuples;
+        unordered_set<GroundAtom, TupleHash> tuples = s.relations[i].tuples;
         for (auto & tuple : tuples) {
             cout << relation_name << " ";
             for (auto obj : tuple) {

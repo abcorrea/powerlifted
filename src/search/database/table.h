@@ -2,14 +2,17 @@
 #define SEARCH_TABLE_H
 
 #include <utility>
+#include <unordered_set>
 #include <vector>
+
+#include "../hash_structures.h"
 
 class Table {
 public:
-    std::vector<std::vector<int>> tuples;
+    std::unordered_set<std::vector<int>, TupleHash> tuples;
     std::vector<int> tuple_index;
 
-    Table(std::vector<std::vector<int>> tuples,
+    Table(std::unordered_set<std::vector<int>, TupleHash> tuples,
           std::vector<int> tuple_index) : tuples(std::move(tuples)),
                                           tuple_index (std::move(tuple_index)) {}
 
