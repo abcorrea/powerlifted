@@ -75,10 +75,9 @@ void hash_join(Table &t1, Table &t2) {
                 for (int i = to_remove.size()-1; i >= 0 ; --i) {
                     tuple.erase(tuple.begin()+to_remove[i]);
                 }
-                for (const vector<int> &t : hash_join_map[key]) {
-                    vector<int> aux(t);
-                    aux.insert(aux.end(), tuple.begin(), tuple.end());
-                    new_tuples.insert(move(aux));
+                for (vector<int> t : hash_join_map[key]) {
+                    t.insert(t.end(), tuple.begin(), tuple.end());
+                    new_tuples.insert(move(t));
                 }
 
             }

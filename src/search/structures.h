@@ -49,7 +49,7 @@ struct Relation {
         if (tuples.size() != other.tuples.size()) {
             return false;
         }
-        if (tuples == other.tuples) {
+        if (tuples != other.tuples) {
             vector_equal = false;
         }
         return predicate_symbol == other.predicate_symbol

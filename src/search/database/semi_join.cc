@@ -34,7 +34,7 @@ void semi_join(Table &t1, Table &t2) {
         /*
          * Otherwise, we perform the join and the projection
          */
-        for (const vector<int> &tuple_t1 : t1.tuples) {
+        for (vector<int> tuple_t1 : t1.tuples) {
             for (const vector<int> &tuple_t2 : t2.tuples) {
                 bool match = true;
                 for (pair<int, int> m : matches) {
@@ -45,8 +45,7 @@ void semi_join(Table &t1, Table &t2) {
                 }
                 if (match) {
                     // If a tuple matches at least one other tuple, than it is sufficient for the semi-join
-                    vector<int> aux(tuple_t1);
-                    new_tuples.insert(aux);
+                    new_tuples.insert(tuple_t1);
                     break;
                 }
             }
