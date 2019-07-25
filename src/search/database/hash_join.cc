@@ -42,14 +42,14 @@ void hash_join(Table &t1, Table &t2) {
         }
     }
     else {
-        unordered_map<vector<int>, vector<vector<int>>, TupleHash> hash_join_map;
+        unordered_map<vector<int>, unordered_set<vector<int>, TupleHash>, TupleHash> hash_join_map;
         // Build phase
         for (const vector<int> &tuple : t1.tuples) {
             vector<int> key(matches.size());
             for (int i = 0; i < matches.size(); i++) {
                 key[i] = tuple[matches[i].first];
             }
-            hash_join_map[key].push_back(tuple);
+            hash_join_map[key].insert(tuple);
         }
 
         // Remove duplicated index. Duplicate code from join.cc
@@ -77,7 +77,7 @@ void hash_join(Table &t1, Table &t2) {
                 }
                 for (vector<int> t : hash_join_map[key]) {
                     t.insert(t.end(), tuple.begin(), tuple.end());
-                    new_tuples.insert(move(t));
+                    new_tuples.insert(t);
                 }
 
             }
