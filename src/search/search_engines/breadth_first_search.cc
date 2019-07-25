@@ -45,7 +45,7 @@ const int BreadthFirstSearch::search(const Task &task,
         q.pop();
         if ((statistics_counter - generations) <= 0) {
             cout << "Expansions " << state_counter << ", generations " << generations << " states at layer " << h
-                 << " [" << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << endl;
+                 << " [" << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
             statistics_counter += 50000;
         }
         assert (index_to_state.find(next) != index_to_state.end());
