@@ -1,0 +1,662 @@
+miconic s14-0.pddl
+SPARSE-REPRESENTATION
+TYPES 1
+object 0
+PREDICATES 10
+origin 0 2 1
+0 0
+floor 1 1 1
+0
+passenger 2 1 1
+0
+destin 3 2 1
+0 0
+above 4 2 1
+0 0
+boarded 5 1 0
+0
+served 6 1 0
+0
+lift-at 7 1 0
+0
+= 8 2 1
+0 0
+type_object 9 1 1
+0
+OBJECTS 42
+p0 0 1 0
+p1 1 1 0
+p2 2 1 0
+p3 3 1 0
+p4 4 1 0
+p5 5 1 0
+p6 6 1 0
+p7 7 1 0
+p8 8 1 0
+p9 9 1 0
+p10 10 1 0
+p11 11 1 0
+p12 12 1 0
+p13 13 1 0
+f0 14 1 0
+f1 15 1 0
+f2 16 1 0
+f3 17 1 0
+f4 18 1 0
+f5 19 1 0
+f6 20 1 0
+f7 21 1 0
+f8 22 1 0
+f9 23 1 0
+f10 24 1 0
+f11 25 1 0
+f12 26 1 0
+f13 27 1 0
+f14 28 1 0
+f15 29 1 0
+f16 30 1 0
+f17 31 1 0
+f18 32 1 0
+f19 33 1 0
+f20 34 1 0
+f21 35 1 0
+f22 36 1 0
+f23 37 1 0
+f24 38 1 0
+f25 39 1 0
+f26 40 1 0
+f27 41 1 0
+INITIAL-STATE 533
+floor(f20) 0 1 0 1 34
+above(f15,f17) 1 4 0 2 29 31
+origin(p4,f1) 2 0 0 2 4 15
+above(f0,f6) 3 4 0 2 14 20
+above(f8,f24) 4 4 0 2 22 38
+above(f10,f21) 5 4 0 2 24 35
+above(f7,f17) 6 4 0 2 21 31
+above(f5,f11) 7 4 0 2 19 25
+above(f1,f26) 8 4 0 2 15 40
+above(f1,f12) 9 4 0 2 15 26
+above(f2,f22) 10 4 0 2 16 36
+floor(f22) 11 1 0 1 36
+above(f10,f24) 12 4 0 2 24 38
+above(f17,f22) 13 4 0 2 31 36
+above(f1,f11) 14 4 0 2 15 25
+floor(f1) 15 1 0 1 15
+above(f1,f23) 16 4 0 2 15 37
+above(f8,f22) 17 4 0 2 22 36
+above(f18,f19) 18 4 0 2 32 33
+above(f4,f21) 19 4 0 2 18 35
+above(f3,f20) 20 4 0 2 17 34
+above(f10,f17) 21 4 0 2 24 31
+destin(p12,f27) 22 3 0 2 12 41
+destin(p3,f16) 23 3 0 2 3 30
+above(f9,f15) 24 4 0 2 23 29
+above(f10,f14) 25 4 0 2 24 28
+above(f11,f27) 26 4 0 2 25 41
+above(f4,f24) 27 4 0 2 18 38
+above(f14,f20) 28 4 0 2 28 34
+above(f14,f16) 29 4 0 2 28 30
+above(f4,f15) 30 4 0 2 18 29
+above(f3,f13) 31 4 0 2 17 27
+above(f5,f13) 32 4 0 2 19 27
+above(f4,f19) 33 4 0 2 18 33
+above(f3,f12) 34 4 0 2 17 26
+above(f19,f26) 35 4 0 2 33 40
+above(f22,f24) 36 4 0 2 36 38
+passenger(p6) 37 2 0 1 6
+floor(f12) 38 1 0 1 26
+floor(f5) 39 1 0 1 19
+above(f13,f14) 40 4 0 2 27 28
+above(f20,f24) 41 4 0 2 34 38
+above(f26,f27) 42 4 0 2 40 41
+above(f19,f27) 43 4 0 2 33 41
+above(f8,f14) 44 4 0 2 22 28
+above(f5,f21) 45 4 0 2 19 35
+above(f1,f13) 46 4 0 2 15 27
+above(f2,f23) 47 4 0 2 16 37
+destin(p4,f17) 48 3 0 2 4 31
+above(f8,f20) 49 4 0 2 22 34
+destin(p11,f2) 50 3 0 2 11 16
+destin(p1,f19) 51 3 0 2 1 33
+above(f0,f18) 52 4 0 2 14 32
+above(f20,f21) 53 4 0 2 34 35
+above(f9,f19) 54 4 0 2 23 33
+lift-at(f0) 55 7 0 1 14
+above(f16,f17) 56 4 0 2 30 31
+above(f6,f7) 57 4 0 2 20 21
+above(f10,f16) 58 4 0 2 24 30
+above(f2,f25) 59 4 0 2 16 39
+above(f0,f26) 60 4 0 2 14 40
+above(f18,f27) 61 4 0 2 32 41
+above(f14,f22) 62 4 0 2 28 36
+above(f11,f26) 63 4 0 2 25 40
+above(f7,f10) 64 4 0 2 21 24
+above(f0,f16) 65 4 0 2 14 30
+above(f4,f13) 66 4 0 2 18 27
+above(f1,f7) 67 4 0 2 15 21
+above(f19,f21) 68 4 0 2 33 35
+above(f10,f18) 69 4 0 2 24 32
+above(f2,f3) 70 4 0 2 16 17
+above(f5,f7) 71 4 0 2 19 21
+passenger(p1) 72 2 0 1 1
+above(f0,f7) 73 4 0 2 14 21
+destin(p5,f19) 74 3 0 2 5 33
+above(f7,f16) 75 4 0 2 21 30
+above(f5,f23) 76 4 0 2 19 37
+above(f4,f6) 77 4 0 2 18 20
+above(f2,f17) 78 4 0 2 16 31
+above(f16,f21) 79 4 0 2 30 35
+above(f12,f24) 80 4 0 2 26 38
+floor(f17) 81 1 0 1 31
+above(f8,f21) 82 4 0 2 22 35
+above(f2,f9) 83 4 0 2 16 23
+above(f3,f22) 84 4 0 2 17 36
+above(f17,f23) 85 4 0 2 31 37
+above(f6,f16) 86 4 0 2 20 30
+above(f0,f1) 87 4 0 2 14 15
+above(f11,f18) 88 4 0 2 25 32
+above(f19,f22) 89 4 0 2 33 36
+above(f3,f25) 90 4 0 2 17 39
+above(f7,f23) 91 4 0 2 21 37
+above(f2,f27) 92 4 0 2 16 41
+above(f15,f20) 93 4 0 2 29 34
+above(f0,f24) 94 4 0 2 14 38
+above(f18,f21) 95 4 0 2 32 35
+above(f16,f27) 96 4 0 2 30 41
+above(f12,f22) 97 4 0 2 26 36
+above(f0,f14) 98 4 0 2 14 28
+above(f1,f5) 99 4 0 2 15 19
+above(f17,f25) 100 4 0 2 31 39
+above(f9,f24) 101 4 0 2 23 38
+above(f13,f19) 102 4 0 2 27 33
+floor(f23) 103 1 0 1 37
+above(f11,f16) 104 4 0 2 25 30
+above(f15,f26) 105 4 0 2 29 40
+above(f0,f22) 106 4 0 2 14 36
+origin(p6,f6) 107 0 0 2 6 20
+above(f23,f26) 108 4 0 2 37 40
+above(f10,f22) 109 4 0 2 24 36
+above(f3,f11) 110 4 0 2 17 25
+above(f7,f14) 111 4 0 2 21 28
+above(f5,f12) 112 4 0 2 19 26
+above(f2,f11) 113 4 0 2 16 25
+above(f21,f23) 114 4 0 2 35 37
+floor(f3) 115 1 0 1 17
+above(f4,f18) 116 4 0 2 18 32
+above(f2,f16) 117 4 0 2 16 30
+above(f2,f7) 118 4 0 2 16 21
+above(f6,f18) 119 4 0 2 20 32
+floor(f16) 120 1 0 1 30
+above(f2,f8) 121 4 0 2 16 22
+above(f0,f3) 122 4 0 2 14 17
+above(f5,f14) 123 4 0 2 19 28
+above(f21,f25) 124 4 0 2 35 39
+above(f9,f18) 125 4 0 2 23 32
+above(f13,f24) 126 4 0 2 27 38
+above(f11,f19) 127 4 0 2 25 33
+above(f5,f24) 128 4 0 2 19 38
+above(f7,f22) 129 4 0 2 21 36
+above(f6,f15) 130 4 0 2 20 29
+above(f25,f27) 131 4 0 2 39 41
+above(f9,f16) 132 4 0 2 23 30
+above(f17,f27) 133 4 0 2 31 41
+floor(f15) 134 1 0 1 29
+above(f15,f21) 135 4 0 2 29 35
+above(f9,f26) 136 4 0 2 23 40
+above(f17,f24) 137 4 0 2 31 38
+above(f4,f9) 138 4 0 2 18 23
+origin(p12,f26) 139 0 0 2 12 40
+floor(f7) 140 1 0 1 21
+above(f11,f17) 141 4 0 2 25 31
+above(f6,f12) 142 4 0 2 20 26
+origin(p8,f24) 143 0 0 2 8 38
+above(f1,f19) 144 4 0 2 15 33
+above(f9,f10) 145 4 0 2 23 24
+above(f10,f23) 146 4 0 2 24 37
+above(f22,f27) 147 4 0 2 36 41
+above(f10,f19) 148 4 0 2 24 33
+above(f2,f10) 149 4 0 2 16 24
+above(f5,f6) 150 4 0 2 19 20
+above(f1,f14) 151 4 0 2 15 28
+above(f2,f6) 152 4 0 2 16 20
+above(f15,f18) 153 4 0 2 29 32
+passenger(p13) 154 2 0 1 13
+above(f5,f8) 155 4 0 2 19 22
+above(f5,f16) 156 4 0 2 19 30
+above(f10,f25) 157 4 0 2 24 39
+above(f13,f26) 158 4 0 2 27 40
+above(f5,f15) 159 4 0 2 19 29
+above(f7,f20) 160 4 0 2 21 34
+above(f1,f22) 161 4 0 2 15 36
+above(f23,f27) 162 4 0 2 37 41
+above(f8,f11) 163 4 0 2 22 25
+above(f10,f11) 164 4 0 2 24 25
+above(f2,f26) 165 4 0 2 16 40
+floor(f8) 166 1 0 1 22
+above(f18,f20) 167 4 0 2 32 34
+above(f17,f26) 168 4 0 2 31 40
+above(f16,f19) 169 4 0 2 30 33
+origin(p3,f10) 170 0 0 2 3 24
+destin(p2,f3) 171 3 0 2 2 17
+above(f0,f15) 172 4 0 2 14 29
+above(f3,f23) 173 4 0 2 17 37
+above(f11,f15) 174 4 0 2 25 29
+above(f1,f4) 175 4 0 2 15 18
+above(f4,f8) 176 4 0 2 18 22
+above(f4,f25) 177 4 0 2 18 39
+above(f7,f26) 178 4 0 2 21 40
+floor(f27) 179 1 0 1 41
+above(f13,f18) 180 4 0 2 27 32
+above(f6,f26) 181 4 0 2 20 40
+passenger(p0) 182 2 0 1 0
+above(f22,f26) 183 4 0 2 36 40
+above(f11,f23) 184 4 0 2 25 37
+above(f0,f13) 185 4 0 2 14 27
+floor(f9) 186 1 0 1 23
+origin(p2,f1) 187 0 0 2 2 15
+above(f11,f13) 188 4 0 2 25 27
+above(f1,f2) 189 4 0 2 15 16
+above(f21,f22) 190 4 0 2 35 36
+above(f13,f15) 191 4 0 2 27 29
+above(f10,f27) 192 4 0 2 24 41
+above(f12,f17) 193 4 0 2 26 31
+above(f5,f17) 194 4 0 2 19 31
+above(f7,f18) 195 4 0 2 21 32
+above(f1,f24) 196 4 0 2 15 38
+above(f23,f25) 197 4 0 2 37 39
+origin(p10,f0) 198 0 0 2 10 14
+above(f2,f20) 199 4 0 2 16 34
+above(f8,f10) 200 4 0 2 22 24
+above(f1,f8) 201 4 0 2 15 22
+above(f6,f25) 202 4 0 2 20 39
+above(f18,f22) 203 4 0 2 32 36
+floor(f21) 204 1 0 1 35
+above(f5,f25) 205 4 0 2 19 39
+above(f24,f27) 206 4 0 2 38 41
+destin(p13,f19) 207 3 0 2 13 33
+floor(f2) 208 1 0 1 16
+passenger(p3) 209 2 0 1 3
+above(f16,f18) 210 4 0 2 30 32
+above(f4,f23) 211 4 0 2 18 37
+above(f14,f23) 212 4 0 2 28 37
+above(f9,f27) 213 4 0 2 23 41
+above(f4,f12) 214 4 0 2 18 26
+above(f15,f25) 215 4 0 2 29 39
+above(f6,f24) 216 4 0 2 20 38
+floor(f14) 217 1 0 1 28
+above(f3,f6) 218 4 0 2 17 20
+destin(p8,f22) 219 3 0 2 8 36
+above(f0,f12) 220 4 0 2 14 26
+above(f4,f17) 221 4 0 2 18 31
+above(f1,f3) 222 4 0 2 15 17
+above(f9,f21) 223 4 0 2 23 35
+passenger(p5) 224 2 0 1 5
+above(f6,f9) 225 4 0 2 20 23
+above(f12,f15) 226 4 0 2 26 29
+floor(f25) 227 1 0 1 39
+above(f6,f23) 228 4 0 2 20 37
+above(f12,f25) 229 4 0 2 26 39
+above(f12,f16) 230 4 0 2 26 30
+floor(f26) 231 1 0 1 40
+above(f7,f19) 232 4 0 2 21 33
+floor(f6) 233 1 0 1 20
+above(f20,f26) 234 4 0 2 34 40
+above(f6,f22) 235 4 0 2 20 36
+above(f8,f16) 236 4 0 2 22 30
+above(f19,f24) 237 4 0 2 33 38
+above(f21,f26) 238 4 0 2 35 40
+above(f13,f27) 239 4 0 2 27 41
+above(f16,f22) 240 4 0 2 30 36
+above(f5,f27) 241 4 0 2 19 41
+above(f7,f21) 242 4 0 2 21 35
+above(f1,f9) 243 4 0 2 15 23
+above(f18,f23) 244 4 0 2 32 37
+above(f19,f25) 245 4 0 2 33 39
+above(f16,f25) 246 4 0 2 30 39
+above(f24,f26) 247 4 0 2 38 40
+above(f0,f25) 248 4 0 2 14 39
+destin(p9,f3) 249 3 0 2 9 17
+above(f12,f23) 250 4 0 2 26 37
+floor(f18) 251 1 0 1 32
+floor(f24) 252 1 0 1 38
+above(f3,f5) 253 4 0 2 17 19
+above(f15,f23) 254 4 0 2 29 37
+above(f21,f24) 255 4 0 2 35 38
+above(f13,f21) 256 4 0 2 27 35
+above(f11,f14) 257 4 0 2 25 28
+above(f7,f27) 258 4 0 2 21 41
+above(f3,f14) 259 4 0 2 17 28
+above(f15,f24) 260 4 0 2 29 38
+above(f18,f25) 261 4 0 2 32 39
+above(f3,f8) 262 4 0 2 17 22
+above(f3,f17) 263 4 0 2 17 31
+above(f5,f22) 264 4 0 2 19 36
+above(f0,f10) 265 4 0 2 14 24
+above(f0,f23) 266 4 0 2 14 37
+above(f2,f13) 267 4 0 2 16 27
+above(f9,f23) 268 4 0 2 23 37
+above(f3,f7) 269 4 0 2 17 21
+above(f7,f15) 270 4 0 2 21 29
+above(f9,f20) 271 4 0 2 23 34
+passenger(p12) 272 2 0 1 12
+above(f2,f5) 273 4 0 2 16 19
+above(f11,f12) 274 4 0 2 25 26
+above(f12,f14) 275 4 0 2 26 28
+above(f10,f26) 276 4 0 2 24 40
+origin(p11,f9) 277 0 0 2 11 23
+above(f2,f15) 278 4 0 2 16 29
+destin(p10,f19) 279 3 0 2 10 33
+above(f1,f25) 280 4 0 2 15 39
+above(f0,f2) 281 4 0 2 14 16
+above(f23,f24) 282 4 0 2 37 38
+above(f16,f23) 283 4 0 2 30 37
+origin(p9,f16) 284 0 0 2 9 30
+above(f4,f5) 285 4 0 2 18 19
+above(f6,f14) 286 4 0 2 20 28
+above(f17,f21) 287 4 0 2 31 35
+above(f9,f17) 288 4 0 2 23 31
+above(f7,f9) 289 4 0 2 21 23
+floor(f13) 290 1 0 1 27
+above(f11,f25) 291 4 0 2 25 39
+above(f5,f18) 292 4 0 2 19 32
+above(f7,f25) 293 4 0 2 21 39
+above(f15,f22) 294 4 0 2 29 36
+above(f13,f20) 295 4 0 2 27 34
+passenger(p11) 296 2 0 1 11
+above(f6,f27) 297 4 0 2 20 41
+above(f19,f20) 298 4 0 2 33 34
+above(f12,f18) 299 4 0 2 26 32
+above(f3,f9) 300 4 0 2 17 23
+floor(f4) 301 1 0 1 18
+above(f9,f22) 302 4 0 2 23 36
+above(f9,f11) 303 4 0 2 23 25
+above(f0,f9) 304 4 0 2 14 23
+above(f14,f15) 305 4 0 2 28 29
+destin(p7,f14) 306 3 0 2 7 28
+above(f13,f16) 307 4 0 2 27 30
+above(f10,f20) 308 4 0 2 24 34
+above(f6,f21) 309 4 0 2 20 35
+above(f1,f15) 310 4 0 2 15 29
+above(f5,f10) 311 4 0 2 19 24
+above(f15,f19) 312 4 0 2 29 33
+above(f1,f27) 313 4 0 2 15 41
+above(f8,f26) 314 4 0 2 22 40
+above(f22,f23) 315 4 0 2 36 37
+above(f5,f9) 316 4 0 2 19 23
+passenger(p4) 317 2 0 1 4
+above(f20,f27) 318 4 0 2 34 41
+above(f8,f17) 319 4 0 2 22 31
+above(f4,f7) 320 4 0 2 18 21
+above(f3,f24) 321 4 0 2 17 38
+passenger(p2) 322 2 0 1 2
+above(f3,f19) 323 4 0 2 17 33
+above(f4,f20) 324 4 0 2 18 34
+above(f1,f21) 325 4 0 2 15 35
+above(f14,f24) 326 4 0 2 28 38
+above(f13,f22) 327 4 0 2 27 36
+above(f11,f24) 328 4 0 2 25 38
+above(f7,f24) 329 4 0 2 21 38
+above(f19,f23) 330 4 0 2 33 37
+above(f4,f11) 331 4 0 2 18 25
+above(f14,f19) 332 4 0 2 28 33
+above(f6,f10) 333 4 0 2 20 24
+above(f24,f25) 334 4 0 2 38 39
+above(f9,f13) 335 4 0 2 23 27
+above(f18,f24) 336 4 0 2 32 38
+above(f14,f17) 337 4 0 2 28 31
+above(f4,f26) 338 4 0 2 18 40
+above(f0,f11) 339 4 0 2 14 25
+floor(f11) 340 1 0 1 25
+above(f11,f22) 341 4 0 2 25 36
+above(f13,f17) 342 4 0 2 27 31
+origin(p7,f27) 343 0 0 2 7 41
+above(f1,f17) 344 4 0 2 15 31
+above(f22,f25) 345 4 0 2 36 39
+above(f3,f26) 346 4 0 2 17 40
+above(f16,f24) 347 4 0 2 30 38
+above(f20,f25) 348 4 0 2 34 39
+above(f8,f27) 349 4 0 2 22 41
+above(f8,f15) 350 4 0 2 22 29
+above(f3,f27) 351 4 0 2 17 41
+above(f10,f12) 352 4 0 2 24 26
+above(f2,f21) 353 4 0 2 16 35
+destin(p6,f11) 354 3 0 2 6 25
+above(f0,f19) 355 4 0 2 14 33
+above(f14,f26) 356 4 0 2 28 40
+above(f12,f20) 357 4 0 2 26 34
+above(f12,f13) 358 4 0 2 26 27
+origin(p5,f2) 359 0 0 2 5 16
+above(f1,f20) 360 4 0 2 15 34
+above(f20,f23) 361 4 0 2 34 37
+passenger(p9) 362 2 0 1 9
+above(f14,f25) 363 4 0 2 28 39
+above(f2,f19) 364 4 0 2 16 33
+above(f8,f13) 365 4 0 2 22 27
+passenger(p7) 366 2 0 1 7
+above(f7,f8) 367 4 0 2 21 22
+above(f4,f10) 368 4 0 2 18 24
+above(f14,f18) 369 4 0 2 28 32
+above(f2,f24) 370 4 0 2 16 38
+above(f18,f26) 371 4 0 2 32 40
+above(f17,f19) 372 4 0 2 31 33
+above(f0,f17) 373 4 0 2 14 31
+above(f0,f20) 374 4 0 2 14 34
+above(f1,f6) 375 4 0 2 15 20
+above(f11,f20) 376 4 0 2 25 34
+above(f12,f19) 377 4 0 2 26 33
+above(f4,f27) 378 4 0 2 18 41
+above(f5,f19) 379 4 0 2 19 33
+floor(f19) 380 1 0 1 33
+above(f7,f12) 381 4 0 2 21 26
+floor(f10) 382 1 0 1 24
+above(f3,f21) 383 4 0 2 17 35
+above(f4,f22) 384 4 0 2 18 36
+above(f4,f16) 385 4 0 2 18 30
+above(f8,f25) 386 4 0 2 22 39
+above(f6,f8) 387 4 0 2 20 22
+above(f6,f20) 388 4 0 2 20 34
+above(f0,f5) 389 4 0 2 14 19
+above(f16,f20) 390 4 0 2 30 34
+above(f21,f27) 391 4 0 2 35 41
+above(f12,f26) 392 4 0 2 26 40
+above(f5,f26) 393 4 0 2 19 40
+above(f6,f17) 394 4 0 2 20 31
+above(f8,f23) 395 4 0 2 22 37
+above(f8,f9) 396 4 0 2 22 23
+above(f14,f27) 397 4 0 2 28 41
+above(f12,f21) 398 4 0 2 26 35
+above(f3,f18) 399 4 0 2 17 32
+above(f20,f22) 400 4 0 2 34 36
+above(f2,f18) 401 4 0 2 16 32
+destin(p0,f18) 402 3 0 2 0 32
+above(f8,f12) 403 4 0 2 22 26
+passenger(p10) 404 2 0 1 10
+above(f13,f23) 405 4 0 2 27 37
+above(f16,f26) 406 4 0 2 30 40
+origin(p13,f15) 407 0 0 2 13 29
+above(f3,f15) 408 4 0 2 17 29
+above(f6,f11) 409 4 0 2 20 25
+above(f0,f21) 410 4 0 2 14 35
+above(f14,f21) 411 4 0 2 28 35
+above(f9,f25) 412 4 0 2 23 39
+above(f9,f12) 413 4 0 2 23 26
+above(f7,f13) 414 4 0 2 21 27
+passenger(p8) 415 2 0 1 8
+above(f4,f14) 416 4 0 2 18 28
+above(f2,f12) 417 4 0 2 16 26
+above(f8,f18) 418 4 0 2 22 32
+above(f15,f27) 419 4 0 2 29 41
+above(f3,f10) 420 4 0 2 17 24
+above(f1,f16) 421 4 0 2 15 30
+above(f2,f4) 422 4 0 2 16 18
+above(f15,f16) 423 4 0 2 29 30
+above(f3,f4) 424 4 0 2 17 18
+above(f0,f4) 425 4 0 2 14 18
+above(f5,f20) 426 4 0 2 19 34
+above(f2,f14) 427 4 0 2 16 28
+above(f6,f19) 428 4 0 2 20 33
+above(f12,f27) 429 4 0 2 26 41
+above(f10,f13) 430 4 0 2 24 27
+above(f1,f10) 431 4 0 2 15 24
+above(f17,f20) 432 4 0 2 31 34
+above(f13,f25) 433 4 0 2 27 39
+above(f25,f26) 434 4 0 2 39 40
+above(f3,f16) 435 4 0 2 17 30
+origin(p1,f9) 436 0 0 2 1 23
+above(f17,f18) 437 4 0 2 31 32
+above(f6,f13) 438 4 0 2 20 27
+above(f0,f27) 439 4 0 2 14 41
+above(f9,f14) 440 4 0 2 23 28
+above(f1,f18) 441 4 0 2 15 32
+above(f10,f15) 442 4 0 2 24 29
+above(f7,f11) 443 4 0 2 21 25
+origin(p0,f15) 444 0 0 2 0 29
+above(f8,f19) 445 4 0 2 22 33
+above(f11,f21) 446 4 0 2 25 35
+above(f0,f8) 447 4 0 2 14 22
+floor(f0) 448 1 0 1 14
+=(p0,p0) 449 8 0 2 0 0
+=(p1,p1) 450 8 0 2 1 1
+=(p2,p2) 451 8 0 2 2 2
+=(p3,p3) 452 8 0 2 3 3
+=(p4,p4) 453 8 0 2 4 4
+=(p5,p5) 454 8 0 2 5 5
+=(p6,p6) 455 8 0 2 6 6
+=(p7,p7) 456 8 0 2 7 7
+=(p8,p8) 457 8 0 2 8 8
+=(p9,p9) 458 8 0 2 9 9
+=(p10,p10) 459 8 0 2 10 10
+=(p11,p11) 460 8 0 2 11 11
+=(p12,p12) 461 8 0 2 12 12
+=(p13,p13) 462 8 0 2 13 13
+=(f0,f0) 463 8 0 2 14 14
+=(f1,f1) 464 8 0 2 15 15
+=(f2,f2) 465 8 0 2 16 16
+=(f3,f3) 466 8 0 2 17 17
+=(f4,f4) 467 8 0 2 18 18
+=(f5,f5) 468 8 0 2 19 19
+=(f6,f6) 469 8 0 2 20 20
+=(f7,f7) 470 8 0 2 21 21
+=(f8,f8) 471 8 0 2 22 22
+=(f9,f9) 472 8 0 2 23 23
+=(f10,f10) 473 8 0 2 24 24
+=(f11,f11) 474 8 0 2 25 25
+=(f12,f12) 475 8 0 2 26 26
+=(f13,f13) 476 8 0 2 27 27
+=(f14,f14) 477 8 0 2 28 28
+=(f15,f15) 478 8 0 2 29 29
+=(f16,f16) 479 8 0 2 30 30
+=(f17,f17) 480 8 0 2 31 31
+=(f18,f18) 481 8 0 2 32 32
+=(f19,f19) 482 8 0 2 33 33
+=(f20,f20) 483 8 0 2 34 34
+=(f21,f21) 484 8 0 2 35 35
+=(f22,f22) 485 8 0 2 36 36
+=(f23,f23) 486 8 0 2 37 37
+=(f24,f24) 487 8 0 2 38 38
+=(f25,f25) 488 8 0 2 39 39
+=(f26,f26) 489 8 0 2 40 40
+=(f27,f27) 490 8 0 2 41 41
+type_object(p0) 491 9 0 1 0
+type_object(p1) 492 9 0 1 1
+type_object(p2) 493 9 0 1 2
+type_object(p3) 494 9 0 1 3
+type_object(p4) 495 9 0 1 4
+type_object(p5) 496 9 0 1 5
+type_object(p6) 497 9 0 1 6
+type_object(p7) 498 9 0 1 7
+type_object(p8) 499 9 0 1 8
+type_object(p9) 500 9 0 1 9
+type_object(p10) 501 9 0 1 10
+type_object(p11) 502 9 0 1 11
+type_object(p12) 503 9 0 1 12
+type_object(p13) 504 9 0 1 13
+type_object(f0) 505 9 0 1 14
+type_object(f1) 506 9 0 1 15
+type_object(f2) 507 9 0 1 16
+type_object(f3) 508 9 0 1 17
+type_object(f4) 509 9 0 1 18
+type_object(f5) 510 9 0 1 19
+type_object(f6) 511 9 0 1 20
+type_object(f7) 512 9 0 1 21
+type_object(f8) 513 9 0 1 22
+type_object(f9) 514 9 0 1 23
+type_object(f10) 515 9 0 1 24
+type_object(f11) 516 9 0 1 25
+type_object(f12) 517 9 0 1 26
+type_object(f13) 518 9 0 1 27
+type_object(f14) 519 9 0 1 28
+type_object(f15) 520 9 0 1 29
+type_object(f16) 521 9 0 1 30
+type_object(f17) 522 9 0 1 31
+type_object(f18) 523 9 0 1 32
+type_object(f19) 524 9 0 1 33
+type_object(f20) 525 9 0 1 34
+type_object(f21) 526 9 0 1 35
+type_object(f22) 527 9 0 1 36
+type_object(f23) 528 9 0 1 37
+type_object(f24) 529 9 0 1 38
+type_object(f25) 530 9 0 1 39
+type_object(f26) 531 9 0 1 40
+type_object(f27) 532 9 0 1 41
+GOAL 14
+served(p0) 6 0 1 0
+served(p1) 6 0 1 1
+served(p2) 6 0 1 2
+served(p3) 6 0 1 3
+served(p4) 6 0 1 4
+served(p5) 6 0 1 5
+served(p6) 6 0 1 6
+served(p7) 6 0 1 7
+served(p8) 6 0 1 8
+served(p9) 6 0 1 9
+served(p10) 6 0 1 10
+served(p11) 6 0 1 11
+served(p12) 6 0 1 12
+served(p13) 6 0 1 13
+ACTION-SCHEMAS 4
+board 1 2 6 1
+?f 0 0
+?p 1 0
+floor 1 0 1 p 0
+passenger 2 0 1 p 1
+lift-at 7 0 1 p 0
+origin 0 0 2 p 1 p 0
+type_object 9 0 1 p 1
+type_object 9 0 1 p 0
+boarded 5 0 1 p 1
+depart 1 2 7 2
+?f 0 0
+?p 1 0
+floor 1 0 1 p 0
+passenger 2 0 1 p 1
+lift-at 7 0 1 p 0
+destin 3 0 2 p 1 p 0
+boarded 5 0 1 p 1
+type_object 9 0 1 p 1
+type_object 9 0 1 p 0
+boarded 5 1 1 p 1
+served 6 0 1 p 1
+up 1 2 6 2
+?f1 0 0
+?f2 1 0
+floor 1 0 1 p 0
+floor 1 0 1 p 1
+lift-at 7 0 1 p 0
+above 4 0 2 p 0 p 1
+type_object 9 0 1 p 1
+type_object 9 0 1 p 0
+lift-at 7 1 1 p 0
+lift-at 7 0 1 p 1
+down 1 2 6 2
+?f1 0 0
+?f2 1 0
+floor 1 0 1 p 0
+floor 1 0 1 p 1
+lift-at 7 0 1 p 0
+above 4 0 2 p 1 p 0
+type_object 9 0 1 p 1
+type_object 9 0 1 p 0
+lift-at 7 1 1 p 0
+lift-at 7 0 1 p 1

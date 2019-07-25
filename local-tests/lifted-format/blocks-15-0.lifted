@@ -1,0 +1,146 @@
+blocks probBLOCKS-15-0.pddl
+SPARSE-REPRESENTATION
+TYPES 1
+object 0
+PREDICATES 7
+on 0 2 0
+0 0
+ontable 1 1 0
+0
+clear 2 1 0
+0
+handempty 3 0 0
+
+holding 4 1 0
+0
+= 5 2 1
+0 0
+type_object 6 1 1
+0
+OBJECTS 15
+a 0 1 0
+c 1 1 0
+l 2 1 0
+d 3 1 0
+j 4 1 0
+h 5 1 0
+k 6 1 0
+o 7 1 0
+n 8 1 0
+g 9 1 0
+i 10 1 0
+f 11 1 0
+b 12 1 0
+m 13 1 0
+e 14 1 0
+INITIAL-STATE 51
+clear(e) 0 2 0 1 14
+ontable(k) 1 1 0 1 6
+on(c,g) 2 0 0 2 1 9
+clear(f) 3 2 0 1 11
+on(b,a) 4 0 0 2 12 0
+on(j,d) 5 0 0 2 4 3
+clear(m) 6 2 0 1 13
+on(m,n) 7 0 0 2 13 8
+handempty() 8 3 0 0 
+on(a,o) 9 0 0 2 0 7
+on(f,k) 10 0 0 2 11 6
+on(e,j) 11 0 0 2 14 4
+on(l,c) 12 0 0 2 2 1
+on(d,l) 13 0 0 2 3 2
+on(i,h) 14 0 0 2 10 5
+ontable(o) 15 1 0 1 7
+ontable(n) 16 1 0 1 8
+clear(b) 17 2 0 1 12
+ontable(h) 18 1 0 1 5
+clear(i) 19 2 0 1 10
+ontable(g) 20 1 0 1 9
+=(a,a) 21 5 0 2 0 0
+=(c,c) 22 5 0 2 1 1
+=(l,l) 23 5 0 2 2 2
+=(d,d) 24 5 0 2 3 3
+=(j,j) 25 5 0 2 4 4
+=(h,h) 26 5 0 2 5 5
+=(k,k) 27 5 0 2 6 6
+=(o,o) 28 5 0 2 7 7
+=(n,n) 29 5 0 2 8 8
+=(g,g) 30 5 0 2 9 9
+=(i,i) 31 5 0 2 10 10
+=(f,f) 32 5 0 2 11 11
+=(b,b) 33 5 0 2 12 12
+=(m,m) 34 5 0 2 13 13
+=(e,e) 35 5 0 2 14 14
+type_object(a) 36 6 0 1 0
+type_object(c) 37 6 0 1 1
+type_object(l) 38 6 0 1 2
+type_object(d) 39 6 0 1 3
+type_object(j) 40 6 0 1 4
+type_object(h) 41 6 0 1 5
+type_object(k) 42 6 0 1 6
+type_object(o) 43 6 0 1 7
+type_object(n) 44 6 0 1 8
+type_object(g) 45 6 0 1 9
+type_object(i) 46 6 0 1 10
+type_object(f) 47 6 0 1 11
+type_object(b) 48 6 0 1 12
+type_object(m) 49 6 0 1 13
+type_object(e) 50 6 0 1 14
+GOAL 14
+on(g,o) 0 0 2 9 7
+on(o,h) 0 0 2 7 5
+on(h,k) 0 0 2 5 6
+on(k,m) 0 0 2 6 13
+on(m,f) 0 0 2 13 11
+on(f,e) 0 0 2 11 14
+on(e,a) 0 0 2 14 0
+on(a,b) 0 0 2 0 12
+on(b,l) 0 0 2 12 2
+on(l,j) 0 0 2 2 4
+on(j,d) 0 0 2 4 3
+on(d,n) 0 0 2 3 8
+on(n,i) 0 0 2 8 10
+on(i,c) 0 0 2 10 1
+ACTION-SCHEMAS 4
+pick-up 1 1 4 4
+?x 0 0
+clear 2 0 1 p 0
+ontable 1 0 1 p 0
+handempty 3 0 0 
+type_object 6 0 1 p 0
+ontable 1 1 1 p 0
+clear 2 1 1 p 0
+handempty 3 1 0 
+holding 4 0 1 p 0
+put-down 1 1 2 4
+?x 0 0
+holding 4 0 1 p 0
+type_object 6 0 1 p 0
+holding 4 1 1 p 0
+clear 2 0 1 p 0
+handempty 3 0 0 
+ontable 1 0 1 p 0
+stack 1 2 4 5
+?x 0 0
+?y 1 0
+holding 4 0 1 p 0
+clear 2 0 1 p 1
+type_object 6 0 1 p 0
+type_object 6 0 1 p 1
+holding 4 1 1 p 0
+clear 2 1 1 p 1
+clear 2 0 1 p 0
+handempty 3 0 0 
+on 0 0 2 p 0 p 1
+unstack 1 2 5 5
+?x 0 0
+?y 1 0
+on 0 0 2 p 0 p 1
+clear 2 0 1 p 0
+handempty 3 0 0 
+type_object 6 0 1 p 0
+type_object 6 0 1 p 1
+clear 2 1 1 p 0
+handempty 3 1 0 
+on 0 1 2 p 0 p 1
+holding 4 0 1 p 0
+clear 2 0 1 p 1

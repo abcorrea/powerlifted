@@ -1,0 +1,270 @@
+miconic s7-4.pddl
+SPARSE-REPRESENTATION
+TYPES 1
+object 0
+PREDICATES 10
+origin 0 2 1
+0 0
+floor 1 1 1
+0
+passenger 2 1 1
+0
+destin 3 2 1
+0 0
+above 4 2 1
+0 0
+boarded 5 1 0
+0
+served 6 1 0
+0
+lift-at 7 1 0
+0
+= 8 2 1
+0 0
+type_object 9 1 1
+0
+OBJECTS 21
+p0 0 1 0
+p1 1 1 0
+p2 2 1 0
+p3 3 1 0
+p4 4 1 0
+p5 5 1 0
+p6 6 1 0
+f0 7 1 0
+f1 8 1 0
+f2 9 1 0
+f3 10 1 0
+f4 11 1 0
+f5 12 1 0
+f6 13 1 0
+f7 14 1 0
+f8 15 1 0
+f9 16 1 0
+f10 17 1 0
+f11 18 1 0
+f12 19 1 0
+f13 20 1 0
+INITIAL-STATE 169
+above(f3,f6) 0 4 0 2 10 13
+above(f3,f11) 1 4 0 2 10 18
+above(f0,f12) 2 4 0 2 7 19
+above(f5,f12) 3 4 0 2 12 19
+above(f2,f11) 4 4 0 2 9 18
+above(f1,f3) 5 4 0 2 8 10
+above(f0,f6) 6 4 0 2 7 13
+floor(f3) 7 1 0 1 10
+passenger(p5) 8 2 0 1 5
+above(f6,f9) 9 4 0 2 13 16
+lift-at(f0) 10 7 0 1 7
+above(f5,f11) 11 4 0 2 12 18
+above(f10,f11) 12 4 0 2 17 18
+above(f2,f7) 13 4 0 2 9 14
+destin(p6,f1) 14 3 0 2 6 8
+floor(f6) 15 1 0 1 13
+above(f1,f12) 16 4 0 2 8 19
+above(f2,f8) 17 4 0 2 9 15
+above(f4,f6) 18 4 0 2 11 13
+above(f0,f3) 19 4 0 2 7 10
+above(f10,f12) 20 4 0 2 17 19
+above(f1,f11) 21 4 0 2 8 18
+above(f1,f9) 22 4 0 2 8 16
+above(f12,f13) 23 4 0 2 19 20
+floor(f9) 24 1 0 1 16
+above(f8,f13) 25 4 0 2 15 20
+above(f7,f8) 26 4 0 2 14 15
+above(f6,f12) 27 4 0 2 13 19
+above(f11,f13) 28 4 0 2 18 20
+above(f4,f10) 29 4 0 2 11 17
+above(f3,f5) 30 4 0 2 10 12
+passenger(p6) 31 2 0 1 6
+above(f4,f9) 32 4 0 2 11 16
+floor(f12) 33 1 0 1 19
+floor(f7) 34 1 0 1 14
+above(f1,f6) 35 4 0 2 8 13
+above(f3,f8) 36 4 0 2 10 15
+above(f7,f12) 37 4 0 2 14 19
+above(f0,f10) 38 4 0 2 7 17
+above(f2,f13) 39 4 0 2 9 20
+floor(f10) 40 1 0 1 17
+above(f9,f10) 41 4 0 2 16 17
+above(f3,f7) 42 4 0 2 10 14
+above(f5,f13) 43 4 0 2 12 20
+above(f2,f10) 44 4 0 2 9 17
+above(f6,f8) 45 4 0 2 13 15
+above(f2,f5) 46 4 0 2 9 12
+above(f5,f6) 47 4 0 2 12 13
+floor(f5) 48 1 0 1 12
+above(f3,f12) 49 4 0 2 10 19
+above(f2,f6) 50 4 0 2 9 13
+above(f0,f5) 51 4 0 2 7 12
+above(f5,f8) 52 4 0 2 12 15
+above(f1,f13) 53 4 0 2 8 20
+above(f0,f2) 54 4 0 2 7 9
+origin(p1,f12) 55 0 0 2 1 19
+destin(p5,f11) 56 3 0 2 5 18
+above(f8,f9) 57 4 0 2 15 16
+above(f8,f11) 58 4 0 2 15 18
+above(f4,f5) 59 4 0 2 11 12
+destin(p1,f10) 60 3 0 2 1 17
+above(f6,f7) 61 4 0 2 13 14
+origin(p6,f8) 62 0 0 2 6 15
+above(f8,f12) 63 4 0 2 15 19
+floor(f8) 64 1 0 1 15
+above(f7,f9) 65 4 0 2 14 16
+floor(f13) 66 1 0 1 20
+above(f1,f4) 67 4 0 2 8 11
+above(f4,f8) 68 4 0 2 11 15
+above(f6,f11) 69 4 0 2 13 18
+above(f7,f10) 70 4 0 2 14 17
+above(f4,f13) 71 4 0 2 11 20
+above(f1,f7) 72 4 0 2 8 14
+above(f9,f12) 73 4 0 2 16 19
+above(f3,f9) 74 4 0 2 10 16
+above(f7,f13) 75 4 0 2 14 20
+above(f2,f12) 76 4 0 2 9 19
+origin(p4,f3) 77 0 0 2 4 10
+passenger(p0) 78 2 0 1 0
+above(f9,f11) 79 4 0 2 16 18
+above(f0,f9) 80 4 0 2 7 16
+above(f2,f3) 81 4 0 2 9 10
+above(f3,f10) 82 4 0 2 10 17
+above(f0,f13) 83 4 0 2 7 20
+above(f2,f4) 84 4 0 2 9 11
+above(f5,f7) 85 4 0 2 12 14
+above(f1,f2) 86 4 0 2 8 9
+passenger(p1) 87 2 0 1 1
+above(f0,f7) 88 4 0 2 7 14
+above(f3,f4) 89 4 0 2 10 11
+above(f3,f13) 90 4 0 2 10 20
+above(f5,f10) 91 4 0 2 12 17
+above(f0,f4) 92 4 0 2 7 11
+above(f5,f9) 93 4 0 2 12 16
+passenger(p4) 94 2 0 1 4
+destin(p2,f6) 95 3 0 2 2 13
+above(f2,f9) 96 4 0 2 9 16
+above(f4,f7) 97 4 0 2 11 14
+above(f10,f13) 98 4 0 2 17 20
+destin(p4,f4) 99 3 0 2 4 11
+above(f1,f10) 100 4 0 2 8 17
+passenger(p2) 101 2 0 1 2
+above(f8,f10) 102 4 0 2 15 17
+above(f1,f8) 103 4 0 2 8 15
+above(f0,f1) 104 4 0 2 7 8
+origin(p2,f0) 105 0 0 2 2 7
+destin(p3,f1) 106 3 0 2 3 8
+destin(p0,f13) 107 3 0 2 0 20
+above(f11,f12) 108 4 0 2 18 19
+floor(f2) 109 1 0 1 9
+passenger(p3) 110 2 0 1 3
+origin(p0,f5) 111 0 0 2 0 12
+origin(p5,f8) 112 0 0 2 5 15
+above(f6,f13) 113 4 0 2 13 20
+above(f4,f11) 114 4 0 2 11 18
+floor(f4) 115 1 0 1 11
+above(f1,f5) 116 4 0 2 8 12
+floor(f1) 117 1 0 1 8
+above(f6,f10) 118 4 0 2 13 17
+above(f7,f11) 119 4 0 2 14 18
+above(f4,f12) 120 4 0 2 11 19
+above(f9,f13) 121 4 0 2 16 20
+above(f0,f11) 122 4 0 2 7 18
+above(f0,f8) 123 4 0 2 7 15
+floor(f0) 124 1 0 1 7
+floor(f11) 125 1 0 1 18
+origin(p3,f7) 126 0 0 2 3 14
+=(p0,p0) 127 8 0 2 0 0
+=(p1,p1) 128 8 0 2 1 1
+=(p2,p2) 129 8 0 2 2 2
+=(p3,p3) 130 8 0 2 3 3
+=(p4,p4) 131 8 0 2 4 4
+=(p5,p5) 132 8 0 2 5 5
+=(p6,p6) 133 8 0 2 6 6
+=(f0,f0) 134 8 0 2 7 7
+=(f1,f1) 135 8 0 2 8 8
+=(f2,f2) 136 8 0 2 9 9
+=(f3,f3) 137 8 0 2 10 10
+=(f4,f4) 138 8 0 2 11 11
+=(f5,f5) 139 8 0 2 12 12
+=(f6,f6) 140 8 0 2 13 13
+=(f7,f7) 141 8 0 2 14 14
+=(f8,f8) 142 8 0 2 15 15
+=(f9,f9) 143 8 0 2 16 16
+=(f10,f10) 144 8 0 2 17 17
+=(f11,f11) 145 8 0 2 18 18
+=(f12,f12) 146 8 0 2 19 19
+=(f13,f13) 147 8 0 2 20 20
+type_object(p0) 148 9 0 1 0
+type_object(p1) 149 9 0 1 1
+type_object(p2) 150 9 0 1 2
+type_object(p3) 151 9 0 1 3
+type_object(p4) 152 9 0 1 4
+type_object(p5) 153 9 0 1 5
+type_object(p6) 154 9 0 1 6
+type_object(f0) 155 9 0 1 7
+type_object(f1) 156 9 0 1 8
+type_object(f2) 157 9 0 1 9
+type_object(f3) 158 9 0 1 10
+type_object(f4) 159 9 0 1 11
+type_object(f5) 160 9 0 1 12
+type_object(f6) 161 9 0 1 13
+type_object(f7) 162 9 0 1 14
+type_object(f8) 163 9 0 1 15
+type_object(f9) 164 9 0 1 16
+type_object(f10) 165 9 0 1 17
+type_object(f11) 166 9 0 1 18
+type_object(f12) 167 9 0 1 19
+type_object(f13) 168 9 0 1 20
+GOAL 7
+served(p0) 6 0 1 0
+served(p1) 6 0 1 1
+served(p2) 6 0 1 2
+served(p3) 6 0 1 3
+served(p4) 6 0 1 4
+served(p5) 6 0 1 5
+served(p6) 6 0 1 6
+ACTION-SCHEMAS 4
+board 1 2 6 1
+?f 0 0
+?p 1 0
+floor 1 0 1 p 0
+passenger 2 0 1 p 1
+lift-at 7 0 1 p 0
+origin 0 0 2 p 1 p 0
+type_object 9 0 1 p 1
+type_object 9 0 1 p 0
+boarded 5 0 1 p 1
+depart 1 2 7 2
+?f 0 0
+?p 1 0
+floor 1 0 1 p 0
+passenger 2 0 1 p 1
+lift-at 7 0 1 p 0
+destin 3 0 2 p 1 p 0
+boarded 5 0 1 p 1
+type_object 9 0 1 p 1
+type_object 9 0 1 p 0
+boarded 5 1 1 p 1
+served 6 0 1 p 1
+up 1 2 6 2
+?f1 0 0
+?f2 1 0
+floor 1 0 1 p 0
+floor 1 0 1 p 1
+lift-at 7 0 1 p 0
+above 4 0 2 p 0 p 1
+type_object 9 0 1 p 1
+type_object 9 0 1 p 0
+lift-at 7 1 1 p 0
+lift-at 7 0 1 p 1
+down 1 2 6 2
+?f1 0 0
+?f2 1 0
+floor 1 0 1 p 0
+floor 1 0 1 p 1
+lift-at 7 0 1 p 0
+above 4 0 2 p 1 p 0
+type_object 9 0 1 p 1
+type_object 9 0 1 p 0
+lift-at 7 1 1 p 0
+lift-at 7 0 1 p 1
