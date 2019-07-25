@@ -27,7 +27,8 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
     index_to_state[state_counter] = task.initial_state;
     cheapest_parent[state_counter] = make_pair(-1, Action(-1, vector<int>()));
 
-    int layer = heuristic.compute_heuristic(task.initial_state, task);
+    int heuristic_layer = heuristic.compute_heuristic(task.initial_state, task)+1;
+    int g_layer = 0;
 
     q.emplace(0, heuristic.compute_heuristic(task.initial_state, task), state_counter);
     visited[task.initial_state] = state_counter++;
@@ -44,11 +45,18 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
         int h = head.h;
         int g = head.g;
         q.pop();
-        if (h < layer) {
-            layer = h;
-            cout << "Expansions " << state_counter << ", generations " << generations << " states at layer h=" << h
-                 << " [" << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
+        if (h < heuristic_layer) {
+            heuristic_layer = h;
+            cout << "New heuristic value expanded: h=" << h <<
+                 " [expansions: " << state_counter << ", generations: " << generations
+                 << ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
         }
+        /*if (g > g_layer) {
+            g_layer = g;
+            cout << "Expansions " << state_counter << ", generations " << generations <<
+                 " states at layer g=" << g_layer
+                 << " [" << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
+        }*/
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
         if (task.is_goal(state, task.goal)) {
