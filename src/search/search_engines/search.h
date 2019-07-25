@@ -12,8 +12,8 @@
 #include "../successor_generators/successor_generator.h"
 #include "../heuristics/heuristic.h"
 
-#define SOLVED 1
-#define NOT_SOLVED 2
+#define SOLVED 0
+#define NOT_SOLVED 1
 
 class Node {
 public:
