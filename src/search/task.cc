@@ -34,8 +34,8 @@ void Task::initializeEmptyInitialState() {
         static_preds.push_back(r);
         fluents.push_back(r);
     }
-    initial_state = State(fluents);
-    static_info = StaticInformation(static_preds);
+    initial_state = State(fluents, vector<bool>(predicates.size(), false));
+    static_info = StaticInformation(static_preds, vector<bool>(predicates.size(), false));
 }
 
 #pragma clang diagnostic push

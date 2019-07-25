@@ -29,9 +29,6 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         map<int, int> precond_to_size;
         int cont = 0;
         for (const Atom &p : action.getPrecondition()) {
-            if (p.negated) {
-                continue;
-            }
             if (p.negated or p.tuples.size() == 0) {
                 continue;
             }
@@ -134,6 +131,16 @@ const std::vector<std::pair<State, Action>>
     successors.clear();
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
+        bool trivially_inapplicable = false;
+        for (int i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
+            if ((action.positive_nullary_precond[i] and !state.nullary_atoms[i])
+                or (action.negative_nullary_precond[i] and state.nullary_atoms[i])) {
+                trivially_inapplicable = true;
+            }
+        }
+        if (trivially_inapplicable) {
+            continue;
+        }
         Table instantiations = instantiate(action, state, staticInformation);
         /*
          * See comment in generic_join_successor.cc
@@ -142,6 +149,15 @@ const std::vector<std::pair<State, Action>>
             continue;
             // TODO case where action is pre grounded (no parameters)
         } else {
+            vector<bool> new_nullary_atoms(state.nullary_atoms);
+            for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
+                if (action.negative_nullary_effects[i])
+                    new_nullary_atoms[i] = false;
+            }
+            for (int i = 0; i < action.positive_nullary_effects.size(); ++i) {
+                if (action.positive_nullary_effects[i])
+                    new_nullary_atoms[i] = true;
+            }
             for (const vector<int> &tuple : instantiations.tuples) {
                 // TODO support for !=
                 // TODO test case with constants (should work?)
@@ -161,7 +177,7 @@ const std::vector<std::pair<State, Action>>
                         }
                     }
                 }
-                successors.emplace_back(new_relation, Action(action.getIndex(), tuple));
+                successors.emplace_back(State(new_relation, new_nullary_atoms), Action(action.getIndex(), tuple));
             }
         }
     }
@@ -180,7 +196,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     vector<Atom> precond;
     for (const Atom &p : action.getPrecondition()) {
         // Ignoring negative preconditions when instantiating
-        if (not p.negated) {
+        if (!p.negated and p.tuples.size() > 0) {
             precond.push_back((p));
         }
     }
@@ -210,19 +226,16 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
             auto it_2 = find(working_table.tuple_index.begin(),
                              working_table.tuple_index.end(),
                              ineq.second);
+            int index1 = distance(working_table.tuple_index.begin(), it_1);
+            int index2 = distance(working_table.tuple_index.begin(), it_2);
             if (it_1 != working_table.tuple_index.end() and it_2 != working_table.tuple_index.end()) {
-                // Loop over all tuples and remove duplicates
-                // This is a late removal but there is no easy way to do it before
-                int index1 = distance(working_table.tuple_index.begin(), it_1);
-                int index2 = distance(working_table.tuple_index.begin(), it_2);
-                int cont = 0;
-                for (auto it = working_table.tuples.begin(); it != working_table.tuples.end();) {
-                    if ((*it)[index1] == (*it)[index2]) {
-                        working_table.tuples.erase(it);
-                    }
-                    else {
-                        ++it;
-                    }
+                vector<vector<int>> to_remove;
+                for (auto && t : working_table.tuples) {
+                    if (t[index1] == t[index2])
+                        to_remove.push_back(t);
+                }
+                for (auto &&t : to_remove) {
+                    working_table.tuples.erase(t);
                 }
             }
         }

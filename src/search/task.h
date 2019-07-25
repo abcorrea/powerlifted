@@ -29,6 +29,7 @@ public:
     GoalCondition goal;
     std::vector<ActionSchema> actions;
     std::vector<std::string> type_names;
+    std::unordered_set<int> nullary_predicates;
 
     Task(const std::string& domain_name, const std::string& task_name) :
             domain_name(domain_name), task_name(task_name) {

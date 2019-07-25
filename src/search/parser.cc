@@ -45,6 +45,9 @@ bool parse(Task &task, const ifstream &in) {
         bool static_pred;
         cin >> predicate_name >> index >> number_args >> static_pred;
         vector<int> types;
+        if (number_args == 0) {
+            task.nullary_predicates.insert(index);
+        }
         for (int i = 0; i < number_args; ++i) {
             int type;
             cin >> type;
@@ -82,6 +85,8 @@ bool parse(Task &task, const ifstream &in) {
         cerr << "Error while reading initial state section." << endl;
         return false;
     }
+    task.initial_state.nullary_atoms.clear();
+    task.initial_state.nullary_atoms.resize(task.predicates.size(), false);
     for (int i = 0; i < initial_state_size; ++i) {
         string name;
         int index;
@@ -90,6 +95,10 @@ bool parse(Task &task, const ifstream &in) {
         int number_args;
         cin >> name >> index >> predicate_index >> negated >> number_args;
         vector<int> args;
+        if (number_args == 0) {
+            assert(task.nullary_predicates.find(predicate_index) != task.nullary_predicates.end());
+            task.initial_state.nullary_atoms[predicate_index] = true;
+        }
         for (int j = 0; j < number_args; ++j) {
             int arg;
             cin >> arg;
@@ -102,6 +111,7 @@ bool parse(Task &task, const ifstream &in) {
     }
 
     // Read Goal State
+    // TODO goal does not support nullary atoms
     int goal_size;
     cin >> canary >> goal_size;
     if (canary != "GOAL") {
@@ -140,6 +150,10 @@ bool parse(Task &task, const ifstream &in) {
         vector<Parameter> parameters;
         vector<Atom> preconditions, effects;
         vector<pair<int,int>> inequalities;
+        vector<bool> positive_nul_precond(task.predicates.size(), false),
+                negative_nul_precond(task.predicates.size(), false),
+                positive_nul_eff(task.predicates.size(), false),
+                negative_nul_eff(task.predicates.size(), false);
         for (int j = 0; j < args; ++j) {
             string param_name;
             int index, type;
@@ -152,6 +166,14 @@ bool parse(Task &task, const ifstream &in) {
             bool negated;
             int arguments_size;
             cin >> precond_name >> index >> negated >> arguments_size;
+            if (arguments_size == 0) {
+                assert(task.nullary_predicates.find(index) != task.nullary_predicates.end());
+                if (!negated)
+                    positive_nul_precond[index] = true;
+                else
+                    negative_nul_precond[index] = true;
+                continue;
+            }
             bool is_inequality = (boost::iequals(precond_name, "=") and negated);
             vector<Argument> arguments;
             if (is_inequality) {
@@ -188,6 +210,14 @@ bool parse(Task &task, const ifstream &in) {
             int arguments_size;
             cin >> eff_name >> index >> negated >> arguments_size;
             vector<Argument> arguments;
+            if (arguments_size == 0) {
+                assert(task.nullary_predicates.find(index) != task.nullary_predicates.end());
+                if (!negated)
+                    positive_nul_eff[index] = true;
+                else
+                    negative_nul_eff[index] = true;
+                continue;
+            }
             for (int k = 0; k < arguments_size; ++k) {
                 char c;
                 int obj_index;
@@ -206,7 +236,8 @@ bool parse(Task &task, const ifstream &in) {
             }
             effects.emplace_back(eff_name, index, arguments, negated);
         }
-        ActionSchema a(name, i, cost, parameters, preconditions, effects, inequalities);
+        ActionSchema a(name, i, cost, parameters, preconditions, effects, inequalities,
+                       positive_nul_precond, negative_nul_precond, positive_nul_eff, negative_nul_eff);
         actions.push_back(a);
     }
     task.initializeActionSchemas(actions);

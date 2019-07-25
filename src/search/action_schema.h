@@ -15,7 +15,11 @@ public:
                           std::vector<Parameter> parameters,
                           std::vector<Atom> precondition,
                           std::vector<Atom> effects,
-                          std::vector<std::pair<int,int>> inequalities);
+                          std::vector<std::pair<int,int>> inequalities,
+                          std::vector<bool> positive_nullary_precond,
+                          std::vector<bool> negative_nullary_precond,
+                          std::vector<bool> positive_nullary_effects,
+                          std::vector<bool> negative_nullary_effects);
 
     const std::string &getName() const {
         return name;
@@ -45,6 +49,12 @@ public:
         return inequalities;
     }
 
+
+    std::vector<bool> positive_nullary_precond;
+    std::vector<bool> negative_nullary_precond;
+    std::vector<bool> positive_nullary_effects;
+    std::vector<bool> negative_nullary_effects;
+
 private:
     std::string name;
     int index;
@@ -53,7 +63,6 @@ private:
     std::vector<Atom> precondition;
     std::vector<Atom> effects;
     std::vector<std::pair<int,int>> inequalities;
-
 };
 
 
