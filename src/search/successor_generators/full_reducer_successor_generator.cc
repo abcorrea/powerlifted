@@ -219,7 +219,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     for (int i = 1; i < full_join_order[action.getIndex()].size(); ++i) {
         hash_join(working_table, tables[full_join_order[action.getIndex()][i]]);
         // Filter out equalities
-        for (const pair<int, int> ineq : action.getInequalities()) {
+        for (const pair<int, int> &ineq : action.getInequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),
                              working_table.tuple_index.end(),
                              ineq.first);

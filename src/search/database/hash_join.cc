@@ -53,17 +53,15 @@ void hash_join(Table &t1, Table &t2) {
         }
 
         // Remove duplicated index. Duplicate code from join.cc
-        vector<int> old_indices_t2(t2.tuple_index);
-        vector<int> to_remove;
-        to_remove.reserve(matches.size());
+        vector<bool> to_remove(t2.tuple_index.size(), false);
         for (const pair<int, int> &m : matches) {
-            to_remove.push_back(m.second);
+            to_remove[m.second] = true;
         }
-        sort(to_remove.begin(), to_remove.end());
-        for (int i = to_remove.size()-1; i >= 0 ; --i) {
-            t2.tuple_index.erase(t2.tuple_index.begin()+to_remove[i]);
+        for (int j = 0; j < t2.tuple_index.size(); ++j) {
+            if (!to_remove[j]) {
+                t1.tuple_index.push_back(t2.tuple_index[j]);
+            }
         }
-        t1.tuple_index.insert(t1.tuple_index.end(), t2.tuple_index.begin(), t2.tuple_index.end());
 
         // Probe phase
         for (vector<int> tuple : t2.tuples) {
@@ -73,7 +71,9 @@ void hash_join(Table &t1, Table &t2) {
             }
             if (hash_join_map.count(key) > 0) {
                 for (int i = to_remove.size()-1; i >= 0 ; --i) {
-                    tuple.erase(tuple.begin()+to_remove[i]);
+                    if (to_remove[i]) {
+                        tuple.erase(tuple.begin() + i);
+                    }
                 }
                 for (vector<int> t : hash_join_map[key]) {
                     t.insert(t.end(), tuple.begin(), tuple.end());
