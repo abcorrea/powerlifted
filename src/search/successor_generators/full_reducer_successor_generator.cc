@@ -29,12 +29,12 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         map<int, int> precond_to_size;
         int cont = 0;
         for (const Atom &p : action.getPrecondition()) {
-            if (p.negated or p.tuples.size() == 0) {
+            if (p.negated or p.tuples.empty()) {
                 continue;
             }
             set<int> args;
             for (Argument arg : p.tuples) {
-                // We parse constants to negative numbers so they're unique identified
+                // We parse constants to negative numbers so they're uniquely identified
                 int node;
                 if (arg.constant) {
                     node = -1 * arg.index;
@@ -68,23 +68,23 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         bool has_ear = true;
         stack<pair<int,int>> full_reducer_back;
         vector<bool> removed(hyperedges.size(), false);
-        while (has_ear and !hyperedges.empty()) {
+        while (has_ear) {
             has_ear = false;
             int ear = -1;
             int in_favor = -1;
-            for (int i = 0; i < hyperedges.size()-1 and !has_ear; ++i) {
+            for (int i = 0; i < hyperedges.size() and !has_ear; ++i) {
                 if (removed[i]) {
                     continue;
                 }
-                for (int j = i+1; j < hyperedges.size() and !has_ear; ++j) {
-                    if (removed[j]) {
+                for (int j = 0; j < hyperedges.size() and !has_ear; ++j) {
+                    if (removed[j] or i == j) {
                         continue;
                     }
                     set<int> diff;
+                    // Contained only in the first hyperedge, then it is an ear
                     set_difference(hyperedges[i].begin(), hyperedges[i].end(),
                                    hyperedges[j].begin(), hyperedges[j].end(),
                                    inserter(diff, diff.end()));
-                    // Contained only in the first hyperedge, then it is an ear
                     has_ear = true;
                     ear = i;
                     in_favor = j;
@@ -96,8 +96,8 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                         }
                     }
                     if (has_ear) {
-                        for (int n : diff) {
-                            node_counter[n]--;
+                        for (int n : hyperedges[i]) {
+                            node_counter[n] = node_counter[n]-1;
                         }
                     }
                 }
@@ -117,11 +117,21 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         }
         // Add all hyperedges that were not removed to the join. If it is acyclic, there is only left.
         reverse(full_join_order[action.getIndex()].begin(), full_join_order[action.getIndex()].end());
+        int not_removed_counter = 0;
         for (int k = 0; k < removed.size(); ++k) {
-            if (!removed[k])
+            if (!removed[k]) {
+                ++not_removed_counter;
                 full_join_order[action.getIndex()].push_back(edge_to_precond[k]);
+            }
+        }
+        if (not_removed_counter == 1) {
+            cout << "Action " << action.getName() << " is acyclic.\n";
+        }
+        else {
+            cout << "Action " << action.getName() << " is cyclic.\n";
         }
     }
+    //exit(0);
 }
 
 const std::vector<std::pair<State, Action>>
@@ -159,7 +169,6 @@ const std::vector<std::pair<State, Action>>
                     new_nullary_atoms[i] = true;
             }
             for (const vector<int> &tuple : instantiations.tuples) {
-                // TODO support for !=
                 // TODO test case with constants (should work?)
                 vector<Relation> new_relation(state.relations);
                 for (const Atom &eff : action.getEffects()) {
