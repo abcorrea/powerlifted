@@ -29,10 +29,11 @@ void join(Table &t1, Table &t2) {
          * If no attribute matches, then we apply a cartesian product
          */
         t1.tuple_index.insert(t1.tuple_index.end(), t2.tuple_index.begin(), t2.tuple_index.end());
-        for (vector<int> tuple_t1 : t1.tuples) {
+        for (const vector<int>& tuple_t1 : t1.tuples) {
             for (const vector<int> &tuple_t2 : t2.tuples) {
-                tuple_t1.insert(tuple_t1.end(), tuple_t2.begin(), tuple_t2.end());
-                new_tuples.insert(tuple_t1);
+                vector<int> aux(tuple_t1);
+                aux.insert(aux.end(), tuple_t2.begin(), tuple_t2.end());
+                new_tuples.insert(aux);
             }
         }
     }
@@ -57,7 +58,7 @@ void join(Table &t1, Table &t2) {
         }
         t1.tuple_index.insert(t1.tuple_index.end(), t2.tuple_index.begin(), t2.tuple_index.end());
 
-        for (vector<int> tuple_t1 : t1.tuples) {
+        for (const vector<int> &tuple_t1 : t1.tuples) {
             for (vector<int> tuple_t2 : t2.tuples) {
                 bool match = true;
                 for (const pair<int, int> &m : matches) {
@@ -71,8 +72,9 @@ void join(Table &t1, Table &t2) {
                     for (int i = to_remove.size()-1; i >= 0 ; --i) {
                         tuple_t2.erase(tuple_t2.begin()+to_remove[i]);
                     }
-                    tuple_t1.insert(tuple_t1.end(), tuple_t2.begin(), tuple_t2.end());
-                    new_tuples.insert(tuple_t1);
+                    vector<int> aux(tuple_t1);
+                    aux.insert(aux.end(), tuple_t2.begin(), tuple_t2.end());
+                    new_tuples.insert(aux);
                 }
             }
         }
