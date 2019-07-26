@@ -171,6 +171,12 @@ const std::vector<std::pair<State, Action>>
             }
             for (const vector<int> &tuple : instantiations.tuples) {
                 // TODO test case with constants (should work?)
+                // First order tuple of indices and then apply effects
+                vector<int> ordered_tuple(tuple.size());
+                assert(ordered_tuple.size() == instantiations.tuple_index.size());
+                for (int i = 0; i < instantiations.tuple_index.size(); ++i) {
+                    ordered_tuple[instantiations.tuple_index[i]] = tuple[i];
+                }
                 vector<Relation> new_relation(state.relations);
                 for (const Atom &eff : action.getEffects()) {
                     const GroundAtom &ground_atom = tuple_to_atom(tuple, instantiations.tuple_index, eff);
@@ -187,7 +193,8 @@ const std::vector<std::pair<State, Action>>
                         }
                     }
                 }
-                successors.emplace_back(State(new_relation, new_nullary_atoms), Action(action.getIndex(), tuple));
+                successors.emplace_back(State(new_relation, new_nullary_atoms),
+                        Action(action.getIndex(), ordered_tuple));
             }
         }
     }

@@ -64,11 +64,11 @@ void Search::extract_plan(unordered_map<int, pair<int, Action>> &cheapest_parent
     reverse(actions_in_the_plan.begin(), actions_in_the_plan.end());
     ofstream plan_file("sas_plan");
     for (const Action &a : actions_in_the_plan) {
-        plan_file << task.actions[a.index].getName() << " ";
+        plan_file << '(' << task.actions[a.index].getName() << " ";
         for (const int obj : a.instantiation) {
             plan_file << task.objects[obj].getName() << " ";
         }
-        plan_file << endl;
+        plan_file << ")\n";
     }
 }
 

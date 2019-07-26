@@ -3,7 +3,7 @@ project(search)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "-O3")
+set(CMAKE_CXX_FLAGS "-O0")
 
 add_executable(search
         main.cc
@@ -33,4 +33,9 @@ add_executable(search
         successor_generators/ordered_join_successor.cc successor_generators/ordered_join_successor.h
         successor_generators/inverse_ordered_join_successor.cc successor_generators/inverse_ordered_join_successor.h
         successor_generators/generic_join_successor.cc successor_generators/generic_join_successor.h
-        heuristics/iterated_width.cc heuristics/iterated_width.h successor_generators/full_reducer_successor_generator.cc successor_generators/full_reducer_successor_generator.h database/semi_join.h database/semi_join.cc database/hash_join.cc database/hash_join.h hash_structures.h)
+        heuristics/iterated_width.cc heuristics/iterated_width.h
+        successor_generators/full_reducer_successor_generator.cc successor_generators/full_reducer_successor_generator.h
+        database/semi_join.h database/semi_join.cc
+        database/hash_join.cc database/hash_join.h
+        hash_structures.h
+        database/hash_semi_join.cc database/hash_semi_join.h)
