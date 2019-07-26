@@ -9,6 +9,7 @@
 #include "full_reducer_successor_generator.h"
 #include "../database/semi_join.h"
 #include "../database/hash_join.h"
+#include "../database/hash_semi_join.h"
 
 using namespace std;
 
@@ -221,7 +222,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     assert (!tables.empty());
     for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
         // We do not check inequalities here. Should we?
-        semi_join(tables[sj.first], tables[sj.second]);
+        hash_semi_join(tables[sj.first], tables[sj.second]);
     }
 
     Table &working_table = tables[full_join_order[action.getIndex()][0]];
