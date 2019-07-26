@@ -1,0 +1,3634 @@
+organic-synthesis-opt18-strips p19.pddl
+SPARSE-REPRESENTATION
+TYPES 34
+object 0
+chemical_atom 1
+phosphorus 2
+calcium 3
+sulfur 4
+magnesium 5
+aluminium 6
+chromium 7
+iron 8
+manganese 9
+mercury 10
+boron 11
+copper 12
+palladium 13
+r_group 14
+halogen 15
+alkalimetal 16
+hcno 17
+hc 18
+nitrogen 19
+oxygen 20
+hydrogen 21
+carbon 22
+chlorine 23
+fluorine 24
+bromine 25
+iodine 26
+astatine 27
+lithium 28
+sodium 29
+potassium 30
+rubidium 31
+caesium 32
+francium 33
+PREDICATES 39
+bond 0 2 0
+1 1
+doublebond 1 2 0
+1 1
+triplebond 2 2 0
+1 1
+aromaticbond 3 2 1
+0 0
+= 4 2 1
+0 0
+type_object 5 1 1
+0
+type_chemical_atom 6 1 1
+0
+type_phosphorus 7 1 1
+0
+type_calcium 8 1 1
+0
+type_sulfur 9 1 1
+0
+type_magnesium 10 1 1
+0
+type_aluminium 11 1 1
+0
+type_chromium 12 1 1
+0
+type_iron 13 1 1
+0
+type_manganese 14 1 1
+0
+type_mercury 15 1 1
+0
+type_boron 16 1 1
+0
+type_copper 17 1 1
+0
+type_palladium 18 1 1
+0
+type_r_group 19 1 1
+0
+type_halogen 20 1 1
+0
+type_alkalimetal 21 1 1
+0
+type_hcno 22 1 1
+0
+type_hc 23 1 1
+0
+type_nitrogen 24 1 1
+0
+type_oxygen 25 1 1
+0
+type_hydrogen 26 1 1
+0
+type_carbon 27 1 1
+0
+type_chlorine 28 1 1
+0
+type_fluorine 29 1 1
+0
+type_bromine 30 1 1
+0
+type_iodine 31 1 1
+0
+type_astatine 32 1 1
+0
+type_lithium 33 1 1
+0
+type_sodium 34 1 1
+0
+type_potassium 35 1 1
+0
+type_rubidium 36 1 1
+0
+type_caesium 37 1 1
+0
+type_francium 38 1 1
+0
+OBJECTS 44
+h1 0 6 0 14 1 17 18 21
+h2 1 6 0 14 1 17 18 21
+h3 2 6 0 14 1 17 18 21
+h4 3 6 0 14 1 17 18 21
+h5 4 6 0 14 1 17 18 21
+h6 5 6 0 14 1 17 18 21
+h7 6 6 0 14 1 17 18 21
+h8 7 6 0 14 1 17 18 21
+c6 8 6 0 14 1 17 18 22
+c1 9 6 0 14 1 17 18 22
+c2 10 6 0 14 1 17 18 22
+c3 11 6 0 14 1 17 18 22
+c4 12 6 0 14 1 17 18 22
+c5 13 6 0 14 1 17 18 22
+c7 14 6 0 14 1 17 18 22
+c8 15 6 0 14 1 17 18 22
+o1 16 5 14 0 17 20 1
+h9 17 6 0 14 1 17 18 21
+h10 18 6 0 14 1 17 18 21
+su 19 3 4 0 1
+o2 20 5 14 0 17 20 1
+o3 21 5 14 0 17 20 1
+o4 22 5 14 0 17 20 1
+o5 23 5 14 0 17 20 1
+h11 24 6 0 14 1 17 18 21
+n 25 5 14 0 17 19 1
+o6 26 5 14 0 17 20 1
+o7 27 5 14 0 17 20 1
+o8 28 5 14 0 17 20 1
+h12 29 6 0 14 1 17 18 21
+h13 30 6 0 14 1 17 18 21
+h50 31 6 0 14 1 17 18 21
+h51 32 6 0 14 1 17 18 21
+h52 33 6 0 14 1 17 18 21
+h53 34 6 0 14 1 17 18 21
+na 35 5 16 14 0 1 29
+n2 36 5 14 0 17 19 1
+o9 37 5 14 0 17 20 1
+o10 38 5 14 0 17 20 1
+h14 39 6 0 14 1 17 18 21
+h15 40 6 0 14 1 17 18 21
+o11 41 5 14 0 17 20 1
+cl1 42 5 14 15 1 23 0
+h16 43 6 0 14 1 17 18 21
+INITIAL-STATE 318
+bond(cl1,h16) 0 0 0 2 42 43
+bond(h2,c3) 1 0 0 2 1 11
+bond(h9,o4) 2 0 0 2 17 22
+bond(c8,c7) 3 0 0 2 15 14
+bond(n2,o10) 4 0 0 2 36 38
+doublebond(o9,n2) 5 1 0 2 37 36
+bond(c8,h8) 6 0 0 2 15 7
+aromaticbond(c2,c1) 7 3 0 2 10 9
+bond(h3,c4) 8 0 0 2 2 12
+bond(h50,h51) 9 0 0 2 31 32
+aromaticbond(c1,c2) 10 3 0 2 9 10
+aromaticbond(c4,c3) 11 3 0 2 12 11
+bond(h10,o5) 12 0 0 2 18 23
+doublebond(o8,n) 13 1 0 2 28 25
+aromaticbond(c3,c4) 14 3 0 2 11 12
+bond(h52,h53) 15 0 0 2 33 34
+doublebond(su,o2) 16 1 0 2 19 20
+bond(h6,c8) 17 0 0 2 5 15
+bond(o5,su) 18 0 0 2 23 19
+aromaticbond(c2,c3) 19 3 0 2 10 11
+bond(h16,cl1) 20 0 0 2 43 42
+bond(o11,h15) 21 0 0 2 41 40
+aromaticbond(c6,c1) 22 3 0 2 8 9
+bond(c8,h7) 23 0 0 2 15 6
+bond(c2,c7) 24 0 0 2 10 14
+aromaticbond(c4,c5) 25 3 0 2 12 13
+bond(h7,c8) 26 0 0 2 6 15
+bond(o10,n2) 27 0 0 2 38 36
+bond(h5,c6) 28 0 0 2 4 8
+bond(h13,h12) 29 0 0 2 30 29
+bond(h15,o11) 30 0 0 2 40 41
+bond(su,o5) 31 0 0 2 19 23
+bond(c5,h4) 32 0 0 2 13 3
+bond(o7,n) 33 0 0 2 27 25
+bond(o5,h10) 34 0 0 2 23 18
+bond(h8,c8) 35 0 0 2 7 15
+doublebond(su,o3) 36 1 0 2 19 21
+bond(h11,o6) 37 0 0 2 24 26
+bond(h12,h13) 38 0 0 2 29 30
+bond(o11,h14) 39 0 0 2 41 39
+bond(na,o10) 40 0 0 2 35 38
+bond(o6,n) 41 0 0 2 26 25
+aromaticbond(c3,c2) 42 3 0 2 11 10
+doublebond(o2,su) 43 1 0 2 20 19
+aromaticbond(c5,c4) 44 3 0 2 13 12
+bond(c8,h6) 45 0 0 2 15 5
+doublebond(o3,su) 46 1 0 2 21 19
+bond(o4,su) 47 0 0 2 22 19
+bond(n,o6) 48 0 0 2 25 26
+bond(c6,h5) 49 0 0 2 8 4
+bond(c7,c2) 50 0 0 2 14 10
+bond(h51,h50) 51 0 0 2 32 31
+doublebond(c7,o1) 52 1 0 2 14 16
+bond(o4,h9) 53 0 0 2 22 17
+bond(c3,h2) 54 0 0 2 11 1
+bond(h53,h52) 55 0 0 2 34 33
+bond(o6,h11) 56 0 0 2 26 24
+aromaticbond(c1,c6) 57 3 0 2 9 8
+bond(h1,c1) 58 0 0 2 0 9
+aromaticbond(c5,c6) 59 3 0 2 13 8
+bond(n,o7) 60 0 0 2 25 27
+bond(c7,c8) 61 0 0 2 14 15
+bond(h4,c5) 62 0 0 2 3 13
+doublebond(n2,o9) 63 1 0 2 36 37
+doublebond(o1,c7) 64 1 0 2 16 14
+bond(h14,o11) 65 0 0 2 39 41
+bond(c1,h1) 66 0 0 2 9 0
+aromaticbond(c6,c5) 67 3 0 2 8 13
+bond(su,o4) 68 0 0 2 19 22
+bond(c4,h3) 69 0 0 2 12 2
+doublebond(n,o8) 70 1 0 2 25 28
+bond(o10,na) 71 0 0 2 38 35
+=(h1,h1) 72 4 0 2 0 0
+=(h2,h2) 73 4 0 2 1 1
+=(h3,h3) 74 4 0 2 2 2
+=(h4,h4) 75 4 0 2 3 3
+=(h5,h5) 76 4 0 2 4 4
+=(h6,h6) 77 4 0 2 5 5
+=(h7,h7) 78 4 0 2 6 6
+=(h8,h8) 79 4 0 2 7 7
+=(c6,c6) 80 4 0 2 8 8
+=(c1,c1) 81 4 0 2 9 9
+=(c2,c2) 82 4 0 2 10 10
+=(c3,c3) 83 4 0 2 11 11
+=(c4,c4) 84 4 0 2 12 12
+=(c5,c5) 85 4 0 2 13 13
+=(c7,c7) 86 4 0 2 14 14
+=(c8,c8) 87 4 0 2 15 15
+=(o1,o1) 88 4 0 2 16 16
+=(h9,h9) 89 4 0 2 17 17
+=(h10,h10) 90 4 0 2 18 18
+=(su,su) 91 4 0 2 19 19
+=(o2,o2) 92 4 0 2 20 20
+=(o3,o3) 93 4 0 2 21 21
+=(o4,o4) 94 4 0 2 22 22
+=(o5,o5) 95 4 0 2 23 23
+=(h11,h11) 96 4 0 2 24 24
+=(n,n) 97 4 0 2 25 25
+=(o6,o6) 98 4 0 2 26 26
+=(o7,o7) 99 4 0 2 27 27
+=(o8,o8) 100 4 0 2 28 28
+=(h12,h12) 101 4 0 2 29 29
+=(h13,h13) 102 4 0 2 30 30
+=(h50,h50) 103 4 0 2 31 31
+=(h51,h51) 104 4 0 2 32 32
+=(h52,h52) 105 4 0 2 33 33
+=(h53,h53) 106 4 0 2 34 34
+=(na,na) 107 4 0 2 35 35
+=(n2,n2) 108 4 0 2 36 36
+=(o9,o9) 109 4 0 2 37 37
+=(o10,o10) 110 4 0 2 38 38
+=(h14,h14) 111 4 0 2 39 39
+=(h15,h15) 112 4 0 2 40 40
+=(o11,o11) 113 4 0 2 41 41
+=(cl1,cl1) 114 4 0 2 42 42
+=(h16,h16) 115 4 0 2 43 43
+type_hc(h1) 116 23 0 1 0
+type_hydrogen(h1) 117 26 0 1 0
+type_chemical_atom(h1) 118 6 0 1 0
+type_hcno(h1) 119 22 0 1 0
+type_r_group(h1) 120 19 0 1 0
+type_hc(h2) 121 23 0 1 1
+type_hydrogen(h2) 122 26 0 1 1
+type_chemical_atom(h2) 123 6 0 1 1
+type_hcno(h2) 124 22 0 1 1
+type_r_group(h2) 125 19 0 1 1
+type_hc(h3) 126 23 0 1 2
+type_hydrogen(h3) 127 26 0 1 2
+type_chemical_atom(h3) 128 6 0 1 2
+type_hcno(h3) 129 22 0 1 2
+type_r_group(h3) 130 19 0 1 2
+type_hc(h4) 131 23 0 1 3
+type_hydrogen(h4) 132 26 0 1 3
+type_chemical_atom(h4) 133 6 0 1 3
+type_hcno(h4) 134 22 0 1 3
+type_r_group(h4) 135 19 0 1 3
+type_hc(h5) 136 23 0 1 4
+type_hydrogen(h5) 137 26 0 1 4
+type_chemical_atom(h5) 138 6 0 1 4
+type_hcno(h5) 139 22 0 1 4
+type_r_group(h5) 140 19 0 1 4
+type_hc(h6) 141 23 0 1 5
+type_hydrogen(h6) 142 26 0 1 5
+type_chemical_atom(h6) 143 6 0 1 5
+type_hcno(h6) 144 22 0 1 5
+type_r_group(h6) 145 19 0 1 5
+type_hc(h7) 146 23 0 1 6
+type_hydrogen(h7) 147 26 0 1 6
+type_chemical_atom(h7) 148 6 0 1 6
+type_hcno(h7) 149 22 0 1 6
+type_r_group(h7) 150 19 0 1 6
+type_hc(h8) 151 23 0 1 7
+type_hydrogen(h8) 152 26 0 1 7
+type_chemical_atom(h8) 153 6 0 1 7
+type_hcno(h8) 154 22 0 1 7
+type_r_group(h8) 155 19 0 1 7
+type_r_group(c6) 156 19 0 1 8
+type_carbon(c6) 157 27 0 1 8
+type_chemical_atom(c6) 158 6 0 1 8
+type_hcno(c6) 159 22 0 1 8
+type_hc(c6) 160 23 0 1 8
+type_r_group(c1) 161 19 0 1 9
+type_carbon(c1) 162 27 0 1 9
+type_chemical_atom(c1) 163 6 0 1 9
+type_hcno(c1) 164 22 0 1 9
+type_hc(c1) 165 23 0 1 9
+type_r_group(c2) 166 19 0 1 10
+type_carbon(c2) 167 27 0 1 10
+type_chemical_atom(c2) 168 6 0 1 10
+type_hcno(c2) 169 22 0 1 10
+type_hc(c2) 170 23 0 1 10
+type_r_group(c3) 171 19 0 1 11
+type_carbon(c3) 172 27 0 1 11
+type_chemical_atom(c3) 173 6 0 1 11
+type_hcno(c3) 174 22 0 1 11
+type_hc(c3) 175 23 0 1 11
+type_r_group(c4) 176 19 0 1 12
+type_carbon(c4) 177 27 0 1 12
+type_chemical_atom(c4) 178 6 0 1 12
+type_hcno(c4) 179 22 0 1 12
+type_hc(c4) 180 23 0 1 12
+type_r_group(c5) 181 19 0 1 13
+type_carbon(c5) 182 27 0 1 13
+type_chemical_atom(c5) 183 6 0 1 13
+type_hcno(c5) 184 22 0 1 13
+type_hc(c5) 185 23 0 1 13
+type_r_group(c7) 186 19 0 1 14
+type_carbon(c7) 187 27 0 1 14
+type_chemical_atom(c7) 188 6 0 1 14
+type_hcno(c7) 189 22 0 1 14
+type_hc(c7) 190 23 0 1 14
+type_r_group(c8) 191 19 0 1 15
+type_carbon(c8) 192 27 0 1 15
+type_chemical_atom(c8) 193 6 0 1 15
+type_hcno(c8) 194 22 0 1 15
+type_hc(c8) 195 23 0 1 15
+type_r_group(o1) 196 19 0 1 16
+type_hcno(o1) 197 22 0 1 16
+type_oxygen(o1) 198 25 0 1 16
+type_chemical_atom(o1) 199 6 0 1 16
+type_hc(h9) 200 23 0 1 17
+type_hydrogen(h9) 201 26 0 1 17
+type_chemical_atom(h9) 202 6 0 1 17
+type_hcno(h9) 203 22 0 1 17
+type_r_group(h9) 204 19 0 1 17
+type_hc(h10) 205 23 0 1 18
+type_hydrogen(h10) 206 26 0 1 18
+type_chemical_atom(h10) 207 6 0 1 18
+type_hcno(h10) 208 22 0 1 18
+type_r_group(h10) 209 19 0 1 18
+type_sulfur(su) 210 9 0 1 19
+type_chemical_atom(su) 211 6 0 1 19
+type_r_group(o2) 212 19 0 1 20
+type_hcno(o2) 213 22 0 1 20
+type_oxygen(o2) 214 25 0 1 20
+type_chemical_atom(o2) 215 6 0 1 20
+type_r_group(o3) 216 19 0 1 21
+type_hcno(o3) 217 22 0 1 21
+type_oxygen(o3) 218 25 0 1 21
+type_chemical_atom(o3) 219 6 0 1 21
+type_r_group(o4) 220 19 0 1 22
+type_hcno(o4) 221 22 0 1 22
+type_oxygen(o4) 222 25 0 1 22
+type_chemical_atom(o4) 223 6 0 1 22
+type_r_group(o5) 224 19 0 1 23
+type_hcno(o5) 225 22 0 1 23
+type_oxygen(o5) 226 25 0 1 23
+type_chemical_atom(o5) 227 6 0 1 23
+type_hc(h11) 228 23 0 1 24
+type_hydrogen(h11) 229 26 0 1 24
+type_chemical_atom(h11) 230 6 0 1 24
+type_hcno(h11) 231 22 0 1 24
+type_r_group(h11) 232 19 0 1 24
+type_r_group(n) 233 19 0 1 25
+type_hcno(n) 234 22 0 1 25
+type_nitrogen(n) 235 24 0 1 25
+type_chemical_atom(n) 236 6 0 1 25
+type_r_group(o6) 237 19 0 1 26
+type_hcno(o6) 238 22 0 1 26
+type_oxygen(o6) 239 25 0 1 26
+type_chemical_atom(o6) 240 6 0 1 26
+type_r_group(o7) 241 19 0 1 27
+type_hcno(o7) 242 22 0 1 27
+type_oxygen(o7) 243 25 0 1 27
+type_chemical_atom(o7) 244 6 0 1 27
+type_r_group(o8) 245 19 0 1 28
+type_hcno(o8) 246 22 0 1 28
+type_oxygen(o8) 247 25 0 1 28
+type_chemical_atom(o8) 248 6 0 1 28
+type_hc(h12) 249 23 0 1 29
+type_hydrogen(h12) 250 26 0 1 29
+type_chemical_atom(h12) 251 6 0 1 29
+type_hcno(h12) 252 22 0 1 29
+type_r_group(h12) 253 19 0 1 29
+type_hc(h13) 254 23 0 1 30
+type_hydrogen(h13) 255 26 0 1 30
+type_chemical_atom(h13) 256 6 0 1 30
+type_hcno(h13) 257 22 0 1 30
+type_r_group(h13) 258 19 0 1 30
+type_hc(h50) 259 23 0 1 31
+type_hydrogen(h50) 260 26 0 1 31
+type_chemical_atom(h50) 261 6 0 1 31
+type_hcno(h50) 262 22 0 1 31
+type_r_group(h50) 263 19 0 1 31
+type_hc(h51) 264 23 0 1 32
+type_hydrogen(h51) 265 26 0 1 32
+type_chemical_atom(h51) 266 6 0 1 32
+type_hcno(h51) 267 22 0 1 32
+type_r_group(h51) 268 19 0 1 32
+type_hc(h52) 269 23 0 1 33
+type_hydrogen(h52) 270 26 0 1 33
+type_chemical_atom(h52) 271 6 0 1 33
+type_hcno(h52) 272 22 0 1 33
+type_r_group(h52) 273 19 0 1 33
+type_hc(h53) 274 23 0 1 34
+type_hydrogen(h53) 275 26 0 1 34
+type_chemical_atom(h53) 276 6 0 1 34
+type_hcno(h53) 277 22 0 1 34
+type_r_group(h53) 278 19 0 1 34
+type_alkalimetal(na) 279 21 0 1 35
+type_r_group(na) 280 19 0 1 35
+type_chemical_atom(na) 281 6 0 1 35
+type_sodium(na) 282 34 0 1 35
+type_r_group(n2) 283 19 0 1 36
+type_hcno(n2) 284 22 0 1 36
+type_nitrogen(n2) 285 24 0 1 36
+type_chemical_atom(n2) 286 6 0 1 36
+type_r_group(o9) 287 19 0 1 37
+type_hcno(o9) 288 22 0 1 37
+type_oxygen(o9) 289 25 0 1 37
+type_chemical_atom(o9) 290 6 0 1 37
+type_r_group(o10) 291 19 0 1 38
+type_hcno(o10) 292 22 0 1 38
+type_oxygen(o10) 293 25 0 1 38
+type_chemical_atom(o10) 294 6 0 1 38
+type_hc(h14) 295 23 0 1 39
+type_hydrogen(h14) 296 26 0 1 39
+type_chemical_atom(h14) 297 6 0 1 39
+type_hcno(h14) 298 22 0 1 39
+type_r_group(h14) 299 19 0 1 39
+type_hc(h15) 300 23 0 1 40
+type_hydrogen(h15) 301 26 0 1 40
+type_chemical_atom(h15) 302 6 0 1 40
+type_hcno(h15) 303 22 0 1 40
+type_r_group(h15) 304 19 0 1 40
+type_r_group(o11) 305 19 0 1 41
+type_hcno(o11) 306 22 0 1 41
+type_oxygen(o11) 307 25 0 1 41
+type_chemical_atom(o11) 308 6 0 1 41
+type_r_group(cl1) 309 19 0 1 42
+type_halogen(cl1) 310 20 0 1 42
+type_chemical_atom(cl1) 311 6 0 1 42
+type_chlorine(cl1) 312 28 0 1 42
+type_hc(h16) 313 23 0 1 43
+type_hydrogen(h16) 314 26 0 1 43
+type_chemical_atom(h16) 315 6 0 1 43
+type_hcno(h16) 316 22 0 1 43
+type_r_group(h16) 317 19 0 1 43
+GOAL 18
+aromaticbond(c1,c2) 3 0 2 9 10
+aromaticbond(c2,c3) 3 0 2 10 11
+aromaticbond(c3,c4) 3 0 2 11 12
+aromaticbond(c4,c5) 3 0 2 12 13
+aromaticbond(c5,c6) 3 0 2 13 8
+aromaticbond(c6,c1) 3 0 2 8 9
+bond(c6,o6) 0 0 2 8 26
+bond(h10,o6) 0 0 2 18 26
+bond(c2,c7) 0 0 2 10 14
+doublebond(o1,c7) 1 0 2 16 14
+bond(c7,c8) 0 0 2 14 15
+bond(h6,c8) 0 0 2 5 15
+bond(h7,c8) 0 0 2 6 15
+bond(h8,c8) 0 0 2 7 15
+bond(c1,h1) 0 0 2 9 0
+bond(c3,h2) 0 0 2 11 1
+bond(c4,h3) 0 0 2 12 2
+bond(c5,h4) 0 0 2 13 3
+ACTION-SCHEMAS 52
+aldehydereduction 1 10 25 12
+?al_2 0 6
+?c_8 1 22
+?h_4 2 21
+?h_3 3 21
+?o_7 4 20
+?h_6 5 21
+?h_5 6 21
+?li_1 7 28
+?c_9 8 22
+?h_10 9 21
+= 4 1 2 p 3 p 2
+= 4 1 2 p 3 p 5
+= 4 1 2 p 3 p 6
+= 4 1 2 p 2 p 5
+= 4 1 2 p 6 p 5
+= 4 1 2 p 2 p 6
+bond 0 0 2 p 7 p 0
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 6 p 0
+bond 0 0 2 p 5 p 0
+= 4 1 2 p 1 p 8
+doublebond 1 0 2 p 4 p 1
+bond 0 0 2 p 1 p 8
+bond 0 0 2 p 9 p 1
+type_hydrogen 26 0 1 p 5
+type_hydrogen 26 0 1 p 6
+type_oxygen 25 0 1 p 4
+type_hydrogen 26 0 1 p 2
+type_carbon 27 0 1 p 8
+type_hydrogen 26 0 1 p 3
+type_carbon 27 0 1 p 1
+type_aluminium 11 0 1 p 0
+type_lithium 33 0 1 p 7
+type_hydrogen 26 0 1 p 9
+bond 0 1 2 p 3 p 0
+bond 0 1 2 p 0 p 3
+bond 0 1 2 p 2 p 0
+bond 0 1 2 p 0 p 2
+doublebond 1 1 2 p 4 p 1
+doublebond 1 1 2 p 1 p 4
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 2 p 4
+bond 0 0 2 p 4 p 2
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 1 p 4
+aldolcondensation 1 15 37 20
+?o_4 0 20
+?o_15 1 20
+?na_14 2 29
+?h_8 3 21
+?h_9 4 21
+?c_1 5 22
+?c_5 6 22
+?o_10 7 20
+?h_11 8 21
+?h_12 9 21
+?h_13 10 21
+?r1_2 11 14
+?r1_3 12 14
+?o_7 13 20
+?c_6 14 22
+= 4 1 2 p 5 p 6
+= 4 1 2 p 8 p 3
+= 4 1 2 p 8 p 4
+= 4 1 2 p 3 p 4
+= 4 1 2 p 0 p 7
+= 4 1 2 p 0 p 1
+= 4 1 2 p 7 p 1
+= 4 1 2 p 8 p 9
+bond 0 0 2 p 7 p 8
+bond 0 0 2 p 7 p 9
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 10 p 1
+= 4 1 2 p 11 p 12
+bond 0 0 2 p 11 p 5
+bond 0 0 2 p 12 p 5
+doublebond 1 0 2 p 0 p 5
+= 4 1 2 p 4 p 3
+= 4 1 2 p 14 p 6
+bond 0 0 2 p 14 p 6
+bond 0 0 2 p 4 p 6
+bond 0 0 2 p 3 p 6
+doublebond 1 0 2 p 13 p 14
+type_hydrogen 26 0 1 p 10
+type_carbon 27 0 1 p 14
+type_sodium 34 0 1 p 2
+type_hydrogen 26 0 1 p 9
+type_carbon 27 0 1 p 6
+type_oxygen 25 0 1 p 13
+type_oxygen 25 0 1 p 0
+type_hydrogen 26 0 1 p 3
+type_carbon 27 0 1 p 5
+type_hydrogen 26 0 1 p 4
+type_oxygen 25 0 1 p 7
+type_r_group 19 0 1 p 11
+type_r_group 19 0 1 p 12
+type_hydrogen 26 0 1 p 8
+type_oxygen 25 0 1 p 1
+doublebond 1 1 2 p 0 p 5
+doublebond 1 1 2 p 5 p 0
+bond 0 1 2 p 3 p 6
+bond 0 1 2 p 6 p 3
+bond 0 1 2 p 4 p 6
+bond 0 1 2 p 6 p 4
+bond 0 1 2 p 7 p 8
+bond 0 1 2 p 8 p 7
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 1 p 2
+doublebond 1 0 2 p 5 p 6
+doublebond 1 0 2 p 6 p 5
+bond 0 0 2 p 8 p 0
+bond 0 0 2 p 0 p 8
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 7 p 3
+bond 0 0 2 p 3 p 7
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 1 p 4
+alkylationofbetadicarbonyl 1 8 19 8
+?r1_2 0 15
+?c_1 1 22
+?h_6 2 21
+?c_4 3 22
+?c_3 4 22
+?c_5 5 22
+?o_7 6 20
+?o_8 7 20
+= 4 1 2 p 1 p 3
+bond 0 0 2 p 0 p 1
+= 4 1 2 p 4 p 3
+= 4 1 2 p 6 p 7
+= 4 1 2 p 3 p 5
+= 4 1 2 p 4 p 5
+bond 0 0 2 p 4 p 3
+doublebond 1 0 2 p 4 p 6
+bond 0 0 2 p 3 p 5
+bond 0 0 2 p 2 p 3
+doublebond 1 0 2 p 5 p 7
+type_hydrogen 26 0 1 p 2
+type_carbon 27 0 1 p 5
+type_oxygen 25 0 1 p 6
+type_carbon 27 0 1 p 3
+type_carbon 27 0 1 p 4
+type_carbon 27 0 1 p 1
+type_halogen 20 0 1 p 0
+type_oxygen 25 0 1 p 7
+bond 0 1 2 p 0 p 1
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 3 p 2
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 2 p 0
+amidesynthesisfromacidchloride 1 8 16 8
+?n_5 0 19
+?c_2 1 22
+?cl_1 2 23
+?h_8 3 21
+?o_4 4 20
+?c_3 5 22
+?h_7 6 21
+?c_6 7 22
+= 4 1 2 p 1 p 5
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 5 p 1
+doublebond 1 0 2 p 4 p 1
+= 4 1 2 p 6 p 3
+bond 0 0 2 p 6 p 0
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 7 p 0
+type_nitrogen 24 0 1 p 0
+type_carbon 27 0 1 p 7
+type_chlorine 28 0 1 p 2
+type_carbon 27 0 1 p 5
+type_hydrogen 26 0 1 p 3
+type_carbon 27 0 1 p 1
+type_oxygen 25 0 1 p 4
+type_hydrogen 26 0 1 p 6
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 3 p 0
+bond 0 1 2 p 0 p 3
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 1 p 0
+bond 0 0 2 p 0 p 1
+amidesynthesisfromacidhalides 1 8 18 8
+?c_1 0 22
+?h_6 1 21
+?n_8 2 19
+?r1_4 3 15
+?c_2 4 22
+?o_3 5 20
+?h_7 6 21
+?h_5 7 21
+= 4 1 2 p 0 p 4
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 4 p 0
+doublebond 1 0 2 p 5 p 0
+= 4 1 2 p 1 p 6
+= 4 1 2 p 7 p 6
+= 4 1 2 p 7 p 1
+bond 0 0 2 p 7 p 2
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 6 p 2
+type_hydrogen 26 0 1 p 1
+type_hydrogen 26 0 1 p 7
+type_halogen 20 0 1 p 3
+type_carbon 27 0 1 p 4
+type_nitrogen 24 0 1 p 2
+type_carbon 27 0 1 p 0
+type_oxygen 25 0 1 p 5
+type_hydrogen 26 0 1 p 6
+bond 0 1 2 p 3 p 0
+bond 0 1 2 p 0 p 3
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 2 p 1
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 1
+aromaticbromination 1 13 43 8
+?br_5 0 25
+?h_13 1 21
+?br_6 2 25
+?c_7 3 22
+?br_1 4 25
+?br_3 5 25
+?fe_4 6 8
+?br_2 7 25
+?c_9 8 22
+?c_8 9 22
+?c_11 10 22
+?c_10 11 22
+?c_12 12 22
+= 4 1 2 p 0 p 2
+= 4 1 2 p 4 p 5
+= 4 1 2 p 7 p 5
+= 4 1 2 p 4 p 7
+bond 0 0 2 p 4 p 6
+bond 0 0 2 p 6 p 7
+bond 0 0 2 p 6 p 5
+bond 0 0 2 p 0 p 2
+= 4 1 2 p 11 p 12
+= 4 1 2 p 3 p 11
+= 4 1 2 p 8 p 10
+= 4 1 2 p 3 p 12
+= 4 1 2 p 9 p 12
+= 4 1 2 p 9 p 10
+= 4 1 2 p 9 p 11
+= 4 1 2 p 9 p 8
+= 4 1 2 p 8 p 12
+= 4 1 2 p 3 p 9
+= 4 1 2 p 11 p 10
+= 4 1 2 p 11 p 8
+= 4 1 2 p 3 p 10
+= 4 1 2 p 12 p 10
+= 4 1 2 p 3 p 8
+bond 0 0 2 p 1 p 3
+aromaticbond 3 0 2 p 3 p 9
+aromaticbond 3 0 2 p 11 p 3
+aromaticbond 3 0 2 p 9 p 8
+aromaticbond 3 0 2 p 8 p 12
+aromaticbond 3 0 2 p 10 p 11
+aromaticbond 3 0 2 p 12 p 10
+type_hydrogen 26 0 1 p 1
+type_bromine 30 0 1 p 2
+type_bromine 30 0 1 p 0
+type_iron 13 0 1 p 6
+type_carbon 27 0 1 p 8
+type_bromine 30 0 1 p 5
+type_carbon 27 0 1 p 9
+type_bromine 30 0 1 p 7
+type_bromine 30 0 1 p 4
+type_carbon 27 0 1 p 12
+type_carbon 27 0 1 p 10
+type_carbon 27 0 1 p 11
+type_carbon 27 0 1 p 3
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 3 p 1
+bond 0 0 2 p 0 p 1
+bond 0 0 2 p 1 p 0
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 3 p 2
+aromaticnitration 1 15 40 12
+?o_12 0 20
+?n_1 1 19
+?h_8 2 21
+?c_3 3 22
+?o_6 4 20
+?h_10 5 21
+?c_2 6 22
+?o_5 7 20
+?o_4 8 20
+?h_9 9 21
+?s_15 10 4
+?h_7 11 21
+?o_13 12 20
+?o_14 13 20
+?o_11 14 20
+= 4 1 2 p 5 p 2
+= 4 1 2 p 4 p 0
+= 4 1 2 p 3 p 6
+bond 0 0 2 p 3 p 5
+aromaticbond 3 0 2 p 6 p 3
+= 4 1 2 p 7 p 8
+= 4 1 2 p 4 p 8
+= 4 1 2 p 4 p 7
+bond 0 0 2 p 4 p 9
+bond 0 0 2 p 1 p 4
+bond 0 0 2 p 1 p 7
+doublebond 1 0 2 p 1 p 8
+= 4 1 2 p 0 p 13
+= 4 1 2 p 0 p 14
+= 4 1 2 p 2 p 11
+= 4 1 2 p 13 p 12
+= 4 1 2 p 0 p 12
+= 4 1 2 p 13 p 14
+= 4 1 2 p 14 p 12
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 13 p 11
+doublebond 1 0 2 p 10 p 14
+bond 0 0 2 p 10 p 0
+doublebond 1 0 2 p 10 p 12
+bond 0 0 2 p 10 p 13
+type_oxygen 25 0 1 p 0
+type_oxygen 25 0 1 p 7
+type_oxygen 25 0 1 p 12
+type_oxygen 25 0 1 p 8
+type_carbon 27 0 1 p 3
+type_hydrogen 26 0 1 p 2
+type_oxygen 25 0 1 p 4
+type_carbon 27 0 1 p 6
+type_sulfur 9 0 1 p 10
+type_hydrogen 26 0 1 p 9
+type_nitrogen 24 0 1 p 1
+type_oxygen 25 0 1 p 14
+type_oxygen 25 0 1 p 13
+type_hydrogen 26 0 1 p 5
+type_hydrogen 26 0 1 p 11
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 4 p 1
+bond 0 1 2 p 3 p 5
+bond 0 1 2 p 5 p 3
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 4 p 2
+bond 0 0 2 p 2 p 4
+bond 0 0 2 p 0 p 5
+bond 0 0 2 p 5 p 0
+catalytichydrogenationofalkenes 1 5 9 10
+?c_3 0 22
+?h_5 1 21
+?c_4 2 22
+?pd_1 3 13
+?h_6 4 21
+= 4 1 2 p 2 p 0
+doublebond 1 0 2 p 2 p 0
+= 4 1 2 p 1 p 4
+bond 0 0 2 p 1 p 4
+type_hydrogen 26 0 1 p 4
+type_carbon 27 0 1 p 0
+type_hydrogen 26 0 1 p 1
+type_palladium 18 0 1 p 3
+type_carbon 27 0 1 p 2
+doublebond 1 1 2 p 2 p 0
+doublebond 1 1 2 p 0 p 2
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 4 p 1
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 1 p 0
+bond 0 0 2 p 0 p 1
+bond 0 0 2 p 4 p 2
+bond 0 0 2 p 2 p 4
+catalytichydrogenationofnitriles 1 7 18 16
+?h_6 0 21
+?h_7 1 21
+?h_4 2 21
+?h_5 3 21
+?n_1 4 19
+?c_2 5 22
+?c_3 6 22
+= 4 1 2 p 2 p 0
+= 4 1 2 p 2 p 3
+= 4 1 2 p 2 p 1
+= 4 1 2 p 0 p 3
+= 4 1 2 p 0 p 1
+= 4 1 2 p 3 p 1
+= 4 1 2 p 5 p 6
+triplebond 2 0 2 p 5 p 4
+bond 0 0 2 p 5 p 6
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 0 p 1
+type_hydrogen 26 0 1 p 0
+type_hydrogen 26 0 1 p 3
+type_hydrogen 26 0 1 p 2
+type_carbon 27 0 1 p 6
+type_carbon 27 0 1 p 5
+type_nitrogen 24 0 1 p 4
+type_hydrogen 26 0 1 p 1
+triplebond 2 1 2 p 5 p 4
+triplebond 2 1 2 p 4 p 5
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 3 p 2
+bond 0 1 2 p 0 p 1
+bond 0 1 2 p 1 p 0
+bond 0 0 2 p 5 p 4
+bond 0 0 2 p 4 p 5
+bond 0 0 2 p 2 p 4
+bond 0 0 2 p 4 p 2
+bond 0 0 2 p 0 p 4
+bond 0 0 2 p 4 p 0
+bond 0 0 2 p 3 p 5
+bond 0 0 2 p 5 p 3
+bond 0 0 2 p 1 p 5
+bond 0 0 2 p 5 p 1
+catalytichydrogenationofnitrogroup 1 10 34 22
+?h_6 0 21
+?h_7 1 21
+?h_5 2 21
+?o_1 3 20
+?o_2 4 20
+?h_8 5 21
+?h_9 6 21
+?h_10 7 21
+?n_3 8 19
+?c_4 9 22
+= 4 1 2 p 1 p 5
+= 4 1 2 p 1 p 6
+= 4 1 2 p 1 p 7
+= 4 1 2 p 1 p 2
+= 4 1 2 p 1 p 0
+= 4 1 2 p 5 p 6
+= 4 1 2 p 5 p 7
+= 4 1 2 p 5 p 2
+= 4 1 2 p 5 p 0
+= 4 1 2 p 6 p 7
+= 4 1 2 p 6 p 2
+= 4 1 2 p 6 p 0
+= 4 1 2 p 7 p 2
+= 4 1 2 p 7 p 0
+= 4 1 2 p 2 p 0
+= 4 1 2 p 3 p 4
+doublebond 1 0 2 p 3 p 8
+bond 0 0 2 p 4 p 8
+bond 0 0 2 p 8 p 9
+bond 0 0 2 p 2 p 0
+= 4 1 2 p 5 p 1
+bond 0 0 2 p 5 p 1
+= 4 1 2 p 7 p 6
+bond 0 0 2 p 7 p 6
+type_hydrogen 26 0 1 p 0
+type_hydrogen 26 0 1 p 2
+type_carbon 27 0 1 p 9
+type_hydrogen 26 0 1 p 6
+type_hydrogen 26 0 1 p 5
+type_nitrogen 24 0 1 p 8
+type_oxygen 25 0 1 p 4
+type_hydrogen 26 0 1 p 7
+type_hydrogen 26 0 1 p 1
+type_oxygen 25 0 1 p 3
+doublebond 1 1 2 p 3 p 8
+doublebond 1 1 2 p 8 p 3
+bond 0 1 2 p 4 p 8
+bond 0 1 2 p 8 p 4
+bond 0 1 2 p 2 p 0
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 5 p 1
+bond 0 1 2 p 1 p 5
+bond 0 1 2 p 7 p 6
+bond 0 1 2 p 6 p 7
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 5
+bond 0 0 2 p 5 p 3
+bond 0 0 2 p 4 p 6
+bond 0 0 2 p 6 p 4
+bond 0 0 2 p 4 p 7
+bond 0 0 2 p 7 p 4
+bond 0 0 2 p 8 p 2
+bond 0 0 2 p 2 p 8
+bond 0 0 2 p 0 p 8
+bond 0 0 2 p 8 p 0
+claisencondensation 1 14 30 12
+?o_11 0 20
+?o_14 1 20
+?h_1 2 21
+?c_2 3 22
+?na_13 4 29
+?c_9 5 22
+?o_5 6 20
+?o_4 7 20
+?c_3 8 22
+?r1_6 9 14
+?r2_8 10 14
+?r1_12 11 14
+?o_10 12 20
+?r1_15 13 14
+= 4 1 2 p 3 p 5
+= 4 1 2 p 1 p 0
+= 4 1 2 p 6 p 7
+= 4 1 2 p 3 p 8
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 6 p 9
+bond 0 0 2 p 6 p 8
+doublebond 1 0 2 p 8 p 7
+bond 0 0 2 p 8 p 3
+= 4 1 2 p 0 p 12
+bond 0 0 2 p 0 p 11
+bond 0 0 2 p 5 p 10
+bond 0 0 2 p 5 p 0
+doublebond 1 0 2 p 12 p 5
+bond 0 0 2 p 1 p 4
+bond 0 0 2 p 13 p 1
+type_r_group 19 0 1 p 9
+type_oxygen 25 0 1 p 12
+type_oxygen 25 0 1 p 6
+type_carbon 27 0 1 p 5
+type_carbon 27 0 1 p 8
+type_oxygen 25 0 1 p 0
+type_carbon 27 0 1 p 3
+type_hydrogen 26 0 1 p 2
+type_oxygen 25 0 1 p 7
+type_r_group 19 0 1 p 13
+type_r_group 19 0 1 p 10
+type_oxygen 25 0 1 p 1
+type_r_group 19 0 1 p 11
+type_sodium 34 0 1 p 4
+bond 0 1 2 p 3 p 2
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 5 p 0
+bond 0 1 2 p 0 p 5
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 4 p 1
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 5 p 3
+bond 0 0 2 p 3 p 5
+bond 0 0 2 p 0 p 4
+bond 0 0 2 p 4 p 0
+cyanidedisplacementofbromidesn2 1 5 9 8
+?r1_3 0 16
+?c_2 1 22
+?c_5 2 22
+?r2_4 3 15
+?n_1 4 19
+= 4 1 2 p 1 p 2
+triplebond 2 0 2 p 1 p 4
+bond 0 0 2 p 1 p 0
+bond 0 0 2 p 3 p 2
+type_halogen 20 0 1 p 3
+type_nitrogen 24 0 1 p 4
+type_carbon 27 0 1 p 2
+type_carbon 27 0 1 p 1
+type_alkalimetal 21 0 1 p 0
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 0 p 1
+bond 0 1 2 p 3 p 2
+bond 0 1 2 p 2 p 3
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 3 p 0
+cyanidedisplacementoftosylgroupsn2 1 9 21 8
+?o_5 0 20
+?r1_3 1 16
+?c_2 2 22
+?c_8 3 22
+?n_1 4 19
+?c_9 5 22
+?o_7 6 20
+?o_6 7 20
+?s_4 8 4
+= 4 1 2 p 2 p 3
+bond 0 0 2 p 1 p 2
+triplebond 2 0 2 p 2 p 4
+= 4 1 2 p 0 p 7
+= 4 1 2 p 5 p 3
+= 4 1 2 p 6 p 7
+= 4 1 2 p 0 p 6
+bond 0 0 2 p 5 p 8
+bond 0 0 2 p 3 p 0
+doublebond 1 0 2 p 8 p 6
+doublebond 1 0 2 p 7 p 8
+bond 0 0 2 p 0 p 8
+type_oxygen 25 0 1 p 7
+type_oxygen 25 0 1 p 0
+type_oxygen 25 0 1 p 6
+type_alkalimetal 21 0 1 p 1
+type_carbon 27 0 1 p 5
+type_carbon 27 0 1 p 3
+type_carbon 27 0 1 p 2
+type_nitrogen 24 0 1 p 4
+type_sulfur 9 0 1 p 8
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 3 p 0
+bond 0 1 2 p 0 p 3
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 0 p 1
+bond 0 0 2 p 1 p 0
+cyanohydrinformation 1 7 14 10
+?o_4 0 20
+?c_2 1 22
+?c_5 2 22
+?r2_3 3 1
+?n_1 4 19
+?r1_6 5 18
+?r1_7 6 18
+= 4 1 2 p 1 p 2
+triplebond 2 0 2 p 4 p 1
+bond 0 0 2 p 3 p 1
+= 4 1 2 p 5 p 6
+doublebond 1 0 2 p 0 p 2
+bond 0 0 2 p 5 p 2
+bond 0 0 2 p 2 p 6
+type_carbon 27 0 1 p 2
+type_oxygen 25 0 1 p 0
+type_hc 23 0 1 p 6
+type_carbon 27 0 1 p 1
+type_hc 23 0 1 p 5
+type_nitrogen 24 0 1 p 4
+type_chemical_atom 6 0 1 p 3
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 1 p 3
+doublebond 1 1 2 p 0 p 2
+doublebond 1 1 2 p 2 p 0
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 2 p 0
+decarboxylationofbetaketoesters 1 11 37 14
+?o_10 0 20
+?o_1 1 20
+?h_3 2 21
+?c_4 3 22
+?c_7 4 22
+?h_2 5 21
+?o_11 6 20
+?o_9 7 20
+?c_8 8 22
+?c_5 9 22
+?c_6 10 22
+= 4 1 2 p 4 p 3
+= 4 1 2 p 5 p 2
+= 4 1 2 p 1 p 0
+= 4 1 2 p 2 p 5
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 5 p 1
+= 4 1 2 p 7 p 0
+= 4 1 2 p 7 p 6
+= 4 1 2 p 0 p 6
+= 4 1 2 p 9 p 4
+= 4 1 2 p 9 p 10
+= 4 1 2 p 3 p 4
+= 4 1 2 p 4 p 10
+= 4 1 2 p 3 p 8
+= 4 1 2 p 4 p 8
+= 4 1 2 p 10 p 8
+= 4 1 2 p 9 p 3
+= 4 1 2 p 3 p 10
+= 4 1 2 p 9 p 8
+bond 0 0 2 p 9 p 3
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 9 p 10
+doublebond 1 0 2 p 7 p 9
+bond 0 0 2 p 0 p 4
+doublebond 1 0 2 p 6 p 4
+bond 0 0 2 p 8 p 0
+type_carbon 27 0 1 p 10
+type_carbon 27 0 1 p 8
+type_carbon 27 0 1 p 9
+type_carbon 27 0 1 p 3
+type_oxygen 25 0 1 p 0
+type_hydrogen 26 0 1 p 2
+type_oxygen 25 0 1 p 6
+type_hydrogen 26 0 1 p 5
+type_oxygen 25 0 1 p 7
+type_carbon 27 0 1 p 4
+type_oxygen 25 0 1 p 1
+bond 0 1 2 p 5 p 1
+bond 0 1 2 p 1 p 5
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 4 p 3
+bond 0 1 2 p 3 p 4
+bond 0 1 2 p 0 p 4
+bond 0 1 2 p 4 p 0
+doublebond 1 0 2 p 1 p 4
+doublebond 1 0 2 p 4 p 1
+bond 0 0 2 p 5 p 0
+bond 0 0 2 p 0 p 5
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 3 p 2
+dehydrationofamides 1 11 24 18
+?cl_2 0 23
+?n_6 1 19
+?o_9 2 20
+?c_7 3 22
+?h_10 4 21
+?h_11 5 21
+?p_1 6 2
+?o_5 7 20
+?cl_4 8 23
+?cl_3 9 23
+?r1_8 10 1
+= 4 1 2 p 5 p 4
+= 4 1 2 p 8 p 9
+= 4 1 2 p 9 p 0
+= 4 1 2 p 8 p 0
+doublebond 1 0 2 p 7 p 6
+bond 0 0 2 p 8 p 6
+bond 0 0 2 p 9 p 6
+bond 0 0 2 p 0 p 6
+bond 0 0 2 p 5 p 1
+bond 0 0 2 p 4 p 1
+doublebond 1 0 2 p 2 p 3
+bond 0 0 2 p 10 p 3
+bond 0 0 2 p 1 p 3
+type_chlorine 28 0 1 p 9
+type_phosphorus 7 0 1 p 6
+type_chlorine 28 0 1 p 0
+type_oxygen 25 0 1 p 2
+type_chemical_atom 6 0 1 p 10
+type_oxygen 25 0 1 p 7
+type_nitrogen 24 0 1 p 1
+type_hydrogen 26 0 1 p 5
+type_hydrogen 26 0 1 p 4
+type_carbon 27 0 1 p 3
+type_chlorine 28 0 1 p 8
+bond 0 1 2 p 0 p 6
+bond 0 1 2 p 6 p 0
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 4 p 1
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 5 p 1
+bond 0 1 2 p 1 p 5
+doublebond 1 1 2 p 2 p 3
+doublebond 1 1 2 p 3 p 2
+bond 0 0 2 p 2 p 6
+bond 0 0 2 p 6 p 2
+bond 0 0 2 p 0 p 5
+bond 0 0 2 p 5 p 0
+triplebond 2 0 2 p 1 p 3
+triplebond 2 0 2 p 3 p 1
+bond 0 0 2 p 4 p 2
+bond 0 0 2 p 2 p 4
+diazotization 1 10 23 14
+?h_7 0 21
+?o_6 1 20
+?n_9 2 19
+?o_3 3 20
+?h_1 4 21
+?n_5 5 19
+?cl_2 6 23
+?h_8 7 21
+?na_4 8 29
+?c_10 9 22
+= 4 1 2 p 3 p 1
+= 4 1 2 p 4 p 0
+= 4 1 2 p 4 p 7
+= 4 1 2 p 0 p 7
+= 4 1 2 p 5 p 2
+bond 0 0 2 p 4 p 6
+bond 0 0 2 p 3 p 8
+bond 0 0 2 p 3 p 5
+doublebond 1 0 2 p 5 p 1
+= 4 1 2 p 7 p 0
+bond 0 0 2 p 2 p 9
+bond 0 0 2 p 7 p 2
+bond 0 0 2 p 0 p 2
+type_nitrogen 24 0 1 p 5
+type_sodium 34 0 1 p 8
+type_oxygen 25 0 1 p 1
+type_chlorine 28 0 1 p 6
+type_hydrogen 26 0 1 p 7
+type_nitrogen 24 0 1 p 2
+type_hydrogen 26 0 1 p 4
+type_carbon 27 0 1 p 9
+type_oxygen 25 0 1 p 3
+type_hydrogen 26 0 1 p 0
+bond 0 1 2 p 4 p 6
+bond 0 1 2 p 6 p 4
+bond 0 1 2 p 3 p 5
+bond 0 1 2 p 5 p 3
+doublebond 1 1 2 p 5 p 1
+doublebond 1 1 2 p 1 p 5
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+bond 0 1 2 p 7 p 2
+bond 0 1 2 p 2 p 7
+bond 0 0 2 p 6 p 5
+bond 0 0 2 p 5 p 6
+triplebond 2 0 2 p 5 p 2
+triplebond 2 0 2 p 2 p 5
+dieckmanncyclization 1 17 66 8
+?o_16 0 20
+?c_14 1 22
+?c_2 2 22
+?h_1 3 21
+?o_4 4 20
+?r1_9 5 1
+?o_15 6 20
+?c_11 7 22
+?r2_17 8 1
+?r1_6 9 1
+?r1_7 10 1
+?c_3 11 22
+?c_5 12 22
+?r1_10 13 1
+?c_8 14 22
+?r1_12 15 1
+?r1_13 16 1
+= 4 1 2 p 2 p 1
+= 4 1 2 p 11 p 1
+= 4 1 2 p 10 p 9
+= 4 1 2 p 5 p 16
+= 4 1 2 p 9 p 5
+= 4 1 2 p 5 p 15
+= 4 1 2 p 4 p 6
+= 4 1 2 p 5 p 13
+= 4 1 2 p 13 p 16
+= 4 1 2 p 2 p 12
+= 4 1 2 p 2 p 11
+= 4 1 2 p 10 p 15
+= 4 1 2 p 14 p 7
+= 4 1 2 p 0 p 6
+= 4 1 2 p 11 p 7
+= 4 1 2 p 11 p 14
+= 4 1 2 p 9 p 15
+= 4 1 2 p 7 p 1
+= 4 1 2 p 12 p 14
+= 4 1 2 p 9 p 13
+= 4 1 2 p 12 p 7
+= 4 1 2 p 2 p 14
+= 4 1 2 p 11 p 12
+= 4 1 2 p 10 p 13
+= 4 1 2 p 2 p 7
+= 4 1 2 p 14 p 1
+= 4 1 2 p 10 p 5
+= 4 1 2 p 16 p 15
+= 4 1 2 p 10 p 16
+= 4 1 2 p 12 p 1
+= 4 1 2 p 13 p 15
+= 4 1 2 p 9 p 16
+= 4 1 2 p 4 p 0
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 2 p 11
+bond 0 0 2 p 11 p 12
+doublebond 1 0 2 p 4 p 11
+bond 0 0 2 p 12 p 10
+bond 0 0 2 p 12 p 9
+bond 0 0 2 p 12 p 14
+bond 0 0 2 p 14 p 5
+bond 0 0 2 p 13 p 14
+bond 0 0 2 p 14 p 7
+bond 0 0 2 p 7 p 16
+bond 0 0 2 p 7 p 15
+bond 0 0 2 p 7 p 1
+bond 0 0 2 p 1 p 0
+doublebond 1 0 2 p 6 p 1
+bond 0 0 2 p 0 p 8
+type_chemical_atom 6 0 1 p 8
+type_carbon 27 0 1 p 1
+type_carbon 27 0 1 p 12
+type_oxygen 25 0 1 p 4
+type_carbon 27 0 1 p 11
+type_carbon 27 0 1 p 14
+type_carbon 27 0 1 p 2
+type_chemical_atom 6 0 1 p 5
+type_hydrogen 26 0 1 p 3
+type_chemical_atom 6 0 1 p 15
+type_carbon 27 0 1 p 7
+type_chemical_atom 6 0 1 p 16
+type_oxygen 25 0 1 p 0
+type_chemical_atom 6 0 1 p 13
+type_chemical_atom 6 0 1 p 10
+type_chemical_atom 6 0 1 p 9
+type_oxygen 25 0 1 p 6
+bond 0 1 2 p 3 p 2
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 0 p 1
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+dielsaldercycloaddition 1 6 25 20
+?c_1 0 22
+?c_3 1 22
+?c_2 2 22
+?c_5 3 22
+?c_4 4 22
+?c_6 5 22
+= 4 1 2 p 0 p 2
+= 4 1 2 p 0 p 4
+= 4 1 2 p 0 p 1
+= 4 1 2 p 0 p 5
+= 4 1 2 p 0 p 3
+= 4 1 2 p 2 p 4
+= 4 1 2 p 2 p 1
+= 4 1 2 p 2 p 5
+= 4 1 2 p 2 p 3
+= 4 1 2 p 4 p 1
+= 4 1 2 p 4 p 5
+= 4 1 2 p 4 p 3
+= 4 1 2 p 1 p 5
+= 4 1 2 p 1 p 3
+= 4 1 2 p 5 p 3
+bond 0 0 2 p 0 p 2
+doublebond 1 0 2 p 4 p 0
+doublebond 1 0 2 p 1 p 2
+doublebond 1 0 2 p 5 p 3
+type_carbon 27 0 1 p 5
+type_carbon 27 0 1 p 3
+type_carbon 27 0 1 p 4
+type_carbon 27 0 1 p 1
+type_carbon 27 0 1 p 2
+type_carbon 27 0 1 p 0
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+doublebond 1 1 2 p 4 p 0
+doublebond 1 1 2 p 0 p 4
+doublebond 1 1 2 p 1 p 2
+doublebond 1 1 2 p 2 p 1
+doublebond 1 1 2 p 5 p 3
+doublebond 1 1 2 p 3 p 5
+doublebond 1 0 2 p 0 p 2
+doublebond 1 0 2 p 2 p 0
+bond 0 0 2 p 4 p 0
+bond 0 0 2 p 0 p 4
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 5 p 1
+bond 0 0 2 p 1 p 5
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 5 p 3
+bond 0 0 2 p 3 p 5
+enolateattackonalkylhalidesn2 1 6 14 16
+?o_4 0 20
+?r1_1 1 15
+?r2_3 2 16
+?c_2 3 22
+?c_5 4 22
+?c_6 5 22
+= 4 1 2 p 3 p 4
+= 4 1 2 p 3 p 5
+= 4 1 2 p 4 p 5
+bond 0 0 2 p 1 p 3
+= 4 1 2 p 5 p 4
+bond 0 0 2 p 5 p 0
+doublebond 1 0 2 p 5 p 4
+bond 0 0 2 p 2 p 0
+type_carbon 27 0 1 p 5
+type_carbon 27 0 1 p 4
+type_oxygen 25 0 1 p 0
+type_carbon 27 0 1 p 3
+type_alkalimetal 21 0 1 p 2
+type_halogen 20 0 1 p 1
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 2 p 0
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 5 p 0
+bond 0 1 2 p 0 p 5
+doublebond 1 1 2 p 5 p 4
+doublebond 1 1 2 p 4 p 5
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 4 p 3
+doublebond 1 0 2 p 5 p 0
+doublebond 1 0 2 p 0 p 5
+bond 0 0 2 p 5 p 4
+bond 0 0 2 p 4 p 5
+enolatecalkylation 1 22 74 18
+?c_21 0 22
+?h_8 1 21
+?h_7 2 21
+?c_1 3 22
+?c_4 4 22
+?li_18 5 28
+?n_17 6 19
+?br_7 7 25
+?br_6 8 25
+?r1_9 9 1
+?c_2 10 22
+?r2_10 11 1
+?o_3 12 20
+?c_19 13 22
+?c_5 14 22
+?c_20 15 22
+?c_15 16 22
+?c_14 17 22
+?c_16 18 22
+?c_11 19 22
+?c_13 20 22
+?c_12 21 22
+= 4 1 2 p 4 p 3
+= 4 1 2 p 4 p 0
+= 4 1 2 p 3 p 0
+= 4 1 2 p 8 p 7
+= 4 1 2 p 3 p 10
+= 4 1 2 p 11 p 9
+= 4 1 2 p 1 p 2
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 2 p 3
+doublebond 1 0 2 p 12 p 10
+bond 0 0 2 p 3 p 10
+bond 0 0 2 p 10 p 11
+bond 0 0 2 p 9 p 3
+= 4 1 2 p 4 p 15
+= 4 1 2 p 14 p 15
+= 4 1 2 p 7 p 8
+= 4 1 2 p 0 p 13
+= 4 1 2 p 13 p 15
+= 4 1 2 p 4 p 14
+= 4 1 2 p 0 p 4
+= 4 1 2 p 0 p 15
+= 4 1 2 p 0 p 14
+= 4 1 2 p 4 p 13
+= 4 1 2 p 14 p 13
+bond 0 0 2 p 0 p 7
+bond 0 0 2 p 8 p 4
+bond 0 0 2 p 4 p 14
+bond 0 0 2 p 14 p 13
+bond 0 0 2 p 15 p 13
+bond 0 0 2 p 15 p 0
+= 4 1 2 p 16 p 17
+= 4 1 2 p 16 p 20
+= 4 1 2 p 18 p 21
+= 4 1 2 p 21 p 20
+= 4 1 2 p 16 p 19
+= 4 1 2 p 19 p 20
+= 4 1 2 p 16 p 18
+= 4 1 2 p 17 p 19
+= 4 1 2 p 17 p 20
+= 4 1 2 p 17 p 21
+= 4 1 2 p 16 p 21
+= 4 1 2 p 18 p 20
+= 4 1 2 p 18 p 19
+= 4 1 2 p 17 p 18
+= 4 1 2 p 21 p 19
+bond 0 0 2 p 16 p 17
+bond 0 0 2 p 18 p 16
+bond 0 0 2 p 16 p 6
+bond 0 0 2 p 6 p 5
+bond 0 0 2 p 6 p 21
+bond 0 0 2 p 21 p 19
+bond 0 0 2 p 20 p 21
+type_carbon 27 0 1 p 14
+type_carbon 27 0 1 p 20
+type_carbon 27 0 1 p 3
+type_carbon 27 0 1 p 0
+type_hydrogen 26 0 1 p 1
+type_carbon 27 0 1 p 10
+type_nitrogen 24 0 1 p 6
+type_hydrogen 26 0 1 p 2
+type_carbon 27 0 1 p 15
+type_bromine 30 0 1 p 8
+type_carbon 27 0 1 p 17
+type_lithium 33 0 1 p 5
+type_chemical_atom 6 0 1 p 9
+type_carbon 27 0 1 p 19
+type_bromine 30 0 1 p 7
+type_chemical_atom 6 0 1 p 11
+type_carbon 27 0 1 p 16
+type_carbon 27 0 1 p 4
+type_carbon 27 0 1 p 13
+type_carbon 27 0 1 p 21
+type_oxygen 25 0 1 p 12
+type_carbon 27 0 1 p 18
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 3 p 2
+bond 0 1 2 p 8 p 4
+bond 0 1 2 p 4 p 8
+bond 0 1 2 p 0 p 7
+bond 0 1 2 p 7 p 0
+bond 0 1 2 p 6 p 5
+bond 0 1 2 p 5 p 6
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 7 p 5
+bond 0 0 2 p 5 p 7
+bond 0 0 2 p 6 p 1
+bond 0 0 2 p 1 p 6
+enolateformation 1 13 42 16
+?o_13 0 20
+?n_7 1 19
+?c_12 2 22
+?li_8 3 28
+?c_9 4 22
+?h_11 5 21
+?c_1 6 22
+?c_3 7 22
+?c_2 8 22
+?c_5 9 22
+?c_4 10 22
+?c_6 11 22
+?c_10 12 22
+= 4 1 2 p 4 p 2
+= 4 1 2 p 8 p 10
+= 4 1 2 p 8 p 9
+= 4 1 2 p 8 p 7
+= 4 1 2 p 6 p 9
+= 4 1 2 p 8 p 6
+= 4 1 2 p 9 p 11
+= 4 1 2 p 7 p 10
+= 4 1 2 p 10 p 9
+= 4 1 2 p 6 p 10
+= 4 1 2 p 7 p 9
+= 4 1 2 p 6 p 11
+= 4 1 2 p 7 p 11
+= 4 1 2 p 6 p 7
+= 4 1 2 p 10 p 11
+= 4 1 2 p 8 p 11
+bond 0 0 2 p 8 p 6
+bond 0 0 2 p 1 p 8
+bond 0 0 2 p 8 p 7
+bond 0 0 2 p 1 p 10
+bond 0 0 2 p 10 p 9
+bond 0 0 2 p 10 p 11
+bond 0 0 2 p 3 p 1
+= 4 1 2 p 12 p 2
+= 4 1 2 p 12 p 4
+bond 0 0 2 p 12 p 4
+bond 0 0 2 p 4 p 2
+doublebond 1 0 2 p 4 p 0
+bond 0 0 2 p 5 p 2
+type_carbon 27 0 1 p 11
+type_carbon 27 0 1 p 9
+type_oxygen 25 0 1 p 0
+type_lithium 33 0 1 p 3
+type_carbon 27 0 1 p 10
+type_carbon 27 0 1 p 4
+type_carbon 27 0 1 p 7
+type_carbon 27 0 1 p 8
+type_carbon 27 0 1 p 6
+type_carbon 27 0 1 p 2
+type_carbon 27 0 1 p 12
+type_nitrogen 24 0 1 p 1
+type_hydrogen 26 0 1 p 5
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 4 p 2
+bond 0 1 2 p 2 p 4
+doublebond 1 1 2 p 4 p 0
+doublebond 1 1 2 p 0 p 4
+bond 0 1 2 p 5 p 2
+bond 0 1 2 p 2 p 5
+bond 0 0 2 p 5 p 1
+bond 0 0 2 p 1 p 5
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 3 p 0
+doublebond 1 0 2 p 4 p 2
+doublebond 1 0 2 p 2 p 4
+bond 0 0 2 p 4 p 0
+bond 0 0 2 p 0 p 4
+fischeresterification 1 8 17 8
+?h_7 0 21
+?c_3 1 22
+?o_6 2 20
+?o_1 3 20
+?h_5 4 21
+?c_4 5 22
+?o_2 6 20
+?c_8 7 22
+= 4 1 2 p 3 p 2
+= 4 1 2 p 1 p 5
+= 4 1 2 p 3 p 6
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 1 p 3
+doublebond 1 0 2 p 6 p 1
+bond 0 0 2 p 5 p 1
+bond 0 0 2 p 2 p 7
+bond 0 0 2 p 0 p 2
+type_oxygen 25 0 1 p 2
+type_hydrogen 26 0 1 p 4
+type_carbon 27 0 1 p 5
+type_carbon 27 0 1 p 1
+type_carbon 27 0 1 p 7
+type_oxygen 25 0 1 p 6
+type_hydrogen 26 0 1 p 0
+type_oxygen 25 0 1 p 3
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+friedelcraftsacylation 1 15 48 8
+?h_9 0 21
+?cl_8 1 23
+?c_10 2 22
+?c_6 3 22
+?cl_1 4 23
+?cl_2 5 23
+?al_4 6 6
+?cl_3 7 23
+?o_7 8 20
+?c_5 9 22
+?c_15 10 22
+?c_14 11 22
+?c_11 12 22
+?c_13 13 22
+?c_12 14 22
+= 4 1 2 p 3 p 2
+= 4 1 2 p 7 p 4
+= 4 1 2 p 7 p 5
+= 4 1 2 p 5 p 4
+bond 0 0 2 p 7 p 6
+bond 0 0 2 p 5 p 6
+bond 0 0 2 p 4 p 6
+= 4 1 2 p 3 p 9
+doublebond 1 0 2 p 3 p 8
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 9 p 3
+= 4 1 2 p 2 p 14
+= 4 1 2 p 2 p 12
+= 4 1 2 p 12 p 14
+= 4 1 2 p 12 p 13
+= 4 1 2 p 13 p 11
+= 4 1 2 p 13 p 10
+= 4 1 2 p 14 p 10
+= 4 1 2 p 14 p 11
+= 4 1 2 p 2 p 10
+= 4 1 2 p 11 p 10
+= 4 1 2 p 14 p 13
+= 4 1 2 p 2 p 11
+= 4 1 2 p 12 p 11
+= 4 1 2 p 2 p 13
+= 4 1 2 p 12 p 10
+aromaticbond 3 0 2 p 2 p 12
+aromaticbond 3 0 2 p 12 p 14
+aromaticbond 3 0 2 p 14 p 13
+aromaticbond 3 0 2 p 13 p 11
+aromaticbond 3 0 2 p 11 p 10
+aromaticbond 3 0 2 p 2 p 10
+bond 0 0 2 p 0 p 2
+type_carbon 27 0 1 p 10
+type_carbon 27 0 1 p 3
+type_chlorine 28 0 1 p 7
+type_carbon 27 0 1 p 11
+type_carbon 27 0 1 p 9
+type_chlorine 28 0 1 p 5
+type_carbon 27 0 1 p 14
+type_hydrogen 26 0 1 p 0
+type_aluminium 11 0 1 p 6
+type_carbon 27 0 1 p 13
+type_chlorine 28 0 1 p 4
+type_chlorine 28 0 1 p 1
+type_carbon 27 0 1 p 12
+type_carbon 27 0 1 p 2
+type_oxygen 25 0 1 p 8
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 0 p 1
+bond 0 0 2 p 1 p 0
+gabrielsynthesis 1 16 63 16
+?n_7 0 19
+?n_8 1 19
+?k_1 2 30
+?n_6 3 19
+?c_16 4 22
+?c_15 5 22
+?r2_3 6 15
+?r1_2 7 1
+?o_5 8 20
+?o_4 9 20
+?c_14 10 22
+?c_11 11 22
+?c_10 12 22
+?c_13 13 22
+?c_12 14 22
+?c_9 15 22
+= 4 1 2 p 5 p 4
+= 4 1 2 p 1 p 3
+= 4 1 2 p 1 p 0
+= 4 1 2 p 3 p 0
+= 4 1 2 p 8 p 9
+= 4 1 2 p 10 p 11
+= 4 1 2 p 4 p 11
+= 4 1 2 p 14 p 10
+= 4 1 2 p 4 p 13
+= 4 1 2 p 14 p 15
+= 4 1 2 p 15 p 12
+= 4 1 2 p 5 p 13
+= 4 1 2 p 10 p 12
+= 4 1 2 p 13 p 11
+= 4 1 2 p 5 p 11
+= 4 1 2 p 10 p 15
+= 4 1 2 p 11 p 12
+= 4 1 2 p 5 p 14
+= 4 1 2 p 13 p 15
+= 4 1 2 p 14 p 12
+= 4 1 2 p 4 p 12
+= 4 1 2 p 5 p 10
+= 4 1 2 p 4 p 15
+= 4 1 2 p 4 p 14
+= 4 1 2 p 14 p 11
+= 4 1 2 p 4 p 10
+= 4 1 2 p 13 p 12
+= 4 1 2 p 15 p 11
+= 4 1 2 p 5 p 12
+= 4 1 2 p 13 p 14
+= 4 1 2 p 5 p 15
+= 4 1 2 p 13 p 10
+bond 0 0 2 p 1 p 2
+doublebond 1 0 2 p 5 p 8
+doublebond 1 0 2 p 4 p 9
+bond 0 0 2 p 4 p 13
+bond 0 0 2 p 1 p 4
+bond 0 0 2 p 5 p 1
+bond 0 0 2 p 14 p 5
+aromaticbond 3 0 2 p 10 p 15
+aromaticbond 3 0 2 p 13 p 10
+aromaticbond 3 0 2 p 14 p 13
+aromaticbond 3 0 2 p 11 p 14
+aromaticbond 3 0 2 p 12 p 11
+aromaticbond 3 0 2 p 15 p 12
+bond 0 0 2 p 7 p 6
+bond 0 0 2 p 3 p 0
+type_carbon 27 0 1 p 5
+type_carbon 27 0 1 p 10
+type_oxygen 25 0 1 p 9
+type_carbon 27 0 1 p 14
+type_halogen 20 0 1 p 6
+type_oxygen 25 0 1 p 8
+type_carbon 27 0 1 p 13
+type_nitrogen 24 0 1 p 3
+type_chemical_atom 6 0 1 p 7
+type_carbon 27 0 1 p 15
+type_carbon 27 0 1 p 11
+type_carbon 27 0 1 p 12
+type_nitrogen 24 0 1 p 0
+type_nitrogen 24 0 1 p 1
+type_carbon 27 0 1 p 4
+type_potassium 35 0 1 p 2
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 7 p 6
+bond 0 1 2 p 6 p 7
+bond 0 1 2 p 5 p 1
+bond 0 1 2 p 1 p 5
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 4 p 1
+bond 0 0 2 p 2 p 6
+bond 0 0 2 p 6 p 2
+bond 0 0 2 p 7 p 1
+bond 0 0 2 p 1 p 7
+bond 0 0 2 p 3 p 5
+bond 0 0 2 p 5 p 3
+bond 0 0 2 p 4 p 0
+bond 0 0 2 p 0 p 4
+grignardadditiontoacidchlorides 1 13 29 22
+?mg_9 0 5
+?cl_5 1 23
+?o_12 2 20
+?o_4 3 20
+?mg_3 4 5
+?c_2 5 22
+?c_7 6 22
+?c_8 7 22
+?h_11 8 21
+?r1_1 9 15
+?h_13 10 21
+?r1_10 11 15
+?c_6 12 22
+= 4 1 2 p 5 p 6
+= 4 1 2 p 5 p 7
+= 4 1 2 p 6 p 7
+= 4 1 2 p 3 p 2
+= 4 1 2 p 4 p 0
+bond 0 0 2 p 4 p 9
+bond 0 0 2 p 5 p 4
+= 4 1 2 p 8 p 10
+bond 0 0 2 p 8 p 2
+bond 0 0 2 p 2 p 10
+bond 0 0 2 p 7 p 0
+bond 0 0 2 p 0 p 11
+= 4 1 2 p 6 p 12
+bond 0 0 2 p 1 p 6
+bond 0 0 2 p 12 p 6
+doublebond 1 0 2 p 3 p 6
+type_hydrogen 26 0 1 p 10
+type_carbon 27 0 1 p 12
+type_oxygen 25 0 1 p 2
+type_halogen 20 0 1 p 11
+type_oxygen 25 0 1 p 3
+type_magnesium 10 0 1 p 0
+type_carbon 27 0 1 p 7
+type_carbon 27 0 1 p 5
+type_carbon 27 0 1 p 6
+type_hydrogen 26 0 1 p 8
+type_chlorine 28 0 1 p 1
+type_magnesium 10 0 1 p 4
+type_halogen 20 0 1 p 9
+bond 0 1 2 p 5 p 4
+bond 0 1 2 p 4 p 5
+doublebond 1 1 2 p 3 p 6
+doublebond 1 1 2 p 6 p 3
+bond 0 1 2 p 1 p 6
+bond 0 1 2 p 6 p 1
+bond 0 1 2 p 7 p 0
+bond 0 1 2 p 0 p 7
+bond 0 1 2 p 8 p 2
+bond 0 1 2 p 2 p 8
+bond 0 0 2 p 6 p 5
+bond 0 0 2 p 5 p 6
+bond 0 0 2 p 1 p 4
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 3 p 6
+bond 0 0 2 p 6 p 3
+bond 0 0 2 p 3 p 8
+bond 0 0 2 p 8 p 3
+bond 0 0 2 p 7 p 6
+bond 0 0 2 p 6 p 7
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 2 p 0
+grignardreaction 1 6 10 10
+?c_6 0 22
+?o_2 1 20
+?c_5 2 22
+?mg_4 3 5
+?h_1 4 21
+?r1_3 5 15
+= 4 1 2 p 2 p 0
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 3 p 5
+doublebond 1 0 2 p 1 p 2
+type_carbon 27 0 1 p 0
+type_carbon 27 0 1 p 2
+type_hydrogen 26 0 1 p 4
+type_magnesium 10 0 1 p 3
+type_oxygen 25 0 1 p 1
+type_halogen 20 0 1 p 5
+doublebond 1 1 2 p 1 p 2
+doublebond 1 1 2 p 2 p 1
+bond 0 1 2 p 0 p 3
+bond 0 1 2 p 3 p 0
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 1 p 4
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 2 p 0
+grignardreagentformation 1 3 4 6
+?mg_3 0 5
+?c_2 1 22
+?r2_1 2 15
+bond 0 0 2 p 1 p 2
+type_halogen 20 0 1 p 2
+type_carbon 27 0 1 p 1
+type_magnesium 10 0 1 p 0
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 2 p 1
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 1 p 0
+bond 0 0 2 p 0 p 1
+hydrationofaldehydesandketones 1 7 15 10
+?o_4 0 20
+?c_5 1 22
+?h_2 2 21
+?o_3 3 20
+?h_1 4 21
+?r1_6 5 14
+?r1_7 6 14
+= 4 1 2 p 3 p 0
+= 4 1 2 p 4 p 2
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 2 p 3
+= 4 1 2 p 6 p 5
+doublebond 1 0 2 p 0 p 1
+bond 0 0 2 p 1 p 6
+bond 0 0 2 p 5 p 1
+type_r_group 19 0 1 p 5
+type_r_group 19 0 1 p 6
+type_carbon 27 0 1 p 1
+type_oxygen 25 0 1 p 0
+type_hydrogen 26 0 1 p 2
+type_hydrogen 26 0 1 p 4
+type_oxygen 25 0 1 p 3
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 3 p 2
+doublebond 1 1 2 p 0 p 1
+doublebond 1 1 2 p 1 p 0
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 0 p 1
+bond 0 0 2 p 1 p 0
+hydrationofalkenes 1 6 12 10
+?h_6 0 21
+?o_1 1 20
+?h_2 2 21
+?c_4 3 22
+?c_5 4 22
+?h_3 5 21
+= 4 1 2 p 4 p 3
+= 4 1 2 p 2 p 0
+= 4 1 2 p 2 p 5
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 5 p 1
+doublebond 1 0 2 p 4 p 3
+type_hydrogen 26 0 1 p 0
+type_carbon 27 0 1 p 4
+type_carbon 27 0 1 p 3
+type_hydrogen 26 0 1 p 5
+type_hydrogen 26 0 1 p 2
+type_oxygen 25 0 1 p 1
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 1 p 2
+doublebond 1 1 2 p 4 p 3
+doublebond 1 1 2 p 3 p 4
+bond 0 0 2 p 1 p 4
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 3 p 0
+hydrolysisofnitriles 1 10 23 18
+?h_6 0 21
+?o_4 1 20
+?o_7 2 20
+?h_5 3 21
+?n_1 4 19
+?h_8 5 21
+?c_2 6 22
+?c_3 7 22
+?h_9 8 21
+?h_10 9 21
+= 4 1 2 p 3 p 0
+= 4 1 2 p 3 p 5
+= 4 1 2 p 0 p 5
+= 4 1 2 p 1 p 2
+= 4 1 2 p 6 p 7
+bond 0 0 2 p 6 p 7
+triplebond 2 0 2 p 6 p 4
+= 4 1 2 p 0 p 3
+bond 0 0 2 p 0 p 1
+bond 0 0 2 p 3 p 1
+= 4 1 2 p 8 p 5
+bond 0 0 2 p 8 p 2
+bond 0 0 2 p 5 p 2
+type_hydrogen 26 0 1 p 0
+type_hydrogen 26 0 1 p 3
+type_oxygen 25 0 1 p 2
+type_oxygen 25 0 1 p 1
+type_carbon 27 0 1 p 7
+type_hydrogen 26 0 1 p 5
+type_carbon 27 0 1 p 6
+type_hydrogen 26 0 1 p 8
+type_nitrogen 24 0 1 p 4
+type_hydrogen 26 0 1 p 9
+triplebond 2 1 2 p 6 p 4
+triplebond 2 1 2 p 4 p 6
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 0 p 1
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 5 p 2
+bond 0 1 2 p 2 p 5
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 0 p 4
+bond 0 0 2 p 4 p 0
+bond 0 0 2 p 5 p 4
+bond 0 0 2 p 4 p 5
+doublebond 1 0 2 p 1 p 6
+doublebond 1 0 2 p 6 p 1
+bond 0 0 2 p 2 p 6
+bond 0 0 2 p 6 p 2
+hydroxylsubstitutionofdiazoniumionsn1 1 6 12 6
+?n_5 0 19
+?c_2 1 22
+?o_1 2 20
+?h_3 3 21
+?n_6 4 19
+?h_4 5 21
+= 4 1 2 p 4 p 0
+triplebond 2 0 2 p 4 p 0
+bond 0 0 2 p 1 p 0
+= 4 1 2 p 5 p 3
+bond 0 0 2 p 2 p 5
+bond 0 0 2 p 2 p 3
+type_nitrogen 24 0 1 p 0
+type_hydrogen 26 0 1 p 5
+type_hydrogen 26 0 1 p 3
+type_carbon 27 0 1 p 1
+type_nitrogen 24 0 1 p 4
+type_oxygen 25 0 1 p 2
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 3 p 2
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 0 p 1
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 1 p 2
+imineformation 1 8 17 12
+?c_5 0 22
+?o_8 1 20
+?h_2 2 21
+?n_1 3 19
+?h_3 4 21
+?c_4 5 22
+?r1_6 6 18
+?r1_7 7 18
+= 4 1 2 p 2 p 4
+= 4 1 2 p 4 p 2
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 5 p 3
+= 4 1 2 p 6 p 7
+bond 0 0 2 p 6 p 0
+bond 0 0 2 p 7 p 0
+doublebond 1 0 2 p 1 p 0
+type_oxygen 25 0 1 p 1
+type_carbon 27 0 1 p 5
+type_hc 23 0 1 p 6
+type_hydrogen 26 0 1 p 4
+type_hc 23 0 1 p 7
+type_hydrogen 26 0 1 p 2
+type_nitrogen 24 0 1 p 3
+type_carbon 27 0 1 p 0
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 3 p 2
+bond 0 1 2 p 4 p 3
+bond 0 1 2 p 3 p 4
+doublebond 1 1 2 p 1 p 0
+doublebond 1 1 2 p 0 p 1
+doublebond 1 0 2 p 3 p 0
+doublebond 1 0 2 p 0 p 3
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 1 p 4
+iminereductiontoamine 1 14 35 14
+?al_10 0 6
+?h_7 1 21
+?o_6 2 20
+?n_1 3 19
+?c_2 4 22
+?h_11 5 21
+?r1_3 6 18
+?r1_4 7 18
+?r1_5 8 18
+?h_8 9 21
+?h_12 10 21
+?h_13 11 21
+?h_14 12 21
+?li_9 13 28
+= 4 1 2 p 1 p 5
+= 4 1 2 p 7 p 8
+= 4 1 2 p 6 p 8
+= 4 1 2 p 6 p 7
+bond 0 0 2 p 3 p 6
+doublebond 1 0 2 p 4 p 3
+bond 0 0 2 p 4 p 7
+bond 0 0 2 p 4 p 8
+= 4 1 2 p 9 p 1
+bond 0 0 2 p 9 p 2
+bond 0 0 2 p 1 p 2
+= 4 1 2 p 5 p 10
+= 4 1 2 p 5 p 11
+= 4 1 2 p 10 p 11
+= 4 1 2 p 11 p 12
+= 4 1 2 p 10 p 12
+= 4 1 2 p 5 p 12
+bond 0 0 2 p 5 p 0
+bond 0 0 2 p 10 p 0
+bond 0 0 2 p 11 p 0
+bond 0 0 2 p 12 p 0
+type_hydrogen 26 0 1 p 11
+type_oxygen 25 0 1 p 2
+type_hydrogen 26 0 1 p 10
+type_hc 23 0 1 p 8
+type_hydrogen 26 0 1 p 12
+type_lithium 33 0 1 p 13
+type_hydrogen 26 0 1 p 9
+type_carbon 27 0 1 p 4
+type_aluminium 11 0 1 p 0
+type_hc 23 0 1 p 7
+type_nitrogen 24 0 1 p 3
+type_hydrogen 26 0 1 p 5
+type_hydrogen 26 0 1 p 1
+type_hc 23 0 1 p 6
+doublebond 1 1 2 p 4 p 3
+doublebond 1 1 2 p 3 p 4
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 5 p 0
+bond 0 1 2 p 0 p 5
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 5 p 4
+bond 0 0 2 p 4 p 5
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 0 p 2
+intramolecularoxymercurationreduction 1 21 72 16
+?o_15 0 20
+?o_3 1 20
+?o_2 2 20
+?c_19 3 22
+?hg_1 4 10
+?c_20 5 22
+?o_21 6 20
+?h_11 7 21
+?b_10 8 11
+?o_5 9 20
+?o_8 10 20
+?c_4 11 22
+?c_7 12 22
+?c_6 13 22
+?c_9 14 22
+?h_12 15 21
+?h_13 16 21
+?h_14 17 21
+?c_17 18 22
+?c_16 19 22
+?c_18 20 22
+= 4 1 2 p 5 p 3
+= 4 1 2 p 2 p 1
+= 4 1 2 p 2 p 0
+= 4 1 2 p 2 p 6
+= 4 1 2 p 1 p 0
+= 4 1 2 p 1 p 6
+= 4 1 2 p 0 p 6
+= 4 1 2 p 2 p 9
+= 4 1 2 p 2 p 10
+= 4 1 2 p 9 p 10
+= 4 1 2 p 11 p 14
+= 4 1 2 p 13 p 12
+= 4 1 2 p 1 p 9
+= 4 1 2 p 1 p 10
+= 4 1 2 p 13 p 14
+= 4 1 2 p 11 p 13
+= 4 1 2 p 11 p 12
+= 4 1 2 p 12 p 14
+bond 0 0 2 p 4 p 2
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 2 p 11
+doublebond 1 0 2 p 11 p 9
+bond 0 0 2 p 11 p 13
+bond 0 0 2 p 1 p 12
+doublebond 1 0 2 p 12 p 10
+bond 0 0 2 p 12 p 14
+= 4 1 2 p 7 p 15
+= 4 1 2 p 7 p 16
+= 4 1 2 p 15 p 16
+= 4 1 2 p 16 p 17
+= 4 1 2 p 15 p 17
+= 4 1 2 p 7 p 17
+bond 0 0 2 p 8 p 7
+bond 0 0 2 p 8 p 15
+bond 0 0 2 p 8 p 16
+bond 0 0 2 p 8 p 17
+= 4 1 2 p 18 p 3
+= 4 1 2 p 19 p 18
+= 4 1 2 p 19 p 3
+= 4 1 2 p 19 p 20
+= 4 1 2 p 18 p 5
+= 4 1 2 p 3 p 5
+= 4 1 2 p 20 p 3
+= 4 1 2 p 18 p 20
+= 4 1 2 p 20 p 5
+= 4 1 2 p 19 p 5
+bond 0 0 2 p 19 p 18
+bond 0 0 2 p 18 p 20
+bond 0 0 2 p 20 p 3
+doublebond 1 0 2 p 3 p 5
+bond 0 0 2 p 19 p 6
+type_oxygen 25 0 1 p 10
+type_carbon 27 0 1 p 13
+type_hydrogen 26 0 1 p 15
+type_boron 16 0 1 p 8
+type_carbon 27 0 1 p 11
+type_carbon 27 0 1 p 14
+type_hydrogen 26 0 1 p 16
+type_oxygen 25 0 1 p 9
+type_carbon 27 0 1 p 3
+type_carbon 27 0 1 p 19
+type_mercury 15 0 1 p 4
+type_hydrogen 26 0 1 p 17
+type_oxygen 25 0 1 p 2
+type_carbon 27 0 1 p 5
+type_oxygen 25 0 1 p 1
+type_hydrogen 26 0 1 p 7
+type_carbon 27 0 1 p 20
+type_oxygen 25 0 1 p 6
+type_carbon 27 0 1 p 18
+type_carbon 27 0 1 p 12
+type_oxygen 25 0 1 p 0
+bond 0 1 2 p 4 p 2
+bond 0 1 2 p 2 p 4
+bond 0 1 2 p 4 p 1
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 8 p 7
+bond 0 1 2 p 7 p 8
+doublebond 1 1 2 p 3 p 5
+doublebond 1 1 2 p 5 p 3
+bond 0 0 2 p 8 p 0
+bond 0 0 2 p 0 p 8
+bond 0 0 2 p 5 p 7
+bond 0 0 2 p 7 p 5
+bond 0 0 2 p 3 p 5
+bond 0 0 2 p 5 p 3
+bond 0 0 2 p 3 p 6
+bond 0 0 2 p 6 p 3
+lahreductionofanhydrides 1 17 60 44
+?h_6 0 21
+?o_4 1 20
+?o_7 2 20
+?al_1 3 6
+?o_3 4 20
+?o_10 5 20
+?c_13 6 22
+?c_12 7 22
+?li_2 8 28
+?o_11 9 20
+?h_9 10 21
+?h_14 11 21
+?h_15 12 21
+?h_16 13 21
+?h_17 14 21
+?h_5 15 21
+?h_8 16 21
+= 4 1 2 p 7 p 6
+= 4 1 2 p 11 p 12
+= 4 1 2 p 11 p 13
+= 4 1 2 p 11 p 14
+= 4 1 2 p 11 p 0
+= 4 1 2 p 11 p 10
+= 4 1 2 p 12 p 13
+= 4 1 2 p 12 p 14
+= 4 1 2 p 12 p 0
+= 4 1 2 p 12 p 10
+= 4 1 2 p 13 p 14
+= 4 1 2 p 13 p 0
+= 4 1 2 p 13 p 10
+= 4 1 2 p 14 p 0
+= 4 1 2 p 14 p 10
+= 4 1 2 p 0 p 10
+= 4 1 2 p 4 p 1
+= 4 1 2 p 4 p 2
+= 4 1 2 p 4 p 9
+= 4 1 2 p 4 p 5
+= 4 1 2 p 1 p 2
+= 4 1 2 p 1 p 9
+= 4 1 2 p 1 p 5
+= 4 1 2 p 2 p 9
+= 4 1 2 p 2 p 5
+= 4 1 2 p 9 p 5
+= 4 1 2 p 5 p 4
+= 4 1 2 p 9 p 4
+= 4 1 2 p 5 p 9
+doublebond 1 0 2 p 5 p 7
+doublebond 1 0 2 p 9 p 6
+bond 0 0 2 p 6 p 4
+bond 0 0 2 p 4 p 7
+bond 0 0 2 p 11 p 3
+bond 0 0 2 p 12 p 3
+bond 0 0 2 p 3 p 13
+bond 0 0 2 p 3 p 14
+= 4 1 2 p 15 p 0
+bond 0 0 2 p 15 p 1
+bond 0 0 2 p 0 p 1
+= 4 1 2 p 10 p 16
+bond 0 0 2 p 2 p 10
+bond 0 0 2 p 2 p 16
+type_hydrogen 26 0 1 p 0
+type_hydrogen 26 0 1 p 16
+type_hydrogen 26 0 1 p 15
+type_oxygen 25 0 1 p 2
+type_carbon 27 0 1 p 7
+type_oxygen 25 0 1 p 1
+type_oxygen 25 0 1 p 9
+type_carbon 27 0 1 p 6
+type_oxygen 25 0 1 p 5
+type_hydrogen 26 0 1 p 14
+type_lithium 33 0 1 p 8
+type_hydrogen 26 0 1 p 12
+type_hydrogen 26 0 1 p 13
+type_hydrogen 26 0 1 p 10
+type_oxygen 25 0 1 p 4
+type_hydrogen 26 0 1 p 11
+type_aluminium 11 0 1 p 3
+bond 0 1 2 p 11 p 3
+bond 0 1 2 p 3 p 11
+bond 0 1 2 p 12 p 3
+bond 0 1 2 p 3 p 12
+bond 0 1 2 p 3 p 13
+bond 0 1 2 p 13 p 3
+bond 0 1 2 p 3 p 14
+bond 0 1 2 p 14 p 3
+bond 0 1 2 p 4 p 7
+bond 0 1 2 p 7 p 4
+bond 0 1 2 p 6 p 4
+bond 0 1 2 p 4 p 6
+bond 0 1 2 p 0 p 1
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 2 p 10
+bond 0 1 2 p 10 p 2
+doublebond 1 1 2 p 5 p 7
+doublebond 1 1 2 p 7 p 5
+doublebond 1 1 2 p 9 p 6
+doublebond 1 1 2 p 6 p 9
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 8 p 4
+bond 0 0 2 p 4 p 8
+bond 0 0 2 p 9 p 0
+bond 0 0 2 p 0 p 9
+bond 0 0 2 p 10 p 5
+bond 0 0 2 p 5 p 10
+bond 0 0 2 p 5 p 7
+bond 0 0 2 p 7 p 5
+bond 0 0 2 p 9 p 6
+bond 0 0 2 p 6 p 9
+bond 0 0 2 p 7 p 11
+bond 0 0 2 p 11 p 7
+bond 0 0 2 p 7 p 12
+bond 0 0 2 p 12 p 7
+bond 0 0 2 p 6 p 13
+bond 0 0 2 p 13 p 6
+bond 0 0 2 p 6 p 14
+bond 0 0 2 p 14 p 6
+lahreductionofaldehydesandketones 1 13 32 14
+?o_11 0 20
+?h_6 1 21
+?o_7 2 20
+?al_2 3 6
+?c_8 4 22
+?h_12 5 21
+?li_1 6 28
+?h_13 7 21
+?h_4 8 21
+?h_5 9 21
+?h_3 10 21
+?r1_9 11 14
+?c_10 12 22
+= 4 1 2 p 1 p 5
+= 4 1 2 p 0 p 2
+= 4 1 2 p 5 p 7
+bond 0 0 2 p 0 p 5
+bond 0 0 2 p 0 p 7
+= 4 1 2 p 1 p 10
+= 4 1 2 p 1 p 9
+= 4 1 2 p 9 p 10
+= 4 1 2 p 9 p 8
+= 4 1 2 p 1 p 8
+= 4 1 2 p 8 p 10
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 9 p 3
+bond 0 0 2 p 8 p 3
+bond 0 0 2 p 10 p 3
+= 4 1 2 p 4 p 12
+doublebond 1 0 2 p 4 p 2
+bond 0 0 2 p 12 p 4
+bond 0 0 2 p 11 p 4
+type_hydrogen 26 0 1 p 7
+type_hydrogen 26 0 1 p 1
+type_oxygen 25 0 1 p 0
+type_hydrogen 26 0 1 p 9
+type_oxygen 25 0 1 p 2
+type_aluminium 11 0 1 p 3
+type_r_group 19 0 1 p 11
+type_hydrogen 26 0 1 p 10
+type_carbon 27 0 1 p 4
+type_hydrogen 26 0 1 p 8
+type_lithium 33 0 1 p 6
+type_hydrogen 26 0 1 p 5
+type_carbon 27 0 1 p 12
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 3 p 1
+doublebond 1 1 2 p 4 p 2
+doublebond 1 1 2 p 2 p 4
+bond 0 1 2 p 0 p 5
+bond 0 1 2 p 5 p 0
+bond 0 0 2 p 0 p 6
+bond 0 0 2 p 6 p 0
+bond 0 0 2 p 1 p 4
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 4 p 2
+bond 0 0 2 p 2 p 4
+bond 0 0 2 p 5 p 2
+bond 0 0 2 p 2 p 5
+lahreductionofnitriles 1 15 41 24
+?h_6 0 21
+?o_11 1 20
+?al_1 2 6
+?o_14 3 20
+?n_7 4 19
+?h_5 5 21
+?h_10 6 21
+?c_8 7 22
+?h_13 8 21
+?li_2 9 28
+?h_12 10 21
+?h_15 11 21
+?h_4 12 21
+?h_3 13 21
+?c_9 14 22
+= 4 1 2 p 3 p 1
+= 4 1 2 p 5 p 0
+= 4 1 2 p 5 p 6
+= 4 1 2 p 5 p 8
+= 4 1 2 p 0 p 6
+= 4 1 2 p 0 p 8
+= 4 1 2 p 6 p 8
+= 4 1 2 p 6 p 10
+bond 0 0 2 p 6 p 1
+bond 0 0 2 p 1 p 10
+= 4 1 2 p 8 p 11
+bond 0 0 2 p 8 p 3
+bond 0 0 2 p 3 p 11
+= 4 1 2 p 0 p 13
+= 4 1 2 p 0 p 5
+= 4 1 2 p 5 p 13
+= 4 1 2 p 5 p 12
+= 4 1 2 p 0 p 12
+= 4 1 2 p 12 p 13
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 5 p 2
+bond 0 0 2 p 12 p 2
+bond 0 0 2 p 13 p 2
+= 4 1 2 p 7 p 14
+bond 0 0 2 p 7 p 14
+triplebond 2 0 2 p 4 p 7
+type_hydrogen 26 0 1 p 8
+type_hydrogen 26 0 1 p 0
+type_carbon 27 0 1 p 7
+type_hydrogen 26 0 1 p 5
+type_hydrogen 26 0 1 p 12
+type_carbon 27 0 1 p 14
+type_hydrogen 26 0 1 p 13
+type_oxygen 25 0 1 p 1
+type_hydrogen 26 0 1 p 11
+type_hydrogen 26 0 1 p 10
+type_lithium 33 0 1 p 9
+type_nitrogen 24 0 1 p 4
+type_oxygen 25 0 1 p 3
+type_hydrogen 26 0 1 p 6
+type_aluminium 11 0 1 p 2
+bond 0 1 2 p 5 p 2
+bond 0 1 2 p 2 p 5
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+triplebond 2 1 2 p 4 p 7
+triplebond 2 1 2 p 7 p 4
+bond 0 1 2 p 6 p 1
+bond 0 1 2 p 1 p 6
+bond 0 1 2 p 8 p 3
+bond 0 1 2 p 3 p 8
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 9 p 1
+bond 0 0 2 p 1 p 9
+bond 0 0 2 p 5 p 7
+bond 0 0 2 p 7 p 5
+bond 0 0 2 p 0 p 7
+bond 0 0 2 p 7 p 0
+bond 0 0 2 p 4 p 7
+bond 0 0 2 p 7 p 4
+bond 0 0 2 p 6 p 4
+bond 0 0 2 p 4 p 6
+bond 0 0 2 p 8 p 4
+bond 0 0 2 p 4 p 8
+michaeladditiontounsaturatedketones 1 9 24 10
+?c_3 0 22
+?h_5 1 21
+?c_7 2 22
+?c_6 3 22
+?c_1 4 22
+?o_4 5 20
+?c_2 6 22
+?c_8 7 22
+?o_9 8 20
+= 4 1 2 p 0 p 2
+= 4 1 2 p 0 p 3
+= 4 1 2 p 2 p 3
+= 4 1 2 p 4 p 6
+= 4 1 2 p 6 p 0
+= 4 1 2 p 4 p 0
+doublebond 1 0 2 p 5 p 4
+bond 0 0 2 p 6 p 4
+bond 0 0 2 p 4 p 0
+bond 0 0 2 p 1 p 0
+= 4 1 2 p 2 p 7
+= 4 1 2 p 3 p 7
+doublebond 1 0 2 p 2 p 3
+bond 0 0 2 p 7 p 3
+doublebond 1 0 2 p 8 p 7
+type_carbon 27 0 1 p 3
+type_hydrogen 26 0 1 p 1
+type_oxygen 25 0 1 p 8
+type_oxygen 25 0 1 p 5
+type_carbon 27 0 1 p 0
+type_carbon 27 0 1 p 7
+type_carbon 27 0 1 p 6
+type_carbon 27 0 1 p 4
+type_carbon 27 0 1 p 2
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 0 p 1
+doublebond 1 1 2 p 2 p 3
+doublebond 1 1 2 p 3 p 2
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 2 p 3
+bond 0 0 2 p 3 p 2
+nitrilesubstitutionofdiazoniumionsn1 1 6 12 6
+?r1_6 0 1
+?c_3 1 22
+?c_5 2 22
+?n_1 3 19
+?n_2 4 19
+?n_4 5 19
+= 4 1 2 p 1 p 2
+= 4 1 2 p 3 p 4
+bond 0 0 2 p 3 p 1
+triplebond 2 0 2 p 4 p 3
+bond 0 0 2 p 0 p 2
+triplebond 2 0 2 p 2 p 5
+type_nitrogen 24 0 1 p 5
+type_carbon 27 0 1 p 2
+type_carbon 27 0 1 p 1
+type_nitrogen 24 0 1 p 4
+type_nitrogen 24 0 1 p 3
+type_chemical_atom 6 0 1 p 0
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+oxidationofalcoholswithpcc 1 16 47 18
+?o_5 0 20
+?o_4 1 20
+?cl_1 2 23
+?h_7 3 21
+?o_8 4 20
+?h_9 5 21
+?c_3 6 22
+?cr_2 7 7
+?c_15 8 22
+?c_17 9 22
+?c_16 10 22
+?c_13 11 22
+?c_12 12 22
+?h_11 13 21
+?n_14 14 19
+?o_6 15 20
+= 4 1 2 p 5 p 3
+= 4 1 2 p 1 p 4
+= 4 1 2 p 1 p 0
+= 4 1 2 p 4 p 0
+bond 0 0 2 p 6 p 5
+bond 0 0 2 p 6 p 4
+bond 0 0 2 p 4 p 3
+= 4 1 2 p 12 p 11
+= 4 1 2 p 12 p 8
+= 4 1 2 p 9 p 8
+= 4 1 2 p 9 p 10
+= 4 1 2 p 11 p 8
+= 4 1 2 p 8 p 10
+= 4 1 2 p 11 p 10
+= 4 1 2 p 11 p 9
+= 4 1 2 p 12 p 9
+= 4 1 2 p 12 p 10
+aromaticbond 3 0 2 p 12 p 11
+aromaticbond 3 0 2 p 9 p 12
+aromaticbond 3 0 2 p 11 p 14
+aromaticbond 3 0 2 p 14 p 8
+bond 0 0 2 p 14 p 13
+aromaticbond 3 0 2 p 8 p 10
+aromaticbond 3 0 2 p 10 p 9
+= 4 1 2 p 0 p 1
+= 4 1 2 p 15 p 1
+= 4 1 2 p 15 p 0
+doublebond 1 0 2 p 7 p 15
+bond 0 0 2 p 7 p 2
+bond 0 0 2 p 7 p 0
+doublebond 1 0 2 p 7 p 1
+type_carbon 27 0 1 p 8
+type_oxygen 25 0 1 p 15
+type_oxygen 25 0 1 p 4
+type_nitrogen 24 0 1 p 14
+type_chromium 12 0 1 p 7
+type_oxygen 25 0 1 p 1
+type_carbon 27 0 1 p 6
+type_oxygen 25 0 1 p 0
+type_carbon 27 0 1 p 11
+type_chlorine 28 0 1 p 2
+type_carbon 27 0 1 p 12
+type_hydrogen 26 0 1 p 5
+type_carbon 27 0 1 p 9
+type_hydrogen 26 0 1 p 13
+type_carbon 27 0 1 p 10
+type_hydrogen 26 0 1 p 3
+bond 0 1 2 p 7 p 2
+bond 0 1 2 p 2 p 7
+doublebond 1 1 2 p 7 p 1
+doublebond 1 1 2 p 1 p 7
+bond 0 1 2 p 6 p 4
+bond 0 1 2 p 4 p 6
+bond 0 1 2 p 6 p 5
+bond 0 1 2 p 5 p 6
+bond 0 1 2 p 4 p 3
+bond 0 1 2 p 3 p 4
+bond 0 0 2 p 7 p 1
+bond 0 0 2 p 1 p 7
+doublebond 1 0 2 p 6 p 4
+doublebond 1 0 2 p 4 p 6
+bond 0 0 2 p 1 p 3
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 0 p 5
+bond 0 0 2 p 5 p 0
+oxidationofprimaryalcoholwithpotassiumpermanganate 1 10 30 26
+?o_5 0 20
+?o_7 1 20
+?o_3 2 20
+?o_2 3 20
+?h_9 4 21
+?c_8 5 22
+?h_10 6 21
+?mn_1 7 9
+?o_4 8 20
+?h_11 9 21
+= 4 1 2 p 4 p 6
+= 4 1 2 p 3 p 2
+= 4 1 2 p 3 p 0
+= 4 1 2 p 3 p 1
+= 4 1 2 p 2 p 0
+= 4 1 2 p 2 p 1
+= 4 1 2 p 0 p 1
+= 4 1 2 p 2 p 8
+= 4 1 2 p 3 p 8
+= 4 1 2 p 8 p 0
+doublebond 1 0 2 p 3 p 7
+doublebond 1 0 2 p 2 p 7
+doublebond 1 0 2 p 8 p 7
+bond 0 0 2 p 0 p 7
+= 4 1 2 p 4 p 9
+= 4 1 2 p 6 p 9
+bond 0 0 2 p 4 p 1
+bond 0 0 2 p 5 p 1
+bond 0 0 2 p 6 p 5
+bond 0 0 2 p 9 p 5
+type_carbon 27 0 1 p 5
+type_oxygen 25 0 1 p 1
+type_hydrogen 26 0 1 p 4
+type_oxygen 25 0 1 p 0
+type_manganese 14 0 1 p 7
+type_oxygen 25 0 1 p 8
+type_oxygen 25 0 1 p 3
+type_oxygen 25 0 1 p 2
+type_hydrogen 26 0 1 p 9
+type_hydrogen 26 0 1 p 6
+doublebond 1 1 2 p 3 p 7
+doublebond 1 1 2 p 7 p 3
+doublebond 1 1 2 p 2 p 7
+doublebond 1 1 2 p 7 p 2
+bond 0 1 2 p 0 p 7
+bond 0 1 2 p 7 p 0
+bond 0 1 2 p 5 p 1
+bond 0 1 2 p 1 p 5
+bond 0 1 2 p 4 p 1
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 6 p 5
+bond 0 1 2 p 5 p 6
+bond 0 1 2 p 9 p 5
+bond 0 1 2 p 5 p 9
+doublebond 1 0 2 p 0 p 7
+doublebond 1 0 2 p 7 p 0
+bond 0 0 2 p 3 p 5
+bond 0 0 2 p 5 p 3
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 2 p 6
+bond 0 0 2 p 6 p 2
+bond 0 0 2 p 2 p 9
+bond 0 0 2 p 9 p 2
+doublebond 1 0 2 p 5 p 1
+doublebond 1 0 2 p 1 p 5
+paalknorrpyrrolesynthesis 1 14 50 32
+?o_11 0 20
+?h_4 1 21
+?o_12 2 20
+?h_3 3 21
+?n_1 4 19
+?c_7 5 22
+?c_6 6 22
+?c_9 7 22
+?c_8 8 22
+?h_13 9 21
+?h_14 10 21
+?c_2 11 22
+?c_5 12 22
+?c_10 13 22
+= 4 1 2 p 6 p 7
+= 4 1 2 p 6 p 5
+= 4 1 2 p 6 p 8
+= 4 1 2 p 7 p 5
+= 4 1 2 p 7 p 8
+= 4 1 2 p 5 p 8
+= 4 1 2 p 3 p 1
+= 4 1 2 p 3 p 10
+= 4 1 2 p 3 p 9
+= 4 1 2 p 1 p 10
+= 4 1 2 p 1 p 9
+= 4 1 2 p 10 p 9
+= 4 1 2 p 0 p 2
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 1 p 4
+bond 0 0 2 p 11 p 4
+= 4 1 2 p 7 p 13
+= 4 1 2 p 6 p 13
+= 4 1 2 p 5 p 13
+= 4 1 2 p 12 p 13
+= 4 1 2 p 8 p 13
+= 4 1 2 p 12 p 6
+= 4 1 2 p 8 p 7
+= 4 1 2 p 12 p 5
+= 4 1 2 p 12 p 7
+= 4 1 2 p 12 p 8
+= 4 1 2 p 5 p 7
+bond 0 0 2 p 12 p 6
+bond 0 0 2 p 6 p 5
+doublebond 1 0 2 p 0 p 6
+bond 0 0 2 p 5 p 8
+bond 0 0 2 p 10 p 5
+bond 0 0 2 p 8 p 7
+bond 0 0 2 p 9 p 8
+bond 0 0 2 p 7 p 13
+doublebond 1 0 2 p 2 p 7
+type_hydrogen 26 0 1 p 9
+type_carbon 27 0 1 p 6
+type_oxygen 25 0 1 p 2
+type_carbon 27 0 1 p 8
+type_carbon 27 0 1 p 12
+type_hydrogen 26 0 1 p 1
+type_carbon 27 0 1 p 7
+type_hydrogen 26 0 1 p 3
+type_oxygen 25 0 1 p 0
+type_carbon 27 0 1 p 11
+type_hydrogen 26 0 1 p 10
+type_nitrogen 24 0 1 p 4
+type_carbon 27 0 1 p 13
+type_carbon 27 0 1 p 5
+bond 0 1 2 p 3 p 4
+bond 0 1 2 p 4 p 3
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 4 p 1
+bond 0 1 2 p 6 p 5
+bond 0 1 2 p 5 p 6
+doublebond 1 1 2 p 0 p 6
+doublebond 1 1 2 p 6 p 0
+bond 0 1 2 p 10 p 5
+bond 0 1 2 p 5 p 10
+bond 0 1 2 p 8 p 7
+bond 0 1 2 p 7 p 8
+bond 0 1 2 p 9 p 8
+bond 0 1 2 p 8 p 9
+doublebond 1 1 2 p 2 p 7
+doublebond 1 1 2 p 7 p 2
+bond 0 0 2 p 6 p 4
+bond 0 0 2 p 4 p 6
+bond 0 0 2 p 7 p 4
+bond 0 0 2 p 4 p 7
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 1 p 0
+bond 0 0 2 p 0 p 1
+doublebond 1 0 2 p 6 p 5
+doublebond 1 0 2 p 5 p 6
+doublebond 1 0 2 p 8 p 7
+doublebond 1 0 2 p 7 p 8
+bond 0 0 2 p 9 p 2
+bond 0 0 2 p 2 p 9
+bond 0 0 2 p 10 p 2
+bond 0 0 2 p 2 p 10
+pbr3conversionofalcoholstoalkylbromides 1 7 15 8
+?o_5 0 20
+?br_4 1 25
+?c_7 2 22
+?p_1 3 2
+?br_3 4 25
+?br_2 5 25
+?h_6 6 21
+= 4 1 2 p 5 p 4
+= 4 1 2 p 5 p 1
+= 4 1 2 p 1 p 4
+bond 0 0 2 p 5 p 3
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 3 p 4
+bond 0 0 2 p 6 p 0
+bond 0 0 2 p 0 p 2
+type_hydrogen 26 0 1 p 6
+type_phosphorus 7 0 1 p 3
+type_bromine 30 0 1 p 1
+type_bromine 30 0 1 p 4
+type_oxygen 25 0 1 p 0
+type_bromine 30 0 1 p 5
+type_carbon 27 0 1 p 2
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 1 p 3
+bond 0 1 2 p 0 p 2
+bond 0 1 2 p 2 p 0
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+reductiveozonolysis 1 14 47 12
+?o_1 0 20
+?o_3 1 20
+?s_6 2 4
+?o_2 3 20
+?c_5 4 22
+?c_4 5 22
+?h_9 6 21
+?c_7 7 22
+?h_11 8 21
+?h_10 9 21
+?c_8 10 22
+?h_12 11 21
+?h_13 12 21
+?h_14 13 21
+= 4 1 2 p 5 p 4
+= 4 1 2 p 3 p 0
+= 4 1 2 p 3 p 1
+= 4 1 2 p 0 p 1
+= 4 1 2 p 13 p 8
+= 4 1 2 p 11 p 8
+= 4 1 2 p 13 p 9
+= 4 1 2 p 11 p 9
+= 4 1 2 p 6 p 8
+= 4 1 2 p 11 p 6
+= 4 1 2 p 12 p 9
+= 4 1 2 p 12 p 6
+= 4 1 2 p 13 p 6
+= 4 1 2 p 12 p 8
+= 4 1 2 p 12 p 11
+= 4 1 2 p 6 p 9
+= 4 1 2 p 10 p 7
+= 4 1 2 p 9 p 8
+= 4 1 2 p 13 p 12
+= 4 1 2 p 13 p 11
+bond 0 0 2 p 2 p 10
+bond 0 0 2 p 2 p 7
+bond 0 0 2 p 13 p 10
+bond 0 0 2 p 12 p 10
+bond 0 0 2 p 11 p 10
+bond 0 0 2 p 7 p 6
+bond 0 0 2 p 7 p 9
+bond 0 0 2 p 7 p 8
+= 4 1 2 p 1 p 0
+bond 0 0 2 p 3 p 1
+doublebond 1 0 2 p 3 p 0
+= 4 1 2 p 4 p 5
+doublebond 1 0 2 p 4 p 5
+type_hydrogen 26 0 1 p 12
+type_hydrogen 26 0 1 p 11
+type_carbon 27 0 1 p 4
+type_carbon 27 0 1 p 5
+type_hydrogen 26 0 1 p 6
+type_carbon 27 0 1 p 10
+type_hydrogen 26 0 1 p 13
+type_sulfur 9 0 1 p 2
+type_oxygen 25 0 1 p 3
+type_oxygen 25 0 1 p 1
+type_hydrogen 26 0 1 p 8
+type_hydrogen 26 0 1 p 9
+type_carbon 27 0 1 p 7
+type_oxygen 25 0 1 p 0
+doublebond 1 1 2 p 3 p 0
+doublebond 1 1 2 p 0 p 3
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 1 p 3
+doublebond 1 1 2 p 4 p 5
+doublebond 1 1 2 p 5 p 4
+doublebond 1 0 2 p 5 p 0
+doublebond 1 0 2 p 0 p 5
+doublebond 1 0 2 p 4 p 3
+doublebond 1 0 2 p 3 p 4
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 2 p 1
+sandmeyerreaction 1 6 11 10
+?cl_6 0 23
+?n_4 1 19
+?r1_1 2 15
+?n_3 3 19
+?c_5 4 22
+?cu_2 5 12
+= 4 1 2 p 3 p 1
+bond 0 0 2 p 2 p 5
+triplebond 2 0 2 p 3 p 1
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 1 p 4
+type_nitrogen 24 0 1 p 1
+type_carbon 27 0 1 p 4
+type_nitrogen 24 0 1 p 3
+type_chlorine 28 0 1 p 0
+type_copper 17 0 1 p 5
+type_halogen 20 0 1 p 2
+bond 0 1 2 p 2 p 5
+bond 0 1 2 p 5 p 2
+bond 0 1 2 p 0 p 3
+bond 0 1 2 p 3 p 0
+bond 0 1 2 p 1 p 4
+bond 0 1 2 p 4 p 1
+bond 0 0 2 p 2 p 4
+bond 0 0 2 p 4 p 2
+bond 0 0 2 p 0 p 5
+bond 0 0 2 p 5 p 0
+sodiumdichromateoxidationofprimaryalcohol 1 29 136 58
+?c_25 0 22
+?h_21 1 21
+?h_23 2 21
+?o_12 3 20
+?h_27 4 21
+?h_29 5 21
+?h_28 6 21
+?na_10 7 29
+?na_11 8 29
+?o_5 9 20
+?o_7 10 20
+?c_19 11 22
+?o_9 12 20
+?o_8 13 20
+?c_13 14 22
+?h_22 15 21
+?cr_2 16 7
+?cr_1 17 7
+?h_16 18 21
+?o_20 19 20
+?h_14 20 21
+?h_15 21 21
+?o_26 22 20
+?o_4 23 20
+?o_6 24 20
+?o_3 25 20
+?r0_17 26 22
+?r0_18 27 22
+?r0_24 28 22
+= 4 1 2 p 14 p 11
+= 4 1 2 p 14 p 0
+= 4 1 2 p 11 p 0
+= 4 1 2 p 21 p 20
+= 4 1 2 p 21 p 18
+= 4 1 2 p 21 p 1
+= 4 1 2 p 21 p 4
+= 4 1 2 p 21 p 15
+= 4 1 2 p 21 p 2
+= 4 1 2 p 21 p 6
+= 4 1 2 p 21 p 5
+= 4 1 2 p 20 p 18
+= 4 1 2 p 20 p 1
+= 4 1 2 p 20 p 4
+= 4 1 2 p 20 p 15
+= 4 1 2 p 20 p 2
+= 4 1 2 p 20 p 6
+= 4 1 2 p 20 p 5
+= 4 1 2 p 18 p 1
+= 4 1 2 p 18 p 4
+= 4 1 2 p 18 p 15
+= 4 1 2 p 18 p 2
+= 4 1 2 p 18 p 6
+= 4 1 2 p 18 p 5
+= 4 1 2 p 1 p 4
+= 4 1 2 p 1 p 15
+= 4 1 2 p 1 p 2
+= 4 1 2 p 1 p 6
+= 4 1 2 p 1 p 5
+= 4 1 2 p 4 p 15
+= 4 1 2 p 4 p 2
+= 4 1 2 p 4 p 6
+= 4 1 2 p 4 p 5
+= 4 1 2 p 15 p 2
+= 4 1 2 p 15 p 6
+= 4 1 2 p 15 p 5
+= 4 1 2 p 2 p 6
+= 4 1 2 p 2 p 5
+= 4 1 2 p 6 p 5
+= 4 1 2 p 17 p 16
+= 4 1 2 p 9 p 12
+= 4 1 2 p 9 p 10
+= 4 1 2 p 9 p 13
+= 4 1 2 p 9 p 3
+= 4 1 2 p 9 p 19
+= 4 1 2 p 9 p 22
+= 4 1 2 p 12 p 10
+= 4 1 2 p 12 p 13
+= 4 1 2 p 12 p 3
+= 4 1 2 p 12 p 19
+= 4 1 2 p 12 p 22
+= 4 1 2 p 10 p 13
+= 4 1 2 p 10 p 3
+= 4 1 2 p 10 p 19
+= 4 1 2 p 10 p 22
+= 4 1 2 p 13 p 3
+= 4 1 2 p 13 p 19
+= 4 1 2 p 13 p 22
+= 4 1 2 p 3 p 19
+= 4 1 2 p 3 p 22
+= 4 1 2 p 19 p 22
+= 4 1 2 p 8 p 7
+= 4 1 2 p 9 p 24
+= 4 1 2 p 12 p 9
+= 4 1 2 p 13 p 24
+= 4 1 2 p 23 p 13
+= 4 1 2 p 23 p 25
+= 4 1 2 p 23 p 12
+= 4 1 2 p 7 p 8
+= 4 1 2 p 9 p 25
+= 4 1 2 p 25 p 13
+= 4 1 2 p 23 p 9
+= 4 1 2 p 10 p 24
+= 4 1 2 p 12 p 25
+= 4 1 2 p 25 p 10
+= 4 1 2 p 25 p 24
+= 4 1 2 p 12 p 24
+= 4 1 2 p 23 p 24
+= 4 1 2 p 23 p 10
+doublebond 1 0 2 p 17 p 23
+bond 0 0 2 p 17 p 12
+doublebond 1 0 2 p 17 p 9
+bond 0 0 2 p 17 p 25
+bond 0 0 2 p 16 p 25
+bond 0 0 2 p 12 p 7
+doublebond 1 0 2 p 16 p 10
+bond 0 0 2 p 16 p 13
+doublebond 1 0 2 p 16 p 24
+bond 0 0 2 p 13 p 8
+= 4 1 2 p 18 p 21
+= 4 1 2 p 18 p 20
+bond 0 0 2 p 14 p 26
+bond 0 0 2 p 14 p 18
+bond 0 0 2 p 14 p 21
+bond 0 0 2 p 3 p 20
+bond 0 0 2 p 14 p 3
+= 4 1 2 p 15 p 1
+bond 0 0 2 p 11 p 27
+bond 0 0 2 p 11 p 15
+bond 0 0 2 p 11 p 1
+bond 0 0 2 p 11 p 19
+bond 0 0 2 p 19 p 2
+bond 0 0 2 p 0 p 28
+bond 0 0 2 p 0 p 4
+bond 0 0 2 p 0 p 6
+bond 0 0 2 p 0 p 22
+bond 0 0 2 p 22 p 5
+type_oxygen 25 0 1 p 10
+type_hydrogen 26 0 1 p 5
+type_carbon 27 0 1 p 14
+type_carbon 27 0 1 p 0
+type_chromium 12 0 1 p 17
+type_oxygen 25 0 1 p 19
+type_carbon 27 0 1 p 26
+type_oxygen 25 0 1 p 24
+type_hydrogen 26 0 1 p 6
+type_oxygen 25 0 1 p 12
+type_hydrogen 26 0 1 p 20
+type_hydrogen 26 0 1 p 2
+type_oxygen 25 0 1 p 3
+type_hydrogen 26 0 1 p 4
+type_oxygen 25 0 1 p 13
+type_carbon 27 0 1 p 27
+type_oxygen 25 0 1 p 9
+type_hydrogen 26 0 1 p 21
+type_hydrogen 26 0 1 p 15
+type_chromium 12 0 1 p 16
+type_carbon 27 0 1 p 28
+type_sodium 34 0 1 p 8
+type_oxygen 25 0 1 p 22
+type_oxygen 25 0 1 p 23
+type_carbon 27 0 1 p 11
+type_hydrogen 26 0 1 p 1
+type_sodium 34 0 1 p 7
+type_hydrogen 26 0 1 p 18
+type_oxygen 25 0 1 p 25
+doublebond 1 1 2 p 17 p 9
+doublebond 1 1 2 p 9 p 17
+bond 0 1 2 p 17 p 12
+bond 0 1 2 p 12 p 17
+doublebond 1 1 2 p 16 p 10
+doublebond 1 1 2 p 10 p 16
+bond 0 1 2 p 16 p 13
+bond 0 1 2 p 13 p 16
+bond 0 1 2 p 13 p 8
+bond 0 1 2 p 8 p 13
+bond 0 1 2 p 12 p 7
+bond 0 1 2 p 7 p 12
+bond 0 1 2 p 14 p 3
+bond 0 1 2 p 3 p 14
+bond 0 1 2 p 3 p 20
+bond 0 1 2 p 20 p 3
+bond 0 1 2 p 14 p 21
+bond 0 1 2 p 21 p 14
+bond 0 1 2 p 14 p 18
+bond 0 1 2 p 18 p 14
+bond 0 1 2 p 11 p 19
+bond 0 1 2 p 19 p 11
+bond 0 1 2 p 11 p 1
+bond 0 1 2 p 1 p 11
+bond 0 1 2 p 11 p 15
+bond 0 1 2 p 15 p 11
+bond 0 1 2 p 19 p 2
+bond 0 1 2 p 2 p 19
+bond 0 1 2 p 0 p 22
+bond 0 1 2 p 22 p 0
+bond 0 1 2 p 0 p 4
+bond 0 1 2 p 4 p 0
+bond 0 1 2 p 0 p 6
+bond 0 1 2 p 6 p 0
+bond 0 1 2 p 22 p 5
+bond 0 1 2 p 5 p 22
+bond 0 0 2 p 14 p 9
+bond 0 0 2 p 9 p 14
+bond 0 0 2 p 21 p 9
+bond 0 0 2 p 9 p 21
+bond 0 0 2 p 20 p 10
+bond 0 0 2 p 10 p 20
+bond 0 0 2 p 10 p 18
+bond 0 0 2 p 18 p 10
+bond 0 0 2 p 13 p 11
+bond 0 0 2 p 11 p 13
+bond 0 0 2 p 13 p 1
+bond 0 0 2 p 1 p 13
+bond 0 0 2 p 12 p 0
+bond 0 0 2 p 0 p 12
+bond 0 0 2 p 12 p 4
+bond 0 0 2 p 4 p 12
+doublebond 1 0 2 p 14 p 3
+doublebond 1 0 2 p 3 p 14
+doublebond 1 0 2 p 11 p 19
+doublebond 1 0 2 p 19 p 11
+doublebond 1 0 2 p 0 p 22
+doublebond 1 0 2 p 22 p 0
+sodiumdichromateoxidationofsecondaryalcohol 1 31 130 52
+?c_26 0 22
+?c_20 1 22
+?h_21 2 21
+?h_23 3 21
+?o_12 4 20
+?h_29 5 21
+?h_28 6 21
+?na_10 7 29
+?na_11 8 29
+?o_5 9 20
+?o_7 10 20
+?o_9 11 20
+?o_8 12 20
+?c_13 13 22
+?cr_2 14 7
+?cr_1 15 7
+?h_30 16 21
+?h_31 17 21
+?o_22 18 20
+?h_14 19 21
+?h_15 20 21
+?o_27 21 20
+?r1_25 22 1
+?r1_24 23 1
+?r1_18 24 1
+?r1_19 25 1
+?r1_16 26 1
+?r1_17 27 1
+?o_4 28 20
+?o_6 29 20
+?o_3 30 20
+= 4 1 2 p 19 p 20
+= 4 1 2 p 19 p 2
+= 4 1 2 p 19 p 3
+= 4 1 2 p 19 p 16
+= 4 1 2 p 19 p 17
+= 4 1 2 p 19 p 6
+= 4 1 2 p 19 p 5
+= 4 1 2 p 20 p 2
+= 4 1 2 p 20 p 3
+= 4 1 2 p 20 p 16
+= 4 1 2 p 20 p 17
+= 4 1 2 p 20 p 6
+= 4 1 2 p 20 p 5
+= 4 1 2 p 2 p 3
+= 4 1 2 p 2 p 16
+= 4 1 2 p 2 p 17
+= 4 1 2 p 2 p 6
+= 4 1 2 p 2 p 5
+= 4 1 2 p 3 p 16
+= 4 1 2 p 3 p 17
+= 4 1 2 p 3 p 6
+= 4 1 2 p 3 p 5
+= 4 1 2 p 16 p 17
+= 4 1 2 p 16 p 6
+= 4 1 2 p 16 p 5
+= 4 1 2 p 17 p 6
+= 4 1 2 p 17 p 5
+= 4 1 2 p 6 p 5
+= 4 1 2 p 13 p 1
+= 4 1 2 p 13 p 0
+= 4 1 2 p 1 p 0
+= 4 1 2 p 15 p 14
+= 4 1 2 p 9 p 11
+= 4 1 2 p 9 p 10
+= 4 1 2 p 9 p 12
+= 4 1 2 p 9 p 4
+= 4 1 2 p 9 p 18
+= 4 1 2 p 9 p 21
+= 4 1 2 p 11 p 10
+= 4 1 2 p 11 p 12
+= 4 1 2 p 11 p 4
+= 4 1 2 p 11 p 18
+= 4 1 2 p 11 p 21
+= 4 1 2 p 10 p 12
+= 4 1 2 p 10 p 4
+= 4 1 2 p 10 p 18
+= 4 1 2 p 10 p 21
+= 4 1 2 p 12 p 4
+= 4 1 2 p 12 p 18
+= 4 1 2 p 12 p 21
+= 4 1 2 p 4 p 18
+= 4 1 2 p 4 p 21
+= 4 1 2 p 18 p 21
+= 4 1 2 p 8 p 7
+= 4 1 2 p 23 p 22
+bond 0 0 2 p 0 p 23
+bond 0 0 2 p 0 p 22
+bond 0 0 2 p 0 p 6
+bond 0 0 2 p 0 p 21
+bond 0 0 2 p 21 p 5
+= 4 1 2 p 24 p 25
+bond 0 0 2 p 24 p 1
+bond 0 0 2 p 25 p 1
+bond 0 0 2 p 1 p 2
+bond 0 0 2 p 1 p 18
+bond 0 0 2 p 18 p 3
+= 4 1 2 p 27 p 26
+bond 0 0 2 p 13 p 27
+bond 0 0 2 p 13 p 4
+bond 0 0 2 p 13 p 19
+bond 0 0 2 p 13 p 26
+bond 0 0 2 p 4 p 20
+= 4 1 2 p 9 p 29
+= 4 1 2 p 11 p 9
+= 4 1 2 p 12 p 29
+= 4 1 2 p 28 p 12
+= 4 1 2 p 28 p 30
+= 4 1 2 p 28 p 11
+= 4 1 2 p 7 p 8
+= 4 1 2 p 9 p 30
+= 4 1 2 p 30 p 12
+= 4 1 2 p 28 p 9
+= 4 1 2 p 10 p 29
+= 4 1 2 p 11 p 30
+= 4 1 2 p 30 p 10
+= 4 1 2 p 30 p 29
+= 4 1 2 p 11 p 29
+= 4 1 2 p 28 p 29
+= 4 1 2 p 28 p 10
+doublebond 1 0 2 p 15 p 28
+bond 0 0 2 p 15 p 11
+doublebond 1 0 2 p 15 p 9
+bond 0 0 2 p 15 p 30
+bond 0 0 2 p 14 p 30
+bond 0 0 2 p 11 p 7
+doublebond 1 0 2 p 14 p 10
+bond 0 0 2 p 14 p 12
+doublebond 1 0 2 p 14 p 29
+bond 0 0 2 p 12 p 8
+type_oxygen 25 0 1 p 21
+type_oxygen 25 0 1 p 10
+type_hydrogen 26 0 1 p 5
+type_carbon 27 0 1 p 13
+type_chromium 12 0 1 p 15
+type_sodium 34 0 1 p 8
+type_hydrogen 26 0 1 p 16
+type_oxygen 25 0 1 p 29
+type_hydrogen 26 0 1 p 6
+type_oxygen 25 0 1 p 11
+type_chromium 12 0 1 p 14
+type_hydrogen 26 0 1 p 3
+type_carbon 27 0 1 p 1
+type_hydrogen 26 0 1 p 19
+type_oxygen 25 0 1 p 4
+type_chemical_atom 6 0 1 p 25
+type_oxygen 25 0 1 p 12
+type_chemical_atom 6 0 1 p 27
+type_oxygen 25 0 1 p 9
+type_hydrogen 26 0 1 p 20
+type_hydrogen 26 0 1 p 17
+type_oxygen 25 0 1 p 30
+type_oxygen 25 0 1 p 18
+type_chemical_atom 6 0 1 p 24
+type_chemical_atom 6 0 1 p 26
+type_carbon 27 0 1 p 0
+type_oxygen 25 0 1 p 28
+type_hydrogen 26 0 1 p 2
+type_sodium 34 0 1 p 7
+type_chemical_atom 6 0 1 p 23
+type_chemical_atom 6 0 1 p 22
+doublebond 1 1 2 p 15 p 9
+doublebond 1 1 2 p 9 p 15
+bond 0 1 2 p 15 p 11
+bond 0 1 2 p 11 p 15
+doublebond 1 1 2 p 14 p 10
+doublebond 1 1 2 p 10 p 14
+bond 0 1 2 p 14 p 12
+bond 0 1 2 p 12 p 14
+bond 0 1 2 p 12 p 8
+bond 0 1 2 p 8 p 12
+bond 0 1 2 p 11 p 7
+bond 0 1 2 p 7 p 11
+bond 0 1 2 p 13 p 4
+bond 0 1 2 p 4 p 13
+bond 0 1 2 p 4 p 20
+bond 0 1 2 p 20 p 4
+bond 0 1 2 p 13 p 19
+bond 0 1 2 p 19 p 13
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 1 p 18
+bond 0 1 2 p 18 p 1
+bond 0 1 2 p 18 p 3
+bond 0 1 2 p 3 p 18
+bond 0 1 2 p 0 p 21
+bond 0 1 2 p 21 p 0
+bond 0 1 2 p 0 p 6
+bond 0 1 2 p 6 p 0
+bond 0 1 2 p 21 p 5
+bond 0 1 2 p 5 p 21
+bond 0 0 2 p 9 p 19
+bond 0 0 2 p 19 p 9
+bond 0 0 2 p 9 p 20
+bond 0 0 2 p 20 p 9
+bond 0 0 2 p 10 p 2
+bond 0 0 2 p 2 p 10
+bond 0 0 2 p 10 p 3
+bond 0 0 2 p 3 p 10
+bond 0 0 2 p 16 p 12
+bond 0 0 2 p 12 p 16
+bond 0 0 2 p 12 p 17
+bond 0 0 2 p 17 p 12
+bond 0 0 2 p 11 p 6
+bond 0 0 2 p 6 p 11
+bond 0 0 2 p 11 p 5
+bond 0 0 2 p 5 p 11
+doublebond 1 0 2 p 13 p 4
+doublebond 1 0 2 p 4 p 13
+doublebond 1 0 2 p 1 p 18
+doublebond 1 0 2 p 18 p 1
+doublebond 1 0 2 p 0 p 21
+doublebond 1 0 2 p 21 p 0
+stetterreaction 1 10 32 10
+?c_1 0 22
+?c_8 1 22
+?c_3 2 22
+?h_10 3 21
+?r1_2 4 22
+?o_6 5 20
+?c_5 6 22
+?c_4 7 22
+?c_9 8 22
+?o_7 9 20
+= 4 1 2 p 0 p 2
+= 4 1 2 p 0 p 1
+= 4 1 2 p 2 p 1
+= 4 1 2 p 6 p 2
+= 4 1 2 p 7 p 4
+= 4 1 2 p 6 p 0
+= 4 1 2 p 7 p 0
+= 4 1 2 p 0 p 4
+= 4 1 2 p 7 p 2
+= 4 1 2 p 2 p 0
+= 4 1 2 p 7 p 6
+= 4 1 2 p 2 p 4
+= 4 1 2 p 6 p 4
+doublebond 1 0 2 p 5 p 7
+bond 0 0 2 p 7 p 6
+bond 0 0 2 p 2 p 7
+doublebond 1 0 2 p 0 p 2
+bond 0 0 2 p 4 p 0
+= 4 1 2 p 1 p 8
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 1 p 8
+doublebond 1 0 2 p 9 p 1
+type_oxygen 25 0 1 p 5
+type_carbon 27 0 1 p 6
+type_oxygen 25 0 1 p 9
+type_carbon 27 0 1 p 7
+type_carbon 27 0 1 p 8
+type_carbon 27 0 1 p 2
+type_carbon 27 0 1 p 1
+type_carbon 27 0 1 p 0
+type_carbon 27 0 1 p 4
+type_hydrogen 26 0 1 p 3
+doublebond 1 1 2 p 0 p 2
+doublebond 1 1 2 p 2 p 0
+bond 0 1 2 p 3 p 1
+bond 0 1 2 p 1 p 3
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 1 p 0
+bond 0 0 2 p 0 p 1
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 2 p 3
+thionylchlorideconversionofcarboxylicacidstoacidchlorides 1 9 19 14
+?o_5 0 20
+?s_4 1 4
+?cl_2 2 23
+?h_9 3 21
+?c_7 4 22
+?cl_1 5 23
+?o_3 6 20
+?c_8 7 22
+?o_6 8 20
+= 4 1 2 p 5 p 2
+bond 0 0 2 p 1 p 5
+bond 0 0 2 p 1 p 2
+doublebond 1 0 2 p 1 p 6
+= 4 1 2 p 4 p 7
+= 4 1 2 p 0 p 8
+bond 0 0 2 p 4 p 0
+bond 0 0 2 p 3 p 0
+doublebond 1 0 2 p 4 p 8
+bond 0 0 2 p 7 p 4
+type_oxygen 25 0 1 p 8
+type_carbon 27 0 1 p 7
+type_chlorine 28 0 1 p 2
+type_hydrogen 26 0 1 p 3
+type_oxygen 25 0 1 p 0
+type_chlorine 28 0 1 p 5
+type_sulfur 9 0 1 p 1
+type_oxygen 25 0 1 p 6
+type_carbon 27 0 1 p 4
+bond 0 1 2 p 1 p 5
+bond 0 1 2 p 5 p 1
+bond 0 1 2 p 1 p 2
+bond 0 1 2 p 2 p 1
+bond 0 1 2 p 4 p 0
+bond 0 1 2 p 0 p 4
+bond 0 1 2 p 3 p 0
+bond 0 1 2 p 0 p 3
+bond 0 0 2 p 4 p 5
+bond 0 0 2 p 5 p 4
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 2 p 3
+doublebond 1 0 2 p 0 p 1
+doublebond 1 0 2 p 1 p 0
+tosylationofalcohols 1 8 15 8
+?s_1 0 4
+?r1_2 1 15
+?o_6 2 20
+?h_8 3 21
+?o_5 4 20
+?o_4 5 20
+?c_3 6 22
+?c_7 7 22
+= 4 1 2 p 4 p 5
+bond 0 0 2 p 0 p 6
+bond 0 0 2 p 0 p 1
+doublebond 1 0 2 p 0 p 4
+doublebond 1 0 2 p 0 p 5
+bond 0 0 2 p 3 p 2
+bond 0 0 2 p 7 p 2
+type_sulfur 9 0 1 p 0
+type_oxygen 25 0 1 p 2
+type_hydrogen 26 0 1 p 3
+type_oxygen 25 0 1 p 5
+type_carbon 27 0 1 p 6
+type_oxygen 25 0 1 p 4
+type_halogen 20 0 1 p 1
+type_carbon 27 0 1 p 7
+bond 0 1 2 p 0 p 1
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 3 p 2
+bond 0 1 2 p 2 p 3
+bond 0 0 2 p 2 p 0
+bond 0 0 2 p 0 p 2
+bond 0 0 2 p 3 p 1
+bond 0 0 2 p 1 p 3
+williamsonethersynthesis 1 5 8 8
+?c_1 0 22
+?r1_2 1 15
+?h_5 2 21
+?o_4 3 20
+?c_3 4 22
+bond 0 0 2 p 0 p 1
+bond 0 0 2 p 4 p 3
+bond 0 0 2 p 2 p 3
+type_carbon 27 0 1 p 0
+type_oxygen 25 0 1 p 3
+type_carbon 27 0 1 p 4
+type_hydrogen 26 0 1 p 2
+type_halogen 20 0 1 p 1
+bond 0 1 2 p 0 p 1
+bond 0 1 2 p 1 p 0
+bond 0 1 2 p 2 p 3
+bond 0 1 2 p 3 p 2
+bond 0 0 2 p 3 p 0
+bond 0 0 2 p 0 p 3
+bond 0 0 2 p 2 p 1
+bond 0 0 2 p 1 p 2
