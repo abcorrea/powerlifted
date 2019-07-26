@@ -28,6 +28,7 @@ const int BreadthFirstSearch::search(const Task &task,
     cheapest_parent[state_counter] = make_pair(-1, Action(-1, vector<int>()));
 
     int statistics_counter = 0;
+    int g_layer = 0;
 
     q.emplace(0, 0, state_counter);
     visited[task.initial_state] = state_counter++;
@@ -42,11 +43,13 @@ const int BreadthFirstSearch::search(const Task &task,
         Node head = q.front();
         int next = head.id;
         int h = head.h;
+        int g = head.g;
         q.pop();
-        if ((statistics_counter - generations) <= 0) {
-            cout << "Expansions " << state_counter << ", generations " << generations << " states at layer " << h
-                 << " [" << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
-            statistics_counter += 50000;
+        if (g_layer < g) {
+            cout << "Entering layer " << g_layer << "[expansions: " << state_counter
+                 << ", generations " << generations <<
+                 ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
+            g_layer = g;
         }
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
@@ -55,11 +58,11 @@ const int BreadthFirstSearch::search(const Task &task,
         //task.dumpState(state);
         generations += successors.size();
         for (const pair<State, Action> &successor : successors) {
-            State s = successor.first;
-            Action a = successor.second;
+            const State &s = successor.first;
+            const Action &a = successor.second;
             if (visited.find(s) == visited.end()) {
                 cheapest_parent[state_counter] = make_pair(next, a);
-                q.emplace(0, 0, state_counter);
+                q.emplace(g+1, 0, state_counter);
                 index_to_state[state_counter] = s;
                 visited[s] = state_counter;
                 state_counter++;
