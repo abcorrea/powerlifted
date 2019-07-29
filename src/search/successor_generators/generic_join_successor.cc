@@ -15,6 +15,7 @@ const vector<pair<State, Action>> &GenericJoinSuccessor::generate_successors(
     successors.clear();
 
     for (const ActionSchema &action : actions) {
+        cout << "Generating instantiation of action " << action.getName() << endl;
         bool trivially_inapplicable = false;
         for (int i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
             if ((action.positive_nullary_precond[i] and !state.nullary_atoms[i])

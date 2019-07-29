@@ -63,6 +63,8 @@ public:
 
     bool is_goal(const State &state, const GoalCondition &goal_condition) const;
 
+    bool is_trivially_unsolvable() const;
+
 private:
     const std::string &domain_name;
     const std::string &task_name;

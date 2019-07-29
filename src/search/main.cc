@@ -68,6 +68,14 @@ int main(int argc, char *argv[]) {
         cerr << "Invalid successor generator method." << endl;
         return -1;
     }
+
+
+    // Start search
+    if (task.is_trivially_unsolvable()) {
+        cout << "Goal condition has static information which is not satisfied in the initial state." << endl;
+        return -1;
+    }
+
     int result = search->search(task, successorGenerator, *heuristic);
 
     /*

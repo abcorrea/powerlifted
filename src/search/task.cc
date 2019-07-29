@@ -87,6 +87,8 @@ bool Task::is_goal(const State &state, const GoalCondition &goal_condition) cons
     for (const AtomicGoal &atomicGoal : goal_condition.goal) {
         int goal_predicate = atomicGoal.predicate;
         Relation relation_at_goal_predicate = state.relations[goal_predicate];
+        if (predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate())
+            continue;
         assert (goal_predicate == relation_at_goal_predicate.predicate_symbol);
         if (!atomicGoal.negated) {
             // Positive goal_condition
@@ -105,3 +107,30 @@ bool Task::is_goal(const State &state, const GoalCondition &goal_condition) cons
     return true;
 }
 
+bool Task::is_trivially_unsolvable() const {
+    /*
+     * Checks whether the static conditions in the goal condition are not satisfied
+     */
+    for (const AtomicGoal &atomicGoal : goal.goal) {
+        int goal_predicate = atomicGoal.predicate;
+        Relation relation_at_goal_predicate = static_info.relations[goal_predicate];
+        if (!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate())
+            continue;
+        assert (goal_predicate == relation_at_goal_predicate.predicate_symbol);
+        if (!atomicGoal.negated) {
+            // Positive goal_condition
+            if (find(relation_at_goal_predicate.tuples.begin(), relation_at_goal_predicate.tuples.end(),
+                     atomicGoal.args) == relation_at_goal_predicate.tuples.end()) {
+                return true;
+            }
+        }
+        else {
+            // Negative goal_condition
+            if (find(relation_at_goal_predicate.tuples.begin(), relation_at_goal_predicate.tuples.end(),
+                     atomicGoal.args) != relation_at_goal_predicate.tuples.end()) {
+                return true;
+            }
+        }
+    }
+    return false;
+}

@@ -28,6 +28,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
     cheapest_parent[state_counter] = make_pair(-1, Action(-1, vector<int>()));
 
     int heuristic_layer = heuristic.compute_heuristic(task.initial_state, task)+1;
+    cout << "Initial heuristic value " << heuristic_layer << endl;
     int g_layer = 0;
 
     q.emplace(0, heuristic.compute_heuristic(task.initial_state, task), state_counter);
