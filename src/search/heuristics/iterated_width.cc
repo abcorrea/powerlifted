@@ -1,7 +1,3 @@
-//
-// Created by gutob on 13.07.2019.
-//
-
 #include <iostream>
 #include "iterated_width.h"
 
@@ -18,19 +14,17 @@ int IteratedWidth::compute_heuristic(const State &s, const Task &task) {
         first_time = false;
     }
 
-    if (task.is_goal(s, task.goal)) {
-        return 0;
+    int h = goalcount.compute_heuristic(s, task);
+
+    if (h == 0) {
+        return h;
     }
 
-    bool found = false;
     for (const auto & relation : s.relations) {
         int index = relation.predicate_symbol;
-        for (auto tuple : relation.tuples) {
-            if (history[index].count(tuple) == 0) {
-                found = true;
-            }
-            history[index].emplace(tuple);
-            if (found) {
+        for (const auto& tuple : relation.tuples) {
+            if (history[index].count(tuple) == 0 or history[index][tuple] > h) {
+                history[index][tuple] = h;
                 return 1;
             }
         }
