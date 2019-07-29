@@ -4,6 +4,7 @@
 
 #include "parser.h"
 #include "task.h"
+#include "utils.h"
 
 #include "search_engines/search_factory.h"
 #include "search_engines/search.h"
@@ -77,5 +78,6 @@ int main(int argc, char *argv[]) {
      *
      */
 
+    cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
     return result;
 }
