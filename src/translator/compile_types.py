@@ -118,6 +118,38 @@ def _get_type_predicate_name(t):
     return 'type_' + t
 
 
+def remove_trivially_inapplicable_actions(task, graph):
+    """
+    Remove actions that are never instantiated.  This occurs once a parameter
+    has a given type T but there is no object with such parameter.
+
+    :param task:
+    :param graph:
+    :return:
+    """
+    object_types_in_task = set()
+    for obj in task.objects:
+        type_name = obj.type_name
+        object_types_in_task.add(type_name)
+        while type_name != 'object':
+            # While there is a supertype, append this to the list of types
+            # appearing in any object of the task
+            object_types_in_task.add(type_name)
+            type_name = graph.edges[type_name]
+
+    new_actions = set()
+    for action in task.actions:
+        keep_action = True
+        for param in action.parameters:
+            if param.type_name not in object_types_in_task:
+                keep_action = False
+        if keep_action:
+            new_actions.add(action)
+        else:
+            print ("Removing action %s" % action.name)
+
+    task.actions = new_actions
+
 def compile_types(task):
     """
     Compile types into static unary predicates, modify the precondition of
@@ -133,4 +165,5 @@ def compile_types(task):
     compile_into_unary_predicates(task)
     add_conditions_to_actions(task, graph)
     adjust_initial_state(task, graph)
+    remove_trivially_inapplicable_actions(task, graph)
     return graph
