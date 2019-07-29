@@ -17,7 +17,6 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         GenericJoinSuccessor(task) {
     /*
      * Apply GYO algorithm for every action schema to check whether it has acyclic precondition
-     * TODO add unary precond at the end of the full join
      */
     full_reducer_order.resize(task.actions.size());
     full_join_order.resize(task.actions.size());
@@ -122,13 +121,28 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         for (int k = 0; k < removed.size(); ++k) {
             if (!removed[k]) {
                 ++not_removed_counter;
-                full_join_order[action.getIndex()].push_back(edge_to_precond[k]);
             }
         }
         if (not_removed_counter == 1) {
+            for (int k = 0; k < removed.size(); ++k) {
+                if (!removed[k]) {
+                    full_join_order[action.getIndex()].push_back(edge_to_precond[k]);
+                }
+            }
             cout << "Action " << action.getName() << " is acyclic.\n";
         }
         else {
+            priority_queue<pair<int,int>> q;
+            full_join_order[action.getIndex()].clear();
+            full_join_order[action.getIndex()].reserve(removed.size());
+            for (int k = 0; k < removed.size(); ++k) {
+                q.emplace(hyperedges[k].size(), edge_to_precond[k]);
+            }
+            while (!q.empty()) {
+                int p = q.top().second;
+                full_join_order[action.getIndex()].push_back(p);
+                q.pop();
+            }
             cout << "Action " << action.getName() << " is cyclic.\n";
         }
     }
@@ -142,6 +156,7 @@ const std::vector<std::pair<State, Action>>
     successors.clear();
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
+        //cout << "Generating instantiation of action " << action.getName() << endl;
         bool trivially_inapplicable = false;
         for (int i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
             if ((action.positive_nullary_precond[i] and !state.nullary_atoms[i])
@@ -229,7 +244,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     assert (!tables.empty());
     for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
         // We do not check inequalities here. Should we?
-        hash_semi_join(tables[sj.first], tables[sj.second]);
+        semi_join(tables[sj.first], tables[sj.second]);
     }
 
     Table &working_table = tables[full_join_order[action.getIndex()][0]];
