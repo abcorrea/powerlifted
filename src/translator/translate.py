@@ -85,7 +85,7 @@ def main():
             options.output_file)
     output = open(options.output_file, "w")
     native_stdout = sys.stdout
-    #sys.stdout = output
+    sys.stdout = output
 
     domain = os.path.basename(os.path.dirname(options.domain))
     inst = os.path.basename(options.task)
