@@ -24,6 +24,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
     for (const ActionSchema &action : task.actions) {
         vector<int> hypernodes;
         vector<set<int>> hyperedges;
+        vector<int> missing_precond;
         map<int, int> node_index;
         map<int, int> node_counter;
         map<int, int> edge_to_precond;
@@ -37,11 +38,10 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
             for (Argument arg : p.tuples) {
                 // We parse constants to negative numbers so they're uniquely identified
                 int node;
-                if (arg.constant) {
-                    node = -1 * arg.index;
-                } else {
-                    node = arg.index;
-                }
+                if (arg.constant)
+                    continue;
+                node = arg.index;
+
                 args.insert(node);
                 if (find(hypernodes.begin(), hypernodes.end(), node) == hypernodes.end()) {
                     node_index[node] = hypernodes.size();
@@ -52,8 +52,15 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                     node_counter[node] = node_counter[node] + 1;
                 }
             }
-            edge_to_precond[hyperedges.size()] = cont++; // map ith-precondition to a given edge
-            hyperedges.emplace_back(args.begin(), args.end());
+            if (!args.empty()) {
+                edge_to_precond[hyperedges.size()] = cont; // map ith-precondition to a given edge
+                hyperedges.emplace_back(args.begin(), args.end());
+            }
+            else {
+                // If all args of a preconditions are constant, we check it first
+                missing_precond.push_back(cont);
+            }
+            ++cont;
         }
         // Corner case: one relation
         if (hyperedges.size() <= 1) {
@@ -117,6 +124,8 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
             full_reducer_back.pop();
         }
         // Add all hyperedges that were not removed to the join. If it is acyclic, there is only left.
+        for (int k : missing_precond)
+            full_join_order[action.getIndex()].push_back(k);
         reverse(full_join_order[action.getIndex()].begin(), full_join_order[action.getIndex()].end());
         int not_removed_counter = 0;
         for (auto && k : removed) {
@@ -260,17 +269,26 @@ const std::vector<std::pair<State, Action>>
                 if (action.positive_nullary_effects[i])
                     new_nullary_atoms[i] = true;
             }
-            for (const vector<int> &tuple : instantiations.tuples) {
+            for (const vector<int> &tuple_with_const : instantiations.tuples) {
                 // TODO test case with constants (should work?)
-                // First order tuple of indices and then apply effects
+                // First, order tuple of indices and then apply effects
+                vector<int> tuple;
+                tuple.reserve(tuple_with_const.size());
+                vector<int> indices;
+                for (int j = 0; j < instantiations.tuple_index.size(); ++j) {
+                    if (instantiations.tuple_index[j] >= 0) {
+                        indices.push_back(instantiations.tuple_index[j]);
+                        tuple.push_back(tuple_with_const[j]);
+                    }
+                }
                 vector<int> ordered_tuple(tuple.size());
-                assert(ordered_tuple.size() == instantiations.tuple_index.size());
-                for (int i = 0; i < instantiations.tuple_index.size(); ++i) {
-                    ordered_tuple[instantiations.tuple_index[i]] = tuple[i];
+                assert(ordered_tuple.size() == indices.size());
+                for (int i = 0; i < indices.size(); ++i) {
+                    ordered_tuple[indices[i]] = tuple[i];
                 }
                 vector<Relation> new_relation(state.relations);
                 for (const Atom &eff : action.getEffects()) {
-                    const GroundAtom &ground_atom = tuple_to_atom(tuple, instantiations.tuple_index, eff);
+                    const GroundAtom &ground_atom = tuple_to_atom(tuple, indices, eff);
                     assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
                     if (eff.negated) {
                         // Remove from relation
@@ -317,7 +335,11 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     assert (!precond.empty());
 
     vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation, action.getIndex());
-    assert(tables.size() == full_join_order[action.getIndex()].size());
+    if (tables.size() != full_join_order[action.getIndex()].size()) {
+        // This means that the projection over the constants completely eliminated one table,
+        // we can return no instantiation.
+        return Table();
+    }
     assert (!tables.empty());
     for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
         // We do not check inequalities here. Should we?
@@ -374,23 +396,56 @@ vector<Table> FullReducerSuccessorGenerator::parse_precond_into_join_program(con
     /*
      * We first parse the state and the atom preconditions into a set of tables
      * to perform the join-program more easily.
+     *
+     * We also apply the projection over the constant values here.
+     *
      */
     vector<Table> parsed_tables;//(precond.size());
     parsed_tables.reserve(precond.size());
     for (const Atom &a : precond) {
+        vector<int> constants;
         vector<int> indices;
+        int cont = 0;
         for (Argument arg : a.tuples) {
-            indices.push_back(arg.index);
+            if (!arg.constant)
+                indices.push_back(arg.index);
+            else {
+                indices.push_back((arg.index+1) * -1);
+                constants.push_back(cont);
+            }
+            cont++;
         }
+        bool match_constants;
+        unordered_set<GroundAtom, TupleHash> tuples;
         if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
             // If this predicate has information in the static information table,
             // then it must be a static predicate
-            parsed_tables.emplace_back(staticInformation.relations[a.predicate_symbol].tuples, indices);
+            for (const GroundAtom &atom : staticInformation.relations[a.predicate_symbol].tuples) {
+                match_constants = true;
+                for (int c : constants) {
+                    assert (a.tuples[c].constant);
+                    if (atom[c] != a.tuples[c].index)
+                        match_constants = false;
+                }
+                if (match_constants)
+                    tuples.insert(atom);
+            }
         } else {
             // If this predicate does not have information in the static information table,
             // then it must be a fluent
-            parsed_tables.emplace_back(state.relations[a.predicate_symbol].tuples, indices);
+            for (const GroundAtom &atom : state.relations[a.predicate_symbol].tuples) {
+                match_constants = true;
+                for (int c : constants) {
+                    assert (a.tuples[c].constant);
+                    if (atom[c] != a.tuples[c].index)
+                        match_constants = false;
+                }
+                if (match_constants)
+                    tuples.insert(atom);
+            }
         }
+        if (!tuples.empty())
+            parsed_tables.emplace_back(tuples, indices);
     }
     return parsed_tables;
 }
