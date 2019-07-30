@@ -4,6 +4,7 @@
 #define SEARCH_GOAL_CONDITION_H
 
 #include <utility>
+#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -22,10 +23,17 @@ struct AtomicGoal {
 class GoalCondition {
 public:
     std::vector<AtomicGoal> goal;
+    std::unordered_set<int> positive_nullary_goals;
+    std::unordered_set<int> negative_nullary_goals;
 
     GoalCondition() = default;
 
-    explicit GoalCondition(std::vector<AtomicGoal> goal) : goal(std::move(goal)) {
+    explicit GoalCondition(std::vector<AtomicGoal> goal,
+                           std::unordered_set<int> positive_nullary_goals,
+                           std::unordered_set<int> negative_nullary_goals) :
+            goal(std::move(goal)),
+            positive_nullary_goals(std::move(positive_nullary_goals)),
+            negative_nullary_goals(std::move(negative_nullary_goals)) {
 
     }
 };

@@ -119,12 +119,20 @@ bool parse(Task &task, const ifstream &in) {
         return false;
     }
     vector<AtomicGoal> goals;
+    unordered_set<int> positive_nullary_goals, negative_nullary_goals;
     for (int i = 0; i < goal_size; ++i) {
         string name;
         int predicate_index;
         bool negated;
         int number_args;
         cin >> name >> predicate_index >> negated >> number_args;
+        if (number_args == 0) {
+            if (negated)
+                negative_nullary_goals.insert(predicate_index);
+            else
+                positive_nullary_goals.insert(predicate_index);
+            continue;
+        }
         vector<int> args;
         for (int j = 0; j < number_args; ++j) {
             int arg;
@@ -133,7 +141,7 @@ bool parse(Task &task, const ifstream &in) {
         }
         goals.emplace_back(predicate_index, args, negated);
     }
-    task.initializeGoal(goals);
+    task.initializeGoal(goals, positive_nullary_goals, negative_nullary_goals);
 
     // Read Action Schemas
     int number_action_schemas;

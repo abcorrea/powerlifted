@@ -41,8 +41,81 @@ const vector<pair<State, Action>> &GenericJoinSuccessor::generate_successors(
          *      (In practice, we must only support != but it is not sure where to check that)
          */
         if (instantiations.tuples.empty()) {
-            continue;
-            // TODO case where action is pre grounded (no parameters)
+            if (action.getParameters().empty()) {
+                bool applicable = true;
+                for (const Atom& precond : action.getPrecondition()) {
+                    int index = precond.predicate_symbol;
+                    vector<int> tuple;
+                    tuple.reserve(precond.tuples.size());
+                    for (const Argument &arg : precond.tuples) {
+                        assert(arg.constant);
+                        tuple.push_back(arg.index); // Index of a constant is the obj index
+                    }
+                    if (!state.relations[index].tuples.empty()) {
+                        if (precond.negated) {
+                            if (state.relations[index].tuples.find(tuple) != state.relations[index].tuples.end())
+                                applicable = false;
+                        }
+                        else {
+                            if (state.relations[index].tuples.find(tuple) == state.relations[index].tuples.end())
+                                applicable = false;
+                        }
+                    }
+                    if (!staticInformation.relations[index].tuples.empty()) {
+                        if (precond.negated) {
+                            if (staticInformation.relations[index].tuples.find(tuple)
+                                != staticInformation.relations[index].tuples.end())
+                                applicable = false;
+                        }
+                        else {
+                            if (staticInformation.relations[index].tuples.find(tuple)
+                                == staticInformation.relations[index].tuples.end())
+                                applicable = false;
+                        }
+                    }
+                }
+
+                if (!applicable)
+                    continue;
+
+                vector<bool> new_nullary_atoms(state.nullary_atoms);
+                for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
+                    if (action.negative_nullary_effects[i])
+                        new_nullary_atoms[i] = false;
+                }
+                for (int i = 0; i < action.positive_nullary_effects.size(); ++i) {
+                    if (action.positive_nullary_effects[i])
+                        new_nullary_atoms[i] = true;
+                }
+
+                vector<Relation> new_relation(state.relations);
+                for (const Atom &eff : action.getEffects()) {
+                    GroundAtom groundAtom;
+                    groundAtom.reserve(eff.tuples.size());
+                    for (auto t : eff.tuples) {
+                        assert(t.constant);
+                        groundAtom.push_back(t.index);
+                    }
+                    assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
+                    if (eff.negated) {
+                        // Remove from relation
+                        new_relation[eff.predicate_symbol].tuples.erase(ground_atom);
+                    } else {
+                        if (find(new_relation[eff.predicate_symbol].tuples.begin(),
+                                 new_relation[eff.predicate_symbol].tuples.end(), ground_atom)
+                            == new_relation[eff.predicate_symbol].tuples.end()) {
+                            // If ground atom is not in the state, we add it
+                            new_relation[eff.predicate_symbol].tuples.insert(ground_atom);
+                        }
+                    }
+                }
+                successors.emplace_back(State(new_relation, new_nullary_atoms),
+                                        Action(action.getIndex(), vector<int>()));
+            }
+            else {
+                // Action not applicable
+                continue;
+            }
         } else {
             vector<bool> new_nullary_atoms(state.nullary_atoms);
             for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
@@ -95,16 +168,18 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
      */
     vector<vector<int>> instantiations;
     const vector<Parameter> &params = action.getParameters();
+
+    if (params.empty()) {
+        return Table();
+    }
+
+
     vector<Atom> precond;
     for (const Atom &p : action.getPrecondition()) {
         // Ignoring negative preconditions when instantiating
         if ((!p.negated) and p.tuples.size() > 0) {
             precond.push_back((p));
         }
-    }
-
-    if (params.empty()) {
-        return Table();
     }
 
     assert (!precond.empty());

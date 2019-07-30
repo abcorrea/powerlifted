@@ -42,6 +42,9 @@ public:
 
     friend std::size_t hash_value(const State &s) {
         std::size_t seed = 0;
+        for (bool b : s.nullary_atoms) {
+            boost::hash_combine(seed, b);
+        }
         for (const Relation &r : s.relations) {
             for (const GroundAtom &vga : r.tuples) {
                 boost::hash_combine(seed, vga);

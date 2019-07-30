@@ -53,7 +53,9 @@ public:
 
     void initializeEmptyInitialState();
 
-    void initializeGoal(std::vector<AtomicGoal> goals);
+    void initializeGoal(std::vector<AtomicGoal> goals,
+                        std::unordered_set<int> nullary_goals,
+                        std::unordered_set<int> negative_nullary_goals);
 
     void initializeActionSchemas(const std::vector<ActionSchema> &action_list);
 

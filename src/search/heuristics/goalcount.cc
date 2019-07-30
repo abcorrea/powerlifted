@@ -8,6 +8,14 @@
 
 int Goalcount::compute_heuristic(const State &s, const Task &task) {
     int h = 0;
+    for (int pred : task.goal.positive_nullary_goals) {
+        if (!s.nullary_atoms[pred])
+            h++;
+    }
+    for (int pred : task.goal.negative_nullary_goals) {
+        if (!s.nullary_atoms[pred])
+            h++;
+    }
     for (const AtomicGoal &atomicGoal : task.goal.goal) {
         assert (atomicGoal.predicate == s.relations[atomicGoal.predicate].predicate_symbol);
         if (task.predicates[s.relations[atomicGoal.predicate].predicate_symbol].isStaticPredicate())

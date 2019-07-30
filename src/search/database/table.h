@@ -33,5 +33,11 @@ struct InverseOrderTable {
     }
 };
 
+struct OrderByTableSize {
+    bool operator()(const Table &t1, const Table &t2) const {
+        return t1.tuples.size() < t2.tuples.size();
+    }
+};
+
 
 #endif //SEARCH_TABLE_H

@@ -44,6 +44,10 @@ void Task::dumpState(State s) const {
     /*
      * Output initial state in a human readable way.
      */
+    for (int j = 0; j < s.nullary_atoms.size(); ++j) {
+        if (s.nullary_atoms[j])
+            cout << predicates[j].getName() << ", ";
+    }
     for (int i = 0; i < s.relations.size(); ++i) {
         string relation_name = predicates[i].getName();
         unordered_set<GroundAtom, TupleHash> tuples = s.relations[i].tuples;
@@ -61,6 +65,12 @@ void Task::dumpGoal() {
     /*
      * Output goal condition in a readable format.
      */
+    for (int g : goal.positive_nullary_goals) {
+        cout << predicates[g].getName() << endl;
+    }
+    for (int g : goal.negative_nullary_goals) {
+        cout << "Not " << predicates[g].getName() << endl;
+    }
     for (const auto& g : goal.goal) {
         if (g.negated) {
             cout << "Not ";
@@ -75,8 +85,10 @@ void Task::dumpGoal() {
 
 #pragma clang diagnostic pop
 
-void Task::initializeGoal(std::vector<AtomicGoal> goals) {
-    goal = GoalCondition(std::move(goals));
+void Task::initializeGoal(std::vector<AtomicGoal> goals,
+                          std::unordered_set<int> positive_nullary_goals,
+                          std::unordered_set<int> negative_nullary_goals) {
+    goal = GoalCondition(std::move(goals), std::move(positive_nullary_goals), std::move(negative_nullary_goals));
 }
 
 void Task::initializeActionSchemas(const std::vector<ActionSchema>& action_list) {
@@ -84,6 +96,14 @@ void Task::initializeActionSchemas(const std::vector<ActionSchema>& action_list)
 }
 
 bool Task::is_goal(const State &state, const GoalCondition &goal_condition) const {
+    for (int pred : goal_condition.positive_nullary_goals) {
+        if (!state.nullary_atoms[pred])
+            return false;
+    }
+    for (int pred : goal_condition.negative_nullary_goals) {
+        if (!state.nullary_atoms[pred])
+            return false;
+    }
     for (const AtomicGoal &atomicGoal : goal_condition.goal) {
         int goal_predicate = atomicGoal.predicate;
         Relation relation_at_goal_predicate = state.relations[goal_predicate];
