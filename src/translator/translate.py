@@ -85,7 +85,7 @@ def main():
             options.output_file)
     output = open(options.output_file, "w")
     native_stdout = sys.stdout
-    sys.stdout = output
+    #sys.stdout = output
 
     domain = os.path.basename(os.path.dirname(options.domain))
     inst = os.path.basename(options.task)
@@ -158,6 +158,13 @@ def main():
     # args, and the index of its objects.
     # It should be possible to identify the static predicates from this
     # information in the planner.
+    #   As a preprocess, we are removing function from the initial state
+    # for now.
+    new_s0 = []
+    for a in task.init:
+        if isinstance(a, pddl.conditions.Atom):
+            new_s0.append(a)
+    task.init = new_s0
     print("INITIAL-STATE %d" % len(task.init))
     atom_index = {}
     for index, atom in enumerate(task.init):
