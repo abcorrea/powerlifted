@@ -8,155 +8,6 @@
 
 #include "../database/hash_join.h"
 
-const vector<pair<State, Action>> &GenericJoinSuccessor::generate_successors(
-        const vector<ActionSchema> &actions,
-        const State &state,
-        const StaticInformation &staticInformation) {
-    successors.clear();
-
-    for (const ActionSchema &action : actions) {
-        cout << "Generating instantiation of action " << action.getName() << endl;
-        bool trivially_inapplicable = false;
-        for (int i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
-            if ((action.positive_nullary_precond[i] and !state.nullary_atoms[i])
-                or (action.negative_nullary_precond[i] and state.nullary_atoms[i])) {
-                trivially_inapplicable = true;
-            }
-        }
-        if (trivially_inapplicable) {
-            continue;
-        }
-        Table instantiations = instantiate(action, state, staticInformation);
-        /*
-         * Two cases:
-         *    - At least one instantiation found:
-         *      Instantiate the schema for every tuple, check the negative precond., and generate successor.
-         *    - No instantiation found.
-         *      Then it depends whether the action has parameters or not.
-         *      Right now, we are only considering actions with parameters, and then there is really no instantiation
-         *      possible for this action schema in this state.
-         *
-         *  IMPORTANT:
-         *    - We are not supporting negative precond right now, hence we are simply generating the succ
-         *      (In practice, we must only support != but it is not sure where to check that)
-         */
-        if (instantiations.tuples.empty()) {
-            if (action.getParameters().empty()) {
-                bool applicable = true;
-                for (const Atom& precond : action.getPrecondition()) {
-                    int index = precond.predicate_symbol;
-                    vector<int> tuple;
-                    tuple.reserve(precond.tuples.size());
-                    for (const Argument &arg : precond.tuples) {
-                        assert(arg.constant);
-                        tuple.push_back(arg.index); // Index of a constant is the obj index
-                    }
-                    if (!state.relations[index].tuples.empty()) {
-                        if (precond.negated) {
-                            if (state.relations[index].tuples.find(tuple) != state.relations[index].tuples.end())
-                                applicable = false;
-                        }
-                        else {
-                            if (state.relations[index].tuples.find(tuple) == state.relations[index].tuples.end())
-                                applicable = false;
-                        }
-                    }
-                    if (!staticInformation.relations[index].tuples.empty()) {
-                        if (precond.negated) {
-                            if (staticInformation.relations[index].tuples.find(tuple)
-                                != staticInformation.relations[index].tuples.end())
-                                applicable = false;
-                        }
-                        else {
-                            if (staticInformation.relations[index].tuples.find(tuple)
-                                == staticInformation.relations[index].tuples.end())
-                                applicable = false;
-                        }
-                    }
-                }
-
-                if (!applicable)
-                    continue;
-
-                vector<bool> new_nullary_atoms(state.nullary_atoms);
-                for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
-                    if (action.negative_nullary_effects[i])
-                        new_nullary_atoms[i] = false;
-                }
-                for (int i = 0; i < action.positive_nullary_effects.size(); ++i) {
-                    if (action.positive_nullary_effects[i])
-                        new_nullary_atoms[i] = true;
-                }
-
-                vector<Relation> new_relation(state.relations);
-                for (const Atom &eff : action.getEffects()) {
-                    GroundAtom groundAtom;
-                    groundAtom.reserve(eff.tuples.size());
-                    for (auto t : eff.tuples) {
-                        assert(t.constant);
-                        groundAtom.push_back(t.index);
-                    }
-                    assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
-                    if (eff.negated) {
-                        // Remove from relation
-                        new_relation[eff.predicate_symbol].tuples.erase(ground_atom);
-                    } else {
-                        if (find(new_relation[eff.predicate_symbol].tuples.begin(),
-                                 new_relation[eff.predicate_symbol].tuples.end(), ground_atom)
-                            == new_relation[eff.predicate_symbol].tuples.end()) {
-                            // If ground atom is not in the state, we add it
-                            new_relation[eff.predicate_symbol].tuples.insert(ground_atom);
-                        }
-                    }
-                }
-                successors.emplace_back(State(new_relation, new_nullary_atoms),
-                                        Action(action.getIndex(), vector<int>()));
-            }
-            else {
-                // Action not applicable
-                continue;
-            }
-        } else {
-            vector<bool> new_nullary_atoms(state.nullary_atoms);
-            for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
-                if (action.negative_nullary_effects[i])
-                    new_nullary_atoms[i] = false;
-            }
-            for (int i = 0; i < action.positive_nullary_effects.size(); ++i) {
-                if (action.positive_nullary_effects[i])
-                    new_nullary_atoms[i] = true;
-            }
-            for (const vector<int> &tuple : instantiations.tuples) {
-                // TODO test case with constants (should work?)
-                vector<int> ordered_tuple(tuple.size());
-                assert(ordered_tuple.size() == instantiations.tuple_index.size());
-                for (int i = 0; i < instantiations.tuple_index.size(); ++i) {
-                    ordered_tuple[instantiations.tuple_index[i]] = tuple[i];
-                }
-                vector<Relation> new_relation(state.relations);
-                for (const Atom &eff : action.getEffects()) {
-                    const GroundAtom &ground_atom = tuple_to_atom(tuple, instantiations.tuple_index, eff);
-                    assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
-                    if (eff.negated) {
-                        // Remove from relation
-                        new_relation[eff.predicate_symbol].tuples.erase(ground_atom);
-                    } else {
-                        if (find(new_relation[eff.predicate_symbol].tuples.begin(),
-                                 new_relation[eff.predicate_symbol].tuples.end(), ground_atom)
-                            == new_relation[eff.predicate_symbol].tuples.end()) {
-                            // If ground atom is not in the state, we add it
-                            new_relation[eff.predicate_symbol].tuples.insert(ground_atom);
-                        }
-                    }
-                }
-                successors.emplace_back(State(new_relation, new_nullary_atoms),
-                        Action(action.getIndex(), ordered_tuple));
-            }
-        }
-    }
-    return successors;
-}
-
 Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State &state,
                                            const StaticInformation &staticInformation) {
     /*
@@ -216,4 +67,77 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
     }
 
     return working_table;
+}
+
+
+const void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int> &indices,
+                                                                          vector<int> &constants,
+                                                                          const Atom &a) {
+    int cont = 0;
+    for (Argument arg : a.tuples) {
+        if (!arg.constant)
+            indices.push_back(arg.index);
+        else {
+            indices.push_back((arg.index+1) * -1);
+            constants.push_back(cont);
+        }
+        cont++;
+    }
+}
+
+const void GenericJoinSuccessor::project_tuples(const State &s,
+                                              const Atom &a,
+                                              unordered_set<GroundAtom, TupleHash> &tuples,
+                                              const std::vector<int> &constants) {
+    bool match_constants;
+    for (const GroundAtom &atom : s.relations[a.predicate_symbol].tuples) {
+        match_constants = true;
+        for (int c : constants) {
+            assert (a.tuples[c].constant);
+            if (atom[c] != a.tuples[c].index)
+                match_constants = false;
+        }
+        if (match_constants)
+            tuples.insert(atom);
+    }
+}
+
+
+
+vector<Table> GenericJoinSuccessor::parse_precond_into_join_program(const vector<Atom> &precond,
+                                                                             const State &state,
+                                                                             const StaticInformation &staticInformation,
+                                                                             int action_index) {
+    /*
+     * Parse the state and the atom preconditions into a set of tables
+     * to perform the join-program more easily.
+     *
+     * We first obtain all indices in the precondition that are constants.
+     * Then, we create the table applying the projection over the tuples
+     * that satisfy the instantiation of the constants. There are two cases
+     * for the projection:
+     *    1. The table comes from the static information; or
+     *    2. The table comes directly from the current state.
+     *
+     */
+    vector<Table> parsed_tables;
+    parsed_tables.reserve(precond.size());
+    for (const Atom &a : precond) {
+        vector<int> constants;
+        vector<int> indices;
+        get_indices_and_constants_in_preconditions(indices, constants, a);
+        unordered_set<GroundAtom, TupleHash> tuples;
+        if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
+            // If this predicate has information in the static information table,
+            // then it must be a static predicate
+            project_tuples(staticInformation, a, tuples, constants);
+        } else {
+            // If this predicate does not have information in the static information table,
+            // then it must be a fluent
+            project_tuples(state, a, tuples, constants);
+        }
+        if (!tuples.empty())
+            parsed_tables.emplace_back(tuples, indices);
+    }
+    return parsed_tables;
 }

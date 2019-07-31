@@ -8,6 +8,154 @@
 
 using namespace std;
 
+const std::vector<std::pair<State, Action>>
+&SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions, const State &state,
+                                         const StaticInformation &staticInformation) {
+
+    successors.clear();
+    // Duplicate code from generic join implementation
+    for (const ActionSchema &action : actions) {
+        //cout << "Generating instantiation of action " << action.getName() << endl;
+        bool trivially_inapplicable = false;
+        for (int i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
+            if ((action.positive_nullary_precond[i] and !state.nullary_atoms[i])
+                or (action.negative_nullary_precond[i] and state.nullary_atoms[i])) {
+                trivially_inapplicable = true;
+            }
+        }
+        if (trivially_inapplicable) {
+            continue;
+        }
+        Table instantiations = instantiate(action, state, staticInformation);
+        /*
+         * See comment in generic_join_successor.cc
+         */
+        if (instantiations.tuples.empty()) {
+            if (action.getParameters().empty()) {
+                bool applicable = true;
+                for (const Atom& precond : action.getPrecondition()) {
+                    int index = precond.predicate_symbol;
+                    vector<int> tuple;
+                    tuple.reserve(precond.tuples.size());
+                    for (const Argument &arg : precond.tuples) {
+                        assert(arg.constant);
+                        tuple.push_back(arg.index); // Index of a constant is the obj index
+                    }
+                    if (!state.relations[index].tuples.empty()) {
+                        if (precond.negated) {
+                            if (state.relations[index].tuples.find(tuple) != state.relations[index].tuples.end())
+                                applicable = false;
+                        }
+                        else {
+                            if (state.relations[index].tuples.find(tuple) == state.relations[index].tuples.end())
+                                applicable = false;
+                        }
+                    }
+                    if (!staticInformation.relations[index].tuples.empty()) {
+                        if (precond.negated) {
+                            if (staticInformation.relations[index].tuples.find(tuple)
+                                != staticInformation.relations[index].tuples.end())
+                                applicable = false;
+                        }
+                        else {
+                            if (staticInformation.relations[index].tuples.find(tuple)
+                                == staticInformation.relations[index].tuples.end())
+                                applicable = false;
+                        }
+                    }
+                }
+
+                if (!applicable)
+                    continue;
+
+                vector<bool> new_nullary_atoms(state.nullary_atoms);
+                for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
+                    if (action.negative_nullary_effects[i])
+                        new_nullary_atoms[i] = false;
+                }
+                for (int i = 0; i < action.positive_nullary_effects.size(); ++i) {
+                    if (action.positive_nullary_effects[i])
+                        new_nullary_atoms[i] = true;
+                }
+
+                vector<Relation> new_relation(state.relations);
+                for (const Atom &eff : action.getEffects()) {
+                    GroundAtom groundAtom;
+                    groundAtom.reserve(eff.tuples.size());
+                    for (auto t : eff.tuples) {
+                        assert(t.constant);
+                        groundAtom.push_back(t.index);
+                    }
+                    assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
+                    if (eff.negated) {
+                        // Remove from relation
+                        new_relation[eff.predicate_symbol].tuples.erase(ground_atom);
+                    } else {
+                        if (find(new_relation[eff.predicate_symbol].tuples.begin(),
+                                 new_relation[eff.predicate_symbol].tuples.end(), ground_atom)
+                            == new_relation[eff.predicate_symbol].tuples.end()) {
+                            // If ground atom is not in the state, we add it
+                            new_relation[eff.predicate_symbol].tuples.insert(ground_atom);
+                        }
+                    }
+                }
+                successors.emplace_back(State(new_relation, new_nullary_atoms),
+                                        Action(action.getIndex(), vector<int>()));
+            }
+            else {
+                // Action not applicable
+                continue;
+            }
+        } else {
+            vector<bool> new_nullary_atoms(state.nullary_atoms);
+            for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
+                if (action.negative_nullary_effects[i])
+                    new_nullary_atoms[i] = false;
+            }
+            for (int i = 0; i < action.positive_nullary_effects.size(); ++i) {
+                if (action.positive_nullary_effects[i])
+                    new_nullary_atoms[i] = true;
+            }
+            for (const vector<int> &tuple_with_const : instantiations.tuples) {
+                // First, order tuple of indices and then apply effects
+                vector<int> tuple;
+                tuple.reserve(tuple_with_const.size());
+                vector<int> indices;
+                for (int j = 0; j < instantiations.tuple_index.size(); ++j) {
+                    if (instantiations.tuple_index[j] >= 0) {
+                        indices.push_back(instantiations.tuple_index[j]);
+                        tuple.push_back(tuple_with_const[j]);
+                    }
+                }
+                vector<int> ordered_tuple(tuple.size());
+                assert(ordered_tuple.size() == indices.size());
+                for (int i = 0; i < indices.size(); ++i) {
+                    ordered_tuple[indices[i]] = tuple[i];
+                }
+                vector<Relation> new_relation(state.relations);
+                for (const Atom &eff : action.getEffects()) {
+                    const GroundAtom &ground_atom = tuple_to_atom(tuple, indices, eff);
+                    assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
+                    if (eff.negated) {
+                        // Remove from relation
+                        new_relation[eff.predicate_symbol].tuples.erase(ground_atom);
+                    } else {
+                        if (find(new_relation[eff.predicate_symbol].tuples.begin(),
+                                 new_relation[eff.predicate_symbol].tuples.end(), ground_atom)
+                            == new_relation[eff.predicate_symbol].tuples.end()) {
+                            // If ground atom is not in the state, we add it
+                            new_relation[eff.predicate_symbol].tuples.insert(ground_atom);
+                        }
+                    }
+                }
+                successors.emplace_back(State(new_relation, new_nullary_atoms),
+                                        Action(action.getIndex(), ordered_tuple));
+            }
+        }
+    }
+    return successors;
+}
+
 const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
                                                     const vector<int> &indices,
                                                     const Atom &eff) {
@@ -44,5 +192,4 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
 
     return ground_atom;
 }
-
 

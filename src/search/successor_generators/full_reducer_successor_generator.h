@@ -12,18 +12,8 @@ class FullReducerSuccessorGenerator : public GenericJoinSuccessor {
 public:
     explicit FullReducerSuccessorGenerator(const Task &task);
 
-    const std::vector<std::pair<State, Action>> &generate_successors(const std::vector<ActionSchema> &actions,
-                                                              const State &state,
-                                                              const StaticInformation &staticInformation) final;
-
     Table instantiate(const ActionSchema &action, const State &state,
                       const StaticInformation &staticInformation) override;
-
-    vector<Table> parse_precond_into_join_program(const vector<Atom> &precond,
-                                                  const State &state,
-                                                  const StaticInformation &staticInformation,
-                                                  int action_index) override;
-
 
 private:
     std::vector<std::vector<std::pair<int, int>>> full_reducer_order;

@@ -36,10 +36,10 @@ public:
 
     }
 
-    virtual const
+    const
     std::vector<std::pair<State, Action>> &generate_successors(const std::vector<ActionSchema> &actions,
                                                                        const State &state,
-                                                                       const StaticInformation &staticInformation) = 0;
+                                                                       const StaticInformation &staticInformation);
 
     virtual Table instantiate(const ActionSchema &action, const State &state,
                                     const StaticInformation &staticInformation) = 0;
