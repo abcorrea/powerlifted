@@ -134,17 +134,17 @@ const std::vector<std::pair<State, Action>>
                 }
                 vector<Relation> new_relation(state.relations);
                 for (const Atom &eff : action.getEffects()) {
-                    const GroundAtom &ground_atom = tuple_to_atom(tuple, indices, eff);
+                    const GroundAtom &ga = tuple_to_atom(tuple, indices, eff);
                     assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
                     if (eff.negated) {
                         // Remove from relation
-                        new_relation[eff.predicate_symbol].tuples.erase(ground_atom);
+                        new_relation[eff.predicate_symbol].tuples.erase(ga);
                     } else {
                         if (find(new_relation[eff.predicate_symbol].tuples.begin(),
-                                 new_relation[eff.predicate_symbol].tuples.end(), ground_atom)
+                                 new_relation[eff.predicate_symbol].tuples.end(), ga)
                             == new_relation[eff.predicate_symbol].tuples.end()) {
                             // If ground atom is not in the state, we add it
-                            new_relation[eff.predicate_symbol].tuples.insert(ground_atom);
+                            new_relation[eff.predicate_symbol].tuples.insert(ga);
                         }
                     }
                 }
