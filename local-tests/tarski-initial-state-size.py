@@ -781,8 +781,6 @@ SUITE = ["airport:p27-airport4halfMUC-p6.pddl", "transport-opt08-strips:p23.pddl
          "visitall-opt11-strips:problem05-half.pddl", "nurikabe-opt18-adl:p13.pddl",
          "freecell:probfreecell-3-2.pddl",]
 
-#SUITE = ["transport-opt08-strips:p23.pddl"]
-
 def find_file(filenames, dir='.'):
     for filename in filenames:
         path = os.path.join(dir, filename)

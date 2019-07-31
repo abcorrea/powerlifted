@@ -6,3 +6,5 @@ src/translator/.idea/*
 src/translator/output.lifted
 src/search/cmake-build-debug/
 output.lifted
+reports/experiments/org-synt-exp*
+local-tests/org-synt-instances/
