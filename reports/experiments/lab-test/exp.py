@@ -9,6 +9,7 @@ from lab.experiment import Experiment
 from downward import suites
 from downward.reports.absolute import AbsoluteReport
 
+from common_setup import Configuration
 
 # Create custom report class with suitable info and error attributes.
 class BaseReport(AbsoluteReport):
@@ -39,7 +40,10 @@ exp = Experiment(environment=ENV)
 # Add custom parser for FF.
 exp.add_parser('power-lifted-parser.py')
 
-CONFIGS = ['xxx']
+CONFIGS = [Configuration('gbfs-full_red', ['gbfs', 'goalcount', 'full_reducer']),
+           Configuration('gbfs-ordered_join', ['gbfs', 'goalcount', 'ordered_join']),
+           Configuration('blind-full_red', ['naive', 'blind', 'full_reducer']),
+           Configuration('blind-ordered_join', ['naive', 'blind', 'ordered_join'])]
 
 # Create one run for each instance and each configuration
 for config in CONFIGS:
@@ -55,14 +59,14 @@ for config in CONFIGS:
             memory_limit=MEMORY_LIMIT)
         run.add_command(
             'run-search',
-            [POWER_LIFTED_DIR+'/builds/release/src/search',
-             'output.lifted', 'gbfs', 'goalcount', 'full_reducer'],
+            [POWER_LIFTED_DIR+'/builds/release/src/search', 'output.lifted'] +
+            config.arguments,
             time_limit=TIME_LIMIT,
             memory_limit=MEMORY_LIMIT)
         run.set_property('domain', task.domain)
         run.set_property('problem', task.problem)
-        run.set_property('algorithm', config)
-        run.set_property('id', [config, task.domain, task.problem])
+        run.set_property('algorithm', config.name)
+        run.set_property('id', [config.name, task.domain, task.problem])
 
         # Add step that writes experiment files to disk.
 exp.add_step('build', exp.build)
