@@ -66,13 +66,14 @@ const int BreadthFirstSearch::search(const Task &task,
                 q.emplace(g+1, 0, state_counter);
                 index_to_state[state_counter] = s;
                 visited[s] = state_counter;
-                state_counter++;
                 if (task.is_goal(s, task.goal)) {
                     cout << "Goal found at: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
+                    cout << "GOAL: ";
                     extract_goal(state_counter, generations, s, cheapest_parent, visited, index_to_state, task);
                     extract_plan(cheapest_parent, s, visited, index_to_state, task);
                     return SOLVED;
                 }
+                state_counter++;
                 //cout << "SUCCESSOR:" << " ";
                 //task.dumpState(s);
             }

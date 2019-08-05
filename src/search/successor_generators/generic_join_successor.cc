@@ -37,6 +37,11 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
 
     vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation, action.getIndex());
     assert (!tables.empty());
+    if (tables.size() != precond.size()) {
+        // This means that the projection over the constants completely eliminated one table,
+        // we can return no instantiation.
+        return Table();
+    }
     Table &working_table = tables[0];
     for (int i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
