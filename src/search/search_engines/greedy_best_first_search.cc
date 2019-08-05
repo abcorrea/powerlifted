@@ -62,7 +62,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
         if (task.is_goal(state, task.goal)) {
-            cout << "Goal found at:" << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
+            cout << "Goal found at: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
             extract_goal(state_counter, generations, state, cheapest_parent, visited, index_to_state, task);
             extract_plan(cheapest_parent, state, visited, index_to_state, task);
             return SOLVED;

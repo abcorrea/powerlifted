@@ -1,16 +1,32 @@
 #! /usr/bin/env python
 
 import re
+import sys
 
 from lab.parser import Parser
 
+PATTERNS = [
+    ('initial_state_size', r'Initial state size: (\d+)', int),
+    ('peak_memory', r'Peak memory usage: (\d+) kB', int),
+    ('search_time', r'Goal found at: (.+)', float),
+    ('cost', r'Total plan cost:(\d+)', int)
+]
+
+def add_coverage(content, props):
+    props['coverage'] = int('cost' in props)
 
 
-parser = Parser()
-parser.add_pattern(
-    'initial_state_size', r'Initial state size: (\d+)')
-parser.add_pattern(
-    'peak_memory', r'Peak memory usage: (\d+) kB')
-parser.add_pattern(
-    'plan_cost', r'Total plan cost:(\d+)')
-parser.parse()
+class PowerLiftedParser(Parser):
+    def __init__(self):
+        Parser.__init__(self)
+
+        for name, pattern, typ in PATTERNS:
+            self.add_pattern(name, pattern, type=typ)
+        self.add_function(add_coverage)
+
+
+def main():
+    parser = PowerLiftedParser()
+    parser.parse()
+
+main()

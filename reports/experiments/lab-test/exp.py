@@ -28,22 +28,23 @@ else:
 SUITE = ['gripper:prob01.pddl',
          'miconic:s1-0.pddl']
 
-TIME_LIMIT = 100
-MEMORY_LIMIT = 2048
+TIME_LIMIT = 1800
+MEMORY_LIMIT = 16384
 
 ATTRIBUTES=['initial_state_size',
             'peak_memory',
-            'plan_cost']
+            'cost',
+            'coverage',
+            'search_time']
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
-# Add custom parser for FF.
+# Add custom parser for Power Lifted.
 exp.add_parser('power-lifted-parser.py')
 
-CONFIGS = [Configuration('gbfs-full_red', ['gbfs', 'goalcount', 'full_reducer']),
-           Configuration('gbfs-ordered_join', ['gbfs', 'goalcount', 'ordered_join']),
-           Configuration('blind-full_red', ['naive', 'blind', 'full_reducer']),
-           Configuration('blind-ordered_join', ['naive', 'blind', 'ordered_join'])]
+CONFIGS = [Configuration('blind-full_reducer', ['naive', 'blind', 'full_reducer']),
+           Configuration('blind-ordered_join', ['naive', 'blind', 'ordered_join']),
+           Configuration('blind-join', ['naive', 'blind', 'join'])]
 
 # Create one run for each instance and each configuration
 for config in CONFIGS:
@@ -53,13 +54,13 @@ for config in CONFIGS:
         run.add_resource('problem', task.problem_file, symlink=True)
         run.add_command(
             'run-translator',
-            [POWER_LIFTED_DIR+'/src/translator/translate.py',
+            [POWER_LIFTED_DIR+'/builds/release/translator/translate.py',
              task.domain_file, task.problem_file],
             time_limit=TIME_LIMIT,
             memory_limit=MEMORY_LIMIT)
         run.add_command(
             'run-search',
-            [POWER_LIFTED_DIR+'/builds/release/src/search', 'output.lifted'] +
+            [POWER_LIFTED_DIR+'/builds/release/search/search', 'output.lifted'] +
             config.arguments,
             time_limit=TIME_LIMIT,
             memory_limit=MEMORY_LIMIT)
