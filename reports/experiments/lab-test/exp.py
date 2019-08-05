@@ -3,6 +3,8 @@
 import os
 import platform
 
+from suites import OPTIMAL_SUITE, EXCLUDED_DOMAINS
+
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.experiment import Experiment
 
@@ -21,12 +23,18 @@ NODE = platform.node()
 REMOTE = NODE.endswith(".scicore.unibas.ch") or NODE.endswith(".cluster.bc2.ch")
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 POWER_LIFTED_DIR = os.environ["POWER_LIFTED_SRC"]
+
 if REMOTE:
-    ENV = BaselSlurmEnvironment(email="my.name@unibas.ch")
+    SUITE = OPTIMAL_SUITE
+    ENV = BaselSlurmEnvironment(
+        partition='infai_2',
+        memory_per_cpu="6G",
+        extra_options='#SBATCH --cpus-per-task=3',
+        export=["PATH", "DOWNWARD_BENCHMARKS", "POWER_LIFTED_DIR"])
 else:
+    SUITE = ['gripper:prob01.pddl',
+             'miconic:s1-0.pddl']
     ENV = LocalEnvironment(processes=4)
-SUITE = ['gripper:prob01.pddl',
-         'miconic:s1-0.pddl']
 
 TIME_LIMIT = 1800
 MEMORY_LIMIT = 16384
@@ -39,6 +47,7 @@ ATTRIBUTES=['initial_state_size',
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
+
 # Add custom parser for Power Lifted.
 exp.add_parser('power-lifted-parser.py')
 
@@ -49,6 +58,8 @@ CONFIGS = [Configuration('blind-full_reducer', ['naive', 'blind', 'full_reducer'
 # Create one run for each instance and each configuration
 for config in CONFIGS:
     for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
+        if task.domain in EXCLUDED_DOMAINS:
+            continue
         run = exp.add_run()
         run.add_resource('domain', task.domain_file, symlink=True)
         run.add_resource('problem', task.problem_file, symlink=True)
