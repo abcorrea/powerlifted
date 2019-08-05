@@ -28,7 +28,9 @@ if REMOTE:
     SUITE = OPTIMAL_SUITE
     ENV = BaselSlurmEnvironment(
         partition='infai_2',
-        export=["PATH", "DOWNWARD_BENCHMARKS"])
+        memory_per_cpu="6G",
+        extra_options='#SBATCH --cpus-per-task=3',
+        export=["PATH", "DOWNWARD_BENCHMARKS", "POWER_LIFTED_DIR"])
 else:
     SUITE = ['gripper:prob01.pddl',
              'miconic:s1-0.pddl']
@@ -45,6 +47,7 @@ ATTRIBUTES=['initial_state_size',
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
+
 # Add custom parser for Power Lifted.
 exp.add_parser('power-lifted-parser.py')
 
