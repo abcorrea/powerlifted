@@ -10,3 +10,4 @@ reports/experiments/org-synt-exp*
 local-tests/org-synt-instances/
 builds/
 reports/experiments/lab-test/data/exp/*
+reports/experiments/*/data/*
