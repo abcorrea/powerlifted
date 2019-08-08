@@ -46,18 +46,17 @@ const int BreadthFirstSearch::search(const Task &task,
         int h = head.h;
         int g = head.g;
         q.pop();
-        if (g_layer < g) {
+        /*if (g_layer < g) {
             cout << "Entering layer " << g_layer << "[expansions: " << state_counter
                  << ", generations " << generations <<
                  ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
             g_layer = g;
-        }
+        }*/
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
         //task.dumpState(state);
-        return NOT_SOLVED;
         generations += successors.size();
         for (const pair<State, Action> &successor : successors) {
             const State &s = successor.first;

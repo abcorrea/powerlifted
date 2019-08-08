@@ -52,12 +52,12 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
                  " [expansions: " << state_counter << ", generations: " << generations
                  << ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
         }
-        if (g > g_layer) {
+        /*if (g > g_layer) {
             g_layer = g;
             cout << "Expansions " << state_counter << ", generations " << generations <<
                  " states at layer g=" << g_layer
                  << " [" << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
-        }
+        }*/
         //cout << state_counter << endl;
         assert (index_to_state.find(next) != index_to_state.end());
         State state = index_to_state[next];
