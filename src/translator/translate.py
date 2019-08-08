@@ -55,13 +55,19 @@ def main():
         g = compile_types.compile_types(task)
 
     with timers.timing("Checking static predicates"):
-        static_predicates.check(task)
+        static_pred = static_predicates.check(task)
 
     if options.ground_state_representation:
         with timers.timing("Generating complete initial state"):
             reachability.generate_overapproximated_reachable_atoms(task, g)
 
-    print("Initial state size: %d" % len(task.init))
+    initial_state_size = 0
+    for atom in task.init:
+        if isinstance(atom, pddl.Assign):
+            continue
+        if atom.predicate not in static_pred:
+            initial_state_size += 1
+    print("Initial state size: %d" % initial_state_size)
 
     if options.verbose_data:
         print("%s %s: initial state size %d : time %s" % (

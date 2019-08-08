@@ -45,4 +45,4 @@ def check(task):
     predicates_as_str = get_str_predicates(task.predicates)
     static_predicates = predicates_as_str - fluent_predicates
     mark_static_predicates(task, static_predicates)
-    return
+    return static_predicates
