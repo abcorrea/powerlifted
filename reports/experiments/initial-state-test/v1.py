@@ -112,7 +112,7 @@ for attr in ['peak_memory', 'search_time']:
             ScatterPlotReport(
                 attributes=[attr],
                 filter_algorithm=[alg, "blind-full_reducer"],
-                filter=[discriminate_org_synt],
+                filter=[discriminate_acyclic],
                 get_category=domain_as_category,
                 format='tex'
             ),
