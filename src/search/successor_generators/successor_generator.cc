@@ -26,6 +26,7 @@ const std::vector<std::pair<State, Action>>
         if (trivially_inapplicable) {
             continue;
         }
+        //cout << "Instantiating action " << action.getName() << endl;
         Table instantiations = instantiate(action, state, staticInformation);
         /*
          * See comment in generic_join_successor.cc
@@ -51,7 +52,7 @@ const std::vector<std::pair<State, Action>>
                                 applicable = false;
                         }
                     }
-                    if (!staticInformation.relations[index].tuples.empty()) {
+                    else if (!staticInformation.relations[index].tuples.empty()) {
                         if (precond.negated) {
                             if (staticInformation.relations[index].tuples.find(tuple)
                                 != staticInformation.relations[index].tuples.end())
@@ -62,6 +63,9 @@ const std::vector<std::pair<State, Action>>
                                 == staticInformation.relations[index].tuples.end())
                                 applicable = false;
                         }
+                    }
+                    else {
+                        applicable = false;
                     }
                 }
 
