@@ -34,12 +34,15 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
             if (p.negated or p.tuples.empty()) {
                 continue;
             }
+            // TODO case where all args are constant --> tuple not being added to join program
             set<int> args;
+            bool has_free_variables = false;
             for (Argument arg : p.tuples) {
                 // We parse constants to negative numbers so they're uniquely identified
                 int node;
                 if (arg.constant)
                     continue;
+                has_free_variables = true;
                 node = arg.index;
 
                 args.insert(node);
@@ -52,7 +55,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                     node_counter[node] = node_counter[node] + 1;
                 }
             }
-            if (!args.empty()) {
+            if (!args.empty() and has_free_variables) {
                 edge_to_precond[hyperedges.size()] = cont; // map ith-precondition to a given edge
                 hyperedges.emplace_back(args.begin(), args.end());
             }
@@ -114,7 +117,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                     removed[ear] =true;
                     full_reducer_order[action.getIndex()].emplace_back(edge_to_precond[ear], edge_to_precond[in_favor]);
                     full_reducer_back.emplace(edge_to_precond[in_favor], edge_to_precond[ear]);
-                    full_join_order[action.getIndex()].push_back(ear);
+                    full_join_order[action.getIndex()].push_back(edge_to_precond[ear]);
                 }
             }
         }

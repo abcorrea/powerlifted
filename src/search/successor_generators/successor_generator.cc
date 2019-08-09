@@ -81,26 +81,20 @@ const std::vector<std::pair<State, Action>>
                     if (action.positive_nullary_effects[i])
                         new_nullary_atoms[i] = true;
                 }
-
                 vector<Relation> new_relation(state.relations);
                 for (const Atom &eff : action.getEffects()) {
-                    GroundAtom groundAtom;
-                    groundAtom.reserve(eff.tuples.size());
-                    for (auto t : eff.tuples) {
-                        assert(t.constant);
-                        groundAtom.push_back(t.index);
+                    GroundAtom ga;
+                    for (const Argument &a : eff.tuples) {
+                        assert(a.constant);
+                        ga.push_back(a.index);
                     }
                     assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
                     if (eff.negated) {
                         // Remove from relation
-                        new_relation[eff.predicate_symbol].tuples.erase(ground_atom);
+                        new_relation[eff.predicate_symbol].tuples.erase(ga);
                     } else {
-                        if (find(new_relation[eff.predicate_symbol].tuples.begin(),
-                                 new_relation[eff.predicate_symbol].tuples.end(), ground_atom)
-                            == new_relation[eff.predicate_symbol].tuples.end()) {
-                            // If ground atom is not in the state, we add it
-                            new_relation[eff.predicate_symbol].tuples.insert(ground_atom);
-                        }
+                        // If ground atom is not in the state, we add it
+                        new_relation[eff.predicate_symbol].tuples.insert(ga);
                     }
                 }
                 successors.emplace_back(State(new_relation, new_nullary_atoms),
@@ -123,7 +117,6 @@ const std::vector<std::pair<State, Action>>
             for (const vector<int> &tuple_with_const : instantiations.tuples) {
                 // First, order tuple of indices and then apply effects
                 vector<int> tuple;
-                tuple.reserve(tuple_with_const.size());
                 vector<int> indices;
                 for (int j = 0; j < instantiations.tuple_index.size(); ++j) {
                     if (instantiations.tuple_index[j] >= 0) {
