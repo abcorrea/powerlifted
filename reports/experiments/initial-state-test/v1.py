@@ -60,7 +60,11 @@ exp.add_parser('power-lifted-parser.py')
 
 CONFIGS = [Configuration('blind-full_reducer', ['naive', 'blind', 'full_reducer']),
            Configuration('blind-ordered_join', ['naive', 'blind', 'ordered_join']),
-           Configuration('blind-join', ['naive', 'blind', 'join'])]
+           Configuration('blind-join-1', ['naive', 'blind', 'join']),
+           Configuration('blind-join-2', ['naive', 'blind', 'join']),
+           Configuration('blind-join-3', ['naive', 'blind', 'join']),
+           Configuration('blind-join-4', ['naive', 'blind', 'join']),
+           Configuration('blind-join-5', ['naive', 'blind', 'join'])]
 
 # Create one run for each instance and each configuration
 for config in CONFIGS:
@@ -108,7 +112,7 @@ exp.add_report(
     outfile='report.tex')
 
 for attr in ['largest_relation']:
-    for alg in ['blind-join', 'blind-ordered_join']:
+    for alg in ['blind-join-1', 'blind-ordered_join']:
         exp.add_report(
             ScatterPlotReport(
                 attributes=[attr],

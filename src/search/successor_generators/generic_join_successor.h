@@ -1,6 +1,9 @@
 #ifndef SEARCH_GENERIC_JOIN_SUCCESSOR_H
 #define SEARCH_GENERIC_JOIN_SUCCESSOR_H
 
+#include <cstdlib>
+#include <ctime>
+
 #include <random>
 
 #include "successor_generator.h"
@@ -15,7 +18,7 @@
 class GenericJoinSuccessor : public SuccessorGenerator {
 public:
     explicit GenericJoinSuccessor(const Task &task) : SuccessorGenerator(task) {
-
+        srand(time(nullptr));
     }
 
     std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
