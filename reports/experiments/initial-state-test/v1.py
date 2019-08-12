@@ -49,7 +49,8 @@ ATTRIBUTES=['initial_state_size',
             'peak_memory',
             'cost',
             'coverage',
-            'search_time']
+            'search_time',
+            'largest_relation']
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
@@ -106,7 +107,7 @@ exp.add_report(
                format='tex'),
     outfile='report.tex')
 
-for attr in ['peak_memory', 'search_time']:
+for attr in ['largest_relation']:
     for alg in ['blind-join', 'blind-ordered_join']:
         exp.add_report(
             ScatterPlotReport(

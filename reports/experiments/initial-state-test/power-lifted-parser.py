@@ -9,7 +9,8 @@ PATTERNS = [
     ('initial_state_size', r'Initial state size: (\d+)', int),
     ('peak_memory', r'Peak memory usage: (\d+) kB', int),
     ('search_time', r'Goal found at: (.+)', float),
-    ('cost', r'Total plan cost:(\d+)', int)
+    ('cost', r'Total plan cost:(\d+)', int),
+    ('largest_relation', r'Largest intermediate relation: (\d+)', int)
 ]
 
 def add_coverage(content, props):
