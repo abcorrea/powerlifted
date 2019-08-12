@@ -1,6 +1,8 @@
 #ifndef SEARCH_GENERIC_JOIN_SUCCESSOR_H
 #define SEARCH_GENERIC_JOIN_SUCCESSOR_H
 
+#include <random>
+
 #include "successor_generator.h"
 
 /*
@@ -12,7 +14,9 @@
 
 class GenericJoinSuccessor : public SuccessorGenerator {
 public:
-    explicit GenericJoinSuccessor(const Task &task) : SuccessorGenerator(task) {}
+    explicit GenericJoinSuccessor(const Task &task) : SuccessorGenerator(task) {
+
+    }
 
     std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
 
@@ -33,7 +37,6 @@ protected:
                               const Atom &a,
                               unordered_set<GroundAtom, TupleHash> &tuples,
                               const std::vector<int> &constants);
-
 };
 
 
