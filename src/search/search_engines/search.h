@@ -14,6 +14,7 @@
 
 #define SOLVED 0
 #define NOT_SOLVED 1
+#define DEBUG_GRACEFUL_EXIT 0
 
 class Node {
 public:

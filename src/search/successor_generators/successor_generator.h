@@ -54,6 +54,9 @@ public:
 
     GroundAtom ground_atom;
     vector<pair<State, Action>> successors;
+
+protected:
+    int largest_intermediate_relation = 0;
 };
 
 

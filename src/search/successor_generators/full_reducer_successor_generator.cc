@@ -215,6 +215,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     Table &working_table = tables[full_join_order[action.getIndex()][0]];
     for (int i = 1; i < full_join_order[action.getIndex()].size(); ++i) {
         hash_join(working_table, tables[full_join_order[action.getIndex()][i]]);
+        if (working_table.tuples.size() > largest_intermediate_relation)
+            largest_intermediate_relation = working_table.tuples.size();
         // Filter out equalities
         for (const pair<int, int> &ineq : action.getInequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),

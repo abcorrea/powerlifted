@@ -45,6 +45,8 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
     Table &working_table = tables[0];
     for (int i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
+        if (working_table.tuples.size() > largest_intermediate_relation)
+            largest_intermediate_relation = working_table.tuples.size();
         // Filter out equalities
         for (const pair<int, int> ineq : action.getInequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),
