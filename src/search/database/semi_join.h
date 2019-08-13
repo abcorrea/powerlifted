@@ -8,6 +8,6 @@
 
 #include "../hash_structures.h"
 
-void semi_join(Table &t1, Table &t2);
+int semi_join(Table &t1, Table &t2);
 
 #endif //SEARCH_SEMI_JOIN_H

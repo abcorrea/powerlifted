@@ -111,7 +111,6 @@ bool parse(Task &task, const ifstream &in) {
     }
 
     // Read Goal State
-    // TODO goal does not support nullary atoms
     int goal_size;
     cin >> canary >> goal_size;
     if (canary != "GOAL") {
@@ -191,6 +190,10 @@ bool parse(Task &task, const ifstream &in) {
                 cin >> c >> obj1 >> d >> obj2;
                 arguments.emplace_back(obj1, c == 'c');
                 arguments.emplace_back(obj2, d == 'c');
+                if (find(inequalities.begin(), inequalities.end(), make_pair(obj2, obj1))
+                    != inequalities.end()) {
+                    continue;
+                }
                 inequalities.emplace_back(obj1, obj2);
             }
             else {

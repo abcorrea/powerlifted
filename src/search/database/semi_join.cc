@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void semi_join(Table &t1, Table &t2) {
+int semi_join(Table &t1, Table &t2) {
     /*
      * Semi-join two tables into one.  t1 is the working table and it will be modified
      *
@@ -28,7 +28,7 @@ void semi_join(Table &t1, Table &t2) {
         /*
          * If no attribute matches, then we return
          */
-        return;
+        return t1.tuples.size();
     }
     else {
         /*
@@ -52,6 +52,7 @@ void semi_join(Table &t1, Table &t2) {
         }
     }
     t1.tuples = new_tuples;
+    return t1.tuples.size();
 }
 
 

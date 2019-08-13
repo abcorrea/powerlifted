@@ -198,7 +198,10 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     assert (!tables.empty());
     for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
         // We do not check inequalities here. Should we?
-        semi_join(tables[sj.first], tables[sj.second]);
+        int s = semi_join(tables[sj.first], tables[sj.second]);
+        if (s == 0) {
+            return Table();
+        }
     }
     /*if (!acyclic_vec[action.getIndex()]) {
         full_join_order[action.getIndex()].clear();

@@ -85,5 +85,4 @@ void hash_join(Table &t1, Table &t2) {
 
     }
     t1.tuples = new_tuples;
-
 }
