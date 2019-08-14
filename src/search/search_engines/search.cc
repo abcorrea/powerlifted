@@ -27,7 +27,7 @@ void Search::extract_goal(int state_counter, int generations, State state,
                           unordered_map<State, int, boost::hash<State>> &visited,
                           unordered_map<int, State> &index_to_state, const Task &task) const {
     cout << "Goal state found!" << endl;
-    cout << "Total number of states visited:" << state_counter << endl;
+    cout << "Total number of states visited:" << visited.size() << endl;
     cout << "Total number of states generated:" << generations << endl;
     stack<State> states_in_the_plan;
     states_in_the_plan.push(state);

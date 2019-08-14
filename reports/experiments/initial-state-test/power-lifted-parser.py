@@ -11,7 +11,7 @@ PATTERNS = [
     ('search_time', r'Goal found at: (.+)', float),
     ('cost', r'Total plan cost:(\d+)', int),
     ('generations', r'Generations: (\d+)', int),
-    ('successors', r'Different states: (\d+)', int)
+    ('successors', r'Different states: (.+)', float)
 ]
 
 def add_coverage(content, props):
