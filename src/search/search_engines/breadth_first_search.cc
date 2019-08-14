@@ -17,7 +17,7 @@ const int BreadthFirstSearch::search(const Task &task,
     clock_t timer_start = clock();
 
     int state_counter = 0;
-    int generations = 1;
+    int generations = 0;
     queue<Node> q; // Queue has Node structures
     unordered_map<int, pair<int, Action>> cheapest_parent;
     unordered_map<int, State> index_to_state;
