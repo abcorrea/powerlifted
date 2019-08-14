@@ -57,7 +57,6 @@ const int BreadthFirstSearch::search(const Task &task,
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
         //task.dumpState(state);
-        return DEBUG_GRACEFUL_EXIT;
         generations += successors.size();
         for (const pair<State, Action> &successor : successors) {
             const State &s = successor.first;
@@ -79,6 +78,9 @@ const int BreadthFirstSearch::search(const Task &task,
                 //task.dumpState(s);
             }
         }
+        cout << "Generations: " << generations << endl;
+        cout << "Different states: " << visited.size() << endl;
+        return DEBUG_GRACEFUL_EXIT;
     }
 
 
