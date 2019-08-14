@@ -10,7 +10,8 @@ PATTERNS = [
     ('peak_memory', r'Peak memory usage: (\d+) kB', int),
     ('search_time', r'Goal found at: (.+)', float),
     ('cost', r'Total plan cost:(\d+)', int),
-    ('largest_relation', r'Largest intermediate relation: (\d+)', int)
+    ('generations', r'Generations: (\d+)', int),
+    ('successors', r'Different states: (\d+)', int)
 ]
 
 def add_coverage(content, props):
