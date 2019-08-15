@@ -10,6 +10,7 @@ from lab.experiment import Experiment
 
 from downward import suites
 from downward.reports.absolute import AbsoluteReport
+from downward.reports.plot import PlotReport
 from downward.reports.scatter import ScatterPlotReport
 
 from common_setup import Configuration
@@ -97,21 +98,28 @@ exp.add_step('start', exp.start_runs)
 # writes them to *-eval/properties.
 exp.add_fetcher(name='fetch')
 
-# Make a report.
-exp.add_report(
-    BaseReport(attributes=ATTRIBUTES),
-    outfile='report.html')
-
-exp.add_report(
-    BaseReport(attributes=ATTRIBUTES,
-               format='tex'),
-    outfile='report.tex')
-
 def map_successors_into_generations(run):
     if run['algorithm'] == "blind-full_reducer-2":
         if 'successors' in run:
             run['generations'] = run['successors']
     return run
+
+def unique_domain(run):
+    run['problem'] = run['problem'] +  run['domain']
+    run['domain'] = 'unique'
+    return run
+
+# Make a report.
+exp.add_report(
+    BaseReport(attributes=ATTRIBUTES,
+               filter=[map_successors_into_generations],),
+    outfile='report.html')
+
+exp.add_report(
+    BaseReport(attributes=ATTRIBUTES,
+               format='tex',
+               filter=[map_successors_into_generations, unique_domain],),
+    outfile='report.tex')
 
 for attr in ['generations']:
     exp.add_report(
@@ -120,6 +128,8 @@ for attr in ['generations']:
             filter_algorithm=["blind-full_reducer-1", "blind-full_reducer-2"],
             filter=[map_successors_into_generations, discriminate_acyclic],
             get_category=domain_as_category,
+            yscale='linear',
+            xscale='linear',
             format='tex'
         ),
         outfile='generations-vs-successors.tex'
