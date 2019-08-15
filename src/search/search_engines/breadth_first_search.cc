@@ -58,14 +58,9 @@ const int BreadthFirstSearch::search(const Task &task,
         //cout << "STATE:" << " ";
         //task.dumpState(state);
         generations += successors.size();
-        unordered_set<State, boost::hash<State>> state_succ;
         for (const pair<State, Action> &successor : successors) {
             const State &s = successor.first;
             const Action &a = successor.second;
-            if (state_succ.find(s) == state_succ.end()) {
-                ++statistics_counter;
-                state_succ.insert(s);
-            }
             if (visited.find(s) == visited.end()) {
                 cheapest_parent[state_counter] = make_pair(next, a);
                 q.emplace(g+1, 0, state_counter);
@@ -73,8 +68,6 @@ const int BreadthFirstSearch::search(const Task &task,
                 visited[s] = state_counter;
                 if (task.is_goal(s, task.goal)) {
                     cout << "Goal found at: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
-                    cout << "Generations: " << generations << endl;
-                    cout << "Different states: " << double(statistics_counter)/double(generations) << endl;
                     extract_goal(state_counter, generations, s, cheapest_parent, visited, index_to_state, task);
                     extract_plan(cheapest_parent, s, visited, index_to_state, task);
                     return SOLVED;
