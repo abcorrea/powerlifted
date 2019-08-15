@@ -109,7 +109,8 @@ exp.add_report(
 
 def map_successors_into_generations(run):
     if run['algorithm'] == "blind-full_reducer-2":
-        run['generations'] = run['successors']
+        if 'successors' in run:
+            run['generations'] = run['successors']
     return run
 
 for attr in ['generations']:
