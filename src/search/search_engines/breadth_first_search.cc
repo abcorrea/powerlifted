@@ -57,7 +57,7 @@ const int BreadthFirstSearch::search(const Task &task,
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
         //task.dumpState(state);
-        //return DEBUG_GRACEFUL_EXIT;
+        return DEBUG_GRACEFUL_EXIT;
         generations += successors.size();
         for (const pair<State, Action> &successor : successors) {
             const State &s = successor.first;
