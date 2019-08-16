@@ -52,11 +52,16 @@ public:
 
     const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const std::vector<int> &indices, const Atom &eff);
 
+    double get_total_time() const {
+        return total_time;
+    }
+
     GroundAtom ground_atom;
     vector<pair<State, Action>> successors;
 
 protected:
     int largest_intermediate_relation = 0;
+    double total_time = 0;
 };
 
 

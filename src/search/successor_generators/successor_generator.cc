@@ -190,4 +190,3 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
 
     return ground_atom;
 }
-

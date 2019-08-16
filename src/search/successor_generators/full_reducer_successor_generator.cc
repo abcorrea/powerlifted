@@ -172,6 +172,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
      *  We need to parse precond first
      */
 
+    clock_t time = clock();
+
     vector<vector<int>> instantiations;
     const vector<Parameter> &params = action.getParameters();
     vector<Atom> precond;
@@ -242,6 +244,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
             }
         }
         if (working_table.tuples.empty()) {
+            if (acyclic_vec[action.getIndex()])
+                total_time += double(clock() - time) / CLOCKS_PER_SEC;
             return working_table;
         }
     }

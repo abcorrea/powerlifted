@@ -20,7 +20,7 @@ private:
     std::vector<std::vector<int>> full_join_order;
     std::vector<bool> acyclic_vec;
 
-    };
+};
 
 
 #endif //SEARCH_FULL_REDUCER_SUCCESSOR_GENERATOR_H
