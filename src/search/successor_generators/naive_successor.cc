@@ -45,6 +45,5 @@ vector<Table> NaiveSuccessorGenerator::parse_precond_into_join_program(const vec
         if (!tuples.empty())
             parsed_tables.emplace_back(tuples, indices);
     }
-    shuffle(parsed_tables.begin(), parsed_tables.end(), std::default_random_engine(rand()));
     return parsed_tables;
 }

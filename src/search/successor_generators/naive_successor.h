@@ -8,9 +8,7 @@
 
 class NaiveSuccessorGenerator : public GenericJoinSuccessor {
 public:
-    explicit NaiveSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {
-        srand(time(nullptr));
-    }
+    explicit NaiveSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {}
 
     std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
