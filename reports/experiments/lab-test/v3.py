@@ -10,15 +10,10 @@ from lab.experiment import Experiment
 
 from downward import suites
 from downward.reports.absolute import AbsoluteReport
-from downward.reports.plot import PlotReport
 from downward.reports.scatter import ScatterPlotReport
 
 from common_setup import Configuration
-from exp_utils import *
-
-"""
-Test memory and time to instantiate initial state.
-"""
+from aux import *
 
 # Create custom report class with suitable info and error attributes.
 class BaseReport(AbsoluteReport):
@@ -50,9 +45,7 @@ ATTRIBUTES=['initial_state_size',
             'peak_memory',
             'cost',
             'coverage',
-            'search_time',
-            'generations',
-            'successors']
+            'search_time']
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
@@ -60,8 +53,13 @@ exp = Experiment(environment=ENV)
 # Add custom parser for Power Lifted.
 exp.add_parser('power-lifted-parser.py')
 
-CONFIGS = [Configuration('blind-full_reducer-1', ['naive', 'blind', 'full_reducer']),
-           Configuration('blind-full_reducer-2', ['naive', 'blind', 'full_reducer']),]
+CONFIGS = [Configuration('blind-full_reducer', ['naive', 'blind', 'full_reducer']),
+           Configuration('blind-ordered_join', ['naive', 'blind', 'ordered_join']),
+           Configuration('blind-join-1', ['naive', 'blind', 'join']),
+           Configuration('blind-join-2', ['naive', 'blind', 'join']),
+           Configuration('blind-join-3', ['naive', 'blind', 'join']),
+           Configuration('blind-join-4', ['naive', 'blind', 'join']),
+           Configuration('blind-join-5', ['naive', 'blind', 'join'])]
 
 # Create one run for each instance and each configuration
 for config in CONFIGS:
@@ -98,42 +96,30 @@ exp.add_step('start', exp.start_runs)
 # writes them to *-eval/properties.
 exp.add_fetcher(name='fetch')
 
-def map_successors_into_generations(run):
-    if run['algorithm'] == "blind-full_reducer-2":
-        if 'successors' in run:
-            run['generations'] = run['successors']
-    return run
-
-def unique_domain(run):
-    run['problem'] = run['problem'] +  run['domain']
-    run['domain'] = 'unique'
-    return run
-
 # Make a report.
 exp.add_report(
-    BaseReport(attributes=ATTRIBUTES,
-               filter=[map_successors_into_generations],),
+    BaseReport(attributes=ATTRIBUTES),
     outfile='report.html')
 
 exp.add_report(
     BaseReport(attributes=ATTRIBUTES,
-               format='tex',
-               filter=[map_successors_into_generations, unique_domain],),
+               format='tex'),
     outfile='report.tex')
 
-for attr in ['generations']:
-    exp.add_report(
-        ScatterPlotReport(
-            attributes=[attr],
-            filter_algorithm=["blind-full_reducer-1", "blind-full_reducer-2"],
-            filter=[map_successors_into_generations, discriminate_acyclic],
-            get_category=domain_as_category,
-            yscale='linear',
-            xscale='linear',
-            format='tex'
-        ),
-        outfile='generations-vs-successors.tex'
-    )
+for attr in ['peak_memory', 'search_time']:
+    for alg in ['blind-join-1', 'blind-ordered_join']:
+        exp.add_report(
+            ScatterPlotReport(
+                attributes=[attr],
+                filter_algorithm=[alg, "blind-full_reducer"],
+                filter=[discriminate_org_synt],
+                get_category=domain_as_category,
+                format='tex'
+            ),
+            outfile='{}-{}-vs-{}'.format(attr, alg, "blind-full_reducer") + '.tex'
+        )
 
 # Parse the commandline and run the specified steps.
 exp.run_steps()
+
+
