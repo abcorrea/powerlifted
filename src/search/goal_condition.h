@@ -9,17 +9,34 @@
 
 using namespace std;
 
+/**
+ * @brief Define a single atom contained in the goal condition.
+ *
+ * @var predicate: Index of the predicate symbol of the atom.
+ * @var args: Vector containing the indices of the objects instantiating the atom.
+ * @var negated: Boolean value indicating whether the atom is negated in the goal.
+ *
+ */
 struct AtomicGoal {
     int predicate;
     std::vector<int> args;
     bool negated;
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-    AtomicGoal(int predicate, std::vector<int> args, bool negated) : predicate(predicate), args(std::move(args)),
-                                                                     negated (negated) { }
-#pragma clang diagnostic pop
+    AtomicGoal(int predicate, std::vector<int> args, bool negated)
+            : predicate(predicate), args(std::move(args)),
+              negated (negated) { }
 };
 
+
+/**
+ * @brief Represent the goal condition of the task
+ *
+ * @var goal: Vector of ground atoms (AtomicGoal) in the goal condition.
+ * @var positive_nullary_goals: Nullary predicates that appear in the goal.
+ * @var negative_nullary_goals: Nullary predicates that appear negated in the goal.
+ *
+ * @see AtomicGoal (goal_condition.h)
+ *
+ */
 class GoalCondition {
 public:
     std::vector<AtomicGoal> goal;
