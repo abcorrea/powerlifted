@@ -11,34 +11,57 @@
 #include <boost/functional/hash.hpp>
 #include "hash_structures.h"
 
-typedef std::vector<int> GroundAtom; // Ground atom is a list of object indices.
+/**
+ * @brief GroundAtom is an alias for vector of integers. It is represented
+ * as a list of object indices.
+ */
+typedef std::vector<int> GroundAtom;
 
+
+/**
+ * @brief Represent a parameter for a given action schema.
+ *
+ * @var name: Name of the parameter in the action schema definition.
+ * @var index: Index of this parameter in the list of parameters in the schema.
+ * @var type: Type related to this parameter.
+ */
 struct Parameter {
-    Parameter(std::string name, int index, int type) : name(std::move(name)), index(index), type(type) {}
+    Parameter(std::string name, int index, int type)
+            : name(std::move(name)), index(index), type(type) {}
 
     std::string name;
     int index;
     int type;
 };
 
+
+/**
+ * @brief Implements an argument composing an atom. It can be a free variable or constant
+ *
+ * @var index: If the argument is a constant, then it represents the index of the object,
+ * otherwise it represents the index of the free variable in the parameters of the action
+ * schema.
+ * @var constant: Indicates whether the argument is a constanst or not (free variable, then).
+ *
+ */
 struct Argument {
     Argument(int index, bool constant) : index(index), constant(constant) {}
-
-    /*
-     * An argument has a field for its parameter index.
-     * It also has a flag indicating whether it is a constant or not.
-     */
     int index;
     bool constant;
 };
 
+
+/**
+ * @brief A relation is a "table" with set of tuples corresponding to some predicate in a state.
+ *
+ * @var predicate_symbol: Indicates its corresponding predicate.
+ * @var tuples: Set of tuples (vectors) corresponding to the ground atoms in this relation.
+ *
+ */
 struct Relation {
-    /*
-     * A relation is a "table" corresponding to some predicate in a state.  The predicate_symbol attribute indicates
-     * its corresponding predicate and the tuples attribute is a list of tuples, represented as a vector of vectors.
-     */
-    Relation(int predicate_symbol, std::unordered_set<GroundAtom, TupleHash> tuples) : predicate_symbol(predicate_symbol),
-                                                                                       tuples (std::move(tuples)) {}
+    Relation(int predicate_symbol, std::unordered_set<GroundAtom, TupleHash> tuples)
+            : predicate_symbol(predicate_symbol),
+              tuples (std::move(tuples)) {}
 
     Relation(const Relation &rhs) = default;
 
@@ -60,29 +83,32 @@ struct Relation {
     std::unordered_set<GroundAtom, TupleHash> tuples;
 };
 
+
+/**
+ * @brief Represent a lifted atom by its name, predicate symbol index, list of arguments, and
+ * whether it is negated or not.
+ *
+ * @var name: String representing atom name
+ * @var predicate_symbol: predicate symbol index
+ * @var arguments: list of Argument objects representing the free variables
+ * or constants of the atom
+ * @var negated: boolean variable indicating whether the atom is negated
+ * or not (in whatever context it occurs)
+ *
+ * @see Argument (structures.h)
+ */
 struct Atom {
     Atom(std::string name, int predicate_symbol, std::vector<Argument> tuples, bool negated) :
             name(std::move(name)),
             predicate_symbol(predicate_symbol),
-            tuples(std::move(tuples)),
+            arguments(std::move(tuples)),
             negated(negated) {}
 
-    /*
-     * Atom has a predicate, a list of arguments, a flag whether it is negated.
-     */
     std::string name;
     int predicate_symbol;
-    std::vector<Argument> tuples; // TODO change name to "arguments"
+    std::vector<Argument> arguments;
     bool negated;
 };
 
-/*
- * Hash functions
- */
-/*
-std::size_t hash_value(const Relation &r) {
-    boost::hash<std::vector<std::vector<int>>> h1;
-    return h1(r.tuples);
-}*/
 
 #endif //SEARCH_STRUCTURES_H

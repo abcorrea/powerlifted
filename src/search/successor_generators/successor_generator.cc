@@ -37,8 +37,8 @@ const std::vector<std::pair<State, Action>>
                 for (const Atom& precond : action.getPrecondition()) {
                     int index = precond.predicate_symbol;
                     vector<int> tuple;
-                    tuple.reserve(precond.tuples.size());
-                    for (const Argument &arg : precond.tuples) {
+                    tuple.reserve(precond.arguments.size());
+                    for (const Argument &arg : precond.arguments) {
                         assert(arg.constant);
                         tuple.push_back(arg.index); // Index of a constant is the obj index
                     }
@@ -84,7 +84,7 @@ const std::vector<std::pair<State, Action>>
                 vector<Relation> new_relation(state.relations);
                 for (const Atom &eff : action.getEffects()) {
                     GroundAtom ga;
-                    for (const Argument &a : eff.tuples) {
+                    for (const Argument &a : eff.arguments) {
                         assert(a.constant);
                         ga.push_back(a.index);
                     }
@@ -175,12 +175,12 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
     }
 
     ground_atom.clear();
-    ground_atom.reserve(eff.tuples.size());
-    for (int i = 0; i < eff.tuples.size(); i++) {
-        if (!eff.tuples[i].constant)
-            ground_atom.push_back(ordered_tuple[eff.tuples[i].index]);
+    ground_atom.reserve(eff.arguments.size());
+    for (int i = 0; i < eff.arguments.size(); i++) {
+        if (!eff.arguments[i].constant)
+            ground_atom.push_back(ordered_tuple[eff.arguments[i].index]);
         else
-            ground_atom.push_back(eff.tuples[i].index);
+            ground_atom.push_back(eff.arguments[i].index);
     }
 
     //Sanity check

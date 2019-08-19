@@ -19,7 +19,7 @@ vector<Table> NaiveSuccessorGenerator::parse_precond_into_join_program(const vec
      * to perform the join-program more easily.
      *
      * We first obtain all indices in the precondition that are constants.
-     * Then, we create the table applying the projection over the tuples
+     * Then, we create the table applying the projection over the arguments
      * that satisfy the instantiation of the constants. There are two cases
      * for the projection:
      *    1. The table comes from the static information; or

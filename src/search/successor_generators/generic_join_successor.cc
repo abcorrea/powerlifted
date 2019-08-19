@@ -28,7 +28,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
     vector<Atom> precond;
     for (const Atom &p : action.getPrecondition()) {
         // Ignoring negative preconditions when instantiating
-        if ((!p.negated) and p.tuples.size() > 0) {
+        if ((!p.negated) and p.arguments.size() > 0) {
             precond.push_back((p));
         }
     }
@@ -81,7 +81,7 @@ const void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vect
                                                                           vector<int> &constants,
                                                                           const Atom &a) {
     int cont = 0;
-    for (Argument arg : a.tuples) {
+    for (Argument arg : a.arguments) {
         if (!arg.constant)
             indices.push_back(arg.index);
         else {
@@ -100,8 +100,8 @@ const void GenericJoinSuccessor::project_tuples(const State &s,
     for (const GroundAtom &atom : s.relations[a.predicate_symbol].tuples) {
         match_constants = true;
         for (int c : constants) {
-            assert (a.tuples[c].constant);
-            if (atom[c] != a.tuples[c].index)
+            assert (a.arguments[c].constant);
+            if (atom[c] != a.arguments[c].index)
                 match_constants = false;
         }
         if (match_constants)
@@ -120,7 +120,7 @@ vector<Table> GenericJoinSuccessor::parse_precond_into_join_program(const vector
      * to perform the join-program more easily.
      *
      * We first obtain all indices in the precondition that are constants.
-     * Then, we create the table applying the projection over the tuples
+     * Then, we create the table applying the projection over the arguments
      * that satisfy the instantiation of the constants. There are two cases
      * for the projection:
      *    1. The table comes from the static information; or

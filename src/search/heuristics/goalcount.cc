@@ -8,7 +8,7 @@
 
 int Goalcount::compute_heuristic(const State &s, const Task &task) {
     /*
-     * First, loop over all nullary atoms.  Then loop over all tuples in the
+     * First, loop over all nullary atoms.  Then loop over all arguments in the
      * goal condition and checks which ones are satisfied or not.
      *
      */

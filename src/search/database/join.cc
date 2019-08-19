@@ -44,7 +44,7 @@ void join(Table &t1, Table &t2) {
 
 
         // We perform a reverse removal procedure so we avoid indexation problems.
-        // We also reuse the "to_remove" vector when we are removing elements from the matched tuples.
+        // We also reuse the "to_remove" vector when we are removing elements from the matched arguments.
         vector<int> to_remove;
         to_remove.reserve(matches.size());
         for (const pair<int, int> &m : matches) {

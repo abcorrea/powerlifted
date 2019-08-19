@@ -18,7 +18,7 @@
  *
  *
  * Note that successor generators might change the number of generated states. This happens simply because
- * the order of the tuples produced differs depending on the order of the joins.
+ * the order of the arguments produced differs depending on the order of the joins.
  *
  */
 

@@ -31,13 +31,13 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         map<int, int> precond_to_size;
         int cont = 0;
         for (const Atom &p : action.getPrecondition()) {
-            if (p.negated or p.tuples.empty()) {
+            if (p.negated or p.arguments.empty()) {
                 continue;
             }
             // TODO case where all args are constant --> tuple not being added to join program
             set<int> args;
             bool has_free_variables = false;
-            for (Argument arg : p.tuples) {
+            for (Argument arg : p.arguments) {
                 // We parse constants to negative numbers so they're uniquely identified
                 int node;
                 if (arg.constant)
@@ -184,7 +184,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
 
     for (const Atom &p : action.getPrecondition()) {
         // Ignoring negative preconditions when instantiating
-        if (!p.negated and p.tuples.size() > 0) {
+        if (!p.negated and p.arguments.size() > 0) {
             precond.push_back((p));
         }
     }
@@ -209,7 +209,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
         full_join_order[action.getIndex()].clear();
         priority_queue<pair<int,int>> q_size_index;
         for (int i = 0; i < tables.size(); ++i) {
-            q_size_index.emplace(tables[i].tuples.size(), i);
+            q_size_index.emplace(tables[i].arguments.size(), i);
         }
         assert(q_size_index.size() == tables.size());
         while (!q_size_index.empty()) {
