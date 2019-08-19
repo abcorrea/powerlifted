@@ -13,6 +13,9 @@ int semi_join(Table &t1, Table &t2) {
      * 1. If there are no matching indices, then we simply return
      * 2. If at least one parameter matches, we perform a nested loop semi-join.
      *
+     * We return the size of the semi-join in order to be able to identify when
+     * an empty relation is produced.
+     *
      */
 
     vector<pair<int, int>> matches;
@@ -44,7 +47,8 @@ int semi_join(Table &t1, Table &t2) {
                     }
                 }
                 if (match) {
-                    // If a tuple matches at least one other tuple, than it is sufficient for the semi-join
+                    // If a tuple matches at least one other tuple,
+                    // than it is sufficient for the semi-join
                     new_tuples.insert(tuple_t1);
                     break;
                 }

@@ -41,12 +41,10 @@ void join(Table &t1, Table &t2) {
         /*
          * Otherwise, we perform the join and the projection
          */
-        //vector<int> aux_indices(t2.tuple_index);
 
-        /*
-         * We perform a reverse removal procedure so we avoid indexation problems.
-         * We also reuse the "to_remove" vector when we are removing elements from the matched tuples.
-         */
+
+        // We perform a reverse removal procedure so we avoid indexation problems.
+        // We also reuse the "to_remove" vector when we are removing elements from the matched tuples.
         vector<int> to_remove;
         to_remove.reserve(matches.size());
         for (const pair<int, int> &m : matches) {
@@ -80,7 +78,6 @@ void join(Table &t1, Table &t2) {
         }
     }
     t1.tuples = new_tuples;
-    return;
 }
 
 
