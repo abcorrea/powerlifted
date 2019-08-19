@@ -38,4 +38,6 @@ add_executable(search
         database/semi_join.h database/semi_join.cc
         database/hash_join.cc database/hash_join.h
         hash_structures.h
-        database/hash_semi_join.cc database/hash_semi_join.h utils.cc utils.h)
+        database/hash_semi_join.cc database/hash_semi_join.h
+        utils.cc utils.h
+        successor_generators/random_successor.h successor_generators/random_successor.cc)
