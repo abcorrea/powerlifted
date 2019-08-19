@@ -3,6 +3,12 @@
 
 #include "heuristic.h"
 
+/**
+ * @brief Evaluates all states with h=1. Does not perform goal check.
+ *
+ * @note Admissible for tasks with unit cost.
+ *
+ */
 class BlindHeuristic : public Heuristic {
 public:
     int compute_heuristic(const State &s, const Task &task) override {

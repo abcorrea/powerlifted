@@ -4,6 +4,16 @@
 #include "heuristic.h"
 #include "goalcount.h"
 
+/**
+ * @brief If there is a tuple which appeared in a state with goalcount higher than the current one, return 1.
+ * Otherwise, return 2.  If it is a goal state, return 0.
+ *
+ * @var history: Keep track of all tuples and the lowest goalcount value in which they appeared.
+ *
+ * @note Goal-aware. Inadmissible.
+ *
+ * @todo change to regular iw1
+ */
 class IteratedWidth : public Heuristic {
     /*
      * Implements IW1 evaluator

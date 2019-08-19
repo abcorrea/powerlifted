@@ -7,6 +7,11 @@
 #include "../task.h"
 
 int Goalcount::compute_heuristic(const State &s, const Task &task) {
+    /*
+     * First, loop over all nullary atoms.  Then loop over all tuples in the
+     * goal condition and checks which ones are satisfied or not.
+     *
+     */
     int h = 0;
     for (int pred : task.goal.positive_nullary_goals) {
         if (!s.nullary_atoms[pred])

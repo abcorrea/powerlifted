@@ -4,6 +4,15 @@
 using namespace std;
 
 int IteratedWidth::compute_heuristic(const State &s, const Task &task) {
+    /*
+     *
+     * If it is the first time computing a heuristic, preprocess all history
+     * container.  Otherwise, simply compute goalcount and check if it is a goal
+     * state.  If it is, return 0.  If it is not, compute the novelty based on
+     * the scope of the goalcount.
+
+     *
+     */
     if (first_time) {
         // Initialize IW structures
         history.clear();

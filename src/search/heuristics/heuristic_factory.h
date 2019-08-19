@@ -10,6 +10,9 @@
 #include "goalcount.h"
 #include "iterated_width.h"
 
+/**
+ * @brief Factory class to generate corresponding heuristic object
+ */
 class HeuristicFactory {
 public:
     static Heuristic *new_heuristic(const std::string& method) {
