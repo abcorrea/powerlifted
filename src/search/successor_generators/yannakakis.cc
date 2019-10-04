@@ -136,14 +136,14 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
         }
         if (not_removed_counter == 1) {
             /*
-             * We need to add the root of every component and join them
+             * We need to add the root of every component and join them.
+             * But since we considered all components when computing the full reducer,
+             * there is only one.
              */
-            UnionFind uf(removed.size());
-            for (const auto &j : join_tree_order[action.getIndex()]) {
-                uf.union_func(j.second, j.first);
-            }
-            for (auto k : uf.get_components()) {
-                remaining_join[action.getIndex()].push_back(edge_to_precond[k]);
+            for (int k = 0; k < removed.size(); ++k) {
+                if (!removed[k]) {
+                    remaining_join[action.getIndex()].push_back(edge_to_precond[k]);
+                }
             }
             cout << "Action " << action.getName() << " is acyclic.\n";
             acyclic_vec[action.getIndex()] = true;
