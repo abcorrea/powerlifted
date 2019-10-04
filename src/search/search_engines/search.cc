@@ -27,15 +27,15 @@ void Search::extract_goal(int state_counter, int generations, State state,
                           unordered_map<State, int, boost::hash<State>> &visited,
                           unordered_map<int, State> &index_to_state, const Task &task) const {
     cout << "Goal state found!" << endl;
-    cout << "Total number of states visited:" << visited.size() << endl;
-    cout << "Total number of states generated:" << generations << endl;
+    cout << "Total number of states visited: " << visited.size() << endl;
+    cout << "Total number of states generated: " << generations << endl;
     stack<State> states_in_the_plan;
     states_in_the_plan.push(state);
     while (cheapest_parent[visited[state]].first != -1) {
         state = index_to_state[cheapest_parent[visited[state]].first];
         states_in_the_plan.push(state);
     }
-    cout << "Total plan cost:" << states_in_the_plan.size() - 1 << endl;
+    cout << "Total plan cost: " << states_in_the_plan.size() - 1 << endl;
     /* The section below prints the states on the plan found.
      while (!states_in_the_plan.empty()) {
         state = states_in_the_plan.top();
