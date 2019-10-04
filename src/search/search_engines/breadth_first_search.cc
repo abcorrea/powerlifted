@@ -82,6 +82,6 @@ const int BreadthFirstSearch::search(const Task &task,
         }
     }
 
-
+    cout << generations << endl;
     return NOT_SOLVED;
 }

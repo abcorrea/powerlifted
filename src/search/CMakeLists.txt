@@ -40,4 +40,7 @@ add_executable(search
         hash_structures.h
         database/hash_semi_join.cc database/hash_semi_join.h
         utils.cc utils.h
-        successor_generators/random_successor.h successor_generators/random_successor.cc)
+        successor_generators/random_successor.h successor_generators/random_successor.cc
+        successor_generators/yannakakis.cc successor_generators/yannakakis.h
+        database/project.cc database/project.h
+        utils/union_find.h)

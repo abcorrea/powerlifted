@@ -9,6 +9,7 @@
 #include "naive_successor.h"
 #include "ordered_join_successor.h"
 #include "random_successor.h"
+#include "yannakakis.h"
 
 class SuccessorGeneratorFactory {
 public:
@@ -28,6 +29,9 @@ public:
         }
         else if (boost::iequals(method, "random_join")) {
             return new RandomSuccessorGenerator(task);
+        }
+        else if (boost::iequals(method, "yannakakis")) {
+            return new YannakakisSuccessorGenerator(task);
         }
         else {
             return nullptr;
