@@ -78,13 +78,10 @@ int main(int argc, char *argv[]) {
 
     int result = search->search(task, successorGenerator, *heuristic);
 
-    /*
-     * TODO
-     * We probably want to create some more refined data structures. For example, it would be nice to have an easy way
-     * to get all objects of a given type. An unordered map/set might suffice for this example.  For other attributes,
-     * this might also be interesting.  Maybe in the future we can do it while parsing.
-     *
-     */
+    if (result == -1) {
+      cerr << "State space completely explored and no solution found!" << endl;
+    }
+		       
 
     cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
     return result;
