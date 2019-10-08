@@ -104,10 +104,12 @@ bool parse(Task &task, const ifstream &in) {
             cin >> arg;
             args.push_back(arg);
         }
-        if (!task.predicates[predicate_index].isStaticPredicate())
-            task.initial_state.addTuple(predicate_index, args);
-        else
-            task.static_info.addTuple(predicate_index, args);
+        if (!task.initial_state.nullary_atoms[predicate_index]) {
+            if (!task.predicates[predicate_index].isStaticPredicate())
+                task.initial_state.addTuple(predicate_index, args);
+            else
+                task.static_info.addTuple(predicate_index, args);
+        }
     }
 
     // Read Goal State
