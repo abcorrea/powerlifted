@@ -68,15 +68,14 @@ struct Relation {
     Relation() = default;
 
     bool operator==(const Relation &other) const {
-        bool vector_equal = true;
+        if (predicate_symbol != other.predicate_symbol)
+            return false;
+
         if (tuples.size() != other.tuples.size()) {
             return false;
         }
-        if (tuples != other.tuples) {
-            vector_equal = false;
-        }
-        return predicate_symbol == other.predicate_symbol
-                && vector_equal;
+
+        return (tuples == other.tuples);
     }
 
     int predicate_symbol;
