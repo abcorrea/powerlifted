@@ -28,7 +28,7 @@ public:
 struct NodeComparison {
     bool operator()(const Node &n, const Node &m) const {
         if (n.h != m.h) return n.h > m.h;
-        else return n.g < m.g;
+        else return n.g >= m.g;
     }
 };
 

@@ -72,6 +72,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
         //cout << "STATE:" << " ";
         //task.dumpState(state);
         generations += successors.size();
+        int init_state_succ = 0;
         for (const pair<State, Action> &successor : successors) {
             const State &s = successor.first;
             const Action &a = successor.second;
@@ -79,6 +80,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
             //task.dumpState(s);
             int dist = g + task.actions[a.index].getCost();
             if (visited.find(s) == visited.end()) {
+                init_state_succ++;
                 cheapest_parent[state_counter] = make_pair(next, a);
                 q.emplace(dist, heuristic.compute_heuristic(s, task), state_counter);
                 shortest_distance[state_counter] = dist;
@@ -95,6 +97,8 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
                 }
             }
         }
+        //cout << "Init state succ: " << init_state_succ << endl;
+        //exit(0);
     }
 
     cout << "Total time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
