@@ -11,6 +11,7 @@
 #include "../task.h"
 #include "../successor_generators/successor_generator.h"
 #include "../heuristics/heuristic.h"
+#include "../utils/segmented_vector.h"
 
 #define SOLVED 0
 #define NOT_SOLVED 1
@@ -48,14 +49,14 @@ public:
     bool is_goal(const State &state, const GoalCondition &goal) const;
 
     void extract_goal(int state_counter, int generations, State state,
-                      unordered_map<int, pair<int, Action>> &cheapest_parent,
+                      segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
                       unordered_map<State, int, boost::hash<State>> &visited,
-                      unordered_map<int, State> &index_to_state, const Task &task) const;
+                      segmented_vector::SegmentedVector<State> &index_to_state, const Task &task) const;
 
-    static void extract_plan(unordered_map<int, pair<int, Action>> &cheapest_parent,
+    static void extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
                              State state,
                              unordered_map<State, int, boost::hash<State>> &visited,
-                             unordered_map<int, State> &index_to_state,
+                             segmented_vector::SegmentedVector<State> &index_to_state,
                              const Task &task);
 
 

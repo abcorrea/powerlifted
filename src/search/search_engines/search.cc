@@ -23,9 +23,9 @@ int Search::getNumberGeneratedStates() const {
 }
 
 void Search::extract_goal(int state_counter, int generations, State state,
-                          unordered_map<int, pair<int, Action>> &cheapest_parent,
+                          segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
                           unordered_map<State, int, boost::hash<State>> &visited,
-                          unordered_map<int, State> &index_to_state, const Task &task) const {
+                          segmented_vector::SegmentedVector<State> &index_to_state, const Task &task) const {
     cout << "Goal state found!" << endl;
     cout << "Total number of states visited: " << visited.size() << endl;
     cout << "Total number of states generated: " << generations << endl;
@@ -52,9 +52,9 @@ const int Search::search(const Task &task,
     return NOT_SOLVED;
 }
 
-void Search::extract_plan(unordered_map<int, pair<int, Action>> &cheapest_parent, State state,
+void Search::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent, State state,
                                     unordered_map<State, int, boost::hash<State>> &visited,
-                                    unordered_map<int, State> &index_to_state,
+                                    segmented_vector::SegmentedVector<State> &index_to_state,
                                     const Task &task) {
     vector<Action> actions_in_the_plan;
     while (cheapest_parent[visited[state]].first != -1) {

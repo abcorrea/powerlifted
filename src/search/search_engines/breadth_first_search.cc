@@ -19,13 +19,13 @@ const int BreadthFirstSearch::search(const Task &task,
     int state_counter = 0;
     int generations = 0;
     queue<Node> q; // Queue has Node structures
-    unordered_map<int, pair<int, Action>> cheapest_parent;
-    unordered_map<int, State> index_to_state;
+    segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
+    segmented_vector::SegmentedVector<State> index_to_state;
     unordered_map<State, int, boost::hash<State>> visited;
 
 
-    index_to_state[state_counter] = task.initial_state;
-    cheapest_parent[state_counter] = make_pair(-1, Action(-1, vector<int>()));
+    index_to_state.push_back(task.initial_state);
+    cheapest_parent.push_back(make_pair(-1, Action(-1, vector<int>())));
 
     double statistics_counter = 0;
     int g_layer = 0;
@@ -53,7 +53,7 @@ const int BreadthFirstSearch::search(const Task &task,
                  ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
             g_layer = g;
         }*/
-        assert (index_to_state.find(next) != index_to_state.end());
+        assert (index_to_state.size() >= next);
         State state = index_to_state[next];
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
@@ -68,9 +68,9 @@ const int BreadthFirstSearch::search(const Task &task,
                 init_state_succ++;
                 //cout << "SUCCESSOR:" << " ";
                 //task.dumpState(s);
-                cheapest_parent[state_counter] = make_pair(next, a);
+                cheapest_parent.push_back(make_pair(next, a));
                 q.emplace(g+1, 0, state_counter);
-                index_to_state[state_counter] = s;
+                index_to_state.push_back(s);
                 visited[s] = state_counter;
                 if (task.is_goal(s, task.goal)) {
                     cout << "Goal found at: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;

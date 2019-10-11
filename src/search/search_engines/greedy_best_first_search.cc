@@ -3,6 +3,8 @@
 #include <queue>
 #include <vector>
 
+#include "../utils/segmented_vector.h"
+
 #include "greedy_best_first_search.h"
 
 using namespace std;
@@ -18,20 +20,22 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
     int state_counter = 0;
     int generations = 1;
     priority_queue<Node, vector<Node>, NodeComparison> q; // Queue has Node structures
-    unordered_map<int, pair<int, Action>> cheapest_parent;
-    unordered_map<int, State> index_to_state;
+    segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
+    //unordered_map<int, State> index_to_state;
+    segmented_vector::SegmentedVector<State> index_to_state;
     unordered_map<State, int, boost::hash<State>> visited;
 
-    unordered_map<int, int> shortest_distance;
+    segmented_vector::SegmentedVector<int> shortest_distance;
 
-    index_to_state[state_counter] = task.initial_state;
-    cheapest_parent[state_counter] = make_pair(-1, Action(-1, vector<int>()));
+    index_to_state.push_back(task.initial_state);
+    cheapest_parent.push_back(make_pair(-1, Action(-1, vector<int>())));
 
     int heuristic_layer = heuristic.compute_heuristic(task.initial_state, task)+1;
     cout << "Initial heuristic value " << heuristic_layer << endl;
     int g_layer = 0;
 
     q.emplace(0, heuristic.compute_heuristic(task.initial_state, task), state_counter);
+    shortest_distance.push_back(0);
     visited[task.initial_state] = state_counter++;
 
     if (task.is_goal(task.initial_state, task.goal)) {
@@ -62,7 +66,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
                  << " [" << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
         }*/
         //cout << state_counter << endl;
-        assert (index_to_state.find(next) != index_to_state.end());
+        assert (index_to_state.size() >= next);
         State state = index_to_state[next];
         if (task.is_goal(state, task.goal)) {
             cout << "Goal found at: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
@@ -87,10 +91,10 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
             if (try_to_insert.second) {
                 // Inserted for the first time in the map
                 init_state_succ++;
-                cheapest_parent[state_counter] = make_pair(next, a);
+                cheapest_parent.push_back(make_pair(next, a));
                 q.emplace(dist, new_h, state_counter);
-                shortest_distance[state_counter] = dist;
-                index_to_state[state_counter] = s;
+                shortest_distance.push_back(dist);
+                index_to_state.push_back(s);
                 state_counter++;
             }
             else {
