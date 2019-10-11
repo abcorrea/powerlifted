@@ -82,20 +82,22 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
             //cout << "SUCCESSOR (" << task.actions[a.index].getName() << "): ";
             //task.dumpState(s);
             int dist = g + task.actions[a.index].getCost();
-            if (visited.find(s) == visited.end()) {
+            int new_h = heuristic.compute_heuristic(s, task);
+            pair<unordered_map<State, int, boost::hash<State>>::iterator, bool> try_to_insert = visited.insert(make_pair(s, state_counter));
+            if (try_to_insert.second) {
+                // Inserted for the first time in the map
                 init_state_succ++;
                 cheapest_parent[state_counter] = make_pair(next, a);
-                q.emplace(dist, heuristic.compute_heuristic(s, task), state_counter);
+                q.emplace(dist, new_h, state_counter);
                 shortest_distance[state_counter] = dist;
                 index_to_state[state_counter] = s;
-                visited[s] = state_counter;
                 state_counter++;
             }
             else {
                 size_t index = visited[s];
                 if (dist < shortest_distance[index]) {
                     cheapest_parent[index] = make_pair(next, a);
-                    q.emplace(dist, heuristic.compute_heuristic(s, task), index);
+                    q.emplace(dist, new_h, index);
                     shortest_distance[index] = dist;
                 }
             }
