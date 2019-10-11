@@ -35,7 +35,7 @@ vector<Table> RandomSuccessorGenerator::parse_precond_into_join_program(const ve
             project_tuples(state, a, tuples, constants);
         }
         if (!tuples.empty())
-            parsed_tables.emplace_back(tuples, indices);
+            parsed_tables.emplace_back(move(tuples), move(indices));
     }
     shuffle(parsed_tables.begin(), parsed_tables.end(), std::default_random_engine(rand()));
     return parsed_tables;

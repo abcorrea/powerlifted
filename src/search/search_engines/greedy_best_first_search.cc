@@ -46,6 +46,9 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
         int h = head.h;
         int g = head.g;
         q.pop();
+        if (g > shortest_distance[next]) {
+            continue;
+        }
         if (h < heuristic_layer) {
             heuristic_layer = h;
             cout << "New heuristic value expanded: h=" << h <<

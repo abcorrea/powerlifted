@@ -16,7 +16,7 @@ public:
     int index;
     std::vector<int> instantiation;
 
-    explicit Action(int index, std::vector<int> instantiation) : index(index),
+    explicit Action(int index, std::vector<int> &&instantiation) : index(index),
                                                                  instantiation(std::move(instantiation)) {}
 
     Action() = default;

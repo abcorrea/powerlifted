@@ -144,7 +144,7 @@ vector<Table> GenericJoinSuccessor::parse_precond_into_join_program(const vector
             project_tuples(state, a, tuples, constants);
         }
         if (!tuples.empty())
-            parsed_tables.emplace_back(tuples, indices);
+            parsed_tables.emplace_back(move(tuples), move(indices));
     }
     return parsed_tables;
 }

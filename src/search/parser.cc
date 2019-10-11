@@ -214,7 +214,7 @@ bool parse(Task &task, const ifstream &in) {
                     }
                 }
             }
-            preconditions.emplace_back(precond_name, index, arguments, negated);
+            preconditions.emplace_back(precond_name, index, move(arguments), negated);
         }
         for (int j = 0; j <  eff_size; ++j) {
             string eff_name;
@@ -247,7 +247,7 @@ bool parse(Task &task, const ifstream &in) {
                     exit(-1);
                 }
             }
-            effects.emplace_back(eff_name, index, arguments, negated);
+            effects.emplace_back(eff_name, index, move(arguments), negated);
         }
         ActionSchema a(name, i, cost, parameters, preconditions, effects, inequalities,
                        positive_nul_precond, negative_nul_precond, positive_nul_eff, negative_nul_eff);

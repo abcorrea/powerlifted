@@ -146,7 +146,7 @@ const std::vector<std::pair<State, Action>>
                     }
                 }
                 successors.emplace_back(State(move(new_relation), vector<bool>(new_nullary_atoms)),
-                                        Action(action.getIndex(), ordered_tuple));
+                                        Action(action.getIndex(), move(ordered_tuple)));
             }
         }
     }

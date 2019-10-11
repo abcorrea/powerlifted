@@ -18,8 +18,8 @@ public:
     /// @var tuple_index: Indices of each variable in order
     std::vector<int> tuple_index;
 
-    Table(std::unordered_set<std::vector<int>, TupleHash> tuples,
-          std::vector<int> tuple_index) : tuples(std::move(tuples)),
+    Table(std::unordered_set<std::vector<int>, TupleHash> &&tuples,
+          std::vector<int> &&tuple_index) : tuples(std::move(tuples)),
                                           tuple_index (std::move(tuple_index)) {}
 
     Table() = default;

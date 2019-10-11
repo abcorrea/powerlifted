@@ -27,12 +27,12 @@ vector<Table> OrderedJoinSuccessorGenerator::parse_precond_into_join_program(con
             // If this predicate has information in the static information table,
             // then it must be a static predicate
             project_tuples(staticInformation, a, tuples, constants);
-            ordered_tables.emplace(tuples, indices);
+            ordered_tables.emplace(move(tuples), move(indices));
         } else {
             // If this predicate does not have information in the static information table,
             // then it must be a fluent
             project_tuples(state, a, tuples, constants);
-            ordered_tables.emplace(tuples, indices);
+            ordered_tables.emplace(move(tuples), move(indices));
         }
     }
     while (!ordered_tables.empty()) {
