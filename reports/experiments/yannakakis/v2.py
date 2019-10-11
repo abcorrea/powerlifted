@@ -116,7 +116,7 @@ for attr in ['search_time', 'generated']:
             ScatterPlotReport(
                 attributes=[attr],
                 filter_algorithm=[alg, 'blind-full-reducer'],
-                filter=[discriminate_acyclic],
+                filter=[discriminate_org_synt],
                 get_category=domain_as_category,
                 format='tex'
             ),

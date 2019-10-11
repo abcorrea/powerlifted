@@ -3,7 +3,7 @@
 import os
 import platform
 
-from suites import exclude_duplicates, SAT_SUITE, OPTIMAL_SUITE, EXCLUDED_DOMAINS
+from suites import get_domains, exclude_duplicates, SAT_SUITE, OPTIMAL_SUITE, EXCLUDED_DOMAINS
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.experiment import Experiment
@@ -31,7 +31,7 @@ POWER_LIFTED_DIR = os.environ["POWER_LIFTED_SRC"]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 
 if REMOTE:
-    SUITE = exclude_duplicates(SAT_SUITE, OPTIMAL_SUITE)
+    SUITE = exclude_duplicates(SAT_SUITE, get_domains(OPTIMAL_SUITE))
     ENV = BaselSlurmEnvironment(
         partition='infai_2',
         memory_per_cpu="6G",

@@ -1,6 +1,15 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+def get_domains(suite):
+    domains = set()
+    for x in suite:
+        domain = x.split(':')[0]
+        if domain not in EXCLUDED_DOMAINS:
+            domains.add(domain)
+
+    return list(domains)
+
 def find_domain_file(filenames, dir='.'):
     for filename in filenames:
         path = os.path.join(dir, filename)
@@ -9,7 +18,7 @@ def find_domain_file(filenames, dir='.'):
     raise IOError('none found in %r: %r' % (dir, filenames))
 
 def exclude_duplicates(suite1, suite2):
-    return set(suite1) - set(suite1).intersection(set(suite2))
+    return list(set(suite1) - set(suite1).intersection(set(suite2)))
 
 
 EXCLUDED_DOMAINS = ['caldera-opt18-adl',
