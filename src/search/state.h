@@ -24,8 +24,8 @@ public:
     std::vector<Relation> relations;
     std::vector<bool> nullary_atoms;
 
-    explicit State(std::vector<Relation> relations,
-                   std::vector<bool> nullary_atoms) : relations(std::move(relations)),
+    explicit State(std::vector<Relation> &&relations,
+                   std::vector<bool> &&nullary_atoms) : relations(std::move(relations)),
                                                       nullary_atoms(std::move(nullary_atoms)) {
         // Explicit state constructor
     }

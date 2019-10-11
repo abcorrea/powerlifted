@@ -97,7 +97,7 @@ const std::vector<std::pair<State, Action>>
                         new_relation[eff.predicate_symbol].tuples.insert(ga);
                     }
                 }
-                successors.emplace_back(State(new_relation, new_nullary_atoms),
+                successors.emplace_back(State(move(new_relation), move(new_nullary_atoms)),
                                         Action(action.getIndex(), vector<int>()));
             }
             else {
@@ -145,7 +145,7 @@ const std::vector<std::pair<State, Action>>
                         }
                     }
                 }
-                successors.emplace_back(State(new_relation, new_nullary_atoms),
+                successors.emplace_back(State(move(new_relation), vector<bool>(new_nullary_atoms)),
                                         Action(action.getIndex(), ordered_tuple));
             }
         }
