@@ -9,7 +9,7 @@ def find_domain_file(filenames, dir='.'):
     raise IOError('none found in %r: %r' % (dir, filenames))
 
 def exclude_duplicates(suite1, suite2):
-    return set(suite1) - suite1.intersection(suite2)
+    return set(suite1) - set(suite1).intersection(set(suite2))
 
 
 EXCLUDED_DOMAINS = ['caldera-opt18-adl',
