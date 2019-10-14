@@ -7,6 +7,7 @@
 #include "../action_schema.h"
 #include "../action.h"
 #include "../state.h"
+#include "../state_packer.h"
 #include "../structures.h"
 #include "../task.h"
 #include "../successor_generators/successor_generator.h"
@@ -48,16 +49,17 @@ public:
 
     bool is_goal(const State &state, const GoalCondition &goal) const;
 
-    void extract_goal(int state_counter, int generations, State state,
+    void extract_goal(int state_counter, int generations, PackedState state,
                       segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
-                      unordered_map<State, int, boost::hash<State>> &visited,
-                      segmented_vector::SegmentedVector<State> &index_to_state, const Task &task) const;
+                      unordered_map<PackedState, int, PackedStateHash> &visited,
+                      segmented_vector::SegmentedVector<PackedState> &index_to_state,
+                      const StatePacker &packer, const Task &task) const;
 
     static void extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
-                             State state,
-                             unordered_map<State, int, boost::hash<State>> &visited,
-                             segmented_vector::SegmentedVector<State> &index_to_state,
-                             const Task &task);
+                             PackedState state,
+                             unordered_map<PackedState, int, PackedStateHash> &visited,
+                             segmented_vector::SegmentedVector<PackedState> &index_to_state,
+                             const StatePacker &packer, const Task &task);
 
 
     std::vector<Action> plan;

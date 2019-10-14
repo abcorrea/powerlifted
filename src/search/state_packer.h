@@ -12,6 +12,47 @@ struct PackedState {
     std::vector<std::vector<int>> packed_relations;
     std::vector<int> predicate_symbols;
     std::vector<bool> nullary_atoms;
+
+
+    bool operator==(const PackedState &b) const{
+        if (predicate_symbols.size() != b.predicate_symbols.size())
+            return false;
+        for (int i = 0; i < predicate_symbols.size(); ++i) {
+            if (predicate_symbols[i] != b.predicate_symbols[i])
+                return false;
+        }
+        for (int i = 0; i < nullary_atoms.size(); ++i) {
+            if (nullary_atoms[i] != b.nullary_atoms[i])
+                return false;
+        }
+        for (int i = 0; i < packed_relations.size(); ++i) {
+            if (packed_relations[i].size() != b.packed_relations[i].size())
+                return false;
+            for (int j = 0; j < packed_relations[i].size(); j++) {
+                if (packed_relations[i][j] != b.packed_relations[i][j])
+                    return false;
+            }
+        }
+        return true;
+    }
+
+};
+
+struct PackedStateHash {
+    std::size_t operator() (const PackedState &s) const {
+        std::size_t seed = 0;
+        for (int i : s.predicate_symbols) {
+            boost::hash_combine(seed, i);
+        }
+        for (bool b : s.nullary_atoms) {
+            boost::hash_combine(seed, b);
+        }
+        for (const auto &r : s.packed_relations) {
+            size_t x = boost::hash_range(r.begin(), r.end());
+            boost::hash_combine(seed, x);
+        }
+        return seed;
+    }
 };
 
 
@@ -54,7 +95,7 @@ public:
         }
     }
 
-    PackedState pack_state(const State &state) {
+    PackedState pack_state(const State &state) const {
         PackedState packed_state;
         packed_state.packed_relations.reserve(state.relations.size());
         packed_state.predicate_symbols.reserve(state.relations.size());
@@ -72,7 +113,7 @@ public:
         return packed_state;
     }
 
-    State unpack_state(const PackedState &packed_state) {
+    State unpack_state(const PackedState &packed_state) const {
         std::vector<Relation> relations;
         std::vector<bool> nullary_atoms = packed_state.nullary_atoms;
         relations.reserve(packed_state.packed_relations.size());
@@ -81,13 +122,13 @@ public:
             for (const auto &r : packed_state.packed_relations[i]) {
                 tuples.insert(unpack_tuple(r, packed_state.predicate_symbols[i]));
             }
-            relations.emplace_back(packed_state.predicate_symbols[i], tuples);
+            relations.emplace_back(packed_state.predicate_symbols[i], move(tuples));
         }
         return State(move(relations), move(nullary_atoms));
     }
 
 private:
-    int pack_tuple(const std::vector<int> &tuple, int predicate_index) {
+    int pack_tuple(const std::vector<int> &tuple, int predicate_index) const {
         size_t index = 0;
         for (size_t i = 0; i < tuple.size(); ++i) {
             index += hash_multipliers[predicate_index][i] * tuple[i];
@@ -95,7 +136,7 @@ private:
         return index;
     }
 
-    GroundAtom unpack_tuple(int tuple, int predicate_index) {
+    GroundAtom unpack_tuple(int tuple, int predicate_index) const {
         std::vector<int> values(hash_multipliers[predicate_index].size());
         for (int i = hash_multipliers[predicate_index].size() - 1; i >= 0; --i) {
             values[i] = tuple / hash_multipliers[predicate_index][i];
