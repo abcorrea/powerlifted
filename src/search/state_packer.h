@@ -9,7 +9,7 @@
 
 
 struct PackedState {
-    std::vector<std::vector<int>> packed_relations;
+    std::vector<std::vector<long>> packed_relations;
     std::vector<int> predicate_symbols;
     std::vector<bool> nullary_atoms;
 
@@ -66,26 +66,37 @@ public:
 
         // First, create a vector with one bucket for each type and
         // count the number of objects in each bucket.
-        std::vector<int> objects_per_type(task.type_names.size(), 0);
+        std::vector<std::vector<int>> objects_per_type(task.type_names.size());
+        obj_to_hash_index.resize(task.predicates.size());
+        hash_index_to_obj.resize(task.predicates.size());
         hash_multipliers.resize(task.predicates.size());
         for (const Object &o : task.objects) {
             int i = o.getIndex();
             for (int t : o.getTypes()) {
-                objects_per_type[t]++;
+                objects_per_type[t].push_back(o.getIndex());
             }
         }
+
 
         // Loop over all predicates computing the hash multipliers
         // for each one.
         for (int i = 0; i < hash_multipliers.size(); ++i) {
             const Predicate &pred = task.predicates[i];
             hash_multipliers[i].reserve(pred.getTypes().size());
-            int multiplier = 1;
+            obj_to_hash_index[i].resize(pred.getTypes().size());
+            hash_index_to_obj[i].resize(pred.getTypes().size());
+            long multiplier = 1;
+            int cont = 0;
             for (auto t : pred.getTypes()) {
                 hash_multipliers[i].push_back(multiplier);
-                if (is_product_within_limit(multiplier, objects_per_type[i],
-                                            numeric_limits<int>::max())) {
-                    multiplier *= objects_per_type[t];
+                if (is_product_within_limit(multiplier, objects_per_type[t].size(),
+                                            numeric_limits<long>::max())) {
+                    multiplier *= objects_per_type[t].size();
+                    for (int j = 0; j < objects_per_type[t].size(); ++j) {
+                        obj_to_hash_index[i][cont][objects_per_type[t][j]] = j;
+                        hash_index_to_obj[i][cont][j] = objects_per_type[t][j];
+                    }
+                    cont++;
                 }
                 else {
                     std::cerr << "Hash multipliers overflow! State representation if too large to be packed!" << endl;
@@ -101,7 +112,7 @@ public:
         packed_state.predicate_symbols.reserve(state.relations.size());
         packed_state.nullary_atoms = state.nullary_atoms;
         for (const Relation &r : state.relations) {
-            std::vector<int> packed_relation;
+            std::vector<long> packed_relation;
             int predicate_index = r.predicate_symbol;
             packed_state.predicate_symbols.push_back(predicate_index);
             for (const auto &tuple : r.tuples) {
@@ -128,28 +139,39 @@ public:
     }
 
 private:
-    int pack_tuple(const std::vector<int> &tuple, int predicate_index) const {
-        size_t index = 0;
+    long pack_tuple(const std::vector<int> &tuple, int predicate_index) const {
+        long index = 0;
         for (size_t i = 0; i < tuple.size(); ++i) {
-            index += hash_multipliers[predicate_index][i] * tuple[i];
+            index += hash_multipliers[predicate_index][i] * get_index_given_predicate_and_param(predicate_index,
+                                                                                              i, tuple[i]);
         }
         return index;
     }
 
-    GroundAtom unpack_tuple(int tuple, int predicate_index) const {
+    GroundAtom unpack_tuple(long tuple, int predicate_index) const {
         std::vector<int> values(hash_multipliers[predicate_index].size());
-        for (int i = hash_multipliers[predicate_index].size() - 1; i >= 0; --i) {
-            values[i] = tuple / hash_multipliers[predicate_index][i];
-            tuple -= values[i] * hash_multipliers[predicate_index][i];
+        int aux;
+        for (long i = hash_multipliers[predicate_index].size() - 1; i >= 0; --i) {
+            aux = tuple / hash_multipliers[predicate_index][i];
+            values[i] = get_obj_given_predicate_and_param(predicate_index, i, aux);
+            tuple -= aux * hash_multipliers[predicate_index][i];
         }
         assert(tuple == 0);
         return values;
     }
 
+    int get_index_given_predicate_and_param(int pred, int param, int element) const {
+        return obj_to_hash_index[pred][param].at(element);
+    }
+
+    int get_obj_given_predicate_and_param(int pred, int param, int element) const {
+        return hash_index_to_obj[pred][param].at(element);
+    }
 
 
-
-    std::vector<std::vector<int>> hash_multipliers;
+    std::vector<std::vector<long>> hash_multipliers;
+    std::vector<std::vector<std::unordered_map<int, int>>> obj_to_hash_index;
+    std::vector<std::vector<std::unordered_map<int, int>>> hash_index_to_obj;
 
 };
 

@@ -11,7 +11,7 @@ int get_peak_memory_in_kb();
 /* Test if the product of two numbers is bounded by a third number.
    Safe against overflow. The caller must guarantee
    0 <= factor1, factor2 <= limit; failing this is an error. */
-extern bool is_product_within_limit(int factor1, int factor2, int limit);
+extern bool is_product_within_limit(long factor1, long factor2, long limit);
 
 /* Test if the product of two numbers falls between the given inclusive lower
    and upper bounds. Safe against overflow. The caller must guarantee

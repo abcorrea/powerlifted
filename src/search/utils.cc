@@ -36,7 +36,7 @@ int get_peak_memory_in_kb() {
 
 }
 
-bool is_product_within_limit(int factor1, int factor2, int limit) {
+bool is_product_within_limit(long factor1, long factor2, long limit) {
     assert(factor1 >= 0);
     assert(factor2 >= 0);
     assert(limit >= 0);
