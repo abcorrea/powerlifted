@@ -145,7 +145,7 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
                     remaining_join[action.getIndex()].push_back(edge_to_precond[k]);
                 }
             }
-            cout << "Action " << action.getName() << " is acyclic.\n";
+            //cout << "Action " << action.getName() << " is acyclic.\n";
             acyclic_vec[action.getIndex()] = true;
         }
         else {
@@ -163,7 +163,7 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
                 remaining_join[action.getIndex()].push_back(p);
                 q.pop();
             }
-            cout << "Action " << action.getName() << " is cyclic.\n";
+            //cout << "Action " << action.getName() << " is cyclic.\n";
             acyclic_vec[action.getIndex()] = false;
         }
     }
@@ -294,4 +294,3 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
 
     return working_table;
 }
-
