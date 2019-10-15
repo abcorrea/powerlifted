@@ -97,7 +97,7 @@ struct Relation {
  * @see Argument (structures.h)
  */
 struct Atom {
-    Atom(std::string name, int predicate_symbol, std::vector<Argument> &&tuples, bool negated) :
+    Atom(std::string &&name, int predicate_symbol, std::vector<Argument> &&tuples, bool negated) :
             name(std::move(name)),
             predicate_symbol(predicate_symbol),
             arguments(std::move(tuples)),

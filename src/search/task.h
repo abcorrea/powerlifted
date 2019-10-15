@@ -47,7 +47,7 @@ public:
     const void addType(const std::string& type_name);
 
     const void
-    addPredicate(const std::string &name, int index, int arity, bool static_predicate, const std::vector<int> &types);
+    addPredicate(std::string &name, int index, int arity, bool static_predicate, std::vector<int> &types);
 
     const void addObject(const std::string& name, int index, const std::vector<int>& types);
 

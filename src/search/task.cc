@@ -9,9 +9,9 @@
 using namespace std;
 
 const void
-Task::addPredicate(const string &name, int index, int arity, bool static_predicate,
-                   const vector<int> &types) {
-    Task::predicates.emplace_back(name, index, arity, static_predicate, types);
+Task::addPredicate(string &name, int index, int arity, bool static_predicate,
+                   vector<int> &types) {
+    Task::predicates.emplace_back(move(name), index, arity, static_predicate, move(types));
 }
 
 const void Task::addObject(const string &name, int index, const vector<int> &types) {
