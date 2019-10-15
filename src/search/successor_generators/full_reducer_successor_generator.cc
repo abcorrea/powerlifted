@@ -141,7 +141,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                     full_join_order[action.getIndex()].push_back(edge_to_precond[k]);
                 }
             }
-            cout << "Action " << action.getName() << " is acyclic.\n";
+            //cout << "Action " << action.getName() << " is acyclic.\n";
             acyclic_vec[action.getIndex()] = true;
         }
         else {
@@ -159,7 +159,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                 full_join_order[action.getIndex()].push_back(p);
                 q.pop();
             }
-            cout << "Action " << action.getName() << " is cyclic.\n";
+            //cout << "Action " << action.getName() << " is cyclic.\n";
             acyclic_vec[action.getIndex()] = false;
         }
     }

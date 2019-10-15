@@ -8,8 +8,9 @@
 
 class Predicate {
 public:
-    Predicate(std::string name, int index, int arity, bool static_predicate, std::vector<int> types) :
-    name(std::move(name)), index(index), arity(arity), static_predicate(static_predicate), types(std::move(types)) {
+    Predicate(std::string &&name, int index, int arity, bool static_predicate, std::vector<int> &&types) :
+            name(std::move(name)), index(index), arity(arity),
+            static_predicate(static_predicate), types(std::move(types)) {
         // Constructor
     }
 

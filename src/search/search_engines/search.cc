@@ -1,3 +1,5 @@
+#include "search.h"
+
 #include <algorithm>
 #include <cassert>
 #include <ctime>
@@ -8,7 +10,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "search.h"
 #include "../successor_generators/successor_generator.h"
 #include "../heuristics/goalcount.h"
 
@@ -22,18 +23,19 @@ int Search::getNumberGeneratedStates() const {
     return number_generated_states;
 }
 
-void Search::extract_goal(int state_counter, int generations, State state,
+void Search::extract_goal(int state_counter, int generations, PackedState state,
                           segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
-                          unordered_map<State, int, boost::hash<State>> &visited,
-                          segmented_vector::SegmentedVector<State> &index_to_state, const Task &task) const {
+                          unordered_map<PackedState, int, PackedStateHash> &visited,
+                          segmented_vector::SegmentedVector<PackedState> &index_to_state,
+                          const StatePacker &packer, const Task &task) const {
     cout << "Goal state found!" << endl;
     cout << "Total number of states visited: " << visited.size() << endl;
     cout << "Total number of states generated: " << generations << endl;
     stack<State> states_in_the_plan;
-    states_in_the_plan.push(state);
+    states_in_the_plan.push(packer.unpack_state(state));
     while (cheapest_parent[visited[state]].first != -1) {
         state = index_to_state[cheapest_parent[visited[state]].first];
-        states_in_the_plan.push(state);
+        states_in_the_plan.push(packer.unpack_state(state));
     }
     cout << "Total plan cost: " << states_in_the_plan.size() - 1 << endl;
     /* The section below prints the states on the plan found.
@@ -52,10 +54,10 @@ const int Search::search(const Task &task,
     return NOT_SOLVED;
 }
 
-void Search::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent, State state,
-                                    unordered_map<State, int, boost::hash<State>> &visited,
-                                    segmented_vector::SegmentedVector<State> &index_to_state,
-                                    const Task &task) {
+void Search::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent, PackedState state,
+                                    unordered_map<PackedState, int, PackedStateHash> &visited,
+                                    segmented_vector::SegmentedVector<PackedState> &index_to_state,
+                                    const StatePacker &packer, const Task &task) {
     vector<Action> actions_in_the_plan;
     while (cheapest_parent[visited[state]].first != -1) {
         actions_in_the_plan.push_back(cheapest_parent[visited[state]].second);
