@@ -1,6 +1,8 @@
 #ifndef SEARCH_UTILS_H
 #define SEARCH_UTILS_H
 
+#include <cstdint>
+
 /**
  * @brief Utility functions, mostly related to memory. Originally from Fast Downward.
  * @return

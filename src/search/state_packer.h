@@ -1,11 +1,14 @@
 #ifndef SEARCH_STATE_PACKER_H
 #define SEARCH_STATE_PACKER_H
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 
 #include "task.h"
 #include "utils.h"
+
+#include "utils/hash.h"
 
 
 struct PackedState {
@@ -40,6 +43,19 @@ struct PackedState {
 
 struct PackedStateHash {
     std::size_t operator() (const PackedState &s) const {
+       /* utils::HashState seed;
+        for (int i : s.predicate_symbols) {
+            utils::feed(seed, i);
+        }
+        for (bool b : s.nullary_atoms) {
+            utils::feed(seed, b);
+        }
+        for (const auto &r : s.packed_relations) {
+            utils::feed(seed, r);
+        }
+        return seed.get_hash64();
+    }*/
+
         std::size_t seed = 0;
         for (int i : s.predicate_symbols) {
             boost::hash_combine(seed, i);
@@ -151,7 +167,7 @@ private:
     GroundAtom unpack_tuple(long tuple, int predicate_index) const {
         std::vector<int> values(hash_multipliers[predicate_index].size());
         int aux;
-        for (long i = hash_multipliers[predicate_index].size() - 1; i >= 0; --i) {
+        for (int i = hash_multipliers[predicate_index].size() - 1; i >= 0; --i) {
             aux = tuple / hash_multipliers[predicate_index][i];
             values[i] = get_obj_given_predicate_and_param(predicate_index, i, aux);
             tuple -= aux * hash_multipliers[predicate_index][i];
