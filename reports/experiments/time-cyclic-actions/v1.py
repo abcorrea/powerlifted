@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import math
 import os
 import platform
 
@@ -95,9 +96,18 @@ exp.add_step('start', exp.start_runs)
 # writes them to *-eval/properties.
 exp.add_fetcher(name='fetch')
 
+def remove_nan(run):
+    if 'time_cyclic' in run:
+        if math.isnan(run['time_cyclic']):
+            return False
+        else:
+            return (run['search_time'] > 1.00)
+    return False
+
 # Make a report.
 exp.add_report(
-    BaseReport(attributes=ATTRIBUTES),
+    BaseReport(attributes=ATTRIBUTES,
+               filter=[remove_nan]),
     outfile='report.html')
 
 exp.add_report(

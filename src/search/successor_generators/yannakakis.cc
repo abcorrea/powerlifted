@@ -254,8 +254,6 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
         // some inequality
         project(working_table, project_over);
         if (working_table.tuples.empty()) {
-            if (acyclic_vec[action.getIndex()])
-                total_time += double(clock() - time) / CLOCKS_PER_SEC;
             return working_table;
         }
     }
@@ -286,8 +284,6 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
             }
         }
         if (working_table.tuples.empty()) {
-            if (acyclic_vec[action.getIndex()])
-                total_time += double(clock() - time) / CLOCKS_PER_SEC;
             return working_table;
         }
     }
