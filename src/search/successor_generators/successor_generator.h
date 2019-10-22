@@ -52,8 +52,8 @@ public:
 
     const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const std::vector<int> &indices, const Atom &eff);
 
-    double get_total_time() const {
-        return total_time;
+    double get_cyclic_time() const {
+        return cyclic_time;
     }
 
     GroundAtom ground_atom;
@@ -61,7 +61,7 @@ public:
 
 protected:
     int largest_intermediate_relation = 0;
-    double total_time = 0;
+    double cyclic_time = 0;
 };
 
 

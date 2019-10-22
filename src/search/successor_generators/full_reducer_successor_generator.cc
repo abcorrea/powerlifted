@@ -197,6 +197,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     if (tables.size() != full_join_order[action.getIndex()].size()) {
         // This means that the projection over the constants completely eliminated one table,
         // we can return no instantiation.
+        if (!acyclic_vec[action.getIndex()])
+            cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
         return Table();
     }
     assert (!tables.empty());
@@ -204,6 +206,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
         // We do not check inequalities here. Should we?
         int s = semi_join(tables[sj.first], tables[sj.second]);
         if (s == 0) {
+            if (!acyclic_vec[action.getIndex()])
+                cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
             return Table();
         }
     }
@@ -246,8 +250,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
             }
         }
         if (working_table.tuples.empty()) {
-            if (acyclic_vec[action.getIndex()])
-                total_time += double(clock() - time) / CLOCKS_PER_SEC;
+            if (!acyclic_vec[action.getIndex()])
+                cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
             return working_table;
         }
     }

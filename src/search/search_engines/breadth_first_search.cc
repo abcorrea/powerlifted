@@ -78,7 +78,7 @@ const int BreadthFirstSearch::search(const Task &task,
                 if (task.is_goal(s, task.goal)) {
                     cout << "Goal found at: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
                     cout << "Proportion of time processing cyclic precond: "
-                         << generator->get_total_time()/(double(clock() - timer_start) / CLOCKS_PER_SEC) << endl;
+                         << generator->get_cyclic_time()/(double(clock() - timer_start) / CLOCKS_PER_SEC) << endl;
                     extract_goal(state_counter, generations, packed,
                             cheapest_parent, visited, index_to_state, state_packer, task);
                     extract_plan(cheapest_parent, packed, visited, index_to_state, state_packer, task);
