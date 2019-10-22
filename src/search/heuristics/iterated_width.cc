@@ -3,6 +3,8 @@
 
 using namespace std;
 
+
+
 int IteratedWidth::compute_heuristic(const State &s, const Task &task) {
     /*
      *
@@ -13,15 +15,6 @@ int IteratedWidth::compute_heuristic(const State &s, const Task &task) {
 
      *
      */
-    if (first_time) {
-        // Initialize IW structures
-        history.clear();
-        history.reserve(s.relations.size());
-        for (int i = 0; i < s.relations.size(); ++i) {
-            history.emplace_back();
-        }
-        first_time = false;
-    }
 
     int h = goalcount.compute_heuristic(s, task);
 
@@ -32,9 +25,16 @@ int IteratedWidth::compute_heuristic(const State &s, const Task &task) {
     for (const auto & relation : s.relations) {
         int index = relation.predicate_symbol;
         for (const auto& tuple : relation.tuples) {
-            if (history[index].count(tuple) == 0 or history[index][tuple] > h) {
-                history[index][tuple] = h;
+            //pair<vector<unordered_map<vector<int>, int, TupleHash>>::iterator, bool>
+            auto it = history[index].insert(make_pair(tuple, h));
+            if (it.second) {
                 return 1;
+            }
+            else {
+                if (it.first->second > h) {
+                    history[index][it.first->first] = h;
+                    return 1;
+                }
             }
         }
     }

@@ -3,6 +3,7 @@
 
 #include "heuristic.h"
 #include "goalcount.h"
+#include "../state_packer.h"
 
 /**
  * @brief If there is a tuple which appeared in a state with goalcount higher than the current one, return 1.
@@ -19,12 +20,15 @@ class IteratedWidth : public Heuristic {
      * Implements IW1 evaluator
      */
 public:
+
+    explicit IteratedWidth(const Task &task) {
+        history.resize(task.predicates.size());
+    }
+
     int compute_heuristic(const State &s, const Task &task) final;
 private:
     std::vector<std::unordered_map<std::vector<int>, int, TupleHash>> history;
-    bool first_time = true;
     Goalcount goalcount;
-
 
 };
 

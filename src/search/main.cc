@@ -34,18 +34,6 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    Search *search = SearchFactory::new_search_engine(argv[2]);
-    if (!search) {
-        cerr << "Invalid search method." << endl;
-        return -1;
-    }
-
-    Heuristic *heuristic = HeuristicFactory::new_heuristic(argv[3]);
-    if (!heuristic) {
-        cerr << "Invalid heuristic." << endl;
-        return -1;
-    }
-
     cout << "Reading task description file." << endl;
     cin.rdbuf(in.rdbuf());
 
@@ -62,6 +50,18 @@ int main(int argc, char *argv[]) {
     }
 
     cout << "IMPORTANT: Search component assumes that negative effects are always listed first." << endl;
+
+    Search *search = SearchFactory::new_search_engine(argv[2]);
+    if (!search) {
+        cerr << "Invalid search method." << endl;
+        return -1;
+    }
+
+    Heuristic *heuristic = HeuristicFactory::new_heuristic(argv[3], task);
+    if (!heuristic) {
+        cerr << "Invalid heuristic." << endl;
+        return -1;
+    }
 
     SuccessorGenerator *successorGenerator = SuccessorGeneratorFactory::new_generator(argv[4], task);
     if (!successorGenerator) {
