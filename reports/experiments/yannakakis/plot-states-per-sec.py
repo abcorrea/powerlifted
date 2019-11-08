@@ -33,7 +33,7 @@ def time_filter(run):
         run['total_time'] = run['search_time']
     return run
 
-exp = Experiment('data/combined-blind-v1')
+exp = Experiment('data/combine-blind-eval')
 
 def compute_nodes_per_sec(run):
     if run['coverage'] == 1:
@@ -71,6 +71,18 @@ for alg in ['blind-yannakakis','blind-full-reducer']:
         outfile='{}-{}-vs-{}'.format('nodes_per_sec', 'issue311-blind', alg) + '.tex'
     )
 
+exp.add_report(
+    ScatterPlotReport(
+        attributes=['nodes_per_sec'],
+        filter_algorithm=['blind-yannakakis','blind-full-reducer'],
+        filter=[parse_total_time_pruning,compute_nodes_per_sec,discriminate_org_synt],
+        get_category=domain_as_category,
+        format='tex'
+    ),
+    outfile='{}-{}-vs-{}'.format('nodes_per_sec', 'blind-yannakakis','blind-full-reducer') + '.tex'
+)
+
+    
 for attr in ['total_time', 'memory']:
     for alg in ['blind-yannakakis','blind-full-reducer']:
         exp.add_report(

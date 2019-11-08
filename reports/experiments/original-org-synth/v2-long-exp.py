@@ -69,9 +69,7 @@ exp = Experiment(environment=ENV)
 # Add custom parser for Power Lifted.
 exp.add_parser('power-lifted-parser.py')
 
-CONFIGS = [Configuration('blind-full-reducer', ['naive', 'blind', 'full_reducer']),
-           Configuration('blind-yannakakis', ['naive', 'blind', 'yannakakis']),
-           Configuration('goalcount-full-reducer', ['gbfs', 'goalcount', 'full_reducer']),
+CONFIGS = [Configuration('blind-yannakakis', ['naive', 'blind', 'yannakakis']),
            Configuration('goalcount-yannakakis', ['gbfs', 'goalcount', 'yannakakis'])]
 
 # Create one run for each instance and each configuration

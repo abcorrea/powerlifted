@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import math
 import os
 import platform
 
@@ -51,6 +52,7 @@ ATTRIBUTES=['cost',
             'initial_state_size',
             'peak_memory',
             'search_time',
+            'time_cyclic',
             'visited']
 
 # Create a new experiment.
@@ -100,9 +102,15 @@ exp.add_step('start', exp.start_runs)
 # writes them to *-eval/properties.
 exp.add_fetcher(name='fetch')
 
+def filter_non_cyclic(run):
+    if 'time_cyclic' not in run or math.isnan(run['time_cyclic']):
+        run['time_cyclic'] = 0.0
+    return run
+
 # Make a report.
 exp.add_report(
-    BaseReport(attributes=ATTRIBUTES),
+    BaseReport(attributes=ATTRIBUTES,
+               filter=[filter_non_cyclic]),
     outfile='report.html')
 
 exp.add_report(
@@ -110,7 +118,7 @@ exp.add_report(
                format='tex'),
     outfile='report.tex')
 
-for attr in ['search_time', 'generated']:
+for attr in ['search_time', 'generated','peak_memory']:
     for alg in ["blind-join", "blind-ordered_join", "blind-yannakakis"]:
         exp.add_report(
             ScatterPlotReport(
@@ -122,6 +130,6 @@ for attr in ['search_time', 'generated']:
             ),
             outfile='{}-{}-vs-{}'.format(attr, alg, "blind-full-reducer") + '.tex'
         )
-
+        
 # Parse the commandline and run the specified steps.
 exp.run_steps()

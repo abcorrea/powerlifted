@@ -3,7 +3,7 @@
 import os
 import platform
 
-from suites import ORG_SYNTHESIS_MIT, EXCLUDED_DOMAINS
+from suites import ORG_SYNTHESIS_ORIGINAL, ORG_SYNTHESIS_ALKENE, ORG_SYNTHESIS_MIT, EXCLUDED_DOMAINS
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.experiment import Experiment
@@ -31,7 +31,7 @@ POWER_LIFTED_DIR = os.environ["POWER_LIFTED_SRC"]
 BENCHMARKS_DIR = POWER_LIFTED_DIR+"local-tests/"
 
 if REMOTE:
-    SUITE = ORG_SYNTHESIS_MIT
+    SUITE = ORG_SYNTHESIS_ORIGINAL + ORG_SYNTHESIS_ALKENE + ORG_SYNTHESIS_MIT
     ENV = BaselSlurmEnvironment(
         partition='infai_2',
         memory_per_cpu="6G",
