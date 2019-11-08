@@ -76,9 +76,9 @@ for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     run_dir = os.path.join(results_dir, run_batch, run_number)
     run.add_resource('domain', task.domain_file)
     run.add_resource('problem', task.problem_file)
-    run.add_resource('planner',  'planner.img')
+    #run.add_resource('planner',  'planner.img')
     run.add_command( 'run-search', ['singularity', 'run', '-C', '-H',
-                                    run_dir, 'planner.img',
+                                    run_dir, os.path.dirname(os.path.realpath(__file__))+'/planner.img',
                                     os.path.basename(task.domain_file),
                                     os.path.basename(task.problem_file)],
                      time_limit=TIME_LIMIT,
