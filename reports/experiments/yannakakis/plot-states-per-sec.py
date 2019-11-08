@@ -71,6 +71,18 @@ for alg in ['blind-yannakakis','blind-full-reducer']:
         outfile='{}-{}-vs-{}'.format('nodes_per_sec', 'issue311-blind', alg) + '.tex'
     )
 
+for alg in ['blind-join']:
+    exp.add_report(
+        ScatterPlotReport(
+            attributes=['nodes_per_sec'],
+            filter_algorithm=['blind-full-reducer', alg],
+            filter=[parse_total_time_pruning,compute_nodes_per_sec,discriminate_org_synt],
+            get_category=domain_as_category,
+            format='tex'
+        ),
+        outfile='{}-{}-vs-{}'.format('nodes_per_sec', 'blind-full-reducer', alg) + '.tex'
+    )
+
 for attr in ['total_time', 'memory']:
     for alg in ['blind-yannakakis','blind-full-reducer']:
         exp.add_report(
