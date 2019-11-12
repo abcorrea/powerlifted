@@ -29,10 +29,20 @@ def time_filter(run):
             run['total_time'] = run['search_time']
     return run
 
-exp = Experiment('data/combine-blind-eval')
+exp = Experiment('data/combined-blind-v1')
 exp.add_fetcher('data/v2-eval')
 exp.add_fetcher('/infai/blaas/issues/issue311/experiments/thesis/data/thesis-v1-eval')
 exp.add_fetcher('data/goalcount-v1-eval')
 exp.add_report(AbsoluteReport(attributes=['cost', 'coverage', 'generated', 'total_time', 'memory'], filter=[memory_filter, time_filter]))
+
+exp.add_report(AbsoluteReport(attributes=['coverage'],
+                              filter=[memory_filter, time_filter],
+                              filter_algorithm=['blind-full-reducer', 'issue311-blind'],),
+               outfile='coverage-blind.html')
+
+exp.add_report(AbsoluteReport(attributes=['coverage'],
+                              filter=[memory_filter, time_filter],
+                              filter_algorithm=['goalcount-full-reducer', 'issue311-goalcount'],),
+               outfile='coverage-goalcount.html')
 
 exp.run_steps()
