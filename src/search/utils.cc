@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
+#include <vector>
 
 using namespace std;
 
@@ -35,6 +36,7 @@ int get_peak_memory_in_kb() {
     return memory_in_kb;
 
 }
+
 
 bool is_product_within_limit(long factor1, long factor2, long limit) {
     assert(factor1 >= 0);

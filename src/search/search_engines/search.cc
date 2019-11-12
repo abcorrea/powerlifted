@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "../utils.h"
+
 #include "../successor_generators/successor_generator.h"
 #include "../heuristics/goalcount.h"
 
@@ -31,6 +33,16 @@ void Search::extract_goal(int state_counter, int generations, PackedState state,
     cout << "Goal state found!" << endl;
     cout << "Total number of states visited: " << visited.size() << endl;
     cout << "Total number of states generated: " << generations << endl;
+    int packed_state_size = 0;
+    for (auto &it : visited) {
+        for (auto v : it.first.packed_relations) {
+            packed_state_size += estimate_vector_bytes<long>(v.size());
+        }
+        packed_state_size += estimate_vector_bytes<bool>(it.first.nullary_atoms.size());
+        packed_state_size += estimate_vector_bytes<int>(it.first.predicate_symbols.size());
+    }
+    packed_state_size += estimate_unordered_map_bytes<PackedState, int, PackedStateHash>(visited.size());
+    cout << "Size of closed list: " << packed_state_size / 1024 << " kB" <<  endl;
     stack<State> states_in_the_plan;
     states_in_the_plan.push(packer.unpack_state(state));
     while (cheapest_parent[visited[state]].first != -1) {
