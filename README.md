@@ -40,4 +40,4 @@ input. The script has the following parameters:
  - **Conditional effects**: not supported
  - **Costs**: ignored
  - **Negated preconditions**: only inequality
- - **Quantiied Precondition**: not supported
+ - **Quantifiers**: not supported
