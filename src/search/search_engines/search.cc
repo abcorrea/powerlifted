@@ -38,6 +38,7 @@ void Search::extract_goal(int state_counter, int generations, PackedState state,
         for (auto v : it.first.packed_relations) {
             packed_state_size += estimate_vector_bytes<long>(v.size());
         }
+	packed_state_size += estimate_vector_bytes<vector<long>>(it.first.packed_relations.size());
         packed_state_size += estimate_vector_bytes<bool>(it.first.nullary_atoms.size());
         packed_state_size += estimate_vector_bytes<int>(it.first.predicate_symbols.size());
     }
