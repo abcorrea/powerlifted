@@ -12,6 +12,7 @@ PATTERNS = [
     ('cost', r'Total plan cost: (\d+)', int),
     ('generated', r'Total number of states generated: (\d+)', int),
     ('visited', r'Total number of states visited: (\d+)', int),
+    ('expansions', r'Total number of expansions: (\d+)', int),
     ('successors', r'Different states: (.+)', float),
     ('time_cyclic', r'Proportion of time processing cyclic precond: (.+)', float)
 ]

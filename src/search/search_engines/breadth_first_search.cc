@@ -19,6 +19,7 @@ const int BreadthFirstSearch::search(const Task &task,
 
     int state_counter = 0;
     int generations = 0;
+    int expansions = 0;
     queue<Node> q; // Queue has Node structures
     segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
     segmented_vector::SegmentedVector<PackedState> index_to_state;
@@ -48,6 +49,7 @@ const int BreadthFirstSearch::search(const Task &task,
         int next = head.id;
         int h = head.h;
         int g = head.g;
+        expansions++;
         q.pop();
         /*if (g_layer < g) {
             cout << "Entering layer " << g_layer << "[expansions: " << state_counter
@@ -79,6 +81,7 @@ const int BreadthFirstSearch::search(const Task &task,
                     cout << "Goal found at: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
                     cout << "Proportion of time processing cyclic precond: "
                          << generator->get_cyclic_time()/(double(clock() - timer_start) / CLOCKS_PER_SEC) << endl;
+                    cout << "Total number of expansions: " << expansions << endl;
                     extract_goal(state_counter, generations, packed,
                             cheapest_parent, visited, index_to_state, state_packer, task);
                     extract_plan(cheapest_parent, packed, visited, index_to_state, state_packer, task);
