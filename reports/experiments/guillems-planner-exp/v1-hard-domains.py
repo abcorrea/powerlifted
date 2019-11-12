@@ -71,7 +71,7 @@ exp.add_parser('parser.py')
 task_id = 1
 lower = 1
 upper = 100
-results_dir=os.path.dirname(os.path.realpath(__file__))+'/data/v1/'
+results_dir=os.path.dirname(os.path.realpath(__file__))+'/data/v1-hard-domains/'
 for task in suites.build_suite(BENCHMARKS_DIR, SUITE):
     run = exp.add_run()
     run_batch = 'runs-{:0>5}-{:0>5}/'.format(lower, upper)
