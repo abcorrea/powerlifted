@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-import math
 import os
 import platform
 
@@ -8,6 +7,7 @@ from suites import OPTIMAL_SUITE, EXCLUDED_DOMAINS, CYCLIC_SCHEMAS
 
 from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.experiment import Experiment
+from lab.reports import Attribute, geometric_mean
 
 from downward import suites
 from downward.reports.absolute import AbsoluteReport
@@ -37,6 +37,7 @@ if REMOTE:
         partition='infai_2',
         memory_per_cpu="6G",
         extra_options='#SBATCH --cpus-per-task=3',
+        setup='',
         export=["PATH", "DOWNWARD_BENCHMARKS", "POWER_LIFTED_DIR"])
 else:
     SUITE = ['gripper:prob01.pddl',
@@ -46,15 +47,15 @@ else:
 TIME_LIMIT = 1800
 MEMORY_LIMIT = 16384
 
-ATTRIBUTES=['cost',
+ATTRIBUTES=[Attribute('closed_list_size', functions=geometric_mean),
+            'cost',
             'coverage',
             'generated',
             'initial_state_size',
-            'peak_memory',
+            Attribute('peak_memory', functions=geometric_mean),
             'search_time',
-            'time_cyclic',
-            'visited',
-            'expansions']
+            'expansions',
+            'visited']
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
@@ -66,7 +67,12 @@ CONFIGS = [Configuration('blind-full-reducer', ['naive', 'blind', 'full_reducer'
            Configuration('blind-ordered_join', ['naive', 'blind', 'ordered_join']),
            Configuration('blind-join', ['naive', 'blind', 'join']),
            Configuration('blind-yannakakis', ['naive', 'blind', 'yannakakis']),
-           Configuration('blind-random-1', ['naive', 'blind', 'random_join'])]
+           Configuration('blind-random-1', ['naive', 'blind', 'random_join']),
+           Configuration('goalcount-full-reducer', ['gbfs', 'goalcount', 'full_reducer']),
+           Configuration('goalcount-ordered_join', ['gbfs', 'goalcount', 'ordered_join']),
+           Configuration('goalcount-join', ['gbfs', 'goalcount', 'join']),
+           Configuration('goalcount-yannakakis', ['gbfs', 'goalcount', 'yannakakis']),
+           Configuration('goalcount-random-1', ['gbfs', 'goalcount', 'random_join'])]
 
 # Create one run for each instance and each configuration
 for config in CONFIGS:
@@ -108,4 +114,5 @@ exp.add_report(
     BaseReport(attributes=ATTRIBUTES),
     outfile='report.html')
 
+# Parse the commandline and run the specified steps.
 exp.run_steps()

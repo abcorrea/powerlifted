@@ -804,7 +804,7 @@ OPTIMAL_SUITE = ["airport:p27-airport4halfMUC-p6.pddl", "transport-opt08-strips:
          "freecell:probfreecell-3-2.pddl",]
 
 
-SAT_SUITE = ['agricola-sat18-strips', 'airport', 'barman-sat11-strips',
+SAT_SUITE = [ 'airport', 'barman-sat11-strips',
              'barman-sat14-strips', 'blocks', 'childsnack-sat14-strips',
              'depot', 'driverlog', 'elevators-sat08-strips',
              'elevators-sat11-strips', 'floortile-sat11-strips',
