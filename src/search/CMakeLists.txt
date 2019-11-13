@@ -3,7 +3,11 @@ project(search)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "-O3 -g")
+# Release
+set(CMAKE_CXX_FLAGS "-O3 -g -DNDEBUG -fomit-frame-pointer")
+
+# Debug and Profile
+#set(CMAKE_CXX_FLAGS "-O0 -D_GLIBCXX_DEBUG -pg")
 
 add_executable(search
         main.cc
