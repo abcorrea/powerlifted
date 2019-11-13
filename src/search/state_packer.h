@@ -129,6 +129,7 @@ public:
         packed_state.nullary_atoms = state.nullary_atoms;
         for (const Relation &r : state.relations) {
             std::vector<long> packed_relation;
+            packed_relation.reserve(r.tuples.size());
             int predicate_index = r.predicate_symbol;
             packed_state.predicate_symbols.push_back(predicate_index);
             for (const auto &tuple : r.tuples) {

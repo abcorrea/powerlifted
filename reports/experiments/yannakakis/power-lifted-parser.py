@@ -13,6 +13,7 @@ PATTERNS = [
     ('generated', r'Total number of states generated: (\d+)', int),
     ('visited', r'Total number of states visited: (\d+)', int),
     ('expansions', r'Total number of expansions: (\d+)', int),
+    ('closed_list_size', r'Size of closed list: (\d+) kB', int),
     ('successors', r'Different states: (.+)', float),
     ('time_cyclic', r'Proportion of time processing cyclic precond: (.+)', float)
 ]
