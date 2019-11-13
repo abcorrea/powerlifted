@@ -37,6 +37,7 @@ if REMOTE:
         partition='infai_2',
         memory_per_cpu="6G",
         extra_options='#SBATCH --cpus-per-task=3',
+        setup='',
         export=["PATH", "DOWNWARD_BENCHMARKS", "POWER_LIFTED_DIR"])
 else:
     SUITE = ['gripper:prob01.pddl',
