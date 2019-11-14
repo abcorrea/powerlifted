@@ -101,8 +101,7 @@ exp.add_fetcher(name='fetch')
 
 # Make a report.
 exp.add_report(
-    BaseReport(attributes=ATTRIBUTES,
-               filter=[filter_non_cyclic]),
+    BaseReport(attributes=ATTRIBUTES),
     outfile='report.html')
 
 exp.run_steps()
