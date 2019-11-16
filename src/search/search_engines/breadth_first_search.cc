@@ -19,6 +19,7 @@ const int BreadthFirstSearch::search(const Task &task,
 
     int state_counter = 0;
     int generations = 0;
+    int generations_last_jump = 0;
     int expansions = 0;
     queue<Node> q; // Queue has Node structures
     segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
@@ -51,12 +52,13 @@ const int BreadthFirstSearch::search(const Task &task,
         int g = head.g;
         expansions++;
         q.pop();
-        /*if (g_layer < g) {
-            cout << "Entering layer " << g_layer << "[expansions: " << state_counter
+        if (g_layer < g) {
+            /*cout << "Entering layer " << g_layer << "[expansions: " << state_counter
                  << ", generations " << generations <<
-                 ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
+                 ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';*/
+            generations_last_jump = generations;
             g_layer = g;
-        }*/
+        }
         assert (index_to_state.size() >= next);
         State state = state_packer.unpack_state(index_to_state[next]);
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
@@ -82,6 +84,7 @@ const int BreadthFirstSearch::search(const Task &task,
                     cout << "Proportion of time processing cyclic precond: "
                          << generator->get_cyclic_time()/(double(clock() - timer_start) / CLOCKS_PER_SEC) << endl;
                     cout << "Total number of expansions: " << expansions << endl;
+                    cout << "Generations before the last jump: " << generations_last_jump << endl;
                     extract_goal(state_counter, generations, packed,
                             cheapest_parent, visited, index_to_state, state_packer, task);
                     extract_plan(cheapest_parent, packed, visited, index_to_state, state_packer, task);
