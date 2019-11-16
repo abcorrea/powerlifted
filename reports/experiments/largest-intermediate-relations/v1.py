@@ -45,9 +45,14 @@ if REMOTE:
         extra_options='#SBATCH --cpus-per-task=3',
         export=["PATH", "DOWNWARD_BENCHMARKS", "POWER_LIFTED_DIR"])
 else:
-    HTG_SUITE = []
-    IPC_SUITE = ['gripper:prob01.pddl']
-    ENV = LocalEnvironment(processes=4)
+    HTG_SUITE = ['genome-edit-distance',
+             'genome-edit-distance-split',
+             'organic-synthesis-alkene',
+             'organic-synthesis-MIT',
+             'organic-synthesis-original',
+             'pipesworld-tankage-nosplit']
+    IPC_SUITE = OPTIMAL_SUITE
+    ENV = LocalEnvironment(processes=1)
 
 TIME_LIMIT = 1800
 MEMORY_LIMIT = 16384

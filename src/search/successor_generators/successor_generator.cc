@@ -150,7 +150,8 @@ const std::vector<std::pair<State, Action>>
             }
         }
     }
-    //cout << "Largest intermediate relation: " << largest_intermediate_relation << endl;
+    cout << "Largest intermediate relation: " << largest_intermediate_relation << endl;
+    exit(0);
     return successors;
 }
 
