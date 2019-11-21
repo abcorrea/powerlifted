@@ -28,6 +28,7 @@ class BaseReport(AbsoluteReport):
 
 NODE = platform.node()
 REMOTE = NODE.endswith(".scicore.unibas.ch") or NODE.endswith(".cluster.bc2.ch")
+POWER_LIFTED_DIR = os.environ["POWER_LIFTED_SRC"]
 BENCHMARKS_DIR_1 = POWER_LIFTED_DIR+"local-tests/"
 BENCHMARKS_DIR_2 = os.environ["DOWNWARD_BENCHMARKS"]
 
@@ -46,8 +47,9 @@ if REMOTE:
         setup='',
         export=["PATH", "DOWNWARD_BENCHMARKS", "POWER_LIFTED_DIR"])
 else:
-    SUITE = ['gripper:prob01.pddl',
-             'miconic:s1-0.pddl']
+    HTG_SUITE = []
+    IPC_SUITE = ['gripper:prob01.pddl',
+                 'miconic:s1-0.pddl']
     ENV = LocalEnvironment(processes=4)
 
 TIME_LIMIT = 1800
@@ -111,14 +113,54 @@ exp.add_report(
     BaseReport(attributes=ATTRIBUTES),
     outfile='report.html')
 
+def discriminate_existential_quantified_vars(run):
+    l = ['driverlog',
+         'grid',
+         'logistics00',
+         'logistics98',
+         'mprime',
+         'nomystery-opt11-strips',
+         'childsnack-opt14-strips',
+         'depot',
+         'floortile-opt11-strips',
+         'floortile-opt14-strips',
+         'miconic',
+         'satellite',
+         'tpp',
+         'zenotravel',
+         'freecell',
+         'hiking-opt14-strips',
+         'sokoban-opt08-strips',
+         'sokoban-opt11-strips',
+         'movie',
+         'pipesworld-notankage',
+         'rovers',
+         'woodworking-opt08-strips',
+         'woodworking-opt11-strips',
+         'barman-opt11-strips',
+         'barman-opt14-strips',
+         'pipesworld-tankage',
+         'parcprinter-opt11-strips',
+         'parcprinter-08-strips',
+         'pathways-noneg',
+         'organic-synthesis-opt18-strips',
+         'organic-synthesis-split-opt18-strips',
+         'pipesworld-tankage-nosplit',
+         'organic-synthesis-alkene',
+         'organic-synthesis-MIT',
+         'organic-synthesis-original']
+    if run['domain'] in l:
+        return True
+    else:
+        return False
+
 for attr in ['generations_before_last_jump']:
     for alg in ["blind-yannakakis"]:
         exp.add_report(
             ScatterPlotReport(
                 attributes=[attr],
                 filter_algorithm=[alg, 'blind-full-reducer'],
-                filter=[discriminate_acyclic],
-                get_category=domain_as_category,
+                filter=[discriminate_existential_quantified_vars],
                 format='tex'
             ),
             outfile='{}-{}-vs-{}'.format(attr, alg, "blind-full-reducer") + '.tex'

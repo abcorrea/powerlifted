@@ -23,7 +23,13 @@ def discriminate_acyclic(run):
     'tetris-opt14-strips',
     'tidybot-opt11-strips',
     'tidybot-opt14-strips',
-    'tpp']
+    'tpp',
+    'genome-edit-distance',
+    'genome-edit-distance-split',
+    'organic-synthesis-alkene',
+    'organic-synthesis-MIT',
+    'organic-synthesis-original',
+    'pipesworld-tankage-nosplit']
     if run['domain'] in acyclic:
         run['domain'] = 'acyclic'
     else:
