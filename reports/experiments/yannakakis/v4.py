@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import math
 import os
 import platform
 
@@ -55,6 +56,7 @@ ATTRIBUTES=[Attribute('closed_list_size', functions=geometric_mean),
             Attribute('peak_memory', functions=geometric_mean),
             'search_time',
             'expansions',
+            'time_cyclic',
             'visited']
 
 # Create a new experiment.
@@ -113,6 +115,76 @@ exp.add_fetcher(name='fetch')
 exp.add_report(
     BaseReport(attributes=ATTRIBUTES),
     outfile='report.html')
+
+def filter_non_cyclic(run):
+    if 'time_cyclic' not in run or math.isnan(run['time_cyclic']):
+        run['time_cyclic'] = 0.0
+    return run
+
+def is_cyclic(run):
+    cyclic = ['agricola-opt18-strips',
+    'barman-opt11-strips',
+    'barman-opt14-strips',
+    'caldera-split-opt18-adl',
+    'data-network-opt18-strips',
+    'elevators-opt08-strips',
+    'elevators-opt11-strips',
+    'freecell',
+    'hiking-opt14-strips',
+    'nomystery-opt11-strips',
+    'organic-synthesis-opt18-strips',
+    'parcprinter-08-strips',
+    'parcprinter-opt11-strips',
+    'pipesworld-notankage',
+    'pipesworld-tankage',
+    'rovers',
+    'satellite',
+    'settlers-opt18-adl',
+    'spider-opt18-strips',
+    'termes-opt18-strips',
+    'tetris-opt14-strips',
+    'tidybot-opt11-strips',
+    'tidybot-opt14-strips',
+    'tpp']
+    if run['domain'] in cyclic:
+        if run['coverage'] == 1 and run['search_time'] >= 1.0:
+            return True
+        return False
+    return False
+
+# Make a report.
+exp.add_report(
+    BaseReport(attributes=ATTRIBUTES,
+    filter_algorithm=['blind-full-reducer', 'blind-join', 'blind-ordered_join'],
+    filter=[is_cyclic, filter_non_cyclic]),
+    outfile='compare-bfs.html')
+
+
+for attr in ['peak_memory', 'search_time']:
+    for alg in ['blind-join', 'blind-ordered_join']:
+        exp.add_report(
+            ScatterPlotReport(
+                attributes=[attr],
+                filter_algorithm=[alg, "blind-full-reducer"],
+                filter=[discriminate_org_synt],
+                get_category=domain_as_category,
+                format='tex'
+            ),
+            outfile='{}-{}-vs-{}'.format(attr, alg, "blind-full-reducer") + '.tex'
+        )
+
+for attr in ['visited', 'search_time']:
+    for alg in ['blind-yannakakis']:
+        exp.add_report(
+            ScatterPlotReport(
+                attributes=[attr],
+                filter_algorithm=[alg, "blind-full-reducer"],
+                filter=[discriminate_org_synt],
+                get_category=domain_as_category,
+                format='tex'
+            ),
+            outfile='{}-{}-vs-{}'.format(attr, alg, "blind-full-reducer") + '.tex'
+        )
 
 # Parse the commandline and run the specified steps.
 exp.run_steps()
