@@ -8,8 +8,8 @@
 
 /**
  * @brief Utility functions, mostly related to memory. Originally from Fast
- * Downward.
- * @return
+ * Downward. See Fast Downward source code for more details.
+ *
  */
 
 int get_peak_memory_in_kb();

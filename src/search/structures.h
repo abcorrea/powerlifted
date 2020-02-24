@@ -36,7 +36,8 @@ struct Parameter {
 
 
 /**
- * @brief Implements an argument composing an atom. It can be a free variable or constant
+ * @brief Implements an argument composing an atom. It can be a free
+ * variable or a constant.
  *
  * @var index: If the argument is a constant, then it represents the index of the object,
  * otherwise it represents the index of the free variable in the parameters of the action
@@ -52,14 +53,16 @@ struct Argument {
 
 
 /**
- * @brief A relation is a "table" with set of tuples corresponding to some predicate in a state.
+ * @brief A relation is a "table" with set of tuples corresponding to some
+ * predicate in a state.
  *
  * @var predicate_symbol: Indicates its corresponding predicate.
  * @var tuples: Set of tuples (vectors) corresponding to the ground atoms in this relation.
  *
  */
 struct Relation {
-    Relation(int predicate_symbol, std::unordered_set<GroundAtom, TupleHash> &&tuples)
+    Relation(int predicate_symbol,
+        std::unordered_set<GroundAtom, TupleHash> &&tuples)
             : predicate_symbol(predicate_symbol),
               tuples (std::move(tuples)) {}
 
@@ -84,8 +87,8 @@ struct Relation {
 
 
 /**
- * @brief Represent a lifted atom by its name, predicate symbol index, list of arguments, and
- * whether it is negated or not.
+ * @brief Represent a lifted atom by its name, predicate symbol index,
+ * list of arguments, and whether it is negated or not.
  *
  * @var name: String representing atom name
  * @var predicate_symbol: predicate symbol index
@@ -97,7 +100,8 @@ struct Relation {
  * @see Argument (structures.h)
  */
 struct Atom {
-    Atom(std::string &&name, int predicate_symbol, std::vector<Argument> &&tuples, bool negated) :
+    Atom(std::string &&name, int predicate_symbol,
+        std::vector<Argument> &&tuples, bool negated) :
             name(std::move(name)),
             predicate_symbol(predicate_symbol),
             arguments(std::move(tuples)),

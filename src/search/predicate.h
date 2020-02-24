@@ -5,6 +5,9 @@
 #include <utility>
 #include <vector>
 
+/**
+ * @brief Instantiates a lifted predicate.
+ */
 class Predicate {
 public:
   Predicate(std::string &&name, int index, int arity, bool static_predicate,

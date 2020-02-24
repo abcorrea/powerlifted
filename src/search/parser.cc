@@ -9,6 +9,16 @@
 
 using namespace std;
 
+
+/**
+ * For the format of the intermediate file produced by the PDDL translation,
+ * check the comments of the translation source code.
+ *
+ * @param task
+ * @param in
+ * @return
+ */
+
 bool parse(Task &task, const ifstream &in) {
     string repr;
     cin >> repr;

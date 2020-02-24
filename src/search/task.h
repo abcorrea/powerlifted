@@ -12,10 +12,14 @@
 #include "predicate.h"
 #include "state.h"
 
-/*
- * The initial state and the static info have info for all predicates. However,
- * the static predicates will always be empty in any state and the fluents are
+/**
+ * @brief Represents the task, with all its objects, goals, action schemas, etc.
+ * Variable and function names should be self-explanatory.
+ *
+ * @attention The initial state and the static info have info for all predicates.
+ * However, the static predicates will always be empty in any state and the fluents are
  * always empty in the static_info variable.
+ *
  */
 
 class Task {

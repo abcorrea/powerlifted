@@ -10,6 +10,22 @@
 
 #include "utils/hash.h"
 
+/**
+ * @brief The packed state representation is a more concise representation of states,
+ * based on the Fast Downward source code.
+ *
+ * @details We represent a state as a vector of relations and a vector of
+ * nullary atoms. Each relation is a set of tuples, which can be interpreted as a 'table'.
+ * In order to make the representation more concise, we first order the tuples in the
+ * sets corresponding to each relation in a deterministic way. We then hash these sets
+ * in a well-defined order (by the predicate symbol of the corresponding relation).
+ * Last, we combine all these hash values together and also combine with a hash over
+ * the predicate symbols and the truth value of the nullary relations
+ * (i.e., predicates) of the state.
+ * This packed state representation is loosely based on the PDB storage system used
+ * by Fast Downward.
+ *
+ */
 
 struct PackedState {
     std::vector<std::vector<long>> packed_relations;
@@ -43,20 +59,7 @@ struct PackedState {
 
 struct PackedStateHash {
     std::size_t operator() (const PackedState &s) const {
-       /* utils::HashState seed;
-        for (int i : s.predicate_symbols) {
-            utils::feed(seed, i);
-        }
-        for (bool b : s.nullary_atoms) {
-            utils::feed(seed, b);
-        }
-        for (const auto &r : s.packed_relations) {
-            utils::feed(seed, r);
-        }
-        return seed.get_hash64();
-    }*/
-
-        std::size_t seed = 0;
+       std::size_t seed = 0;
         for (int i : s.predicate_symbols) {
             boost::hash_combine(seed, i);
         }
@@ -115,7 +118,8 @@ public:
                     cont++;
                 }
                 else {
-                    std::cerr << "Hash multipliers overflow! State representation if too large to be packed!" << endl;
+                    std::cerr << "Hash multipliers overflow!" <<
+                    " State representation is too large to be packed!" << endl;
                     exit(-2);
                 }
             }

@@ -50,6 +50,11 @@ public:
     }
 
 
+  /*
+   * Nullary predicates are represented as boolean vectors to simplify
+   * other parts of the code (e.g., successor generation and action
+   * applicability)
+   */
     std::vector<bool> positive_nullary_precond;
     std::vector<bool> negative_nullary_precond;
     std::vector<bool> positive_nullary_effects;

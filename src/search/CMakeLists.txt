@@ -13,10 +13,10 @@ add_executable(search
         main.cc
         task.cc task.h
         predicate.cc predicate.h
-        object.cc object.h
+        object.h
         state.cc state.h
         parser.cc parser.h
-        goal_condition.cc goal_condition.h
+        goal_condition.h
         action_schema.cc action_schema.h
         structures.h
         search_engines/search.cc search_engines/search.h
