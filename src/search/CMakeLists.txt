@@ -22,13 +22,13 @@ add_executable(search
         search_engines/search.cc search_engines/search.h
         action.h
         successor_generators/successor_generator.cc successor_generators/successor_generator.h
-        database/table.cc database/table.h
+        database/table.h
         database/join.cc database/join.h
         heuristics/goalcount.cc heuristics/goalcount.h
         search_engines/breadth_first_search.cc search_engines/breadth_first_search.h
         search_engines/search_factory.h
         search_engines/astar_search.cc search_engines/astar_search.h
-        heuristics/heuristic.cc heuristics/heuristic.h
+        heuristics/heuristic.h
         heuristics/heuristic_factory.h
         heuristics/blind_heuristic.h
         search_engines/greedy_best_first_search.cc search_engines/greedy_best_first_search.h
