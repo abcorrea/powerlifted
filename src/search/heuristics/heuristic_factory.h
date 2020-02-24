@@ -8,7 +8,6 @@
 #include "heuristic.h"
 #include "blind_heuristic.h"
 #include "goalcount.h"
-#include "iterated_width.h"
 
 /**
  * @brief Factory class to generate corresponding heuristic object
@@ -22,9 +21,6 @@ public:
         }
         else if (boost::iequals(method, "goalcount")) {
             return new Goalcount;
-        }
-        else if (boost::iequals(method, "iw1")) {
-            return new IteratedWidth(task);
         }
         else {
             return nullptr;
