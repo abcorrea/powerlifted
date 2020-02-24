@@ -8,7 +8,6 @@
 
 #include "yannakakis.h"
 #include "../database/project.h"
-#include "../utils/union_find.h"
 
 YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {
    /*

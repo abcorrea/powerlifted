@@ -1,9 +1,9 @@
 #ifndef SEARCH_HASH_H
 #define SEARCH_HASH_H
 
-/*
+/**
  *
- * Code from Fast Downward
+ * Code from Fast Downward.
  *
  */
 

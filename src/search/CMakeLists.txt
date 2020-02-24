@@ -47,4 +47,4 @@ add_executable(search
         successor_generators/random_successor.h successor_generators/random_successor.cc
         successor_generators/yannakakis.cc successor_generators/yannakakis.h
         database/project.cc database/project.h
-        utils/union_find.h utils/segmented_vector.h state_packer.h utils/hash.h)
+        utils/segmented_vector.h state_packer.h utils/hash.h)

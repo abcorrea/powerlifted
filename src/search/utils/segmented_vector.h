@@ -6,22 +6,23 @@
 #include <vector>
 
 
-/*
+namespace segmented_vector {
+/**
+ * @brief Vector-like class with better memory management. Source code from
+ * Fast Downward.
  *
- * DISCLAIMER : code obtained from Fast Downward
- *
- *
-  SegmentedVector is a vector-like class with the following advantages over
+  @details SegmentedVector is a vector-like class with the following advantages over
   vector:
-    1. Resizing has no memory spike. (*)
+
+    1. Resizing has no memory spike. (^)
     2. Should work more nicely with fragmented memory because data is
        partitioned into fixed-size chunks of size SEGMENT_BYTES.
     3. Overallocation is only additive (by SEGMENT_BYTES), not multiplicative
-       as in vector. (*)
+       as in vector. (^)
     4. References stay stable forever, so there is no need to be careful about
        invalidating references upon growing the vector.
 
-  (*) Assumes that the size of the "segments" vector can be neglected, which is
+  (^) Assumes that the size of the "segments" vector can be neglected, which is
   true if SEGMENT_BYTES isn't chosen too small. For example, with 1 GB of data
   and SEGMENT_BYTES = 8192, we can have 131072 segments.
 
@@ -41,13 +42,6 @@
   time.
 */
 
-// TODO: Get rid of the code duplication here. How to do it without
-// paying a performance penalty? issue388.
-
-// For documentation on classes relevant to storing and working with registered
-// states see the file state_registry.h.
-
-namespace segmented_vector {
 template<class Entry, class Allocator = std::allocator<Entry>>
 class SegmentedVector {
     typedef typename Allocator::template rebind<Entry>::other EntryAllocator;
