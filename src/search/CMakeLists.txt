@@ -27,7 +27,6 @@ add_executable(search
         heuristics/goalcount.cc heuristics/goalcount.h
         search_engines/breadth_first_search.cc search_engines/breadth_first_search.h
         search_engines/search_factory.h
-        search_engines/astar_search.cc search_engines/astar_search.h
         heuristics/heuristic.h
         heuristics/heuristic_factory.h
         heuristics/blind_heuristic.h
