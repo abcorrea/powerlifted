@@ -4,10 +4,19 @@
 
 using namespace std;
 
+/**
+ * @brief Join two tables using loop-based approach.  Result is written in the table
+ * passed as first parameter.
+ *
+ * @details First, loop over the indices and check which attributes match. If no attribute
+ * can be joined, perform the Cartesian product. Otherwise, loop over both relations check
+ * for each tuple whether they match or not.
+ *
+ * @param t1: Working table.  First table to be joined.
+ * @param t2: Second table to be joined.
+ */
 void join(Table &t1, Table &t2) {
     /*
-     * Join two tables into one.  t1 is the working table and it will be modified
-     *
      * We first loop over the parameters of each table and check which indices match.
      * Then, we split it into two cases:
      * 1. If there are no matching indices, we perform the cartesian product of the two tables

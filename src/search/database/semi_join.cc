@@ -4,19 +4,19 @@
 
 using namespace std;
 
+/**
+* Semi-join two tables into one.  t1 is the working table and it will be modified
+*
+* @details We first loop over the parameters of each table and check which indices match.
+* Then, we split it into two cases:
+* 1. If there are no matching indices, then we simply return
+* 2. If at least one parameter matches, we perform a nested loop semi-join.
+*
+* We return the size of the semi-join in order to be able to identify when
+* an empty relation is produced.
+*
+*/
 int semi_join(Table &t1, Table &t2) {
-    /*
-     * Semi-join two tables into one.  t1 is the working table and it will be modified
-     *
-     * We first loop over the parameters of each table and check which indices match.
-     * Then, we split it into two cases:
-     * 1. If there are no matching indices, then we simply return
-     * 2. If at least one parameter matches, we perform a nested loop semi-join.
-     *
-     * We return the size of the semi-join in order to be able to identify when
-     * an empty relation is produced.
-     *
-     */
 
     vector<pair<int, int>> matches;
     for (int i = 0; i < t1.tuple_index.size(); ++i) {

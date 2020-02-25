@@ -3,16 +3,6 @@
 using namespace std;
 
 int hash_semi_join(Table &t1, Table &t2) {
-    /*
-     * Semi-join two tables into one.  t1 is the working table and it will be modified
-     *
-     * We first loop over the parameters of each table and check which indices match.
-     * Then, we split it into two cases:
-     * 1. If there are no matching indices, then we simply return
-     * 2. If at least one parameter matches, we perform a nested loop semi-join.
-     *
-     */
-
     vector<pair<int, int>> matches;
     for (int i = 0; i < t1.tuple_index.size(); ++i) {
         for (int j = 0; j < t2.tuple_index.size(); ++j) {

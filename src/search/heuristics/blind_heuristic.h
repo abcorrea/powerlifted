@@ -6,7 +6,7 @@
 /**
  * @brief Evaluates all states with h=1. Does not perform goal check.
  *
- * @note Admissible for tasks with unit cost.
+ * @note Admissible for tasks without zero cost actions.
  *
  */
 class BlindHeuristic : public Heuristic {
