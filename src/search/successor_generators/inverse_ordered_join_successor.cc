@@ -7,6 +7,11 @@
 
 using namespace std;
 
+/**
+ * @brief Join successor generator with preconditions inversely joined by arity
+ *
+ * @see generic_join_successor.cc
+ */
 vector<Table> InverseOrderedJoinSuccessorGenerator::parse_precond_into_join_program(
         const vector<Atom> &precond,
         const State &state,

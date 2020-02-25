@@ -8,6 +8,31 @@
 
 using namespace std;
 
+/**
+ * Generate successors states for a given state
+ *
+ * @details For each action schema, we first check if the nullary preconditions
+ * are satisfied in the current state. If they are, we instantiate them using
+ * the successor generator passed as command line parameter. Then we check if
+ * there is any instantiation of the action schema in the given state. If there
+ * is none, then two cases are possible:
+ *    1. The action schema is not applicable. In this case, we just proceed to
+ *    instantiate the next schema; or
+ *    2. The action schema is ground. In this case, we simply proceed to check
+ *    if the preconditions are satisfied and, if so, apply the ground action. We
+ *    need to check applicability here because, if there is no parameter, then
+ *    the join in the successor generator was never performed.
+ * If there are instantiations, then we simply apply the action effects, since
+ * we know the actions are applicable.
+ *
+ * @attention A lot of duplication in this code. :-)
+ *
+ * @param actions: list of actions
+ * @param state: state being evaluated
+ * @param staticInformation: static information of the task
+ * @return vector of pairs <State, Action> where state is the successor state and
+ * action is the ground action generating it from the current state
+ */
 const std::vector<std::pair<State, Action>>
 &SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions, const State &state,
                                          const StaticInformation &staticInformation) {
@@ -28,11 +53,11 @@ const std::vector<std::pair<State, Action>>
         }
         //cout << "Instantiating action " << action.getName() << endl;
         Table instantiations = instantiate(action, state, staticInformation);
-        /*
-         * See comment in generic_join_successor.cc
-         */
+
         if (instantiations.tuples.empty()) {
+            // Or there is no applicable instantiation, or the action is ground
             if (action.getParameters().empty()) {
+                // Action is ground
                 bool applicable = true;
                 for (const Atom& precond : action.getPrecondition()) {
                     int index = precond.predicate_symbol;
@@ -154,19 +179,17 @@ const std::vector<std::pair<State, Action>>
     return successors;
 }
 
+/**
+*    This action generates the ground atom produced by an atomic effect given an instantiation of
+*    its parameters.
+*
+*    @details First, we rearrange the indices. Then, we create the atom based on whether the argument
+*    is a constant or not. If it is, then we simply pass the constant value; otherwise we use
+*    the instantiation that we found.
+*/
 const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
                                                     const vector<int> &indices,
                                                     const Atom &eff) {
-
-
-    /*
-     *    This action generates the ground atom produced by an atomic effect given an instantiation of
-     *    its parameters.
-     *
-     *    First, we rearrange the indices. Then, we create the atom based on whether the argument
-     *    is a constant or not. If it is, then we simply pass the constant value; otherwise we use
-     *    the instantiation that we found.
-     */
 
     vector<int> ordered_tuple(tuple.size(), -1);
     assert (tuple.size() == indices.size());

@@ -1,7 +1,3 @@
-//
-// Created by gutob on 14.07.2019.
-//
-
 #ifndef SEARCH_FULL_REDUCER_SUCCESSOR_GENERATOR_H
 #define SEARCH_FULL_REDUCER_SUCCESSOR_GENERATOR_H
 
@@ -10,6 +6,10 @@
 
 class FullReducerSuccessorGenerator : public GenericJoinSuccessor {
 public:
+  /**
+   * @see full_reducer_successor_generator.cc
+   * @param task
+   */
     explicit FullReducerSuccessorGenerator(const Task &task);
 
     Table instantiate(const ActionSchema &action, const State &state,

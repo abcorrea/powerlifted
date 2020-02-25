@@ -3,9 +3,11 @@
 
 #include "generic_join_successor.h"
 
-/*
+/**
  * This class implements a full join program ordering joins by its arity.
- * Predicates with higher arity are joined first
+ * Predicates with higher arity are joined first.
+ *
+ * @see generic_join_successor.h
  */
 
 class InverseOrderedJoinSuccessorGenerator : public GenericJoinSuccessor {

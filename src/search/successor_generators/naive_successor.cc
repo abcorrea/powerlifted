@@ -9,23 +9,14 @@
 
 using namespace std;
 
-
+/**
+ * @see generic_join_successor.h
+ */
 vector<Table> NaiveSuccessorGenerator::parse_precond_into_join_program(const vector<Atom> &precond,
                                                                        const State &state,
                                                                        const StaticInformation &staticInformation,
                                                                        int action_index) {
-    /*
-     * Parse the state and the atom preconditions into a set of tables
-     * to perform the join-program more easily.
-     *
-     * We first obtain all indices in the precondition that are constants.
-     * Then, we create the table applying the projection over the arguments
-     * that satisfy the instantiation of the constants. There are two cases
-     * for the projection:
-     *    1. The table comes from the static information; or
-     *    2. The table comes directly from the current state.
-     *
-     */
+
     vector<Table> parsed_tables;
     parsed_tables.reserve(precond.size());
     for (const Atom &a : precond) {

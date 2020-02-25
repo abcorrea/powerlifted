@@ -12,12 +12,11 @@
 
 #include "../database/join.h"
 
-/*
+/**
  * This base class implements a join-successor using the join of all positive preconditions in the
  * action schema.
  *
- *
- * Note that successor generators might change the number of generated states. This happens simply because
+ * @attention Note that successor generators might change the number of generated states. This happens simply because
  * the order of the arguments produced differs depending on the order of the joins.
  *
  */

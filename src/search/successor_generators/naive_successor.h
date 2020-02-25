@@ -10,6 +10,9 @@ class NaiveSuccessorGenerator : public GenericJoinSuccessor {
 public:
     explicit NaiveSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {}
 
+    /**
+    * @see generic_join_successor.h
+    */
     std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
                                     const State &state,

@@ -6,6 +6,10 @@
 
 class YannakakisSuccessorGenerator : public GenericJoinSuccessor {
 public:
+    /**
+   * @see yannakakis.cc
+   * @param task
+   */
     explicit YannakakisSuccessorGenerator(const Task &task);
     Table instantiate(const ActionSchema &action, const State &state, const StaticInformation &staticInformation) final;
 

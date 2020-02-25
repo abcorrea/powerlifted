@@ -8,7 +8,19 @@
 
 #include "yannakakis.h"
 #include "../database/project.h"
-
+/**
+ *
+ * @attention This code has a lot of duplication from full_reducer_successor_generator.cc
+ *
+ * @details The only difference between the Yannakakis and the Full reducer
+ * successor generators is how the complete join sequence is computed after
+ * the full reducer. Here, we find the same order that would be done by
+ * Yannakakis' algorithm, based on the join tree.
+ *
+ * @see full_reducer_successor_generator.cc
+ *
+ * @param task
+ */
 YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {
    /*
      * Apply GYO algorithm for every action schema to check whether it has acyclic precondition/
@@ -16,6 +28,11 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
      * A lot of duplication from Full reducer successor generator.
      */
     full_reducer_order.resize(task.actions.size());
+    // Join tree order is the order in which the project-join is performed in a join tree.
+    // Every entry is a pair of nodes, where the first one is the child of the second.
+    // The idea is that we can compute a join tree from the GYO algorithm in a bottom-up
+    // style based on the ear removal order. E.g., if we remove E in favor of F, then
+    // E is a child of F in the tree.
     join_tree_order.resize(task.actions.size());
     remaining_join.resize(task.actions.size());
     acyclic_vec.resize(task.actions.size());
@@ -171,6 +188,27 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
 
 }
 
+/**
+ *
+ * Instantiate a given action at a given state using Yannakakis' algorithm.
+ *
+ *
+ * @attention Partially duplicated from full_reducer_successor_generator.cc
+ *
+ * @details The process here is the same as the full reducer. However, as we
+ * process the join tree (instead of a simple join sequence), we need to apply
+ * the projection operation as defined by Yannakakis' algorithm. See Ullman's
+ * book or Correa et al. ICAPS 2020 for details.
+ *
+ * @see database/hash_join.h
+ * @see database/semi_join.h
+ * @see full_reducer_successor_generator.cc
+ *
+ * @param action Action schema currently being isntantiated
+ * @param state State used as database
+ * @param staticInformation  Static predicates of the task
+ * @return
+ */
 Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, const State &state,
                                                  const StaticInformation &staticInformation) {
 
@@ -250,12 +288,15 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
             }
         }
         // Project must be after removal of inequality constraints, otherwise we might keep only the tuple violating
-        // some inequality
+        // some inequality.
+        // This is the main difference to the full reducer successor generator
         project(working_table, project_over);
         if (working_table.tuples.empty()) {
             return working_table;
         }
     }
+
+    // For the case where the action schema is cyclic
     Table &working_table = tables[remaining_join[action.getIndex()][0]];
     for (int i = 1; i < remaining_join[action.getIndex()].size(); ++i) {
         hash_join(working_table, tables[remaining_join[action.getIndex()][i]]);

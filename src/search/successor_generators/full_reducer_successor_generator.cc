@@ -1,7 +1,3 @@
-//
-// Created by gutob on 14.07.2019.
-//
-
 #include <queue>
 #include <stack>
 #include <iostream>
@@ -13,10 +9,22 @@
 
 using namespace std;
 
+/**
+ * Creates the full reducer and already computes which action schemas are
+ * acyclic or not. For the acyclic action schemas, it already computes the
+ * full reducer program and the join order. For cyclic action schemas, it
+ * computes the 'partial reducer'
+ *
+ *
+ * @param task: planning task
+ */
 FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         GenericJoinSuccessor(task) {
     /*
-     * Apply GYO algorithm for every action schema to check whether it has acyclic precondition
+     * Apply GYO algorithm for every action schema to check whether it
+     * has an acyclic precondition.
+     *
+     * See Ullman's book for an explanation of the algorithm.
      */
     full_reducer_order.resize(task.actions.size());
     full_join_order.resize(task.actions.size());
@@ -32,14 +40,16 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         int cont = 0;
         for (const Atom &p : action.getPrecondition()) {
             if (p.negated or p.arguments.empty()) {
+                // We ignore negated preconditions and nullary predicates
                 continue;
             }
             set<int> args;
             bool has_free_variables = false;
             for (Argument arg : p.arguments) {
-                // We parse constants to negative numbers so they're uniquely identified
+                // We create one node for each argument of the atom
                 int node;
                 if (arg.constant)
+                    // Constants can be ignored because we project over them
                     continue;
                 has_free_variables = true;
                 node = arg.index;
@@ -73,7 +83,6 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
 
         /*
          * GYO algorithm.
-         * We probably should have a better method to order cyclic precond
          */
         bool has_ear = true;
         stack<pair<int,int>> full_reducer_back;
@@ -165,7 +174,26 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
     }
 }
 
-
+/**
+ *
+ * Instantiate a given action at a given state using the full reducer method.
+ *
+ * @details We first get the non-negative preconditions of the action. Then, we
+ * parse the state into tables with headers identifying the variables.
+ * This transformation already takes into account projections. We then perform
+ * the full reducer program followed by the complete join program. During the
+ * join program, after each single join, we check if there are inequality
+ * constraints over the variables recently joined. If there are, we filter out
+ * tuples violating these constraints.
+ *
+ * @see database/hash_join.h
+ * @see database/semi_join.h
+ *
+ * @param action Action schema currently being isntantiated
+ * @param state State used as database
+ * @param staticInformation  Static predicates of the task
+ * @return
+ */
 Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, const State &state,
                                                  const StaticInformation &staticInformation) {
 
@@ -202,7 +230,6 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     }
     assert (!tables.empty());
     for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
-        // We do not check inequalities here. Should we?
         int s = semi_join(tables[sj.first], tables[sj.second]);
         if (s == 0) {
             if (!acyclic_vec[action.getIndex()])
@@ -210,24 +237,13 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
             return Table();
         }
     }
-    /*if (!acyclic_vec[action.getIndex()]) {
-        full_join_order[action.getIndex()].clear();
-        priority_queue<pair<int,int>> q_size_index;
-        for (int i = 0; i < tables.size(); ++i) {
-            q_size_index.emplace(tables[i].arguments.size(), i);
-        }
-        assert(q_size_index.size() == tables.size());
-        while (!q_size_index.empty()) {
-            int n = q_size_index.top().second;
-            full_join_order[action.getIndex()].push_back(n);
-        }
-    }*/
+
     Table &working_table = tables[full_join_order[action.getIndex()][0]];
     for (int i = 1; i < full_join_order[action.getIndex()].size(); ++i) {
         hash_join(working_table, tables[full_join_order[action.getIndex()][i]]);
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();
-     
+
         // Filter out equalities
         for (const pair<int, int> &ineq : action.getInequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),
