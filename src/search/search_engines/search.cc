@@ -33,6 +33,8 @@ void Search::extract_goal(int state_counter, int generations, PackedState state,
     cout << "Goal state found!" << endl;
     cout << "Total number of states visited: " << visited.size() << endl;
     cout << "Total number of states generated: " << generations << endl;
+
+    // packed_state_size simply estimates the total cost of the closed list
     int packed_state_size = 0;
     for (auto &it : visited) {
         for (auto v : it.first.packed_relations) {
@@ -64,6 +66,7 @@ void Search::extract_goal(int state_counter, int generations, PackedState state,
 const int Search::search(const Task &task,
                          SuccessorGenerator *generator,
                          Heuristic &heuristic) const {
+    // This implementation should be specialized in child classes
     return NOT_SOLVED;
 }
 
