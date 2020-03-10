@@ -1,7 +1,9 @@
-# Power Lifted
+# Power Lifted Planner
 
 Implementation of a lifted planner using database techniques for successor
 generator.
+
+(See [References](#references) for more details)
 
 ## Usage
 The `power-lifted.py` script compiles and solves a PDDL task provided as
@@ -41,3 +43,9 @@ input. The script has the following parameters:
  - **Costs**: ignored
  - **Negated preconditions**: only inequality
  - **Quantifiers**: not supported
+ 
+ # References
+ 
+ 1. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès,G. 2020. Lifted Successor Generationusing Query Optimization Techniques. In Proc. ICAPS 2020. (To appear) [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2020.pdf)
+ 2. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès,G. 2020. Code from the paper "Lifted Successor Generationusing Query Optimization Techniques".  https://doi.org/10.5281/zenodo.3687008
+
