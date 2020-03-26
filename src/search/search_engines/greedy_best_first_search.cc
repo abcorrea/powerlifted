@@ -73,16 +73,12 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
             return SOLVED;
         }
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
-        //cout << "STATE:" << " ";
-        //task.dumpState(state);
         generations += successors.size();
         int init_state_succ = 0;
         for (const pair<State, Action> &successor : successors) {
             const State &s = successor.first;
             const PackedState packed = state_packer.pack_state(s);
             const Action &a = successor.second;
-            //cout << "SUCCESSOR (" << task.actions[a.index].getName() << "): ";
-            //task.dumpState(s);
             int dist = g + task.actions[a.index].getCost();
             int new_h = heuristic.compute_heuristic(s, task);
             pair<unordered_map<PackedState, int, PackedStateHash>::iterator, bool>
@@ -105,8 +101,6 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
                 }
             }
         }
-        //cout << "Init state succ: " << init_state_succ << endl;
-        //exit(0);
     }
 
     cout << "Total time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;

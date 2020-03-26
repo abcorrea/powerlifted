@@ -34,7 +34,7 @@ void Search::extract_goal(int state_counter, int generations, PackedState state,
     // packed_state_size simply estimates the total cost of the closed list
     int packed_state_size = 0;
     for (auto &it : visited) {
-        for (auto v : it.first.packed_relations) {
+        for (const auto &v : it.first.packed_relations) {
             packed_state_size += estimate_vector_bytes<long>(v.size());
         }
 	packed_state_size += estimate_vector_bytes<vector<long>>(it.first.packed_relations.size());
