@@ -1,3 +1,7 @@
+
+#include <unordered_map>
+#include <unordered_set>
+
 #include "hash_semi_join.h"
 
 using namespace std;
