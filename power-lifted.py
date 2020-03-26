@@ -4,9 +4,12 @@
 import argparse
 import os
 import subprocess
+import sys
 
 from distutils.dir_util import copy_tree
 from shutil import copyfile
+
+from build import get_build_dir, build, PROJECT_ROOT
 
 def parse_options():
     parser = argparse.ArgumentParser()
@@ -15,6 +18,10 @@ def parse_options():
     parser.add_argument('-i', '--instance', dest='instance',
                         action='store', default=None,
                         help='Instance file in PDDL', required=True)
+    parser.add_argument('--build', dest='build', action='store_true',
+                        help='Build planner before search.')
+    parser.add_argument('--debug', dest='debug', action='store_true',
+                        help='Run planner in debug mode.')
     parser.add_argument('-s', '--search', dest='search', action='store',
                         default=None, help='Search algorithm',
                         required=True)
@@ -31,24 +38,25 @@ def parse_options():
     return parser.parse_args()
 
 if __name__ == '__main__':
-    dir_path = os.path.dirname(os.path.realpath(__file__))
     options = parse_options()
 
+    BUILD = os.path.join(PROJECT_ROOT, 'builds', 'release')
+    if options.debug:
+        BUILD = os.path.join(PROJECT_ROOT, 'builds', 'debug')
+
+    if options.build:
+        build(options.debug)
 
     # Create build path
-    if not os.path.exists(dir_path+'/builds/release/search'):
-        os.makedirs(dir_path+'/builds/release/search')
+    if not os.path.exists(BUILD):
+        raise OSError("Planner not built!")
 
-    copy_tree(dir_path+'/src/translator/', dir_path+'/builds/release/translator')
-    os.chdir(dir_path+'/builds/release/search')
-    subprocess.check_call(['cmake', dir_path+'/src/search/'])
-    subprocess.check_call(['make', '-j6'])
-    
-    os.chdir(dir_path)
-    subprocess.check_call([dir_path+'/builds/release/translator/translate.py',
+
+    os.chdir(PROJECT_ROOT)
+    subprocess.check_call([os.path.join(BUILD, 'translator', 'translate.py'),
                            options.domain, options.instance,
                            '--output-file', options.translator_file])
-    subprocess.check_call([dir_path+'/builds/release/search/search',
+    subprocess.check_call([os.path.join(BUILD, 'search', 'search'),
                            options.translator_file,
                            options.search,
                            options.heuristic,
