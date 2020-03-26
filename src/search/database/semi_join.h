@@ -20,6 +20,6 @@
  * @param t2: Table on the right of the semi-join.
  * @return  Size of the working table.
  */
-int semi_join(Table &t1, Table &t2);
+size_t semi_join(Table &t1, Table &t2);
 
 #endif //SEARCH_SEMI_JOIN_H

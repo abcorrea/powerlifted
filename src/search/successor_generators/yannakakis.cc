@@ -245,7 +245,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
     assert (!tables.empty());
     for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
         // We do not check inequalities here. Should we?
-        int s = semi_join(tables[sj.first], tables[sj.second]);
+        size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s == 0) {
             return Table();
         }

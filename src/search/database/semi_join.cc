@@ -16,7 +16,7 @@ using namespace std;
 * an empty relation is produced.
 *
 */
-int semi_join(Table &t1, Table &t2) {
+size_t semi_join(Table &t1, Table &t2) {
 
     vector<pair<int, int>> matches;
     for (int i = 0; i < t1.tuple_index.size(); ++i) {

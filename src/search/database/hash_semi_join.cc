@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int hash_semi_join(Table &t1, Table &t2) {
+size_t hash_semi_join(Table &t1, Table &t2) {
     vector<pair<int, int>> matches;
     for (int i = 0; i < t1.tuple_index.size(); ++i) {
         for (int j = 0; j < t2.tuple_index.size(); ++j) {

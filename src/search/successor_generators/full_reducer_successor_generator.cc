@@ -230,7 +230,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     }
     assert (!tables.empty());
     for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
-        int s = semi_join(tables[sj.first], tables[sj.second]);
+        size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s == 0) {
             if (!acyclic_vec[action.getIndex()])
                 cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;

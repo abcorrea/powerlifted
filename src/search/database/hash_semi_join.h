@@ -15,7 +15,7 @@
  * @see semi_join.cc
  * @see hash_join.h
  */
-int hash_semi_join(Table &t1, Table &t2);
+size_t hash_semi_join(Table &t1, Table &t2);
 
 
 #endif //SEARCH_HASH_SEMI_JOIN_H

@@ -164,7 +164,7 @@ public:
 private:
     long pack_tuple(const std::vector<int> &tuple, int predicate_index) const {
         long index = 0;
-        for (size_t i = 0; i < tuple.size(); ++i) {
+        for (int i = 0; i < tuple.size(); ++i) {
             index += hash_multipliers[predicate_index][i] * get_index_given_predicate_and_param(predicate_index,
                                                                                               i, tuple[i]);
         }

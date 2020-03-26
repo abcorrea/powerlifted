@@ -54,7 +54,7 @@ static unsigned int safe_abs(int x) {
     if (x == numeric_limits<int>::min()) {
         return static_cast<unsigned int>(-(x + 1)) + 1u;
     }
-    return abs(x);
+    return static_cast<unsigned int>(abs(x));
 }
 
 bool is_product_within_limits(

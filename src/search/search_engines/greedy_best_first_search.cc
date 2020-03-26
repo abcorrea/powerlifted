@@ -24,7 +24,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
     int generations = 1;
     priority_queue<Node, vector<Node>, NodeComparison> q; // Queue has Node structures
     segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
-    //unordered_map<int, State> index_to_state;
+
     segmented_vector::SegmentedVector<PackedState> index_to_state;
     unordered_map<PackedState, int, PackedStateHash> visited;
 
@@ -93,7 +93,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
                 state_counter++;
             }
             else {
-                size_t index = visited[packed];
+                int index = visited[packed];
                 if (dist < shortest_distance[index]) {
                     cheapest_parent[index] = make_pair(next, a);
                     q.emplace(dist, new_h, index);
