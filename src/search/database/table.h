@@ -1,11 +1,11 @@
 #ifndef SEARCH_TABLE_H
 #define SEARCH_TABLE_H
 
-#include <utility>
-#include <unordered_set>
-#include <vector>
-
 #include "../hash_structures.h"
+
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 /**
  * @brief Data-structure containing a set of tuples and the indices corresponding to

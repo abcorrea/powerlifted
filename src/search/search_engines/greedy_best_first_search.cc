@@ -1,13 +1,13 @@
 #include "greedy_best_first_search.h"
 
+#include "../state_packer.h"
+
+#include "../utils/segmented_vector.h"
+
 #include <algorithm>
 #include <iostream>
 #include <queue>
 #include <vector>
-
-#include "../state_packer.h"
-
-#include "../utils/segmented_vector.h"
 
 using namespace std;
 
@@ -35,7 +35,6 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
 
     int heuristic_layer = heuristic.compute_heuristic(task.initial_state, task)+1;
     cout << "Initial heuristic value " << heuristic_layer << endl;
-    int g_layer = 0;
 
     q.emplace(0, heuristic.compute_heuristic(task.initial_state, task), state_counter);
     shortest_distance.push_back(0);
@@ -63,13 +62,6 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
                  " [expansions: " << state_counter << ", generations: " << generations
                  << ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
         }
-        /*if (g > g_layer) {
-            g_layer = g;
-            cout << "Expansions " << state_counter << ", generations " << generations <<
-                 " states at layer g=" << g_layer
-                 << " [" << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
-        }*/
-        //cout << state_counter << endl;
         assert (index_to_state.size() >= next);
         State state = state_packer.unpack_state(index_to_state[next]);
         if (task.is_goal(state, task.goal)) {

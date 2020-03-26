@@ -1,10 +1,10 @@
 #ifndef SEARCH_GOALCOUNT_H
 #define SEARCH_GOALCOUNT_H
 
+#include "heuristic.h"
 
 #include "../state.h"
 #include "../task.h"
-#include "heuristic.h"
 
 /**
  * @brief Compute hamming distance between goal condition and state s.

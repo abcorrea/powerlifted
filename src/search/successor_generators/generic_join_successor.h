@@ -1,12 +1,11 @@
 #ifndef SEARCH_GENERIC_JOIN_SUCCESSOR_H
 #define SEARCH_GENERIC_JOIN_SUCCESSOR_H
 
+#include "successor_generator.h"
+
 #include <cstdlib>
 #include <ctime>
-
 #include <random>
-
-#include "successor_generator.h"
 
 /**
  * This class is not a successor generator per se. It just contain most of the common functions

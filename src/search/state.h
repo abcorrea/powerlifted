@@ -1,15 +1,15 @@
 #ifndef SEARCH_STATE_H
 #define SEARCH_STATE_H
 
+#include "structures.h"
+
+#include <algorithm>
 #include <tuple>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 #include <boost/functional/hash.hpp>
-
-#include "structures.h"
 
 /**
  * @brief Represents a state in the search space. Intuitively, it is represented

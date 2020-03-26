@@ -1,8 +1,5 @@
-//
-// Created by blaas on 04.07.19.
-//
-
 #include "goalcount.h"
+
 #include "../goal_condition.h"
 #include "../task.h"
 

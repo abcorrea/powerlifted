@@ -1,10 +1,10 @@
 #ifndef SEARCH_RANDOM_SUCCESSOR_H
 #define SEARCH_RANDOM_SUCCESSOR_H
 
+#include "generic_join_successor.h"
+
 #include <cstdlib>
 #include <ctime>
-
-#include "generic_join_successor.h"
 
 /**
  * This class implements a successor generator based on a randomly ordered

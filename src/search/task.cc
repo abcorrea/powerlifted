@@ -1,10 +1,9 @@
-#include <utility>
+#include "task.h"
 
 #include <cassert>
 #include <iostream>
+#include <utility>
 #include <vector>
-
-#include "task.h"
 
 using namespace std;
 

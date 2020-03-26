@@ -1,10 +1,9 @@
-#include <iostream>
+#include "successor_generator.h"
+
+#include "../action.h"
+
 #include <cassert>
 #include <vector>
-#include <queue>
-
-#include "successor_generator.h"
-#include "../action.h"
 
 using namespace std;
 

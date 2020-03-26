@@ -1,7 +1,7 @@
-#include <utility>
-
 #ifndef SEARCH_STRUCTURES_H
 #define SEARCH_STRUCTURES_H
+
+#include "hash_structures.h"
 
 #include <string>
 #include <utility>
@@ -9,7 +9,6 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
-#include "hash_structures.h"
 
 /**
  * @brief GroundAtom is an alias for vector of integers. It is represented

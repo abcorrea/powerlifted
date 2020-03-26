@@ -1,19 +1,16 @@
 #include "search.h"
 
+#include "../utils.h"
+
+#include "../successor_generators/successor_generator.h"
+#include "../heuristics/goalcount.h"
+
 #include <algorithm>
-#include <cassert>
-#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <queue>
 #include <stack>
 #include <unordered_map>
-#include <unordered_set>
-
-#include "../utils.h"
-
-#include "../successor_generators/successor_generator.h"
-#include "../heuristics/goalcount.h"
 
 using namespace std;
 

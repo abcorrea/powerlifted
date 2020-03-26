@@ -1,15 +1,15 @@
 #ifndef SEARCH_SUCCESSOR_GENERATOR_FACTORY_H
 #define SEARCH_SUCCESSOR_GENERATOR_FACTORY_H
 
-#include <iostream>
-#include <boost/algorithm/string.hpp>
-
 #include "full_reducer_successor_generator.h"
 #include "inverse_ordered_join_successor.h"
 #include "naive_successor.h"
 #include "ordered_join_successor.h"
 #include "random_successor.h"
 #include "yannakakis.h"
+
+#include <iostream>
+#include <boost/algorithm/string.hpp>
 
 class SuccessorGeneratorFactory {
 public:

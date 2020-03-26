@@ -1,11 +1,9 @@
-#include <iostream>
-#include <cassert>
-#include <vector>
-#include <queue>
-
-#include "successor_generator.h"
 #include "random_successor.h"
 
+#include "successor_generator.h"
+
+#include <iostream>
+#include <vector>
 
 using namespace std;
 

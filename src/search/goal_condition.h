@@ -1,5 +1,3 @@
-#include <utility>
-
 #ifndef SEARCH_GOAL_CONDITION_H
 #define SEARCH_GOAL_CONDITION_H
 

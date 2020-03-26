@@ -1,13 +1,13 @@
+#include "yannakakis.h"
+
+#include "../database/hash_join.h"
+#include "../database/project.h"
+#include "../database/semi_join.h"
+
 #include <stack>
-#include <iostream>
 #include <queue>
 
-#include "../database/semi_join.h"
-#include "../database/hash_join.h"
-#include "../database/hash_semi_join.h"
 
-#include "yannakakis.h"
-#include "../database/project.h"
 /**
  *
  * @attention This code has a lot of duplication from full_reducer_successor_generator.cc

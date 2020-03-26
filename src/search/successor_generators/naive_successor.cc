@@ -1,10 +1,9 @@
-#include <iostream>
-#include <cassert>
-#include <vector>
-#include <queue>
+#include "naive_successor.h"
 
 #include "successor_generator.h"
-#include "naive_successor.h"
+
+#include <vector>
+
 
 
 using namespace std;

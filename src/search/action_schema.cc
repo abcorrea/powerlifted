@@ -1,8 +1,6 @@
-#include <utility>
-
-#include <utility>
-
 #include "action_schema.h"
+
+#include <utility>
 
 ActionSchema::ActionSchema(std::string name, int index, int cost, std::vector<Parameter> parameters,
                            std::vector<Atom> precondition, std::vector<Atom> effects,

@@ -1,6 +1,6 @@
-#include <algorithm>
-
 #include "semi_join.h"
+
+#include <algorithm>
 
 using namespace std;
 

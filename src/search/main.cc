@@ -1,20 +1,15 @@
-#include <fstream>
-#include <iostream>
-#include <vector>
-
 #include "parser.h"
 #include "task.h"
 #include "utils.h"
 
-#include "search_engines/breadth_first_search.h"
+#include "heuristics/heuristic.h"
+#include "heuristics/heuristic_factory.h"
 #include "search_engines/search.h"
 #include "search_engines/search_factory.h"
-
 #include "successor_generators/successor_generator.h"
 #include "successor_generators/successor_generator_factory.h"
 
-#include "heuristics/heuristic.h"
-#include "heuristics/heuristic_factory.h"
+#include <iostream>
 
 using namespace std;
 

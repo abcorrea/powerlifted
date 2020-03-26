@@ -1,11 +1,11 @@
 #ifndef SEARCH_SEARCH_FACTORY_H
 #define SEARCH_SEARCH_FACTORY_H
 
-#include <boost/algorithm/string.hpp>
-
 #include "breadth_first_search.h"
 #include "greedy_best_first_search.h"
 #include "search.h"
+
+#include <boost/algorithm/string.hpp>
 
 class SearchFactory {
 public:

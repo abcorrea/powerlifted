@@ -1,6 +1,6 @@
-#include <algorithm>
-
 #include "join.h"
+
+#include <algorithm>
 
 using namespace std;
 

@@ -1,16 +1,15 @@
 #ifndef SEARCH_SUCCESSOR_GENERATOR_H
 #define SEARCH_SUCCESSOR_GENERATOR_H
 
-
-#include <vector>
-
-#include "../state.h"
-#include "../action_schema.h"
-#include "../task.h"
-#include "../database/table.h"
 #include "../action.h"
+#include "../action_schema.h"
+#include "../state.h"
+#include "../task.h"
 
 #include "../database/join.h"
+#include "../database/table.h"
+
+#include <vector>
 
 /**
  * This base class implements a join-successor using the join of all positive preconditions in the

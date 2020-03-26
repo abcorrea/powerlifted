@@ -1,11 +1,11 @@
 #ifndef SEARCH_HASH_JOIN_H
 #define SEARCH_HASH_JOIN_H
 
-#include <boost/functional/hash.hpp>
-
 #include "table.h"
 
 #include "../hash_structures.h"
+
+#include <boost/functional/hash.hpp>
 
 /**
  * @brief Join two tables but using hash-based approach.

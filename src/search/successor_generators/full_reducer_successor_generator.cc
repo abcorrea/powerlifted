@@ -3,9 +3,9 @@
 #include <iostream>
 
 #include "full_reducer_successor_generator.h"
+
 #include "../database/semi_join.h"
 #include "../database/hash_join.h"
-#include "../database/hash_semi_join.h"
 
 using namespace std;
 

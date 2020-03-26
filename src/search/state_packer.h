@@ -1,15 +1,16 @@
 #ifndef SEARCH_STATE_PACKER_H
 #define SEARCH_STATE_PACKER_H
 
-#include <cstdint>
-#include <iostream>
-#include <vector>
-#include <algorithm>
-
 #include "task.h"
 #include "utils.h"
 
 #include "utils/hash.h"
+
+#include <algorithm>
+#include <cstdint>
+#include <iostream>
+#include <vector>
+
 
 /**
  * @brief The packed state representation is a more concise representation of states,

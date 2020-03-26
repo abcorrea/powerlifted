@@ -1,7 +1,3 @@
-//
-// Created by blaas on 01.07.19.
-//
-
 #include "state.h"
 
 using namespace std;

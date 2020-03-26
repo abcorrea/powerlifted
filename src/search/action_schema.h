@@ -1,11 +1,11 @@
 #ifndef SEARCH_ACTION_SCHEMA_H
 #define SEARCH_ACTION_SCHEMA_H
 
+#include "structures.h"
+
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "structures.h"
 
 class ActionSchema {
 public:

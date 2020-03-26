@@ -1,11 +1,12 @@
-#include <fstream>
+#include "parser.h"
+
+#include "goal_condition.h"
+#include "action_schema.h"
+
 #include <iostream>
 #include <vector>
 #include <boost/algorithm/string.hpp>
 
-#include "parser.h"
-#include "goal_condition.h"
-#include "action_schema.h"
 
 using namespace std;
 

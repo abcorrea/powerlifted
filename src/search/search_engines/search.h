@@ -1,9 +1,6 @@
 #ifndef SEARCH_SEARCH_H
 #define SEARCH_SEARCH_H
 
-#include <utility>
-#include <vector>
-
 #include "../action_schema.h"
 #include "../action.h"
 #include "../state.h"
@@ -13,6 +10,9 @@
 #include "../successor_generators/successor_generator.h"
 #include "../heuristics/heuristic.h"
 #include "../utils/segmented_vector.h"
+
+#include <utility>
+#include <vector>
 
 #define SOLVED 0
 #define NOT_SOLVED 1

@@ -1,8 +1,6 @@
-#include <iostream>
 #include <cassert>
 #include <vector>
 #include <queue>
-
 
 #include "generic_join_successor.h"
 

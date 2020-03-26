@@ -1,12 +1,11 @@
 #ifndef SEARCH_ORDERED_JOIN_SUCCESSOR_H
 #define SEARCH_ORDERED_JOIN_SUCCESSOR_H
 
+#include "generic_join_successor.h"
 
 #include "../task.h"
 #include "../action.h"
 #include "../database/table.h"
-#include "generic_join_successor.h"
-
 
 /**
  * This class implements the successor generator using a full join ordered by the arity of the predicates.

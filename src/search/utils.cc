@@ -5,7 +5,6 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
-#include <vector>
 
 using namespace std;
 

@@ -1,10 +1,7 @@
-//
-// Created by gutob on 17.07.2019.
-//
-
-#include <unordered_map>
-#include <algorithm>
 #include "hash_join.h"
+
+#include <algorithm>
+#include <unordered_map>
 
 using namespace std;
 

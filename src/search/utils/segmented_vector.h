@@ -1,10 +1,10 @@
 #ifndef SEARCH_SEGMENTED_VECTOR_H
 #define SEARCH_SEGMENTED_VECTOR_H
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <vector>
-
 
 namespace segmented_vector {
 /**

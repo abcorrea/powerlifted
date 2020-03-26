@@ -1,13 +1,12 @@
 #ifndef SEARCH_HASH_SEMI_JOIN_H
 #define SEARCH_HASH_SEMI_JOIN_H
 
-
-#include <utility>
-#include <vector>
-
 #include "table.h"
 
 #include "../hash_structures.h"
+
+#include <utility>
+#include <vector>
 
 /**
  * @brief Semi-join two tables but using hash-based approach.

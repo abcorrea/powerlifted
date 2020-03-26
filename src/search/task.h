@@ -1,16 +1,17 @@
 #ifndef SEARCH_TASK_H
 #define SEARCH_TASK_H
 
-#include <ostream>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include "action_schema.h"
 #include "goal_condition.h"
 #include "object.h"
 #include "predicate.h"
 #include "state.h"
+
+#include <ostream>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 
 /**
  * @brief Represents the task, with all its objects, goals, action schemas, etc.

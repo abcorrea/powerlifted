@@ -1,13 +1,13 @@
 #ifndef SEARCH_HEURISTIC_FACTORY_H
 #define SEARCH_HEURISTIC_FACTORY_H
 
-#include <iostream>
-
-#include <boost/algorithm/string.hpp>
-
 #include "heuristic.h"
 #include "blind_heuristic.h"
 #include "goalcount.h"
+
+#include <iostream>
+
+#include <boost/algorithm/string.hpp>
 
 /**
  * @brief Factory class to generate corresponding heuristic object

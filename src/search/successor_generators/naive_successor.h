@@ -1,10 +1,11 @@
 #ifndef SEARCH_NAIVE_SUCCESSOR_H
 #define SEARCH_NAIVE_SUCCESSOR_H
 
+#include "generic_join_successor.h"
+
 #include <cstdlib>
 #include <ctime>
 
-#include "generic_join_successor.h"
 
 class NaiveSuccessorGenerator : public GenericJoinSuccessor {
 public:
