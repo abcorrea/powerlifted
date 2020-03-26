@@ -60,9 +60,9 @@ public:
 
   void initializeActionSchemas(const std::vector<ActionSchema> &action_list);
 
-  void dumpState(State s) const;
+  void dump_state(State s) const;
 
-  void dumpGoal();
+  void dump_goal();
 
   bool is_goal(const State &state, const GoalCondition &goal_condition) const;
 

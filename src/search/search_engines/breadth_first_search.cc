@@ -44,7 +44,7 @@ const int BreadthFirstSearch::search(const Task &task,
         return SOLVED;
     }
     //cout << "INITIAL STATE: ";
-    //task.dumpState(task.initial_state);
+    //task.dump_state(task.initial_state);
     while (not q.empty()) {
         Node head = q.front();
         int next = head.id;
@@ -63,7 +63,7 @@ const int BreadthFirstSearch::search(const Task &task,
         State state = state_packer.unpack_state(index_to_state[next]);
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
         //cout << "STATE:" << " ";
-        //task.dumpState(state);
+        //task.dump_state(state);
         //return DEBUG_GRACEFUL_EXIT;
         generations += successors.size();
         int init_state_succ = 0;
@@ -74,7 +74,7 @@ const int BreadthFirstSearch::search(const Task &task,
             if (visited.find(packed) == visited.end()) {
                 init_state_succ++;
                 //cout << "SUCCESSOR:" << " ";
-                //task.dumpState(s);
+                //task.dump_state(s);
                 cheapest_parent.push_back(make_pair(next, a));
                 q.emplace(g+1, 0, state_counter);
                 index_to_state.push_back(packed);

@@ -54,7 +54,7 @@ void Search::extract_goal(int state_counter, int generations, PackedState state,
      while (!states_in_the_plan.empty()) {
         state = states_in_the_plan.top();
         cout << "##################" << endl;
-        task.dumpState(state);
+        task.dump_state(state);
         states_in_the_plan.pop();
     }*/
 

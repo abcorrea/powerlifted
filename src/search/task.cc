@@ -42,9 +42,7 @@ void Task::initializeEmptyInitialState() {
                                       false));
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
-void Task::dumpState(State s) const {
+void Task::dump_state(State s) const {
   /*
    * Output initial state in a human readable way.
    */
@@ -66,7 +64,7 @@ void Task::dumpState(State s) const {
   cout << endl;
 }
 
-void Task::dumpGoal() {
+void Task::dump_goal() {
   /*
    * Output goal condition in a readable format.
    */
@@ -88,7 +86,6 @@ void Task::dumpGoal() {
   }
 }
 
-#pragma clang diagnostic pop
 
 void Task::initializeGoal(std::vector<AtomicGoal> goals,
                           std::unordered_set<int> positive_nullary_goals,
