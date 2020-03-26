@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #include "task.h"
 #include "utils.h"

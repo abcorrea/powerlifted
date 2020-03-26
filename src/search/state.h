@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 #include <boost/functional/hash.hpp>
 
