@@ -42,7 +42,7 @@ if __name__ == '__main__':
     copy_tree(dir_path+'/src/translator/', dir_path+'/builds/release/translator')
     os.chdir(dir_path+'/builds/release/search')
     subprocess.check_call(['cmake', dir_path+'/src/search/'])
-    subprocess.check_call(['make'])
+    subprocess.check_call(['make', '-j6'])
     
     os.chdir(dir_path)
     subprocess.check_call([dir_path+'/builds/release/translator/translate.py',
