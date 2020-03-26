@@ -93,8 +93,8 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
             //task.dumpState(s);
             int dist = g + task.actions[a.index].getCost();
             int new_h = heuristic.compute_heuristic(s, task);
-            pair<unordered_map<PackedState, int, boost::hash<PackedState>>::iterator, bool>
-                    try_to_insert = visited.insert(make_pair(packed, state_counter));
+            pair<unordered_map<PackedState, int, PackedStateHash>::iterator, bool>
+              try_to_insert = visited.insert(make_pair(packed, state_counter));
             if (try_to_insert.second) {
                 // Inserted for the first time in the map
                 init_state_succ++;
