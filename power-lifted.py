@@ -14,7 +14,7 @@ from build import get_build_dir, build, PROJECT_ROOT
 def parse_options():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--domain', dest='domain', action='store',
-                                  default=None, help='Domain file in PDDL', required=True)
+                                  default=None, help='Domain file in PDDL')
     parser.add_argument('-i', '--instance', dest='instance',
                         action='store', default=None,
                         help='Instance file in PDDL', required=True)
@@ -35,7 +35,35 @@ def parse_options():
     parser.add_argument('--translator-output-file', dest='translator_file',
                         default='output.lifted',
                         help='Output file of the translator')
-    return parser.parse_args()
+
+    args = parser.parse_args()
+    if args.domain is None:
+        args.domain = find_domain_filename(args.instance)
+        if args.domain is None:
+            raise RuntimeError('Could not find domain filename that matches instance file ', args.domain)
+
+    return args
+
+
+def find_domain_filename(task_filename):
+    """
+    Find domain filename for the given task using automatic naming rules.
+    """
+    dirname, basename = os.path.split(task_filename)
+
+    domain_basenames = [
+        "domain.pddl",
+        basename[:3] + "-domain.pddl",
+        "domain_" + basename,
+        "domain-" + basename,
+    ]
+
+    for domain_basename in domain_basenames:
+        domain_filename = os.path.join(dirname, domain_basename)
+        if os.path.exists(domain_filename):
+            return domain_filename
+
+
 
 if __name__ == '__main__':
     options = parse_options()
