@@ -1,6 +1,6 @@
 #include <vector>
 #include <iostream>
-
+#include <unordered_map>
 #include "project.h"
 
 using namespace std;
@@ -25,8 +25,8 @@ void project(Table &t, const std::unordered_set<int> &over) {
     }
 
     unordered_set<vector<int>, TupleHash> new_tuples;
-    for (const auto &[key, tuple] : hash_map) {
-        new_tuples.insert(tuple);
+    for (const auto& it: hash_map) {
+        new_tuples.insert(it.second);
     }
     t.tuples = new_tuples;
 
