@@ -17,7 +17,7 @@ const int BreadthFirstSearch::search(const Task &task,
     clock_t timer_start = clock();
     StatePacker state_packer(task);
 
-    int state_counter = 0;
+    size_t state_counter = 0;
     int generations = 0;
     int generations_last_jump = 0;
     int expansions = 0;
@@ -45,7 +45,7 @@ const int BreadthFirstSearch::search(const Task &task,
 
     while (not q.empty()) {
         Node head = q.front();
-        int next = head.id;
+        size_t next = head.id;
         int g = head.g;
         expansions++;
         q.pop();

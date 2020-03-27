@@ -20,7 +20,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
     clock_t timer_start = clock();
     StatePacker state_packer(task);
 
-    int state_counter = 0;
+    size_t state_counter = 0;
     int generations = 1;
     priority_queue<Node, vector<Node>, NodeComparison> q; // Queue has Node structures
     segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
@@ -49,7 +49,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
 
     while (not q.empty()) {
         Node head = q.top();
-        int next = head.id;
+        size_t next = head.id;
         int h = head.h;
         int g = head.g;
         q.pop();

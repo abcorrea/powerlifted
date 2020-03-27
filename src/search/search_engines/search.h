@@ -20,11 +20,11 @@
 
 class Node {
 public:
-    Node(int g, int h, int id) : g(g), h(h), id(id) {}
+    Node(int g, int h, size_t id) : g(g), h(h), id(id) {}
 
     int g;
     int h;
-    int id;
+    size_t id;
 };
 
 struct NodeComparison {
