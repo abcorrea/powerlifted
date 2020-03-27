@@ -58,7 +58,7 @@ public:
     vector<pair<State, Action>> successors;
 
 protected:
-    int largest_intermediate_relation = 0;
+    size_t largest_intermediate_relation = 0;
     double cyclic_time = 0;
 };
 

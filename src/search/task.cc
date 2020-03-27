@@ -28,7 +28,7 @@ void Task::initializeEmptyInitialState() {
    * state.
    */
   vector<Relation> fluents, static_preds;
-  for (int i = 0; i < predicates.size(); ++i) {
+  for (size_t i = 0; i < predicates.size(); ++i) {
     Relation r;
     r.predicate_symbol = i;
     assert(r.tuples.empty());
@@ -46,11 +46,11 @@ void Task::dump_state(State s) const {
   /*
    * Output initial state in a human readable way.
    */
-  for (int j = 0; j < s.nullary_atoms.size(); ++j) {
+  for (size_t j = 0; j < s.nullary_atoms.size(); ++j) {
     if (s.nullary_atoms[j])
       cout << predicates[j].getName() << ", ";
   }
-  for (int i = 0; i < s.relations.size(); ++i) {
+  for (size_t i = 0; i < s.relations.size(); ++i) {
     string relation_name = predicates[i].getName();
     unordered_set<GroundAtom, TupleHash> tuples = s.relations[i].tuples;
     for (auto &tuple : tuples) {

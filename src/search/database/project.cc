@@ -9,7 +9,7 @@ void project(Table &t, const std::unordered_set<int> &over) {
 
     vector<int> matches;
     for (int x : over)
-        for (int i = 0; i < t.tuple_index.size(); i++)
+        for (size_t i = 0; i < t.tuple_index.size(); i++)
             if (x == t.tuple_index[i])
                 matches.push_back(i);
 
@@ -17,7 +17,7 @@ void project(Table &t, const std::unordered_set<int> &over) {
 
     for (const vector<int> &tuple : t.tuples) {
         vector<int> key(matches.size());
-        for (int i = 0; i < matches.size(); i++) {
+        for (size_t i = 0; i < matches.size(); i++) {
                 key[i] = tuple[matches[i]];
             }
         if (hash_map.count(key) == 0)

@@ -42,7 +42,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
         return Table();
     }
     Table &working_table = tables[0];
-    for (int i = 1; i < tables.size(); ++i) {
+    for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();

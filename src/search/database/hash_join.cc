@@ -16,8 +16,8 @@ void hash_join(Table &t1, Table &t2) {
      *    in the hash table.
      */
     vector<pair<int, int>> matches;
-    for (int i = 0; i < t1.tuple_index.size(); ++i) {
-        for (int j = 0; j < t2.tuple_index.size(); ++j) {
+    for (size_t i = 0; i < t1.tuple_index.size(); ++i) {
+        for (size_t j = 0; j < t2.tuple_index.size(); ++j) {
             if (t1.tuple_index[i] == t2.tuple_index[j])
                 matches.emplace_back(i, j);
         }
@@ -43,7 +43,7 @@ void hash_join(Table &t1, Table &t2) {
         // Build phase
         for (const vector<int> &tuple : t1.tuples) {
             vector<int> key(matches.size());
-            for (int i = 0; i < matches.size(); i++) {
+            for (size_t i = 0; i < matches.size(); i++) {
                 key[i] = tuple[matches[i].first];
             }
             hash_join_map[key].insert(tuple);
@@ -54,7 +54,7 @@ void hash_join(Table &t1, Table &t2) {
         for (const pair<int, int> &m : matches) {
             to_remove[m.second] = true;
         }
-        for (int j = 0; j < t2.tuple_index.size(); ++j) {
+        for (size_t j = 0; j < t2.tuple_index.size(); ++j) {
             if (!to_remove[j]) {
                 t1.tuple_index.push_back(t2.tuple_index[j]);
             }
@@ -63,7 +63,7 @@ void hash_join(Table &t1, Table &t2) {
         // Probe phase
         for (vector<int> tuple : t2.tuples) {
             vector<int> key(matches.size());
-            for (int i = 0; i < matches.size(); i++) {
+            for (size_t i = 0; i < matches.size(); i++) {
                 key[i] = tuple[matches[i].second];
             }
             if (hash_join_map.count(key) > 0) {

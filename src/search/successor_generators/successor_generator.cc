@@ -41,7 +41,7 @@ const std::vector<std::pair<State, Action>>
     for (const ActionSchema &action : actions) {
         //cout << "Generating instantiation of action " << action.get_name() << endl;
         bool trivially_inapplicable = false;
-        for (int i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
+        for (size_t i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
             if ((action.positive_nullary_precond[i] and !state.nullary_atoms[i])
                 or (action.negative_nullary_precond[i] and state.nullary_atoms[i])) {
                 trivially_inapplicable = true;
@@ -97,11 +97,11 @@ const std::vector<std::pair<State, Action>>
                     continue;
 
                 vector<bool> new_nullary_atoms(state.nullary_atoms);
-                for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
+                for (size_t i = 0; i < action.negative_nullary_effects.size(); ++i) {
                     if (action.negative_nullary_effects[i])
                         new_nullary_atoms[i] = false;
                 }
-                for (int i = 0; i < action.positive_nullary_effects.size(); ++i) {
+                for (size_t i = 0; i < action.positive_nullary_effects.size(); ++i) {
                     if (action.positive_nullary_effects[i])
                         new_nullary_atoms[i] = true;
                 }
@@ -130,11 +130,11 @@ const std::vector<std::pair<State, Action>>
             }
         } else {
             vector<bool> new_nullary_atoms(state.nullary_atoms);
-            for (int i = 0; i < action.negative_nullary_effects.size(); ++i) {
+            for (size_t i = 0; i < action.negative_nullary_effects.size(); ++i) {
                 if (action.negative_nullary_effects[i])
                     new_nullary_atoms[i] = false;
             }
-            for (int i = 0; i < action.positive_nullary_effects.size(); ++i) {
+            for (size_t i = 0; i < action.positive_nullary_effects.size(); ++i) {
                 if (action.positive_nullary_effects[i])
                     new_nullary_atoms[i] = true;
             }
@@ -142,7 +142,7 @@ const std::vector<std::pair<State, Action>>
                 // First, order tuple of indices and then apply effects
                 vector<int> tuple;
                 vector<int> indices;
-                for (int j = 0; j < instantiations.tuple_index.size(); ++j) {
+                for (size_t j = 0; j < instantiations.tuple_index.size(); ++j) {
                     if (instantiations.tuple_index[j] >= 0) {
                         indices.push_back(instantiations.tuple_index[j]);
                         tuple.push_back(tuple_with_const[j]);
@@ -150,7 +150,7 @@ const std::vector<std::pair<State, Action>>
                 }
                 vector<int> ordered_tuple(tuple.size());
                 assert(ordered_tuple.size() == indices.size());
-                for (int i = 0; i < indices.size(); ++i) {
+                for (size_t i = 0; i < indices.size(); ++i) {
                     ordered_tuple[indices[i]] = tuple[i];
                 }
                 vector<Relation> new_relation(state.relations);
@@ -192,13 +192,13 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
 
     vector<int> ordered_tuple(tuple.size(), -1);
     assert (tuple.size() == indices.size());
-    for (int i = 0; i < indices.size(); ++i) {
+    for (size_t i = 0; i < indices.size(); ++i) {
         ordered_tuple[indices[i]] = tuple[i];
     }
 
     ground_atom.clear();
     ground_atom.reserve(eff.arguments.size());
-    for (int i = 0; i < eff.arguments.size(); i++) {
+    for (size_t i = 0; i < eff.arguments.size(); i++) {
         if (!eff.arguments[i].constant)
             ground_atom.push_back(ordered_tuple[eff.arguments[i].index]);
         else

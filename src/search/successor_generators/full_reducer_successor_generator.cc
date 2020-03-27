@@ -91,11 +91,11 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
             has_ear = false;
             int ear = -1;
             int in_favor = -1;
-            for (int i = 0; i < hyperedges.size() and !has_ear; ++i) {
+            for (size_t i = 0; i < hyperedges.size() and !has_ear; ++i) {
                 if (removed[i]) {
                     continue;
                 }
-                for (int j = 0; j < hyperedges.size() and !has_ear; ++j) {
+                for (size_t j = 0; j < hyperedges.size() and !has_ear; ++j) {
                     if (removed[j] or i == j) {
                         continue;
                     }
@@ -145,7 +145,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
             }
         }
         if (not_removed_counter == 1) {
-            for (int k = 0; k < removed.size(); ++k) {
+            for (size_t k = 0; k < removed.size(); ++k) {
                 if (!removed[k]) {
                     full_join_order[action.get_index()].push_back(edge_to_precond[k]);
                 }
@@ -157,10 +157,10 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
             priority_queue<pair<int,int>> q;
             full_join_order[action.get_index()].clear();
             full_join_order[action.get_index()].reserve(removed.size()+missing_precond.size());
-            for (int k = 0; k < removed.size(); ++k) {
+            for (size_t k = 0; k < removed.size(); ++k) {
                 q.emplace(hyperedges[k].size(), edge_to_precond[k]);
             }
-            for (int k = 0; k < missing_precond.size(); ++k) {
+            for (size_t k = 0; k < missing_precond.size(); ++k) {
                 q.emplace(action.get_precondition()[k].arguments.size(), missing_precond[k]);
             }
             while (!q.empty()) {
@@ -240,7 +240,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     }
 
     Table &working_table = tables[full_join_order[action.get_index()][0]];
-    for (int i = 1; i < full_join_order[action.get_index()].size(); ++i) {
+    for (size_t i = 1; i < full_join_order[action.get_index()].size(); ++i) {
         hash_join(working_table, tables[full_join_order[action.get_index()][i]]);
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();

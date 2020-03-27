@@ -98,11 +98,11 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
             has_ear = false;
             int ear = -1;
             int in_favor = -1;
-            for (int i = 0; i < hyperedges.size() and !has_ear; ++i) {
+            for (size_t i = 0; i < hyperedges.size() and !has_ear; ++i) {
                 if (removed[i]) {
                     continue;
                 }
-                for (int j = 0; j < hyperedges.size() and !has_ear; ++j) {
+                for (size_t j = 0; j < hyperedges.size() and !has_ear; ++j) {
                     if (removed[j] or i == j) {
                         continue;
                     }
@@ -156,7 +156,7 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
              * But since we considered all components when computing the full reducer,
              * there is only one.
              */
-            for (int k = 0; k < removed.size(); ++k) {
+            for (size_t k = 0; k < removed.size(); ++k) {
                 if (!removed[k]) {
                     remaining_join[action.get_index()].push_back(edge_to_precond[k]);
                 }
@@ -168,10 +168,10 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
             priority_queue<pair<int,int>> q;
             remaining_join[action.get_index()].clear();
             remaining_join[action.get_index()].reserve(removed.size()+missing_precond.size());
-            for (int k = 0; k < missing_precond.size(); ++k) {
+            for (size_t k = 0; k < missing_precond.size(); ++k) {
                 q.emplace(action.get_precondition()[k].arguments.size(), missing_precond[k]);
             }
-            for (int k = 0; k < removed.size(); ++k) {
+            for (size_t k = 0; k < removed.size(); ++k) {
                 q.emplace(hyperedges[k].size(), edge_to_precond[k]);
             }
             while (!q.empty()) {
@@ -299,7 +299,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
 
     // For the case where the action schema is cyclic
     Table &working_table = tables[remaining_join[action.get_index()][0]];
-    for (int i = 1; i < remaining_join[action.get_index()].size(); ++i) {
+    for (size_t i = 1; i < remaining_join[action.get_index()].size(); ++i) {
         hash_join(working_table, tables[remaining_join[action.get_index()][i]]);
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();

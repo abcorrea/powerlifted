@@ -38,18 +38,18 @@ struct PackedState {
     bool operator==(const PackedState &b) const{
         if (predicate_symbols.size() != b.predicate_symbols.size())
             return false;
-        for (int i = 0; i < predicate_symbols.size(); ++i) {
+        for (size_t i = 0; i < predicate_symbols.size(); ++i) {
             if (predicate_symbols[i] != b.predicate_symbols[i])
                 return false;
         }
-        for (int i = 0; i < nullary_atoms.size(); ++i) {
+        for (size_t i = 0; i < nullary_atoms.size(); ++i) {
             if (nullary_atoms[i] != b.nullary_atoms[i])
                 return false;
         }
-        for (int i = 0; i < packed_relations.size(); ++i) {
+        for (size_t i = 0; i < packed_relations.size(); ++i) {
             if (packed_relations[i].size() != b.packed_relations[i].size())
                 return false;
-            for (int j = 0; j < packed_relations[i].size(); j++) {
+            for (size_t j = 0; j < packed_relations[i].size(); j++) {
                 if (packed_relations[i][j] != b.packed_relations[i][j])
                     return false;
             }
@@ -101,7 +101,7 @@ public:
 
         // Loop over all predicates computing the hash multipliers
         // for each one.
-        for (int i = 0; i < hash_multipliers.size(); ++i) {
+        for (size_t i = 0; i < hash_multipliers.size(); ++i) {
             const Predicate &pred = task.predicates[i];
             hash_multipliers[i].reserve(pred.getTypes().size());
             obj_to_hash_index[i].resize(pred.getTypes().size());
@@ -113,7 +113,7 @@ public:
                 if (is_product_within_limit(multiplier, objects_per_type[t].size(),
                                             numeric_limits<long>::max())) {
                     multiplier *= objects_per_type[t].size();
-                    for (int j = 0; j < objects_per_type[t].size(); ++j) {
+                    for (size_t j = 0; j < objects_per_type[t].size(); ++j) {
                         obj_to_hash_index[i][cont][objects_per_type[t][j]] = j;
                         hash_index_to_obj[i][cont][j] = objects_per_type[t][j];
                     }
@@ -151,7 +151,7 @@ public:
         std::vector<Relation> relations;
         std::vector<bool> nullary_atoms = packed_state.nullary_atoms;
         relations.reserve(packed_state.packed_relations.size());
-        for (int i = 0; i < packed_state.packed_relations.size(); ++i) {
+        for (size_t i = 0; i < packed_state.packed_relations.size(); ++i) {
             std::unordered_set<GroundAtom, TupleHash> tuples;
             for (const auto &r : packed_state.packed_relations[i]) {
                 tuples.insert(unpack_tuple(r, packed_state.predicate_symbols[i]));
@@ -164,7 +164,7 @@ public:
 private:
     long pack_tuple(const std::vector<int> &tuple, int predicate_index) const {
         long index = 0;
-        for (int i = 0; i < tuple.size(); ++i) {
+        for (size_t i = 0; i < tuple.size(); ++i) {
             index += hash_multipliers[predicate_index][i] * get_index_given_predicate_and_param(predicate_index,
                                                                                               i, tuple[i]);
         }

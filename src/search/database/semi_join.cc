@@ -19,8 +19,8 @@ using namespace std;
 size_t semi_join(Table &t1, Table &t2) {
 
     vector<pair<int, int>> matches;
-    for (int i = 0; i < t1.tuple_index.size(); ++i) {
-        for (int j = 0; j < t2.tuple_index.size(); ++j) {
+    for (size_t i = 0; i < t1.tuple_index.size(); ++i) {
+        for (size_t j = 0; j < t2.tuple_index.size(); ++j) {
             if (t1.tuple_index[i] == t2.tuple_index[j])
                 matches.emplace_back(i, j);
         }

@@ -45,7 +45,7 @@ class State {
   void addTuple(int relation, const GroundAtom &args);
 
   bool operator==(const State &other) const {
-    for (int i = 0; i < nullary_atoms.size(); ++i) {
+    for (size_t i = 0; i < nullary_atoms.size(); ++i) {
       if (nullary_atoms[i] != other.nullary_atoms[i]) {
         return false;
       }
