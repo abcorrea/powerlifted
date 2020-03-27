@@ -42,32 +42,49 @@ public:
     }
 
     const std::vector<Atom> &get_effects() const {
-        return effects;
+      return effects;
     }
 
     const std::vector<std::pair<int, int>> &get_inequalities() const {
-        return inequalities;
+      return inequalities;
     }
 
+    const std::vector<bool> &get_positive_nullary_precond() const {
+      return positive_nullary_precond;
+    }
+
+    const std::vector<bool> &get_negative_nullary_precond() const {
+      return negative_nullary_precond;
+    }
+
+    const std::vector<bool> &get_positive_nullary_effects() const {
+      return positive_nullary_effects;
+    }
+
+    const std::vector<bool> &get_negative_nullary_effects() const {
+      return negative_nullary_effects;
+    }
+
+private:
+  std::string name;
+  int index;
+  int cost;
+  std::vector<Parameter> parameters;
+  std::vector<Atom> precondition;
+  std::vector<Atom> effects;
+  std::vector<std::pair<int,int>> inequalities;
 
   /*
    * Nullary predicates are represented as boolean vectors to simplify
    * other parts of the code (e.g., successor generation and action
    * applicability)
    */
-    std::vector<bool> positive_nullary_precond;
-    std::vector<bool> negative_nullary_precond;
-    std::vector<bool> positive_nullary_effects;
-    std::vector<bool> negative_nullary_effects;
+  std::vector<bool> positive_nullary_precond;
+  std::vector<bool> negative_nullary_precond;
+  std::vector<bool> positive_nullary_effects;
+  std::vector<bool> negative_nullary_effects;
 
-private:
-    std::string name;
-    int index;
-    int cost;
-    std::vector<Parameter> parameters;
-    std::vector<Atom> precondition;
-    std::vector<Atom> effects;
-    std::vector<std::pair<int,int>> inequalities;
+
 };
 
 

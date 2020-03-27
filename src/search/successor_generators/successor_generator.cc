@@ -41,9 +41,9 @@ const std::vector<std::pair<State, Action>>
     for (const ActionSchema &action : actions) {
         //cout << "Generating instantiation of action " << action.get_name() << endl;
         bool trivially_inapplicable = false;
-        for (size_t i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
-            if ((action.positive_nullary_precond[i] and !state.nullary_atoms[i])
-                or (action.negative_nullary_precond[i] and state.nullary_atoms[i])) {
+        for (size_t i = 0; i < action.get_positive_nullary_precond().size() and !trivially_inapplicable; ++i) {
+            if ((action.get_positive_nullary_precond()[i] and !state.nullary_atoms[i])
+                or (action.get_negative_nullary_precond()[i] and state.nullary_atoms[i])) {
                 trivially_inapplicable = true;
             }
         }
@@ -97,12 +97,12 @@ const std::vector<std::pair<State, Action>>
                     continue;
 
                 vector<bool> new_nullary_atoms(state.nullary_atoms);
-                for (size_t i = 0; i < action.negative_nullary_effects.size(); ++i) {
-                    if (action.negative_nullary_effects[i])
+                for (size_t i = 0; i < action.get_negative_nullary_effects().size(); ++i) {
+                    if (action.get_negative_nullary_effects()[i])
                         new_nullary_atoms[i] = false;
                 }
-                for (size_t i = 0; i < action.positive_nullary_effects.size(); ++i) {
-                    if (action.positive_nullary_effects[i])
+                for (size_t i = 0; i < action.get_positive_nullary_effects().size(); ++i) {
+                    if (action.get_positive_nullary_effects()[i])
                         new_nullary_atoms[i] = true;
                 }
                 vector<Relation> new_relation(state.relations);
@@ -130,12 +130,12 @@ const std::vector<std::pair<State, Action>>
             }
         } else {
             vector<bool> new_nullary_atoms(state.nullary_atoms);
-            for (size_t i = 0; i < action.negative_nullary_effects.size(); ++i) {
-                if (action.negative_nullary_effects[i])
+            for (size_t i = 0; i < action.get_negative_nullary_effects().size(); ++i) {
+                if (action.get_negative_nullary_effects()[i])
                     new_nullary_atoms[i] = false;
             }
-            for (size_t i = 0; i < action.positive_nullary_effects.size(); ++i) {
-                if (action.positive_nullary_effects[i])
+            for (size_t i = 0; i < action.get_positive_nullary_effects().size(); ++i) {
+                if (action.get_positive_nullary_effects()[i])
                     new_nullary_atoms[i] = true;
             }
             for (const vector<int> &tuple_with_const : instantiations.tuples) {
