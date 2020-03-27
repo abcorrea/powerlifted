@@ -1,0 +1,90 @@
+blocks probBLOCKS-4-0.pddl
+SPARSE-REPRESENTATION
+TYPES 1
+object 0
+PREDICATES 7
+on 0 2 0
+0 0
+ontable 1 1 0
+0
+clear 2 1 0
+0
+handempty 3 0 0
+
+holding 4 1 0
+0
+= 5 2 1
+0 0
+type_object 6 1 1
+0
+OBJECTS 4
+d 0 1 0
+b 1 1 0
+a 2 1 0
+c 3 1 0
+INITIAL-STATE 17
+clear(b) 0 2 0 1 1
+ontable(c) 1 1 0 1 3
+clear(d) 2 2 0 1 0
+ontable(b) 3 1 0 1 1
+handempty() 4 3 0 0 
+ontable(a) 5 1 0 1 2
+clear(a) 6 2 0 1 2
+clear(c) 7 2 0 1 3
+ontable(d) 8 1 0 1 0
+=(d,d) 9 5 0 2 0 0
+=(b,b) 10 5 0 2 1 1
+=(a,a) 11 5 0 2 2 2
+=(c,c) 12 5 0 2 3 3
+type_object(d) 13 6 0 1 0
+type_object(b) 14 6 0 1 1
+type_object(a) 15 6 0 1 2
+type_object(c) 16 6 0 1 3
+GOAL 3
+on(d,c) 0 0 2 0 3
+on(c,b) 0 0 2 3 1
+on(b,a) 0 0 2 1 2
+ACTION-SCHEMAS 4
+pick-up 1 1 4 4
+?x 0 0
+clear 2 0 1 p 0
+ontable 1 0 1 p 0
+handempty 3 0 0 
+type_object 6 0 1 p 0
+ontable 1 1 1 p 0
+clear 2 1 1 p 0
+handempty 3 1 0 
+holding 4 0 1 p 0
+unstack 1 2 5 5
+?x 0 0
+?y 1 0
+on 0 0 2 p 0 p 1
+clear 2 0 1 p 0
+handempty 3 0 0 
+type_object 6 0 1 p 0
+type_object 6 0 1 p 1
+clear 2 1 1 p 0
+handempty 3 1 0 
+on 0 1 2 p 0 p 1
+holding 4 0 1 p 0
+clear 2 0 1 p 1
+stack 1 2 4 5
+?x 0 0
+?y 1 0
+holding 4 0 1 p 0
+clear 2 0 1 p 1
+type_object 6 0 1 p 0
+type_object 6 0 1 p 1
+holding 4 1 1 p 0
+clear 2 1 1 p 1
+clear 2 0 1 p 0
+handempty 3 0 0 
+on 0 0 2 p 0 p 1
+put-down 1 1 2 4
+?x 0 0
+holding 4 0 1 p 0
+type_object 6 0 1 p 0
+holding 4 1 1 p 0
+clear 2 0 1 p 0
+handempty 3 0 0 
+ontable 1 0 1 p 0
