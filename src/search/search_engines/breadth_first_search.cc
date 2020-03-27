@@ -30,7 +30,6 @@ const int BreadthFirstSearch::search(const Task &task,
     index_to_state.push_back(state_packer.pack_state(task.initial_state));
     cheapest_parent.push_back(make_pair(-1, Action(-1, vector<int>())));
 
-    double statistics_counter = 0;
     int g_layer = 0;
 
     q.emplace(0, 0, state_counter);
@@ -43,28 +42,21 @@ const int BreadthFirstSearch::search(const Task &task,
                 cheapest_parent, visited, index_to_state, state_packer, task);
         return SOLVED;
     }
-    //cout << "INITIAL STATE: ";
-    //task.dump_state(task.initial_state);
+
     while (not q.empty()) {
         Node head = q.front();
         int next = head.id;
-        int h = head.h;
         int g = head.g;
         expansions++;
         q.pop();
         if (g_layer < g) {
-            /*cout << "Entering layer " << g_layer << "[expansions: " << state_counter
-                 << ", generations " << generations <<
-                 ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';*/
             generations_last_jump = generations;
             g_layer = g;
         }
         assert (index_to_state.size() >= next);
         State state = state_packer.unpack_state(index_to_state[next]);
         vector<pair<State, Action>> successors = generator->generate_successors(task.actions, state, task.static_info);
-        //cout << "STATE:" << " ";
-        //task.dump_state(state);
-        //return DEBUG_GRACEFUL_EXIT;
+
         generations += successors.size();
         int init_state_succ = 0;
         for (const pair<State, Action> &successor : successors) {
@@ -73,8 +65,6 @@ const int BreadthFirstSearch::search(const Task &task,
             const Action &a = successor.second;
             if (visited.find(packed) == visited.end()) {
                 init_state_succ++;
-                //cout << "SUCCESSOR:" << " ";
-                //task.dump_state(s);
                 cheapest_parent.push_back(make_pair(next, a));
                 q.emplace(g+1, 0, state_counter);
                 index_to_state.push_back(packed);
@@ -93,8 +83,6 @@ const int BreadthFirstSearch::search(const Task &task,
                 state_counter++;
             }
         }
-        //cout << "Init state succ: " << init_state_succ << endl;
-        //exit(0);
     }
 
     cout << generations << endl;

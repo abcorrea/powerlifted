@@ -216,8 +216,6 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
      *  We need to parse precond first
      */
 
-    clock_t time = clock();
-
     vector<vector<int>> instantiations;
     const vector<Parameter> &params = action.get_parameters();
     vector<Atom> precond;

@@ -205,10 +205,8 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
             ground_atom.push_back(eff.arguments[i].index);
     }
 
-    //Sanity check
-    for (int v : ground_atom) {
-        assert (v != -1);
-    }
+    //Sanity check: check that all positions of the tuple were initialized
+    assert (ground_atom.find(-1) == ground_atom.end());
 
     return ground_atom;
 }

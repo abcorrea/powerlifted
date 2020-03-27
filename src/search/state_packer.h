@@ -92,7 +92,6 @@ public:
         hash_index_to_obj.resize(task.predicates.size());
         hash_multipliers.resize(task.predicates.size());
         for (const Object &o : task.objects) {
-            int i = o.getIndex();
             for (int t : o.getTypes()) {
                 objects_per_type[t].push_back(o.getIndex());
             }
