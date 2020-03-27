@@ -8,10 +8,12 @@ if(CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # Release
-set(CMAKE_CXX_FLAGS_RELEASE  "-O3 -g -DNDEBUG -fomit-frame-pointer")
+set(CMAKE_CXX_FLAGS_RELEASE
+        "-O3 -g -DNDEBUG -fomit-frame-pointer -Wall -Werror")
 
 # Debug and Profile
-set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG} -O0 -D_GLIBCXX_DEBUG -pg")
+set(CMAKE_CXX_FLAGS_DEBUG
+        "${CMAKE_CXX_FLAGS_DEBUG} -O0 -D_GLIBCXX_DEBUG -pg -Wall -Werror")
 
 
 add_executable(search
