@@ -79,7 +79,7 @@ const int GreedyBestFirstSearch::search(const Task &task, SuccessorGenerator *ge
             const State &s = successor.first;
             const PackedState packed = state_packer.pack_state(s);
             const Action &a = successor.second;
-            int dist = g + task.actions[a.index].getCost();
+            int dist = g + task.actions[a.index].get_cost();
             int new_h = heuristic.compute_heuristic(s, task);
             pair<unordered_map<PackedState, int, PackedStateHash>::iterator, bool>
               try_to_insert = visited.insert(make_pair(packed, state_counter));

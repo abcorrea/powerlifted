@@ -38,7 +38,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         map<int, int> edge_to_precond;
         map<int, int> precond_to_size;
         int cont = 0;
-        for (const Atom &p : action.getPrecondition()) {
+        for (const Atom &p : action.get_precondition()) {
             if (p.negated or p.arguments.empty()) {
                 // We ignore negated preconditions and nullary predicates
                 continue;
@@ -77,7 +77,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         // Corner case: one relation
         if (hyperedges.size() <= 1) {
             if (!hyperedges.empty())
-                full_join_order[action.getIndex()].push_back(0);
+                full_join_order[action.get_index()].push_back(0);
             continue;
         }
 
@@ -123,21 +123,21 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
                 if (has_ear) {
                     assert (ear != -1 and in_favor != -1);
                     removed[ear] =true;
-                    full_reducer_order[action.getIndex()].emplace_back(edge_to_precond[ear], edge_to_precond[in_favor]);
+                    full_reducer_order[action.get_index()].emplace_back(edge_to_precond[ear], edge_to_precond[in_favor]);
                     full_reducer_back.emplace(edge_to_precond[in_favor], edge_to_precond[ear]);
-                    full_join_order[action.getIndex()].push_back(edge_to_precond[ear]);
+                    full_join_order[action.get_index()].push_back(edge_to_precond[ear]);
                 }
             }
         }
         while (!full_reducer_back.empty()) {
             pair<int, int> p = full_reducer_back.top();
-            full_reducer_order[action.getIndex()].push_back(p);
+            full_reducer_order[action.get_index()].push_back(p);
             full_reducer_back.pop();
         }
         // Add all hyperedges that were not removed to the join. If it is acyclic, there is only left.
         for (int k : missing_precond)
-            full_join_order[action.getIndex()].push_back(k);
-        reverse(full_join_order[action.getIndex()].begin(), full_join_order[action.getIndex()].end());
+            full_join_order[action.get_index()].push_back(k);
+        reverse(full_join_order[action.get_index()].begin(), full_join_order[action.get_index()].end());
         int not_removed_counter = 0;
         for (auto && k : removed) {
             if (!k) {
@@ -147,29 +147,29 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
         if (not_removed_counter == 1) {
             for (int k = 0; k < removed.size(); ++k) {
                 if (!removed[k]) {
-                    full_join_order[action.getIndex()].push_back(edge_to_precond[k]);
+                    full_join_order[action.get_index()].push_back(edge_to_precond[k]);
                 }
             }
-            //cout << "Action " << action.getName() << " is acyclic.\n";
-            acyclic_vec[action.getIndex()] = true;
+            //cout << "Action " << action.get_name() << " is acyclic.\n";
+            acyclic_vec[action.get_index()] = true;
         }
         else {
             priority_queue<pair<int,int>> q;
-            full_join_order[action.getIndex()].clear();
-            full_join_order[action.getIndex()].reserve(removed.size()+missing_precond.size());
+            full_join_order[action.get_index()].clear();
+            full_join_order[action.get_index()].reserve(removed.size()+missing_precond.size());
             for (int k = 0; k < removed.size(); ++k) {
                 q.emplace(hyperedges[k].size(), edge_to_precond[k]);
             }
             for (int k = 0; k < missing_precond.size(); ++k) {
-                q.emplace(action.getPrecondition()[k].arguments.size(), missing_precond[k]);
+                q.emplace(action.get_precondition()[k].arguments.size(), missing_precond[k]);
             }
             while (!q.empty()) {
                 int p = q.top().second;
-                full_join_order[action.getIndex()].push_back(p);
+                full_join_order[action.get_index()].push_back(p);
                 q.pop();
             }
-            //cout << "Action " << action.getName() << " is cyclic.\n";
-            acyclic_vec[action.getIndex()] = false;
+            //cout << "Action " << action.get_name() << " is cyclic.\n";
+            acyclic_vec[action.get_index()] = false;
         }
     }
 }
@@ -204,14 +204,14 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     clock_t time = clock();
 
     vector<vector<int>> instantiations;
-    const vector<Parameter> &params = action.getParameters();
+    const vector<Parameter> &params = action.get_parameters();
     vector<Atom> precond;
 
     if (params.empty()) {
         return Table();
     }
 
-    for (const Atom &p : action.getPrecondition()) {
+    for (const Atom &p : action.get_precondition()) {
         // Ignoring negative preconditions when instantiating
         if (!p.negated and !p.arguments.empty()) {
             precond.push_back((p));
@@ -220,32 +220,33 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
 
     assert (!precond.empty());
 
-    vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation, action.getIndex());
-    if (tables.size() != full_join_order[action.getIndex()].size()) {
+    vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation,
+                                                           action.get_index());
+    if (tables.size() != full_join_order[action.get_index()].size()) {
         // This means that the projection over the constants completely eliminated one table,
         // we can return no instantiation.
-        if (!acyclic_vec[action.getIndex()])
+        if (!acyclic_vec[action.get_index()])
             cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
         return Table();
     }
     assert (!tables.empty());
-    for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
+    for (const pair<int,int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s == 0) {
-            if (!acyclic_vec[action.getIndex()])
+            if (!acyclic_vec[action.get_index()])
                 cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
             return Table();
         }
     }
 
-    Table &working_table = tables[full_join_order[action.getIndex()][0]];
-    for (int i = 1; i < full_join_order[action.getIndex()].size(); ++i) {
-        hash_join(working_table, tables[full_join_order[action.getIndex()][i]]);
+    Table &working_table = tables[full_join_order[action.get_index()][0]];
+    for (int i = 1; i < full_join_order[action.get_index()].size(); ++i) {
+        hash_join(working_table, tables[full_join_order[action.get_index()][i]]);
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();
 
         // Filter out equalities
-        for (const pair<int, int> &ineq : action.getInequalities()) {
+        for (const pair<int, int> &ineq : action.get_inequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),
                              working_table.tuple_index.end(),
                              ineq.first);
@@ -266,7 +267,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
             }
         }
         if (working_table.tuples.empty()) {
-            if (!acyclic_vec[action.getIndex()])
+            if (!acyclic_vec[action.get_index()])
                 cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
             return working_table;
         }

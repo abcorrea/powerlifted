@@ -46,13 +46,13 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
         map<int, int> edge_to_precond;
         map<int, int> precond_to_size;
         int cont = 0;
-        for (const Atom &eff : action.getEffects()) {
+        for (const Atom &eff : action.get_effects()) {
             for (Argument arg : eff.arguments) {
                 if (!arg.constant)
-                    distinguished_variables[action.getIndex()].insert(arg.index);
+                    distinguished_variables[action.get_index()].insert(arg.index);
             }
         }
-        for (const Atom &p : action.getPrecondition()) {
+        for (const Atom &p : action.get_precondition()) {
             if (p.negated or p.arguments.empty()) {
                 continue;
             }
@@ -130,20 +130,20 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
                 if (has_ear) {
                     assert (ear != -1 and in_favor != -1);
                     removed[ear] =true;
-                    full_reducer_order[action.getIndex()].emplace_back(edge_to_precond[ear], edge_to_precond[in_favor]);
+                    full_reducer_order[action.get_index()].emplace_back(edge_to_precond[ear], edge_to_precond[in_favor]);
                     full_reducer_back.emplace(edge_to_precond[in_favor], edge_to_precond[ear]);
-                    join_tree_order[action.getIndex()].emplace_back(edge_to_precond[ear], edge_to_precond[in_favor]);
+                    join_tree_order[action.get_index()].emplace_back(edge_to_precond[ear], edge_to_precond[in_favor]);
                 }
             }
         }
         while (!full_reducer_back.empty()) {
             pair<int, int> p = full_reducer_back.top();
-            full_reducer_order[action.getIndex()].push_back(p);
+            full_reducer_order[action.get_index()].push_back(p);
             full_reducer_back.pop();
         }
         // Add all hyperedges that were not removed to the join. If it is acyclic, there is only left.
         for (int k : missing_precond)
-            remaining_join[action.getIndex()].push_back(k);
+            remaining_join[action.get_index()].push_back(k);
         int not_removed_counter = 0;
         for (auto && k : removed) {
             if (!k) {
@@ -158,29 +158,29 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task) : G
              */
             for (int k = 0; k < removed.size(); ++k) {
                 if (!removed[k]) {
-                    remaining_join[action.getIndex()].push_back(edge_to_precond[k]);
+                    remaining_join[action.get_index()].push_back(edge_to_precond[k]);
                 }
             }
-            //cout << "Action " << action.getName() << " is acyclic.\n";
-            acyclic_vec[action.getIndex()] = true;
+            //cout << "Action " << action.get_name() << " is acyclic.\n";
+            acyclic_vec[action.get_index()] = true;
         }
         else {
             priority_queue<pair<int,int>> q;
-            remaining_join[action.getIndex()].clear();
-            remaining_join[action.getIndex()].reserve(removed.size()+missing_precond.size());
+            remaining_join[action.get_index()].clear();
+            remaining_join[action.get_index()].reserve(removed.size()+missing_precond.size());
             for (int k = 0; k < missing_precond.size(); ++k) {
-                q.emplace(action.getPrecondition()[k].arguments.size(), missing_precond[k]);
+                q.emplace(action.get_precondition()[k].arguments.size(), missing_precond[k]);
             }
             for (int k = 0; k < removed.size(); ++k) {
                 q.emplace(hyperedges[k].size(), edge_to_precond[k]);
             }
             while (!q.empty()) {
                 int p = q.top().second;
-                remaining_join[action.getIndex()].push_back(p);
+                remaining_join[action.get_index()].push_back(p);
                 q.pop();
             }
-            //cout << "Action " << action.getName() << " is cyclic.\n";
-            acyclic_vec[action.getIndex()] = false;
+            //cout << "Action " << action.get_name() << " is cyclic.\n";
+            acyclic_vec[action.get_index()] = false;
         }
     }
 
@@ -219,7 +219,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
     clock_t time = clock();
 
     vector<vector<int>> instantiations;
-    const vector<Parameter> &params = action.getParameters();
+    const vector<Parameter> &params = action.get_parameters();
     vector<Atom> precond;
 
     if (params.empty()) {
@@ -227,7 +227,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
     }
 
 
-    for (const Atom &p : action.getPrecondition()) {
+    for (const Atom &p : action.get_precondition()) {
         // Ignoring negative preconditions when instantiating
         if (!p.negated and !p.arguments.empty()) {
             precond.push_back((p));
@@ -236,14 +236,15 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
 
     assert (!precond.empty());
 
-    vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation, action.getIndex());
+    vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation,
+                                                           action.get_index());
     if (tables.size() != precond.size()) {
         // This means that the projection over the constants completely eliminated one table,
         // we can return no instantiation.
         return Table();
     }
     assert (!tables.empty());
-    for (const pair<int,int> &sj : full_reducer_order[action.getIndex()]) {
+    for (const pair<int,int> &sj : full_reducer_order[action.get_index()]) {
         // We do not check inequalities here. Should we?
         size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s == 0) {
@@ -252,13 +253,13 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
     }
 
 
-    for (const auto &j : join_tree_order[action.getIndex()]) {
+    for (const auto &j : join_tree_order[action.get_index()]) {
         unordered_set<int> project_over;
         for (auto x : tables[j.second].tuple_index) {
             project_over.insert(x);
         }
         for (auto x : tables[j.first].tuple_index) {
-            if (distinguished_variables[action.getIndex()].count(x) > 0) {
+            if (distinguished_variables[action.get_index()].count(x) > 0) {
                 project_over.insert(x);
             }
         }
@@ -267,7 +268,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();
         // Filter out equalities
-        for (const pair<int, int> &ineq : action.getInequalities()) {
+        for (const pair<int, int> &ineq : action.get_inequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),
                              working_table.tuple_index.end(),
                              ineq.first);
@@ -297,13 +298,13 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action, cons
     }
 
     // For the case where the action schema is cyclic
-    Table &working_table = tables[remaining_join[action.getIndex()][0]];
-    for (int i = 1; i < remaining_join[action.getIndex()].size(); ++i) {
-        hash_join(working_table, tables[remaining_join[action.getIndex()][i]]);
+    Table &working_table = tables[remaining_join[action.get_index()][0]];
+    for (int i = 1; i < remaining_join[action.get_index()].size(); ++i) {
+        hash_join(working_table, tables[remaining_join[action.get_index()][i]]);
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();
         // Filter out equalities
-        for (const pair<int, int> &ineq : action.getInequalities()) {
+        for (const pair<int, int> &ineq : action.get_inequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),
                              working_table.tuple_index.end(),
                              ineq.first);

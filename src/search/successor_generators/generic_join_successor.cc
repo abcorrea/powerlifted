@@ -16,7 +16,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
      *      are not supported by now
      */
     vector<vector<int>> instantiations;
-    const vector<Parameter> &params = action.getParameters();
+    const vector<Parameter> &params = action.get_parameters();
 
     if (params.empty()) {
         return Table();
@@ -24,7 +24,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
 
 
     vector<Atom> precond;
-    for (const Atom &p : action.getPrecondition()) {
+    for (const Atom &p : action.get_precondition()) {
         // Ignoring negative preconditions when instantiating
         if ((!p.negated) and p.arguments.size() > 0) {
             precond.push_back((p));
@@ -33,7 +33,8 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
 
     assert (!precond.empty());
 
-    vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation, action.getIndex());
+    vector<Table> tables = parse_precond_into_join_program(precond, state, staticInformation,
+                                                           action.get_index());
     assert (!tables.empty());
     if (tables.size() != precond.size()) {
         // This means that the projection over the constants completely eliminated one table,
@@ -46,7 +47,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();
         // Filter out equalities
-        for (const pair<int, int> ineq : action.getInequalities()) {
+        for (const pair<int, int> ineq : action.get_inequalities()) {
             auto it_1 = find(working_table.tuple_index.begin(),
                              working_table.tuple_index.end(),
                              ineq.first);

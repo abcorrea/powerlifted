@@ -21,31 +21,31 @@ public:
                           std::vector<bool> positive_nullary_effects,
                           std::vector<bool> negative_nullary_effects);
 
-    const std::string &getName() const {
+    const std::string &get_name() const {
         return name;
     }
 
-    int getIndex() const {
+    int get_index() const {
         return index;
     }
 
-    int getCost() const {
+    int get_cost() const {
         return cost;
     }
 
-    const std::vector<Parameter> &getParameters() const {
+    const std::vector<Parameter> &get_parameters() const {
         return parameters;
     }
 
-    const std::vector<Atom> &getPrecondition() const {
+    const std::vector<Atom> &get_precondition() const {
         return precondition;
     }
 
-    const std::vector<Atom> &getEffects() const {
+    const std::vector<Atom> &get_effects() const {
         return effects;
     }
 
-    const std::vector<std::pair<int, int>> &getInequalities() const {
+    const std::vector<std::pair<int, int>> &get_inequalities() const {
         return inequalities;
     }
 

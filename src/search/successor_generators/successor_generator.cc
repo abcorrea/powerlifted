@@ -39,7 +39,7 @@ const std::vector<std::pair<State, Action>>
     successors.clear();
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
-        //cout << "Generating instantiation of action " << action.getName() << endl;
+        //cout << "Generating instantiation of action " << action.get_name() << endl;
         bool trivially_inapplicable = false;
         for (int i = 0; i < action.positive_nullary_precond.size() and !trivially_inapplicable; ++i) {
             if ((action.positive_nullary_precond[i] and !state.nullary_atoms[i])
@@ -50,15 +50,15 @@ const std::vector<std::pair<State, Action>>
         if (trivially_inapplicable) {
             continue;
         }
-        //cout << "Instantiating action " << action.getName() << endl;
+        //cout << "Instantiating action " << action.get_name() << endl;
         Table instantiations = instantiate(action, state, staticInformation);
 
         if (instantiations.tuples.empty()) {
             // Or there is no applicable instantiation, or the action is ground
-            if (action.getParameters().empty()) {
+            if (action.get_parameters().empty()) {
                 // Action is ground
                 bool applicable = true;
-                for (const Atom& precond : action.getPrecondition()) {
+                for (const Atom& precond : action.get_precondition()) {
                     int index = precond.predicate_symbol;
                     vector<int> tuple;
                     tuple.reserve(precond.arguments.size());
@@ -106,7 +106,7 @@ const std::vector<std::pair<State, Action>>
                         new_nullary_atoms[i] = true;
                 }
                 vector<Relation> new_relation(state.relations);
-                for (const Atom &eff : action.getEffects()) {
+                for (const Atom &eff : action.get_effects()) {
                     GroundAtom ga;
                     for (const Argument &a : eff.arguments) {
                         assert(a.constant);
@@ -122,7 +122,7 @@ const std::vector<std::pair<State, Action>>
                     }
                 }
                 successors.emplace_back(State(move(new_relation), move(new_nullary_atoms)),
-                                        Action(action.getIndex(), vector<int>()));
+                                        Action(action.get_index(), vector<int>()));
             }
             else {
                 // Action not applicable
@@ -154,7 +154,7 @@ const std::vector<std::pair<State, Action>>
                     ordered_tuple[indices[i]] = tuple[i];
                 }
                 vector<Relation> new_relation(state.relations);
-                for (const Atom &eff : action.getEffects()) {
+                for (const Atom &eff : action.get_effects()) {
                     const GroundAtom &ga = tuple_to_atom(tuple, indices, eff);
                     assert (eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
                     if (eff.negated) {
@@ -170,7 +170,7 @@ const std::vector<std::pair<State, Action>>
                     }
                 }
                 successors.emplace_back(State(move(new_relation), vector<bool>(new_nullary_atoms)),
-                                        Action(action.getIndex(), move(ordered_tuple)));
+                                        Action(action.get_index(), move(ordered_tuple)));
             }
         }
     }
