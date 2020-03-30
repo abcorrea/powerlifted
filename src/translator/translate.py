@@ -330,6 +330,7 @@ def get_initial_state_size(static_pred, task):
 
 
 def remove_static_predicates_from_goal(task, static_pred):
+    print("Removing satisfied static predicates from the goal.")
     parts = []
     for g in task.goal.parts:
         if g.predicate not in static_pred:
