@@ -74,15 +74,15 @@ int main(int argc, char *argv[]) {
     cout << "Goal condition has static information which is not satisfied in "
             "the initial state."
          << endl;
-    return -1;
+    return 0;
   }
 
   int result = search->search(task, successorGenerator, *heuristic);
 
-  if (result == -1) {
+  if (result == NOT_SOLVED) {
     cerr << "State space completely explored and no solution found!" << endl;
   }
 
   cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
-  return result;
+  return 0;
 }

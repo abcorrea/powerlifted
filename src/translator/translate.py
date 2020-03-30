@@ -34,6 +34,7 @@ DEBUG = False
 TRANSLATE_OUT_OF_MEMORY = 20
 TRANSLATE_OUT_OF_TIME = 21
 
+native_stdout = sys.stdout
 
 def test_if_experiment(test):
     if test:
@@ -76,8 +77,12 @@ def main():
             "WARNING: file %s already exists, it will be overwritten" %
             options.output_file)
     output = open(options.output_file, "w")
-    native_stdout = sys.stdout
     sys.stdout = output
+
+
+    if is_trivially_unsolvable(task, static_pred):
+        output_dummy_task()
+        sys.exit(0)
 
     domain = os.path.basename(os.path.dirname(options.domain))
     inst = os.path.basename(options.task)
@@ -318,6 +323,44 @@ def get_initial_state_size(static_pred, task):
         if atom.predicate not in static_pred:
             initial_state_size += 1
     print("Initial state size: %d" % initial_state_size)
+
+
+def is_trivially_unsolvable(task, static_pred):
+    for g in task.goal.parts:
+        if g.predicate in static_pred:
+            # It is a static info, so it's truth value should be correct
+            # in the initial state
+            if g.negated:
+                if g.negate() in task.init:
+                    print("Unsolvable task: Goal has a static predicate that is "
+                          "not satisfied in the initial state of the task!",
+                          file=native_stdout)
+                    return True
+            else:
+                if g not in task.init:
+                    print("Unsolvable task: Goal has a static predicate that is "
+                          "not satisfied in the initial state of the task!",
+                          file=native_stdout)
+                    return True
+    return False
+
+
+def output_dummy_task():
+    dummy_task = """ dummy dummy.pddl
+    SPARSE-REPRESENTATION
+    TYPES 0
+    PREDICATES 1
+    dummy 0 0 0
+
+    OBJECTS 0
+
+    INITIAL-STATE 0
+    GOAL 1
+    dummy() 0 0 0
+    ACTION-SCHEMAS 0"""
+    print("Printing a trivially unsolvable task.", file=native_stdout)
+    print(dummy_task)
+    return
 
 
 def handle_sigxcpu(signum, stackframe):
