@@ -1,3 +1,7 @@
+#include <vector>
+#include "../utils/segmented_vector.h"
+#include "../state_packer.h"
+#include "greedy_best_first_search.h"
 #include "search.h"
 
 #include "../utils.h"
@@ -22,44 +26,6 @@ int Search::getNumberGeneratedStates() const {
     return number_generated_states;
 }
 
-void Search::extract_goal(int state_counter, int generations, PackedState state,
-                          segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
-                          unordered_map<PackedState, int, PackedStateHash> &visited,
-                          segmented_vector::SegmentedVector<PackedState> &index_to_state,
-                          const StatePacker &packer, const Task &task) const {
-    cout << "Goal state found!" << endl;
-    cout << "Total number of states visited: " << visited.size() << endl;
-    cout << "Total number of states generated: " << generations << endl;
-
-    // packed_state_size simply estimates the total cost of the closed list
-    int packed_state_size = 0;
-    for (auto &it : visited) {
-        for (const auto &v : it.first.packed_relations) {
-            packed_state_size += estimate_vector_bytes<long>(v.size());
-        }
-	packed_state_size += estimate_vector_bytes<vector<long>>(it.first.packed_relations.size());
-        packed_state_size += estimate_vector_bytes<bool>(it.first.nullary_atoms.size());
-        packed_state_size += estimate_vector_bytes<int>(it.first.predicate_symbols.size());
-    }
-    packed_state_size += estimate_unordered_map_bytes<PackedState, int, PackedStateHash>(visited.size());
-    cout << "Size of closed list: " << packed_state_size / 1024 << " kB" <<  endl;
-    stack<State> states_in_the_plan;
-    states_in_the_plan.push(packer.unpack_state(state));
-    while (cheapest_parent[visited[state]].first != -1) {
-        state = index_to_state[cheapest_parent[visited[state]].first];
-        states_in_the_plan.push(packer.unpack_state(state));
-    }
-    cout << "Total plan cost: " << states_in_the_plan.size() - 1 << endl;
-    /* The section below prints the states on the plan found.
-     while (!states_in_the_plan.empty()) {
-        state = states_in_the_plan.top();
-        cout << "##################" << endl;
-        task.dump_state(state);
-        states_in_the_plan.pop();
-    }*/
-
-}
-
 const int Search::search(const Task &task,
                          SuccessorGenerator *generator,
                          Heuristic &heuristic) const {
@@ -72,6 +38,7 @@ void Search::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &
                                     segmented_vector::SegmentedVector<PackedState> &index_to_state,
                                     const StatePacker &packer, const Task &task) {
     vector<Action> actions_in_the_plan;
+    int total_plan_cost = 0;
     while (cheapest_parent[visited[state]].first != -1) {
         actions_in_the_plan.push_back(cheapest_parent[visited[state]].second);
         state = index_to_state[cheapest_parent[visited[state]].first];
@@ -79,11 +46,40 @@ void Search::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &
     reverse(actions_in_the_plan.begin(), actions_in_the_plan.end());
     ofstream plan_file("sas_plan");
     for (const Action &a : actions_in_the_plan) {
+        total_plan_cost += 1;
         plan_file << '(' << task.actions[a.index].get_name() << " ";
         for (const int obj : a.instantiation) {
             plan_file << task.objects[obj].getName() << " ";
         }
         plan_file << ")\n";
     }
+    cout << "Total plan cost: " << total_plan_cost << endl;
 }
 
+void Search::print_no_solution_found(clock_t timer_start) const {
+  cout << "Total time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
+  cerr << "No solution found!" << endl;
+}
+
+void Search::print_goal_found(
+    const Task &task,
+    const SuccessorGenerator *generator,
+    clock_t timer_start,
+    const StatePacker &state_packer,
+    int generations_last_jump,
+    segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
+    segmented_vector::SegmentedVector<PackedState> &index_to_state,
+    unordered_map<PackedState, int, PackedStateHash> &visited,
+    const State &state) const {
+    cout << "Goal found at: " << double(clock() - timer_start)/CLOCKS_PER_SEC
+         << endl;
+    cout << "Proportion of time processing cyclic precond: "
+         << generator->get_cyclic_time()
+             /(double(clock() - timer_start)/CLOCKS_PER_SEC) << endl;
+    cout << "Total time: " << double(clock() - timer_start)/CLOCKS_PER_SEC
+         << endl;
+    cout << "Generations before the last jump: " << generations_last_jump
+         << endl;
+    extract_plan(cheapest_parent, state_packer.pack_state(state),
+                 visited,index_to_state, state_packer, task);
+}

@@ -15,7 +15,6 @@ set(CMAKE_CXX_FLAGS_RELEASE
 set(CMAKE_CXX_FLAGS_DEBUG
         "${CMAKE_CXX_FLAGS_DEBUG} -O0 -D_GLIBCXX_DEBUG -pg -Wall -Werror")
 
-
 add_executable(search
         main.cc
         task.cc task.h
