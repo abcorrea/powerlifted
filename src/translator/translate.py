@@ -50,7 +50,9 @@ def main():
     print('Processing task', task.task_name)
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
-    assert isinstance(task.goal, pddl.Conjunction), "Goal is not conjunctive."
+    assert isinstance(task.goal, pddl.Conjunction) or \
+           isinstance(task.goal, pddl.Atom), \
+        "Goal is not conjunctive."
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
@@ -82,7 +84,7 @@ def main():
     sys.stdout = output
 
     if is_trivially_unsolvable(task, static_pred):
-        output_dummy_task()
+        output_trivially_unsolvable_task()
         sys.exit(0)
 
     remove_static_predicates_from_goal(task, static_pred)
@@ -214,7 +216,8 @@ def print_initial_state(task, atom_index, object_index, predicate_index):
     # state. It is followed by a list of N lines, where each line has the name
     # of the atom, its index, the index of its predicate, a boolean number
     # indicating whether it is negated in the initial state, the number of
-    # args, and the index of its objects. Also updated atom_index structure
+    # args, and the index of its objects.
+    # This function also updates atom_index structure.
     # It should be possible to identify the static predicates from this
     # information in the planner.
     #   As a preprocess, we are removing function from the initial state
@@ -328,6 +331,11 @@ def get_initial_state_size(static_pred, task):
 def remove_static_predicates_from_goal(task, static_pred):
     parts = []
     removed = 0
+    if isinstance(task.goal, pddl.conditions.Atom) or isinstance(task.goal, pddl.Atom):
+        if task.goal.predicate not in static_pred:
+            return
+        else:
+            removed += 1
     for g in task.goal.parts:
         if g.predicate not in static_pred:
             parts.append(g)
@@ -336,30 +344,64 @@ def remove_static_predicates_from_goal(task, static_pred):
     if removed > 0:
         print("Removing satisfied static predicates from the goal.",
               file=native_stdout)
+
+    if len(parts) == 0:
+        print ("Trivially solvable task.", file=native_stdout)
+        output_trivially_solvable_task()
+        sys.exit(0)
     task.goal = pddl.Conjunction(parts)
 
 
 def is_trivially_unsolvable(task, static_pred):
+    """
+    Check if static information in the goal is satisfied already in the initial
+    state. If it is not, then it can never be and hence the task is unsolvable.
+    """
+    def violated_in_initial_state(init, g):
+        if g.negated:
+            if g.negate() in init:
+                print("Unsolvable task: Goal has a static predicate that is "
+                      "not satisfied in the initial state of the task!",
+                      file=native_stdout)
+                return True
+        else:
+            if g not in init:
+                print("Unsolvable task: Goal has a static predicate that is "
+                      "not satisfied in the initial state of the task!",
+                      file=native_stdout)
+                return True
+
+    if isinstance(task.goal, pddl.conditions.Atom) or isinstance(task.goal, pddl.Atom):
+        if task.goal.predicate in static_pred and violated_in_initial_state(task.init, task.goal):
+            return True
     for g in task.goal.parts:
-        if g.predicate in static_pred:
+        if g.predicate in static_pred and violated_in_initial_state(task.init, g):
             # It is a static info, so it's truth value should be correct
             # in the initial state
-            if g.negated:
-                if g.negate() in task.init:
-                    print("Unsolvable task: Goal has a static predicate that is "
-                          "not satisfied in the initial state of the task!",
-                          file=native_stdout)
-                    return True
-            else:
-                if g not in task.init:
-                    print("Unsolvable task: Goal has a static predicate that is "
-                          "not satisfied in the initial state of the task!",
-                          file=native_stdout)
-                    return True
+            return True
     return False
 
 
-def output_dummy_task():
+def output_trivially_solvable_task():
+    dummy_task = """ dummy dummy.pddl
+    SPARSE-REPRESENTATION
+    TYPES 0
+    PREDICATES 1
+    dummy 0 0 0
+
+    OBJECTS 0
+
+    INITIAL-STATE 1
+    dummy() 0 0 0 0
+    GOAL 1
+    dummy() 0 0 0
+    ACTION-SCHEMAS 0"""
+    print("Printing a trivially solvable task.", file=native_stdout)
+    print(dummy_task)
+    return
+
+
+def output_trivially_unsolvable_task():
     dummy_task = """ dummy dummy.pddl
     SPARSE-REPRESENTATION
     TYPES 0
