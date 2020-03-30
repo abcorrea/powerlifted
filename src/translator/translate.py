@@ -222,12 +222,12 @@ def print_initial_state(task, atom_index, object_index, predicate_index):
     # information in the planner.
     #   As a preprocess, we are removing function from the initial state
     # for now.
-    print("INITIAL-STATE %d" % len(task.init))
     new_s0 = []
     for a in task.init:
         if isinstance(a, pddl.conditions.Atom):
             new_s0.append(a)
     task.init = new_s0
+    print("INITIAL-STATE %d" % len(task.init))
     for index, atom in enumerate(task.init):
         atom_index[str(atom)] = index
         # TODO what to do with functions?
