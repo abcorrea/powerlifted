@@ -7,7 +7,6 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 
-
 using namespace std;
 
 
@@ -34,8 +33,10 @@ bool parse(Task &task, const ifstream &in) {
     cin >> canary >> number_types;
     if (canary != "TYPES") {
         cerr << "Error while reading types section." << endl;
+        output_error(canary);
         return false;
     }
+    cout << "Total number of types: " << number_types << endl;
     for (int i = 0; i < number_types; ++i) {
         string type_name;
         int type_index;
@@ -47,8 +48,10 @@ bool parse(Task &task, const ifstream &in) {
     cin >> canary >> number_predicates;
     if (canary != "PREDICATES") {
         cerr << "Error while reading predicate section." << endl;
+        output_error(canary);
         return false;
     }
+    cout << "Total number of predicates: " << number_predicates << endl;
     for (int j = 0; j < number_predicates; ++j) {
         string predicate_name;
         int index;
@@ -76,8 +79,10 @@ bool parse(Task &task, const ifstream &in) {
     cin >> canary >> number_objects;
     if (canary != "OBJECTS") {
         cerr << "Error while reading object section." << endl;
+        output_error(canary);
         return false;
     }
+    cout << "Total number of objects: " << number_objects << endl;
     for (int i = 0; i < number_objects; ++i) {
         string name;
         int index;
@@ -98,10 +103,13 @@ bool parse(Task &task, const ifstream &in) {
     cin >> canary >> initial_state_size;
     if (canary != "INITIAL-STATE") {
         cerr << "Error while reading initial state section." << endl;
+        output_error(canary);
         return false;
     }
     task.initial_state.nullary_atoms.clear();
     task.initial_state.nullary_atoms.resize(task.predicates.size(), false);
+    cout << "Total number of atoms in the initial state: "
+         << initial_state_size << endl;
     for (int i = 0; i < initial_state_size; ++i) {
         string name;
         int index;
@@ -132,10 +140,13 @@ bool parse(Task &task, const ifstream &in) {
     cin >> canary >> goal_size;
     if (canary != "GOAL") {
         cerr << "Error while reading goal description section." << endl;
+        output_error(canary);
         return false;
     }
     vector<AtomicGoal> goals;
     unordered_set<int> positive_nullary_goals, negative_nullary_goals;
+    cout << "Total number of fluent atoms in the goal state: "
+         << goal_size << endl;
     for (int i = 0; i < goal_size; ++i) {
         string name;
         int predicate_index;
@@ -166,8 +177,10 @@ bool parse(Task &task, const ifstream &in) {
     cin >> canary >> number_action_schemas;
     if (canary != "ACTION-SCHEMAS") {
         cerr << "Error while reading action schemas section." << endl;
+        output_error(canary);
         return false;
     }
+    cout << "Total number of action schemas: " << number_action_schemas << endl;
     vector<ActionSchema> actions;
     for (int i = 0; i < number_action_schemas; ++i) {
         string name;
@@ -274,4 +287,8 @@ bool parse(Task &task, const ifstream &in) {
 
     return true;
 
+}
+void output_error(string &msg) {
+    cerr << "String read was \'" <<
+         msg << "\' instead of the respective canary." << endl;
 }

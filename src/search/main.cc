@@ -46,8 +46,8 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  cout << "IMPORTANT: Search component assumes that negative effects are "
-          "always listed first."
+  cout << "IMPORTANT: Asumming that negative effects are always listed first. "
+          "(This is guaranteed by the default translator.)"
        << endl;
 
   Search *search = SearchFactory::new_search_engine(argv[2]);
