@@ -112,10 +112,10 @@ bool Task::is_goal(const State &state,
   for (const AtomicGoal &atomicGoal : goal_condition.goal) {
     int goal_predicate = atomicGoal.predicate;
     Relation relation_at_goal_predicate = state.relations[goal_predicate];
-    if (predicates[relation_at_goal_predicate.predicate_symbol]
-            .isStaticPredicate())
-      continue;
+
+    assert (!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate());
     assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
+
     if (!atomicGoal.negated) {
       // Positive goal_condition
       if (find(relation_at_goal_predicate.tuples.begin(),
@@ -138,7 +138,9 @@ bool Task::is_goal(const State &state,
 bool Task::is_trivially_unsolvable() const {
   /*
    * Checks whether the static conditions in the goal condition are not
-   * satisfied
+   * satisfied.
+   *
+   * This should be guaranteed by the translator. Just a safety check.
    */
   for (const AtomicGoal &atomicGoal : goal.goal) {
     int goal_predicate = atomicGoal.predicate;
