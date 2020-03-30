@@ -40,25 +40,25 @@ public:
     // Create class only with task and domain names
   }
 
-  const std::string &getDomainName() const { return domain_name; }
+  const std::string &get_domain_name() const { return domain_name; }
 
-  const std::string &getTaskName() const { return task_name; }
+  const std::string &get_task_name() const { return task_name; }
 
-  const void addType(const std::string &type_name);
+  const void add_type(const std::string &type_name);
 
-  const void addPredicate(std::string &name, int index, int arity,
-                          bool static_predicate, std::vector<int> &types);
+  const void add_predicate(std::string &name, int index, int arity,
+                           bool static_predicate, std::vector<int> &types);
 
-  const void addObject(const std::string &name, int index,
-                       const std::vector<int> &types);
+  const void add_object(const std::string &name, int index,
+                        const std::vector<int> &types);
 
-  void initializeEmptyInitialState();
+  void create_empty_initial_state();
 
-  void initializeGoal(std::vector<AtomicGoal> goals,
-                      std::unordered_set<int> nullary_goals,
-                      std::unordered_set<int> negative_nullary_goals);
+  void create_goal_condition(std::vector<AtomicGoal> goals,
+                             std::unordered_set<int> nullary_goals,
+                             std::unordered_set<int> negative_nullary_goals);
 
-  void initializeActionSchemas(const std::vector<ActionSchema> &action_list);
+  void initialize_action_schemas(const std::vector<ActionSchema> &action_list);
 
   void dump_state(State s) const;
 

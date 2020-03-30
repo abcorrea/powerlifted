@@ -40,7 +40,7 @@ bool parse(Task &task, const ifstream &in) {
         string type_name;
         int type_index;
         cin >> type_name >> type_index;
-        task.addType(type_name);
+        task.add_type(type_name);
     }
 
     int number_predicates;
@@ -64,7 +64,11 @@ bool parse(Task &task, const ifstream &in) {
             cin >> type;
             types.push_back(type);
         }
-        task.addPredicate(predicate_name, index, number_args, static_pred, types);
+        task.add_predicate(predicate_name,
+                           index,
+                           number_args,
+                           static_pred,
+                           types);
     }
 
     // Read Objects
@@ -85,11 +89,11 @@ bool parse(Task &task, const ifstream &in) {
             cin >> t;
             types.push_back(t);
         }
-        task.addObject(name, index, types);
+        task.add_object(name, index, types);
     }
 
     // Read Initial State
-    task.initializeEmptyInitialState();
+    task.create_empty_initial_state();
     int initial_state_size;
     cin >> canary >> initial_state_size;
     if (canary != "INITIAL-STATE") {
@@ -153,7 +157,9 @@ bool parse(Task &task, const ifstream &in) {
         }
         goals.emplace_back(predicate_index, args, negated);
     }
-    task.initializeGoal(goals, positive_nullary_goals, negative_nullary_goals);
+    task.create_goal_condition(goals,
+                               positive_nullary_goals,
+                               negative_nullary_goals);
 
     // Read Action Schemas
     int number_action_schemas;
@@ -264,7 +270,7 @@ bool parse(Task &task, const ifstream &in) {
                        positive_nul_precond, negative_nul_precond, positive_nul_eff, negative_nul_eff);
         actions.push_back(a);
     }
-    task.initializeActionSchemas(actions);
+    task.initialize_action_schemas(actions);
 
     return true;
 

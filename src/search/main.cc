@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   string domain_name, task_name;
   cin >> domain_name >> task_name;
   Task task(domain_name, task_name);
-  cout << task.getDomainName() << " " << task.getTaskName() << endl;
+  cout << task.get_domain_name() << " " << task.get_task_name() << endl;
 
   bool parsed = parse(task, in);
   if (!parsed) {

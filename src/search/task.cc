@@ -7,22 +7,22 @@
 
 using namespace std;
 
-const void Task::addPredicate(string &name, int index, int arity,
-                              bool static_predicate, vector<int> &types) {
+const void Task::add_predicate(string &name, int index, int arity,
+                               bool static_predicate, vector<int> &types) {
   Task::predicates.emplace_back(move(name), index, arity, static_predicate,
                                 move(types));
 }
 
-const void Task::addObject(const string &name, int index,
-                           const vector<int> &types) {
+const void Task::add_object(const string &name, int index,
+                            const vector<int> &types) {
   Task::objects.emplace_back(name, index, types);
 }
 
-const void Task::addType(const string &type_name) {
+const void Task::add_type(const string &type_name) {
   type_names.push_back(type_name);
 }
 
-void Task::initializeEmptyInitialState() {
+void Task::create_empty_initial_state() {
   /*
    * Creates one empty relation for every predicate of the task in the initial
    * state.
@@ -87,14 +87,14 @@ void Task::dump_goal() {
 }
 
 
-void Task::initializeGoal(std::vector<AtomicGoal> goals,
-                          std::unordered_set<int> positive_nullary_goals,
-                          std::unordered_set<int> negative_nullary_goals) {
-  goal = GoalCondition(std::move(goals), std::move(positive_nullary_goals),
+void Task::create_goal_condition(std::vector<AtomicGoal> goals,
+                                 std::unordered_set<int> nullary_goals,
+                                 std::unordered_set<int> negative_nullary_goals) {
+  goal = GoalCondition(std::move(goals), std::move(nullary_goals),
                        std::move(negative_nullary_goals));
 }
 
-void Task::initializeActionSchemas(
+void Task::initialize_action_schemas(
     const std::vector<ActionSchema> &action_list) {
   actions = action_list;
 }
