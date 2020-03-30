@@ -1,4 +1,4 @@
-airport p01-airport1-p1.pddl
+airport_fixed_structure problem_x
 SPARSE-REPRESENTATION
 TYPES 5
 object 0
@@ -46,9 +46,9 @@ type_airplanetype 17 1 1
 OBJECTS 23
 north 0 2 3 0
 south 1 2 3 0
-light 2 2 0 4
-medium 3 2 0 4
-heavy 4 2 0 4
+light 2 2 4 0
+medium 3 2 4 0
+heavy 4 2 4 0
 seg_pp_0_60 5 2 0 2
 seg_ppdoor_0_40 6 2 0 2
 seg_tww1_0_200 7 2 0 2
@@ -66,46 +66,46 @@ seg_twe3_0_50 18 2 0 2
 seg_twe2_0_50 19 2 0 2
 seg_rwte2_0_10 20 2 0 2
 seg_rwtw2_0_10 21 2 0 2
-airplane_cfbeg 22 2 1 0
+airplane_cfbeg 22 2 0 1
 INITIAL-STATE 84
-at-segment(airplane_cfbeg,seg_rw_0_400) 0 1 0 2 22 14
-not_occupied(seg_twe3_0_50) 1 4 0 1 18
-not_blocked(seg_rwte2_0_10,airplane_cfbeg) 2 6 0 2 20 22
-not_blocked(seg_rwtw2_0_10,airplane_cfbeg) 3 6 0 2 21 22
-not_blocked(seg_tww2_0_50,airplane_cfbeg) 4 6 0 2 9 22
-not_occupied(seg_rwtw1_0_10) 5 4 0 1 13
-not_blocked(seg_twe1_0_200,airplane_cfbeg) 6 6 0 2 8 22
-not_blocked(seg_rwtw1_0_10,airplane_cfbeg) 7 6 0 2 13 22
-not_blocked(seg_rwte1_0_10,airplane_cfbeg) 8 6 0 2 17 22
-not_blocked(seg_tww1_0_200,airplane_cfbeg) 9 6 0 2 7 22
-not_blocked(seg_tww3_0_50,airplane_cfbeg) 10 6 0 2 10 22
-not_blocked(seg_twe4_0_50,airplane_cfbeg) 11 6 0 2 16 22
-not_occupied(seg_twe2_0_50) 12 4 0 1 19
-not_occupied(seg_tww4_0_50) 13 4 0 1 11
-not_occupied(seg_tww1_0_200) 14 4 0 1 7
-not_occupied(seg_twe4_0_50) 15 4 0 1 16
-not_occupied(seg_tww3_0_50) 16 4 0 1 10
-not_occupied(seg_rwte1_0_10) 17 4 0 1 17
-facing(airplane_cfbeg,south) 18 2 0 2 22 1
-blocked(seg_rw_0_400,airplane_cfbeg) 19 5 0 2 14 22
-occupied(seg_rw_0_400) 20 3 0 1 14
-not_blocked(seg_twe3_0_50,airplane_cfbeg) 21 6 0 2 18 22
-not_occupied(seg_rwtw2_0_10) 22 4 0 1 21
-not_occupied(seg_pp_0_60) 23 4 0 1 5
-not_blocked(seg_ppdoor_0_40,airplane_cfbeg) 24 6 0 2 6 22
-not_occupied(seg_rwe_0_50) 25 4 0 1 15
-is-moving(airplane_cfbeg) 26 9 0 1 22
-not_occupied(seg_rwte2_0_10) 27 4 0 1 20
-not_occupied(seg_tww2_0_50) 28 4 0 1 9
-not_blocked(seg_tww4_0_50,airplane_cfbeg) 29 6 0 2 11 22
-not_blocked(seg_pp_0_60,airplane_cfbeg) 30 6 0 2 5 22
-has-type(airplane_cfbeg,medium) 31 0 0 2 22 3
-blocked(seg_rwe_0_50,airplane_cfbeg) 32 5 0 2 15 22
-not_blocked(seg_twe2_0_50,airplane_cfbeg) 33 6 0 2 19 22
-not_blocked(seg_rww_0_50,airplane_cfbeg) 34 6 0 2 12 22
-not_occupied(seg_ppdoor_0_40) 35 4 0 1 6
-not_occupied(seg_twe1_0_200) 36 4 0 1 8
-not_occupied(seg_rww_0_50) 37 4 0 1 12
+not_occupied(seg_tww1_0_200) 0 4 0 1 7
+not_blocked(seg_twe1_0_200,airplane_cfbeg) 1 6 0 2 8 22
+not_occupied(seg_tww2_0_50) 2 4 0 1 9
+not_blocked(seg_rwtw1_0_10,airplane_cfbeg) 3 6 0 2 13 22
+not_occupied(seg_rww_0_50) 4 4 0 1 12
+not_occupied(seg_twe2_0_50) 5 4 0 1 19
+not_occupied(seg_rwte1_0_10) 6 4 0 1 17
+not_occupied(seg_twe1_0_200) 7 4 0 1 8
+not_blocked(seg_rwte2_0_10,airplane_cfbeg) 8 6 0 2 20 22
+not_occupied(seg_tww3_0_50) 9 4 0 1 10
+blocked(seg_rw_0_400,airplane_cfbeg) 10 5 0 2 14 22
+not_blocked(seg_rwtw2_0_10,airplane_cfbeg) 11 6 0 2 21 22
+not_occupied(seg_rwtw2_0_10) 12 4 0 1 21
+not_occupied(seg_rwe_0_50) 13 4 0 1 15
+is-moving(airplane_cfbeg) 14 9 0 1 22
+not_blocked(seg_twe3_0_50,airplane_cfbeg) 15 6 0 2 18 22
+not_blocked(seg_ppdoor_0_40,airplane_cfbeg) 16 6 0 2 6 22
+facing(airplane_cfbeg,south) 17 2 0 2 22 1
+not_occupied(seg_pp_0_60) 18 4 0 1 5
+blocked(seg_rwe_0_50,airplane_cfbeg) 19 5 0 2 15 22
+not_occupied(seg_rwtw1_0_10) 20 4 0 1 13
+not_blocked(seg_tww4_0_50,airplane_cfbeg) 21 6 0 2 11 22
+has-type(airplane_cfbeg,medium) 22 0 0 2 22 3
+not_blocked(seg_tww1_0_200,airplane_cfbeg) 23 6 0 2 7 22
+not_blocked(seg_rwte1_0_10,airplane_cfbeg) 24 6 0 2 17 22
+not_occupied(seg_twe3_0_50) 25 4 0 1 18
+not_occupied(seg_tww4_0_50) 26 4 0 1 11
+not_blocked(seg_tww2_0_50,airplane_cfbeg) 27 6 0 2 9 22
+not_blocked(seg_tww3_0_50,airplane_cfbeg) 28 6 0 2 10 22
+not_occupied(seg_rwte2_0_10) 29 4 0 1 20
+not_occupied(seg_ppdoor_0_40) 30 4 0 1 6
+not_blocked(seg_rww_0_50,airplane_cfbeg) 31 6 0 2 12 22
+occupied(seg_rw_0_400) 32 3 0 1 14
+not_blocked(seg_twe4_0_50,airplane_cfbeg) 33 6 0 2 16 22
+not_blocked(seg_twe2_0_50,airplane_cfbeg) 34 6 0 2 19 22
+not_blocked(seg_pp_0_60,airplane_cfbeg) 35 6 0 2 5 22
+not_occupied(seg_twe4_0_50) 36 4 0 1 16
+at-segment(airplane_cfbeg,seg_rw_0_400) 37 1 0 2 22 14
 =(north,north) 38 12 0 2 0 0
 =(south,south) 39 12 0 2 1 1
 =(light,light) 40 12 0 2 2 2
@@ -155,50 +155,267 @@ type_airplane(airplane_cfbeg) 83 14 0 1 22
 GOAL 1
 is-parked(airplane_cfbeg,seg_pp_0_60) 11 0 2 22 5
 ACTION-SCHEMAS 39
-move_seg_tww1_0_200_seg_twe1_0_200_north_south_medium 1 1 16 14
+startup_seg_twe2_0_50_south_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 19
+not_occupied 4 0 1 c 8
+type_segment 15 0 1 c 19
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 8
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 8 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 8 p 0
+move_seg_twe2_0_50_seg_twe3_0_50_south_south_medium 1 1 13 10
 ?a 0 1
 has-type 0 0 2 p 0 c 3
 is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 0
-at-segment 1 0 2 p 0 c 7
-not_occupied 4 0 1 c 8
-not_blocked 6 0 2 c 8 c 22
-not_occupied 4 0 1 c 6
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 6
+facing 2 0 2 p 0 c 1
+at-segment 1 0 2 p 0 c 19
+not_occupied 4 0 1 c 18
+not_blocked 6 0 2 c 18 c 22
+type_segment 15 0 1 c 19
 type_direction 16 0 1 c 1
-type_segment 15 0 1 c 7
+type_segment 15 0 1 c 18
+type_segment 15 0 1 c 8
+type_airplane 14 0 1 c 22
 type_airplane 14 0 1 p 0
 type_airplanetype 17 0 1 c 3
-type_direction 16 0 1 c 0
-type_segment 15 0 1 c 8
-type_segment 15 0 1 c 9
-occupied 3 1 1 c 7
-at-segment 1 1 2 p 0 c 7
-not_occupied 4 1 1 c 8
-not_blocked 6 1 2 c 8 p 0
-facing 2 1 2 p 0 c 0
-blocked 5 1 2 c 9 p 0
-not_blocked 6 1 2 c 6 p 0
-not_occupied 4 0 1 c 7
-occupied 3 0 1 c 8
-blocked 5 0 2 c 8 p 0
-at-segment 1 0 2 p 0 c 8
-facing 2 0 2 p 0 c 1
-not_blocked 6 0 2 c 9 p 0
-blocked 5 0 2 c 6 p 0
+occupied 3 1 1 c 19
+at-segment 1 1 2 p 0 c 19
+not_occupied 4 1 1 c 18
+not_blocked 6 1 2 c 18 p 0
+blocked 5 1 2 c 8 p 0
+not_occupied 4 0 1 c 19
+occupied 3 0 1 c 18
+blocked 5 0 2 c 18 p 0
+at-segment 1 0 2 p 0 c 18
+not_blocked 6 0 2 c 8 p 0
 startup_seg_twe3_0_50_south_medium 1 1 6 4
 ?a 0 1
 is-pushing 10 0 1 p 0
 at-segment 1 0 2 p 0 c 18
 not_occupied 4 0 1 c 19
-type_segment 15 0 1 c 18
-type_airplane 14 0 1 p 0
 type_segment 15 0 1 c 19
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 18
 is-pushing 10 1 1 p 0
 not_blocked 6 1 2 c 19 p 0
 is-moving 9 0 1 p 0
 blocked 5 0 2 c 19 p 0
+move_seg_ppdoor_0_40_seg_pp_0_60_south_south_medium 1 1 14 12
+?a 0 1
+has-type 0 0 2 p 0 c 3
+is-moving 9 0 1 p 0
+facing 2 0 2 p 0 c 1
+at-segment 1 0 2 p 0 c 6
+not_occupied 4 0 1 c 5
+not_blocked 6 0 2 c 5 c 22
+type_direction 16 0 1 c 1
+type_segment 15 0 1 c 5
+type_segment 15 0 1 c 8
+type_airplane 14 0 1 c 22
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+type_airplanetype 17 0 1 c 3
+occupied 3 1 1 c 6
+at-segment 1 1 2 p 0 c 6
+not_occupied 4 1 1 c 5
+not_blocked 6 1 2 c 5 p 0
+blocked 5 1 2 c 7 p 0
+blocked 5 1 2 c 8 p 0
+not_occupied 4 0 1 c 6
+occupied 3 0 1 c 5
+blocked 5 0 2 c 5 p 0
+at-segment 1 0 2 p 0 c 5
+not_blocked 6 0 2 c 7 p 0
+not_blocked 6 0 2 c 8 p 0
+move_seg_twe3_0_50_seg_twe4_0_50_south_south_medium 1 1 13 10
+?a 0 1
+has-type 0 0 2 p 0 c 3
+is-moving 9 0 1 p 0
+facing 2 0 2 p 0 c 1
+at-segment 1 0 2 p 0 c 18
+not_occupied 4 0 1 c 16
+not_blocked 6 0 2 c 16 c 22
+type_segment 15 0 1 c 19
+type_direction 16 0 1 c 1
+type_segment 15 0 1 c 18
+type_segment 15 0 1 c 16
+type_airplane 14 0 1 c 22
+type_airplane 14 0 1 p 0
+type_airplanetype 17 0 1 c 3
+occupied 3 1 1 c 18
+at-segment 1 1 2 p 0 c 18
+not_occupied 4 1 1 c 16
+not_blocked 6 1 2 c 16 p 0
+blocked 5 1 2 c 19 p 0
+not_occupied 4 0 1 c 18
+occupied 3 0 1 c 16
+blocked 5 0 2 c 16 p 0
+at-segment 1 0 2 p 0 c 16
+not_blocked 6 0 2 c 19 p 0
+park_seg_pp_0_60_north 1 1 6 2
+?a 0 1
+at-segment 1 0 2 p 0 c 5
+facing 2 0 2 p 0 c 0
+is-moving 9 0 1 p 0
+type_segment 15 0 1 c 5
+type_airplane 14 0 1 p 0
+type_direction 16 0 1 c 0
+is-moving 9 1 1 p 0
+is-parked 11 0 2 p 0 c 5
+startup_seg_ppdoor_0_40_north_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 6
+not_occupied 4 0 1 c 5
+type_segment 15 0 1 c 5
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 5 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 5 p 0
+startup_seg_tww2_0_50_north_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 9
+not_occupied 4 0 1 c 10
+type_segment 15 0 1 c 10
+type_segment 15 0 1 c 9
+type_airplane 14 0 1 p 0
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 10 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 10 p 0
+takeoff_seg_rww_0_50_north 1 1 7 9
+?a 0 1
+at-segment 1 0 2 p 0 c 12
+facing 2 0 2 p 0 c 0
+is-moving 9 0 1 p 0
+type_segment 15 0 1 c 11
+type_airplane 14 0 1 p 0
+type_direction 16 0 1 c 0
+type_segment 15 0 1 c 12
+occupied 3 1 1 c 12
+blocked 5 1 2 c 12 p 0
+at-segment 1 1 2 p 0 c 12
+is-moving 9 1 1 p 0
+blocked 5 1 2 c 11 p 0
+not_occupied 4 0 1 c 12
+not_blocked 6 0 2 c 12 p 0
+airborne 8 0 2 p 0 c 12
+not_blocked 6 0 2 c 11 p 0
+startup_seg_twe1_0_200_north_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 8
+not_occupied 4 0 1 c 19
+type_segment 15 0 1 c 19
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 8
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 19 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 19 p 0
+takeoff_seg_rwe_0_50_south 1 1 7 9
+?a 0 1
+at-segment 1 0 2 p 0 c 15
+facing 2 0 2 p 0 c 1
+is-moving 9 0 1 p 0
+type_segment 15 0 1 c 15
+type_direction 16 0 1 c 1
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 16
+occupied 3 1 1 c 15
+blocked 5 1 2 c 15 p 0
+at-segment 1 1 2 p 0 c 15
+is-moving 9 1 1 p 0
+blocked 5 1 2 c 16 p 0
+not_occupied 4 0 1 c 15
+not_blocked 6 0 2 c 15 p 0
+airborne 8 0 2 p 0 c 15
+not_blocked 6 0 2 c 16 p 0
+startup_seg_tww3_0_50_north_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 10
+not_occupied 4 0 1 c 11
+type_segment 15 0 1 c 10
+type_segment 15 0 1 c 11
+type_airplane 14 0 1 p 0
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 11 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 11 p 0
+startup_seg_pp_0_60_south_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 5
+not_occupied 4 0 1 c 6
+type_segment 15 0 1 c 5
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 6 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 6 p 0
+move_seg_tww3_0_50_seg_tww2_0_50_north_north_medium 1 1 13 10
+?a 0 1
+has-type 0 0 2 p 0 c 3
+is-moving 9 0 1 p 0
+facing 2 0 2 p 0 c 0
+at-segment 1 0 2 p 0 c 10
+not_occupied 4 0 1 c 9
+not_blocked 6 0 2 c 9 c 22
+type_direction 16 0 1 c 0
+type_segment 15 0 1 c 11
+type_segment 15 0 1 c 10
+type_airplane 14 0 1 c 22
+type_segment 15 0 1 c 9
+type_airplane 14 0 1 p 0
+type_airplanetype 17 0 1 c 3
+occupied 3 1 1 c 10
+at-segment 1 1 2 p 0 c 10
+not_occupied 4 1 1 c 9
+not_blocked 6 1 2 c 9 p 0
+blocked 5 1 2 c 11 p 0
+not_occupied 4 0 1 c 10
+occupied 3 0 1 c 9
+blocked 5 0 2 c 9 p 0
+at-segment 1 0 2 p 0 c 9
+not_blocked 6 0 2 c 11 p 0
+startup_seg_twe2_0_50_north_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 19
+not_occupied 4 0 1 c 18
+type_segment 15 0 1 c 19
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 18
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 18 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 18 p 0
+startup_seg_twe4_0_50_north_medium 1 1 8 6
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 16
+not_occupied 4 0 1 c 17
+not_occupied 4 0 1 c 15
+type_segment 15 0 1 c 16
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 17
+type_segment 15 0 1 c 15
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 17 p 0
+not_blocked 6 1 2 c 15 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 17 p 0
+blocked 5 0 2 c 15 p 0
 move_seg_tww1_0_200_seg_ppdoor_0_40_north_south_medium 1 1 16 14
 ?a 0 1
 has-type 0 0 2 p 0 c 3
@@ -208,15 +425,15 @@ at-segment 1 0 2 p 0 c 7
 not_occupied 4 0 1 c 6
 not_blocked 6 0 2 c 6 c 22
 not_occupied 4 0 1 c 8
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 6
 type_direction 16 0 1 c 1
-type_segment 15 0 1 c 7
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
 type_direction 16 0 1 c 0
 type_segment 15 0 1 c 8
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 c 22
 type_segment 15 0 1 c 9
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+type_airplanetype 17 0 1 c 3
 occupied 3 1 1 c 7
 at-segment 1 1 2 p 0 c 7
 not_occupied 4 1 1 c 6
@@ -231,30 +448,70 @@ at-segment 1 0 2 p 0 c 6
 facing 2 0 2 p 0 c 1
 not_blocked 6 0 2 c 9 p 0
 blocked 5 0 2 c 8 p 0
-startup_seg_twe1_0_200_north_medium 1 1 6 4
+move_seg_tww1_0_200_seg_twe1_0_200_north_south_medium 1 1 16 14
 ?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 8
-not_occupied 4 0 1 c 19
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 19
-type_segment 15 0 1 c 8
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 19 p 0
+has-type 0 0 2 p 0 c 3
 is-moving 9 0 1 p 0
-blocked 5 0 2 c 19 p 0
-startup_seg_tww1_0_200_north_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
+facing 2 0 2 p 0 c 0
 at-segment 1 0 2 p 0 c 7
-not_occupied 4 0 1 c 9
+not_occupied 4 0 1 c 8
+not_blocked 6 0 2 c 8 c 22
+not_occupied 4 0 1 c 6
+type_direction 16 0 1 c 1
+type_direction 16 0 1 c 0
+type_segment 15 0 1 c 8
 type_segment 15 0 1 c 7
-type_airplane 14 0 1 p 0
+type_airplane 14 0 1 c 22
 type_segment 15 0 1 c 9
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 9 p 0
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+type_airplanetype 17 0 1 c 3
+occupied 3 1 1 c 7
+at-segment 1 1 2 p 0 c 7
+not_occupied 4 1 1 c 8
+not_blocked 6 1 2 c 8 p 0
+facing 2 1 2 p 0 c 0
+blocked 5 1 2 c 9 p 0
+not_blocked 6 1 2 c 6 p 0
+not_occupied 4 0 1 c 7
+occupied 3 0 1 c 8
+blocked 5 0 2 c 8 p 0
+at-segment 1 0 2 p 0 c 8
+facing 2 0 2 p 0 c 1
+not_blocked 6 0 2 c 9 p 0
+blocked 5 0 2 c 6 p 0
+move_seg_ppdoor_0_40_seg_tww1_0_200_north_south_medium 1 1 16 14
+?a 0 1
+has-type 0 0 2 p 0 c 3
 is-moving 9 0 1 p 0
-blocked 5 0 2 c 9 p 0
+facing 2 0 2 p 0 c 0
+at-segment 1 0 2 p 0 c 6
+not_occupied 4 0 1 c 7
+not_blocked 6 0 2 c 7 c 22
+not_occupied 4 0 1 c 8
+type_direction 16 0 1 c 1
+type_direction 16 0 1 c 0
+type_segment 15 0 1 c 5
+type_segment 15 0 1 c 8
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 c 22
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+type_airplanetype 17 0 1 c 3
+occupied 3 1 1 c 6
+at-segment 1 1 2 p 0 c 6
+not_occupied 4 1 1 c 7
+not_blocked 6 1 2 c 7 p 0
+facing 2 1 2 p 0 c 0
+blocked 5 1 2 c 5 p 0
+not_blocked 6 1 2 c 8 p 0
+not_occupied 4 0 1 c 6
+occupied 3 0 1 c 7
+blocked 5 0 2 c 7 p 0
+at-segment 1 0 2 p 0 c 7
+facing 2 0 2 p 0 c 1
+not_blocked 6 0 2 c 5 p 0
+blocked 5 0 2 c 8 p 0
 move_seg_tww2_0_50_seg_tww1_0_200_north_north_medium 1 1 13 10
 ?a 0 1
 has-type 0 0 2 p 0 c 3
@@ -263,13 +520,13 @@ facing 2 0 2 p 0 c 0
 at-segment 1 0 2 p 0 c 9
 not_occupied 4 0 1 c 7
 not_blocked 6 0 2 c 7 c 22
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 7
+type_direction 16 0 1 c 0
 type_segment 15 0 1 c 10
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 c 22
+type_segment 15 0 1 c 9
 type_airplane 14 0 1 p 0
 type_airplanetype 17 0 1 c 3
-type_direction 16 0 1 c 0
-type_segment 15 0 1 c 9
 occupied 3 1 1 c 9
 at-segment 1 1 2 p 0 c 9
 not_occupied 4 1 1 c 7
@@ -280,6 +537,72 @@ occupied 3 0 1 c 7
 blocked 5 0 2 c 7 p 0
 at-segment 1 0 2 p 0 c 7
 not_blocked 6 0 2 c 10 p 0
+move_seg_tww4_0_50_seg_tww3_0_50_north_north_medium 1 1 14 12
+?a 0 1
+has-type 0 0 2 p 0 c 3
+is-moving 9 0 1 p 0
+facing 2 0 2 p 0 c 0
+at-segment 1 0 2 p 0 c 11
+not_occupied 4 0 1 c 10
+not_blocked 6 0 2 c 10 c 22
+type_direction 16 0 1 c 0
+type_segment 15 0 1 c 13
+type_segment 15 0 1 c 11
+type_segment 15 0 1 c 10
+type_segment 15 0 1 c 12
+type_airplane 14 0 1 c 22
+type_airplane 14 0 1 p 0
+type_airplanetype 17 0 1 c 3
+occupied 3 1 1 c 11
+at-segment 1 1 2 p 0 c 11
+not_occupied 4 1 1 c 10
+not_blocked 6 1 2 c 10 p 0
+blocked 5 1 2 c 12 p 0
+blocked 5 1 2 c 13 p 0
+not_occupied 4 0 1 c 11
+occupied 3 0 1 c 10
+blocked 5 0 2 c 10 p 0
+at-segment 1 0 2 p 0 c 10
+not_blocked 6 0 2 c 12 p 0
+not_blocked 6 0 2 c 13 p 0
+startup_seg_ppdoor_0_40_south_medium 1 1 8 6
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 6
+not_occupied 4 0 1 c 7
+not_occupied 4 0 1 c 8
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+type_segment 15 0 1 c 8
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 7 p 0
+not_blocked 6 1 2 c 8 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 7 p 0
+blocked 5 0 2 c 8 p 0
+move_seg_pp_0_60_seg_ppdoor_0_40_north_north_medium 1 1 12 8
+?a 0 1
+has-type 0 0 2 p 0 c 3
+is-moving 9 0 1 p 0
+facing 2 0 2 p 0 c 0
+at-segment 1 0 2 p 0 c 5
+not_occupied 4 0 1 c 6
+not_blocked 6 0 2 c 6 c 22
+type_direction 16 0 1 c 0
+type_segment 15 0 1 c 5
+type_airplane 14 0 1 c 22
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+type_airplanetype 17 0 1 c 3
+occupied 3 1 1 c 5
+at-segment 1 1 2 p 0 c 5
+not_occupied 4 1 1 c 6
+not_blocked 6 1 2 c 6 p 0
+not_occupied 4 0 1 c 5
+occupied 3 0 1 c 6
+blocked 5 0 2 c 6 p 0
+at-segment 1 0 2 p 0 c 6
 move_seg_rww_0_50_seg_tww4_0_50_south_north_medium 1 1 17 16
 ?a 0 1
 has-type 0 0 2 p 0 c 3
@@ -289,16 +612,16 @@ at-segment 1 0 2 p 0 c 12
 not_occupied 4 0 1 c 11
 not_blocked 6 0 2 c 11 c 22
 not_occupied 4 0 1 c 13
-type_segment 15 0 1 c 13
 type_segment 15 0 1 c 14
-type_segment 15 0 1 c 12
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 15
 type_direction 16 0 1 c 1
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 11
-type_airplanetype 17 0 1 c 3
 type_direction 16 0 1 c 0
+type_segment 15 0 1 c 13
+type_segment 15 0 1 c 15
+type_segment 15 0 1 c 11
+type_airplane 14 0 1 c 22
+type_airplanetype 17 0 1 c 3
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 12
 occupied 3 1 1 c 12
 at-segment 1 1 2 p 0 c 12
 not_occupied 4 1 1 c 11
@@ -315,506 +638,6 @@ facing 2 0 2 p 0 c 0
 not_blocked 6 0 2 c 15 p 0
 not_blocked 6 0 2 c 14 p 0
 blocked 5 0 2 c 13 p 0
-move_seg_twe1_0_200_seg_twe2_0_50_south_south_medium 1 1 14 12
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 1
-at-segment 1 0 2 p 0 c 8
-not_occupied 4 0 1 c 19
-not_blocked 6 0 2 c 19 c 22
-type_segment 15 0 1 c 19
-type_segment 15 0 1 c 6
-type_direction 16 0 1 c 1
-type_segment 15 0 1 c 7
-type_airplane 14 0 1 c 22
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-type_segment 15 0 1 c 8
-occupied 3 1 1 c 8
-at-segment 1 1 2 p 0 c 8
-not_occupied 4 1 1 c 19
-not_blocked 6 1 2 c 19 p 0
-blocked 5 1 2 c 6 p 0
-blocked 5 1 2 c 7 p 0
-not_occupied 4 0 1 c 8
-occupied 3 0 1 c 19
-blocked 5 0 2 c 19 p 0
-at-segment 1 0 2 p 0 c 19
-not_blocked 6 0 2 c 6 p 0
-not_blocked 6 0 2 c 7 p 0
-move_seg_tww3_0_50_seg_tww2_0_50_north_north_medium 1 1 13 10
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 0
-at-segment 1 0 2 p 0 c 10
-not_occupied 4 0 1 c 9
-not_blocked 6 0 2 c 9 c 22
-type_segment 15 0 1 c 10
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 11
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-type_direction 16 0 1 c 0
-type_segment 15 0 1 c 9
-occupied 3 1 1 c 10
-at-segment 1 1 2 p 0 c 10
-not_occupied 4 1 1 c 9
-not_blocked 6 1 2 c 9 p 0
-blocked 5 1 2 c 11 p 0
-not_occupied 4 0 1 c 10
-occupied 3 0 1 c 9
-blocked 5 0 2 c 9 p 0
-at-segment 1 0 2 p 0 c 9
-not_blocked 6 0 2 c 11 p 0
-startup_seg_tww3_0_50_south_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 10
-not_occupied 4 0 1 c 9
-type_segment 15 0 1 c 10
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 9
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 9 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 9 p 0
-startup_seg_pp_0_60_south_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 5
-not_occupied 4 0 1 c 6
-type_segment 15 0 1 c 6
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 5
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 6 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 6 p 0
-startup_seg_tww4_0_50_north_medium 1 1 8 6
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 11
-not_occupied 4 0 1 c 12
-not_occupied 4 0 1 c 13
-type_segment 15 0 1 c 13
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 12
-type_segment 15 0 1 c 11
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 12 p 0
-not_blocked 6 1 2 c 13 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 12 p 0
-blocked 5 0 2 c 13 p 0
-startup_seg_twe1_0_200_south_medium 1 1 8 6
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 8
-not_occupied 4 0 1 c 6
-not_occupied 4 0 1 c 7
-type_segment 15 0 1 c 6
-type_segment 15 0 1 c 7
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 8
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 6 p 0
-not_blocked 6 1 2 c 7 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 6 p 0
-blocked 5 0 2 c 7 p 0
-startup_seg_tww1_0_200_south_medium 1 1 8 6
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 7
-not_occupied 4 0 1 c 6
-not_occupied 4 0 1 c 8
-type_segment 15 0 1 c 7
-type_segment 15 0 1 c 6
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 8
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 6 p 0
-not_blocked 6 1 2 c 8 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 6 p 0
-blocked 5 0 2 c 8 p 0
-startup_seg_twe2_0_50_north_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 19
-not_occupied 4 0 1 c 18
-type_segment 15 0 1 c 18
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 19
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 18 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 18 p 0
-takeoff_seg_rww_0_50_north 1 1 7 9
-?a 0 1
-at-segment 1 0 2 p 0 c 12
-facing 2 0 2 p 0 c 0
-is-moving 9 0 1 p 0
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 12
-type_direction 16 0 1 c 0
-type_segment 15 0 1 c 11
-occupied 3 1 1 c 12
-blocked 5 1 2 c 12 p 0
-at-segment 1 1 2 p 0 c 12
-is-moving 9 1 1 p 0
-blocked 5 1 2 c 11 p 0
-not_occupied 4 0 1 c 12
-not_blocked 6 0 2 c 12 p 0
-airborne 8 0 2 p 0 c 12
-not_blocked 6 0 2 c 11 p 0
-park_seg_pp_0_60_north 1 1 6 2
-?a 0 1
-at-segment 1 0 2 p 0 c 5
-facing 2 0 2 p 0 c 0
-is-moving 9 0 1 p 0
-type_airplane 14 0 1 p 0
-type_direction 16 0 1 c 0
-type_segment 15 0 1 c 5
-is-moving 9 1 1 p 0
-is-parked 11 0 2 p 0 c 5
-startup_seg_ppdoor_0_40_south_medium 1 1 8 6
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 6
-not_occupied 4 0 1 c 7
-not_occupied 4 0 1 c 8
-type_segment 15 0 1 c 6
-type_segment 15 0 1 c 7
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 8
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 7 p 0
-not_blocked 6 1 2 c 8 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 7 p 0
-blocked 5 0 2 c 8 p 0
-park_seg_pp_0_60_south 1 1 7 4
-?a 0 1
-at-segment 1 0 2 p 0 c 5
-facing 2 0 2 p 0 c 1
-is-moving 9 0 1 p 0
-type_segment 15 0 1 c 6
-type_airplane 14 0 1 p 0
-type_direction 16 0 1 c 1
-type_segment 15 0 1 c 5
-is-moving 9 1 1 p 0
-blocked 5 1 2 c 6 p 0
-is-parked 11 0 2 p 0 c 5
-not_blocked 6 0 2 c 6 p 0
-startup_seg_twe3_0_50_north_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 18
-not_occupied 4 0 1 c 16
-type_segment 15 0 1 c 18
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 16
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 16 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 16 p 0
-startup_seg_tww4_0_50_south_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 11
-not_occupied 4 0 1 c 10
-type_segment 15 0 1 c 10
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 11
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 10 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 10 p 0
-startup_seg_tww2_0_50_south_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 9
-not_occupied 4 0 1 c 7
-type_segment 15 0 1 c 7
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 9
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 7 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 7 p 0
-move_seg_rw_0_400_seg_rww_0_50_south_south_medium 1 1 14 8
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 1
-at-segment 1 0 2 p 0 c 14
-not_occupied 4 0 1 c 12
-not_blocked 6 0 2 c 12 c 22
-not_occupied 4 0 1 c 15
-type_segment 15 0 1 c 14
-type_segment 15 0 1 c 12
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 15
-type_direction 16 0 1 c 1
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-occupied 3 1 1 c 14
-at-segment 1 1 2 p 0 c 14
-not_occupied 4 1 1 c 12
-not_blocked 6 1 2 c 12 p 0
-not_occupied 4 0 1 c 14
-occupied 3 0 1 c 12
-blocked 5 0 2 c 12 p 0
-at-segment 1 0 2 p 0 c 12
-move_seg_twe2_0_50_seg_twe3_0_50_south_south_medium 1 1 13 10
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 1
-at-segment 1 0 2 p 0 c 19
-not_occupied 4 0 1 c 18
-not_blocked 6 0 2 c 18 c 22
-type_segment 15 0 1 c 19
-type_direction 16 0 1 c 1
-type_segment 15 0 1 c 18
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 8
-occupied 3 1 1 c 19
-at-segment 1 1 2 p 0 c 19
-not_occupied 4 1 1 c 18
-not_blocked 6 1 2 c 18 p 0
-blocked 5 1 2 c 8 p 0
-not_occupied 4 0 1 c 19
-occupied 3 0 1 c 18
-blocked 5 0 2 c 18 p 0
-at-segment 1 0 2 p 0 c 18
-not_blocked 6 0 2 c 8 p 0
-startup_seg_twe2_0_50_south_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 19
-not_occupied 4 0 1 c 8
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 19
-type_segment 15 0 1 c 8
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 8 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 8 p 0
-takeoff_seg_rwe_0_50_south 1 1 7 9
-?a 0 1
-at-segment 1 0 2 p 0 c 15
-facing 2 0 2 p 0 c 1
-is-moving 9 0 1 p 0
-type_airplane 14 0 1 p 0
-type_direction 16 0 1 c 1
-type_segment 15 0 1 c 15
-type_segment 15 0 1 c 16
-occupied 3 1 1 c 15
-blocked 5 1 2 c 15 p 0
-at-segment 1 1 2 p 0 c 15
-is-moving 9 1 1 p 0
-blocked 5 1 2 c 16 p 0
-not_occupied 4 0 1 c 15
-not_blocked 6 0 2 c 15 p 0
-airborne 8 0 2 p 0 c 15
-not_blocked 6 0 2 c 16 p 0
-move_seg_twe3_0_50_seg_twe4_0_50_south_south_medium 1 1 13 10
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 1
-at-segment 1 0 2 p 0 c 18
-not_occupied 4 0 1 c 16
-not_blocked 6 0 2 c 16 c 22
-type_airplane 14 0 1 c 22
-type_direction 16 0 1 c 1
-type_segment 15 0 1 c 16
-type_segment 15 0 1 c 18
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-type_segment 15 0 1 c 19
-occupied 3 1 1 c 18
-at-segment 1 1 2 p 0 c 18
-not_occupied 4 1 1 c 16
-not_blocked 6 1 2 c 16 p 0
-blocked 5 1 2 c 19 p 0
-not_occupied 4 0 1 c 18
-occupied 3 0 1 c 16
-blocked 5 0 2 c 16 p 0
-at-segment 1 0 2 p 0 c 16
-not_blocked 6 0 2 c 19 p 0
-move_seg_ppdoor_0_40_seg_pp_0_60_south_south_medium 1 1 14 12
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 1
-at-segment 1 0 2 p 0 c 6
-not_occupied 4 0 1 c 5
-not_blocked 6 0 2 c 5 c 22
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 6
-type_direction 16 0 1 c 1
-type_segment 15 0 1 c 5
-type_segment 15 0 1 c 7
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-type_segment 15 0 1 c 8
-occupied 3 1 1 c 6
-at-segment 1 1 2 p 0 c 6
-not_occupied 4 1 1 c 5
-not_blocked 6 1 2 c 5 p 0
-blocked 5 1 2 c 7 p 0
-blocked 5 1 2 c 8 p 0
-not_occupied 4 0 1 c 6
-occupied 3 0 1 c 5
-blocked 5 0 2 c 5 p 0
-at-segment 1 0 2 p 0 c 5
-not_blocked 6 0 2 c 7 p 0
-not_blocked 6 0 2 c 8 p 0
-startup_seg_tww3_0_50_north_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 10
-not_occupied 4 0 1 c 11
-type_segment 15 0 1 c 10
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 11
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 11 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 11 p 0
-move_seg_ppdoor_0_40_seg_tww1_0_200_north_south_medium 1 1 16 14
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 0
-at-segment 1 0 2 p 0 c 6
-not_occupied 4 0 1 c 7
-not_blocked 6 0 2 c 7 c 22
-not_occupied 4 0 1 c 8
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 6
-type_direction 16 0 1 c 1
-type_segment 15 0 1 c 5
-type_segment 15 0 1 c 7
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-type_direction 16 0 1 c 0
-type_segment 15 0 1 c 8
-occupied 3 1 1 c 6
-at-segment 1 1 2 p 0 c 6
-not_occupied 4 1 1 c 7
-not_blocked 6 1 2 c 7 p 0
-facing 2 1 2 p 0 c 0
-blocked 5 1 2 c 5 p 0
-not_blocked 6 1 2 c 8 p 0
-not_occupied 4 0 1 c 6
-occupied 3 0 1 c 7
-blocked 5 0 2 c 7 p 0
-at-segment 1 0 2 p 0 c 7
-facing 2 0 2 p 0 c 1
-not_blocked 6 0 2 c 5 p 0
-blocked 5 0 2 c 8 p 0
-startup_seg_tww2_0_50_north_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 9
-not_occupied 4 0 1 c 10
-type_segment 15 0 1 c 10
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 9
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 10 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 10 p 0
-startup_seg_ppdoor_0_40_north_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 6
-not_occupied 4 0 1 c 5
-type_segment 15 0 1 c 6
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 5
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 5 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 5 p 0
-startup_seg_pp_0_60_north_medium 1 1 4 2
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 5
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 5
-is-pushing 10 1 1 p 0
-is-moving 9 0 1 p 0
-move_seg_pp_0_60_seg_ppdoor_0_40_north_north_medium 1 1 12 8
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 0
-at-segment 1 0 2 p 0 c 5
-not_occupied 4 0 1 c 6
-not_blocked 6 0 2 c 6 c 22
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 6
-type_segment 15 0 1 c 5
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-type_direction 16 0 1 c 0
-occupied 3 1 1 c 5
-at-segment 1 1 2 p 0 c 5
-not_occupied 4 1 1 c 6
-not_blocked 6 1 2 c 6 p 0
-not_occupied 4 0 1 c 5
-occupied 3 0 1 c 6
-blocked 5 0 2 c 6 p 0
-at-segment 1 0 2 p 0 c 6
-startup_seg_twe4_0_50_south_medium 1 1 6 4
-?a 0 1
-is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 16
-not_occupied 4 0 1 c 18
-type_segment 15 0 1 c 18
-type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 16
-is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 18 p 0
-is-moving 9 0 1 p 0
-blocked 5 0 2 c 18 p 0
-move_seg_tww4_0_50_seg_tww3_0_50_north_north_medium 1 1 14 12
-?a 0 1
-has-type 0 0 2 p 0 c 3
-is-moving 9 0 1 p 0
-facing 2 0 2 p 0 c 0
-at-segment 1 0 2 p 0 c 11
-not_occupied 4 0 1 c 10
-not_blocked 6 0 2 c 10 c 22
-type_segment 15 0 1 c 13
-type_segment 15 0 1 c 12
-type_segment 15 0 1 c 10
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 11
-type_airplane 14 0 1 p 0
-type_airplanetype 17 0 1 c 3
-type_direction 16 0 1 c 0
-occupied 3 1 1 c 11
-at-segment 1 1 2 p 0 c 11
-not_occupied 4 1 1 c 10
-not_blocked 6 1 2 c 10 p 0
-blocked 5 1 2 c 12 p 0
-blocked 5 1 2 c 13 p 0
-not_occupied 4 0 1 c 11
-occupied 3 0 1 c 10
-blocked 5 0 2 c 10 p 0
-at-segment 1 0 2 p 0 c 10
-not_blocked 6 0 2 c 12 p 0
-not_blocked 6 0 2 c 13 p 0
 move_seg_rwe_0_50_seg_rw_0_400_south_south_medium 1 1 13 10
 ?a 0 1
 has-type 0 0 2 p 0 c 3
@@ -824,10 +647,10 @@ at-segment 1 0 2 p 0 c 15
 not_occupied 4 0 1 c 14
 not_blocked 6 0 2 c 14 c 22
 type_segment 15 0 1 c 14
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 15
 type_direction 16 0 1 c 1
 type_segment 15 0 1 c 16
+type_airplane 14 0 1 c 22
+type_segment 15 0 1 c 15
 type_airplane 14 0 1 p 0
 type_airplanetype 17 0 1 c 3
 occupied 3 1 1 c 15
@@ -840,22 +663,58 @@ occupied 3 0 1 c 14
 blocked 5 0 2 c 14 p 0
 at-segment 1 0 2 p 0 c 14
 not_blocked 6 0 2 c 16 p 0
-startup_seg_twe4_0_50_north_medium 1 1 8 6
+move_seg_rw_0_400_seg_rww_0_50_south_south_medium 1 1 14 8
+?a 0 1
+has-type 0 0 2 p 0 c 3
+is-moving 9 0 1 p 0
+facing 2 0 2 p 0 c 1
+at-segment 1 0 2 p 0 c 14
+not_occupied 4 0 1 c 12
+not_blocked 6 0 2 c 12 c 22
+not_occupied 4 0 1 c 15
+type_segment 15 0 1 c 14
+type_direction 16 0 1 c 1
+type_segment 15 0 1 c 15
+type_airplane 14 0 1 c 22
+type_airplanetype 17 0 1 c 3
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 12
+occupied 3 1 1 c 14
+at-segment 1 1 2 p 0 c 14
+not_occupied 4 1 1 c 12
+not_blocked 6 1 2 c 12 p 0
+not_occupied 4 0 1 c 14
+occupied 3 0 1 c 12
+blocked 5 0 2 c 12 p 0
+at-segment 1 0 2 p 0 c 12
+startup_seg_tww1_0_200_south_medium 1 1 8 6
 ?a 0 1
 is-pushing 10 0 1 p 0
-at-segment 1 0 2 p 0 c 16
-not_occupied 4 0 1 c 17
-not_occupied 4 0 1 c 15
-type_segment 15 0 1 c 17
+at-segment 1 0 2 p 0 c 7
+not_occupied 4 0 1 c 6
+not_occupied 4 0 1 c 8
+type_segment 15 0 1 c 7
 type_airplane 14 0 1 p 0
-type_segment 15 0 1 c 15
-type_segment 15 0 1 c 16
+type_segment 15 0 1 c 6
+type_segment 15 0 1 c 8
 is-pushing 10 1 1 p 0
-not_blocked 6 1 2 c 17 p 0
-not_blocked 6 1 2 c 15 p 0
+not_blocked 6 1 2 c 6 p 0
+not_blocked 6 1 2 c 8 p 0
 is-moving 9 0 1 p 0
-blocked 5 0 2 c 17 p 0
-blocked 5 0 2 c 15 p 0
+blocked 5 0 2 c 6 p 0
+blocked 5 0 2 c 8 p 0
+startup_seg_tww4_0_50_south_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 11
+not_occupied 4 0 1 c 10
+type_segment 15 0 1 c 10
+type_segment 15 0 1 c 11
+type_airplane 14 0 1 p 0
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 10 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 10 p 0
 move_seg_twe4_0_50_seg_rwe_0_50_south_south_medium 1 1 13 10
 ?a 0 1
 has-type 0 0 2 p 0 c 3
@@ -864,11 +723,11 @@ facing 2 0 2 p 0 c 1
 at-segment 1 0 2 p 0 c 16
 not_occupied 4 0 1 c 15
 not_blocked 6 0 2 c 15 c 22
-type_airplane 14 0 1 c 22
-type_segment 15 0 1 c 15
 type_direction 16 0 1 c 1
-type_segment 15 0 1 c 16
 type_segment 15 0 1 c 18
+type_segment 15 0 1 c 16
+type_segment 15 0 1 c 15
+type_airplane 14 0 1 c 22
 type_airplane 14 0 1 p 0
 type_airplanetype 17 0 1 c 3
 occupied 3 1 1 c 16
@@ -881,3 +740,144 @@ occupied 3 0 1 c 15
 blocked 5 0 2 c 15 p 0
 at-segment 1 0 2 p 0 c 15
 not_blocked 6 0 2 c 18 p 0
+startup_seg_twe4_0_50_south_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 16
+not_occupied 4 0 1 c 18
+type_segment 15 0 1 c 16
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 18
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 18 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 18 p 0
+startup_seg_tww3_0_50_south_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 10
+not_occupied 4 0 1 c 9
+type_segment 15 0 1 c 10
+type_segment 15 0 1 c 9
+type_airplane 14 0 1 p 0
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 9 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 9 p 0
+startup_seg_pp_0_60_north_medium 1 1 4 2
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 5
+type_segment 15 0 1 c 5
+type_airplane 14 0 1 p 0
+is-pushing 10 1 1 p 0
+is-moving 9 0 1 p 0
+startup_seg_twe1_0_200_south_medium 1 1 8 6
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 8
+not_occupied 4 0 1 c 6
+not_occupied 4 0 1 c 7
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+type_segment 15 0 1 c 8
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 6 p 0
+not_blocked 6 1 2 c 7 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 6 p 0
+blocked 5 0 2 c 7 p 0
+startup_seg_tww4_0_50_north_medium 1 1 8 6
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 11
+not_occupied 4 0 1 c 12
+not_occupied 4 0 1 c 13
+type_segment 15 0 1 c 11
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 13
+type_segment 15 0 1 c 12
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 12 p 0
+not_blocked 6 1 2 c 13 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 12 p 0
+blocked 5 0 2 c 13 p 0
+park_seg_pp_0_60_south 1 1 7 4
+?a 0 1
+at-segment 1 0 2 p 0 c 5
+facing 2 0 2 p 0 c 1
+is-moving 9 0 1 p 0
+type_direction 16 0 1 c 1
+type_segment 15 0 1 c 5
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+is-moving 9 1 1 p 0
+blocked 5 1 2 c 6 p 0
+is-parked 11 0 2 p 0 c 5
+not_blocked 6 0 2 c 6 p 0
+startup_seg_tww2_0_50_south_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 9
+not_occupied 4 0 1 c 7
+type_segment 15 0 1 c 9
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 p 0
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 7 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 7 p 0
+startup_seg_twe3_0_50_north_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 18
+not_occupied 4 0 1 c 16
+type_segment 15 0 1 c 16
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 18
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 16 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 16 p 0
+move_seg_twe1_0_200_seg_twe2_0_50_south_south_medium 1 1 14 12
+?a 0 1
+has-type 0 0 2 p 0 c 3
+is-moving 9 0 1 p 0
+facing 2 0 2 p 0 c 1
+at-segment 1 0 2 p 0 c 8
+not_occupied 4 0 1 c 19
+not_blocked 6 0 2 c 19 c 22
+type_segment 15 0 1 c 19
+type_direction 16 0 1 c 1
+type_segment 15 0 1 c 8
+type_airplane 14 0 1 c 22
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 p 0
+type_segment 15 0 1 c 6
+type_airplanetype 17 0 1 c 3
+occupied 3 1 1 c 8
+at-segment 1 1 2 p 0 c 8
+not_occupied 4 1 1 c 19
+not_blocked 6 1 2 c 19 p 0
+blocked 5 1 2 c 6 p 0
+blocked 5 1 2 c 7 p 0
+not_occupied 4 0 1 c 8
+occupied 3 0 1 c 19
+blocked 5 0 2 c 19 p 0
+at-segment 1 0 2 p 0 c 19
+not_blocked 6 0 2 c 6 p 0
+not_blocked 6 0 2 c 7 p 0
+startup_seg_tww1_0_200_north_medium 1 1 6 4
+?a 0 1
+is-pushing 10 0 1 p 0
+at-segment 1 0 2 p 0 c 7
+not_occupied 4 0 1 c 9
+type_segment 15 0 1 c 9
+type_segment 15 0 1 c 7
+type_airplane 14 0 1 p 0
+is-pushing 10 1 1 p 0
+not_blocked 6 1 2 c 9 p 0
+is-moving 9 0 1 p 0
+blocked 5 0 2 c 9 p 0

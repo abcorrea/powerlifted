@@ -1,4 +1,4 @@
-gripper prob01.pddl
+gripper-strips strips-gripper-x-1
 SPARSE-REPRESENTATION
 TYPES 1
 object 0
@@ -31,21 +31,21 @@ ball1 5 1 0
 left 6 1 0
 right 7 1 0
 INITIAL-STATE 31
-room(roomb) 0 0 0 1 1
-room(rooma) 1 0 0 1 0
-at-robby(rooma) 2 3 0 1 0
-ball(ball2) 3 1 0 1 4
-ball(ball1) 4 1 0 1 5
+gripper(left) 0 2 0 1 6
+ball(ball1) 1 1 0 1 5
+at(ball2,rooma) 2 4 0 2 4 0
+at(ball1,rooma) 3 4 0 2 5 0
+ball(ball4) 4 1 0 1 2
 free(left) 5 5 0 1 6
-at(ball3,rooma) 6 4 0 2 3 0
-at(ball4,rooma) 7 4 0 2 2 0
-gripper(left) 8 2 0 1 6
-ball(ball3) 9 1 0 1 3
-gripper(right) 10 2 0 1 7
-ball(ball4) 11 1 0 1 2
-at(ball1,rooma) 12 4 0 2 5 0
-at(ball2,rooma) 13 4 0 2 4 0
-free(right) 14 5 0 1 7
+free(right) 6 5 0 1 7
+room(rooma) 7 0 0 1 0
+ball(ball3) 8 1 0 1 3
+ball(ball2) 9 1 0 1 4
+at(ball3,rooma) 10 4 0 2 3 0
+room(roomb) 11 0 0 1 1
+gripper(right) 12 2 0 1 7
+at(ball4,rooma) 13 4 0 2 2 0
+at-robby(rooma) 14 3 0 1 0
 =(rooma,rooma) 15 7 0 2 0 0
 =(roomb,roomb) 16 7 0 2 1 1
 =(ball4,ball4) 17 7 0 2 2 2
@@ -68,31 +68,6 @@ at(ball3,roomb) 4 0 2 3 1
 at(ball2,roomb) 4 0 2 4 1
 at(ball1,roomb) 4 0 2 5 1
 ACTION-SCHEMAS 3
-move 1 2 5 2
-?from 0 0
-?to 1 0
-room 0 0 1 p 0
-room 0 0 1 p 1
-at-robby 3 0 1 p 0
-type_object 8 0 1 p 1
-type_object 8 0 1 p 0
-at-robby 3 1 1 p 0
-at-robby 3 0 1 p 1
-drop 1 3 8 3
-?obj 0 0
-?room 1 0
-?gripper 2 0
-ball 1 0 1 p 0
-room 0 0 1 p 1
-gripper 2 0 1 p 2
-carry 6 0 2 p 0 p 2
-at-robby 3 0 1 p 1
-type_object 8 0 1 p 0
-type_object 8 0 1 p 2
-type_object 8 0 1 p 1
-carry 6 1 2 p 0 p 2
-at 4 0 2 p 0 p 1
-free 5 0 1 p 2
 pick 1 3 9 3
 ?obj 0 0
 ?room 1 0
@@ -103,9 +78,34 @@ gripper 2 0 1 p 2
 at 4 0 2 p 0 p 1
 at-robby 3 0 1 p 1
 free 5 0 1 p 2
-type_object 8 0 1 p 0
-type_object 8 0 1 p 2
 type_object 8 0 1 p 1
+type_object 8 0 1 p 2
+type_object 8 0 1 p 0
 at 4 1 2 p 0 p 1
 free 5 1 1 p 2
 carry 6 0 2 p 0 p 2
+drop 1 3 8 3
+?obj 0 0
+?room 1 0
+?gripper 2 0
+ball 1 0 1 p 0
+room 0 0 1 p 1
+gripper 2 0 1 p 2
+carry 6 0 2 p 0 p 2
+at-robby 3 0 1 p 1
+type_object 8 0 1 p 1
+type_object 8 0 1 p 2
+type_object 8 0 1 p 0
+carry 6 1 2 p 0 p 2
+at 4 0 2 p 0 p 1
+free 5 0 1 p 2
+move 1 2 5 2
+?from 0 0
+?to 1 0
+room 0 0 1 p 0
+room 0 0 1 p 1
+at-robby 3 0 1 p 0
+type_object 8 0 1 p 0
+type_object 8 0 1 p 1
+at-robby 3 1 1 p 0
+at-robby 3 0 1 p 1

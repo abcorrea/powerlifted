@@ -1,4 +1,4 @@
-movie prob30.pddl
+movie-strips strips-movie-x-30
 SPARSE-REPRESENTATION
 TYPES 1
 object 0
@@ -207,177 +207,177 @@ k3 167 1 0
 k2 168 1 0
 k1 169 1 0
 INITIAL-STATE 511
-cheese(z5) 0 12 0 1 131
-crackers(k33) 1 13 0 1 137
-dip(d18) 2 10 0 1 50
-cheese(z19) 3 12 0 1 117
-crackers(k4) 4 13 0 1 166
-pop(p21) 5 11 0 1 81
-crackers(k25) 6 13 0 1 145
-dip(d14) 7 10 0 1 54
-chips(c2) 8 9 0 1 32
-crackers(k24) 9 13 0 1 146
-dip(d22) 10 10 0 1 46
-pop(p24) 11 11 0 1 78
-chips(c18) 12 9 0 1 16
-cheese(z2) 13 12 0 1 134
-dip(d26) 14 10 0 1 42
-dip(d5) 15 10 0 1 63
-cheese(z17) 16 12 0 1 119
-cheese(z21) 17 12 0 1 115
-crackers(k22) 18 13 0 1 148
-chips(c29) 19 9 0 1 5
-chips(c25) 20 9 0 1 9
-pop(p6) 21 11 0 1 96
-chips(c16) 22 9 0 1 18
-chips(c23) 23 9 0 1 11
-pop(p20) 24 11 0 1 82
-pop(p5) 25 11 0 1 97
-cheese(z31) 26 12 0 1 105
-pop(p34) 27 11 0 1 68
-pop(p22) 28 11 0 1 80
-cheese(z4) 29 12 0 1 132
-chips(c1) 30 9 0 1 33
-crackers(k19) 31 13 0 1 151
-crackers(k18) 32 13 0 1 152
-pop(p27) 33 11 0 1 75
-dip(d31) 34 10 0 1 37
-dip(d16) 35 10 0 1 52
-crackers(k26) 36 13 0 1 144
-cheese(z18) 37 12 0 1 118
-dip(d9) 38 10 0 1 59
-dip(d24) 39 10 0 1 44
-chips(c12) 40 9 0 1 22
-dip(d28) 41 10 0 1 40
-cheese(z27) 42 12 0 1 109
-dip(d3) 43 10 0 1 65
-crackers(k28) 44 13 0 1 142
-cheese(z33) 45 12 0 1 103
-chips(c24) 46 9 0 1 10
-cheese(z22) 47 12 0 1 114
-cheese(z28) 48 12 0 1 108
-cheese(z29) 49 12 0 1 107
-pop(p18) 50 11 0 1 84
-chips(c31) 51 9 0 1 3
-chips(c9) 52 9 0 1 25
-cheese(z7) 53 12 0 1 129
-cheese(z9) 54 12 0 1 127
-cheese(z25) 55 12 0 1 111
-cheese(z3) 56 12 0 1 133
-pop(p7) 57 11 0 1 95
-cheese(z14) 58 12 0 1 122
-pop(p16) 59 11 0 1 86
-dip(d33) 60 10 0 1 35
-chips(c21) 61 9 0 1 13
-crackers(k17) 62 13 0 1 153
-chips(c7) 63 9 0 1 27
-counter-at-other-than-two-hours() 64 2 0 0 
-pop(p25) 65 11 0 1 77
-dip(d10) 66 10 0 1 58
-chips(c11) 67 9 0 1 23
-crackers(k34) 68 13 0 1 136
-dip(d11) 69 10 0 1 57
-cheese(z20) 70 12 0 1 116
-pop(p28) 71 11 0 1 74
-pop(p14) 72 11 0 1 88
-crackers(k9) 73 13 0 1 161
-crackers(k8) 74 13 0 1 162
-crackers(k23) 75 13 0 1 147
-chips(c14) 76 9 0 1 20
-dip(d20) 77 10 0 1 48
-cheese(z8) 78 12 0 1 128
-chips(c3) 79 9 0 1 31
-chips(c33) 80 9 0 1 1
-cheese(z32) 81 12 0 1 104
-crackers(k16) 82 13 0 1 154
-dip(d23) 83 10 0 1 45
-dip(d7) 84 10 0 1 61
-pop(p19) 85 11 0 1 83
-chips(c19) 86 9 0 1 15
-pop(p1) 87 11 0 1 101
-crackers(k20) 88 13 0 1 150
-pop(p30) 89 11 0 1 72
-crackers(k6) 90 13 0 1 164
-dip(d4) 91 10 0 1 64
-cheese(z26) 92 12 0 1 110
-chips(c5) 93 9 0 1 29
-chips(c28) 94 9 0 1 6
-pop(p9) 95 11 0 1 93
-cheese(z23) 96 12 0 1 113
-pop(p32) 97 11 0 1 70
-chips(c17) 98 9 0 1 17
-chips(c4) 99 9 0 1 30
-crackers(k32) 100 13 0 1 138
-cheese(z12) 101 12 0 1 124
-pop(p17) 102 11 0 1 85
-dip(d13) 103 10 0 1 55
-pop(p12) 104 11 0 1 90
-cheese(z34) 105 12 0 1 102
-crackers(k29) 106 13 0 1 141
-dip(d34) 107 10 0 1 34
-dip(d19) 108 10 0 1 49
-chips(c22) 109 9 0 1 12
-crackers(k31) 110 13 0 1 139
-crackers(k7) 111 13 0 1 163
-dip(d15) 112 10 0 1 53
-cheese(z24) 113 12 0 1 112
-crackers(k11) 114 13 0 1 159
-dip(d8) 115 10 0 1 60
-cheese(z1) 116 12 0 1 135
-dip(d25) 117 10 0 1 43
-chips(c13) 118 9 0 1 21
-pop(p11) 119 11 0 1 91
-dip(d29) 120 10 0 1 39
-cheese(z10) 121 12 0 1 126
-dip(d2) 122 10 0 1 66
-pop(p31) 123 11 0 1 71
-pop(p29) 124 11 0 1 73
-chips(c15) 125 9 0 1 19
-crackers(k30) 126 13 0 1 140
-pop(p15) 127 11 0 1 87
-pop(p33) 128 11 0 1 69
-cheese(z6) 129 12 0 1 130
-pop(p10) 130 11 0 1 92
-crackers(k15) 131 13 0 1 155
-dip(d32) 132 10 0 1 36
-crackers(k27) 133 13 0 1 143
-chips(c20) 134 9 0 1 14
-pop(p13) 135 11 0 1 89
-crackers(k5) 136 13 0 1 165
-cheese(z16) 137 12 0 1 120
-crackers(k1) 138 13 0 1 169
-dip(d17) 139 10 0 1 51
-crackers(k13) 140 13 0 1 157
-dip(d27) 141 10 0 1 41
-pop(p2) 142 11 0 1 100
-crackers(k21) 143 13 0 1 149
-crackers(k12) 144 13 0 1 158
-crackers(k14) 145 13 0 1 156
-crackers(k2) 146 13 0 1 168
-pop(p8) 147 11 0 1 94
-dip(d1) 148 10 0 1 67
-cheese(z13) 149 12 0 1 123
-cheese(z15) 150 12 0 1 121
-dip(d21) 151 10 0 1 47
-chips(c30) 152 9 0 1 4
-chips(c8) 153 9 0 1 26
-pop(p26) 154 11 0 1 76
-dip(d6) 155 10 0 1 62
-cheese(z11) 156 12 0 1 125
-cheese(z30) 157 12 0 1 106
-dip(d30) 158 10 0 1 38
-chips(c26) 159 9 0 1 8
-chips(c32) 160 9 0 1 2
-chips(c6) 161 9 0 1 28
-crackers(k3) 162 13 0 1 167
-chips(c27) 163 9 0 1 7
-pop(p4) 164 11 0 1 98
-chips(c10) 165 9 0 1 24
-crackers(k10) 166 13 0 1 160
-pop(p3) 167 11 0 1 99
-dip(d12) 168 10 0 1 56
-chips(c34) 169 9 0 1 0
-pop(p23) 170 11 0 1 79
+crackers(k3) 0 13 0 1 167
+cheese(z14) 1 12 0 1 122
+chips(c34) 2 9 0 1 0
+cheese(z25) 3 12 0 1 111
+chips(c2) 4 9 0 1 32
+dip(d33) 5 10 0 1 35
+chips(c15) 6 9 0 1 19
+crackers(k10) 7 13 0 1 160
+pop(p22) 8 11 0 1 80
+cheese(z34) 9 12 0 1 102
+pop(p25) 10 11 0 1 77
+pop(p18) 11 11 0 1 84
+pop(p17) 12 11 0 1 85
+cheese(z17) 13 12 0 1 119
+dip(d28) 14 10 0 1 40
+crackers(k21) 15 13 0 1 149
+chips(c26) 16 9 0 1 8
+chips(c3) 17 9 0 1 31
+dip(d3) 18 10 0 1 65
+dip(d23) 19 10 0 1 45
+chips(c32) 20 9 0 1 2
+dip(d5) 21 10 0 1 63
+pop(p21) 22 11 0 1 81
+pop(p2) 23 11 0 1 100
+chips(c1) 24 9 0 1 33
+pop(p11) 25 11 0 1 91
+pop(p26) 26 11 0 1 76
+pop(p5) 27 11 0 1 97
+cheese(z21) 28 12 0 1 115
+cheese(z6) 29 12 0 1 130
+pop(p7) 30 11 0 1 95
+cheese(z4) 31 12 0 1 132
+crackers(k20) 32 13 0 1 150
+crackers(k9) 33 13 0 1 161
+crackers(k13) 34 13 0 1 157
+chips(c7) 35 9 0 1 27
+pop(p1) 36 11 0 1 101
+chips(c25) 37 9 0 1 9
+chips(c28) 38 9 0 1 6
+crackers(k16) 39 13 0 1 154
+crackers(k2) 40 13 0 1 168
+pop(p9) 41 11 0 1 93
+chips(c30) 42 9 0 1 4
+pop(p31) 43 11 0 1 71
+dip(d7) 44 10 0 1 61
+dip(d2) 45 10 0 1 66
+chips(c5) 46 9 0 1 29
+cheese(z33) 47 12 0 1 103
+chips(c4) 48 9 0 1 30
+chips(c16) 49 9 0 1 18
+pop(p20) 50 11 0 1 82
+cheese(z16) 51 12 0 1 120
+dip(d16) 52 10 0 1 52
+cheese(z20) 53 12 0 1 116
+pop(p10) 54 11 0 1 92
+pop(p34) 55 11 0 1 68
+cheese(z5) 56 12 0 1 131
+dip(d25) 57 10 0 1 43
+dip(d15) 58 10 0 1 53
+crackers(k29) 59 13 0 1 141
+dip(d27) 60 10 0 1 41
+crackers(k12) 61 13 0 1 158
+crackers(k6) 62 13 0 1 164
+pop(p30) 63 11 0 1 72
+dip(d30) 64 10 0 1 38
+crackers(k19) 65 13 0 1 151
+pop(p24) 66 11 0 1 78
+cheese(z27) 67 12 0 1 109
+crackers(k24) 68 13 0 1 146
+dip(d24) 69 10 0 1 44
+pop(p23) 70 11 0 1 79
+pop(p19) 71 11 0 1 83
+crackers(k8) 72 13 0 1 162
+cheese(z8) 73 12 0 1 128
+chips(c22) 74 9 0 1 12
+chips(c29) 75 9 0 1 5
+pop(p15) 76 11 0 1 87
+chips(c11) 77 9 0 1 23
+dip(d20) 78 10 0 1 48
+dip(d19) 79 10 0 1 49
+dip(d9) 80 10 0 1 59
+crackers(k5) 81 13 0 1 165
+cheese(z1) 82 12 0 1 135
+crackers(k27) 83 13 0 1 143
+chips(c31) 84 9 0 1 3
+cheese(z22) 85 12 0 1 114
+dip(d26) 86 10 0 1 42
+dip(d1) 87 10 0 1 67
+crackers(k31) 88 13 0 1 139
+chips(c23) 89 9 0 1 11
+chips(c18) 90 9 0 1 16
+cheese(z18) 91 12 0 1 118
+crackers(k17) 92 13 0 1 153
+crackers(k14) 93 13 0 1 156
+chips(c21) 94 9 0 1 13
+cheese(z32) 95 12 0 1 104
+crackers(k23) 96 13 0 1 147
+chips(c12) 97 9 0 1 22
+dip(d4) 98 10 0 1 64
+pop(p4) 99 11 0 1 98
+cheese(z12) 100 12 0 1 124
+chips(c13) 101 9 0 1 21
+pop(p28) 102 11 0 1 74
+pop(p27) 103 11 0 1 75
+dip(d17) 104 10 0 1 51
+chips(c19) 105 9 0 1 15
+chips(c27) 106 9 0 1 7
+dip(d11) 107 10 0 1 57
+dip(d29) 108 10 0 1 39
+crackers(k26) 109 13 0 1 144
+pop(p13) 110 11 0 1 89
+chips(c20) 111 9 0 1 14
+crackers(k15) 112 13 0 1 155
+cheese(z7) 113 12 0 1 129
+chips(c6) 114 9 0 1 28
+cheese(z31) 115 12 0 1 105
+cheese(z29) 116 12 0 1 107
+cheese(z9) 117 12 0 1 127
+cheese(z19) 118 12 0 1 117
+dip(d12) 119 10 0 1 56
+cheese(z10) 120 12 0 1 126
+cheese(z15) 121 12 0 1 121
+crackers(k34) 122 13 0 1 136
+cheese(z30) 123 12 0 1 106
+pop(p8) 124 11 0 1 94
+chips(c17) 125 9 0 1 17
+dip(d34) 126 10 0 1 34
+dip(d22) 127 10 0 1 46
+dip(d8) 128 10 0 1 60
+crackers(k11) 129 13 0 1 159
+counter-at-other-than-two-hours() 130 2 0 0 
+pop(p14) 131 11 0 1 88
+pop(p29) 132 11 0 1 73
+dip(d10) 133 10 0 1 58
+cheese(z2) 134 12 0 1 134
+dip(d6) 135 10 0 1 62
+crackers(k7) 136 13 0 1 163
+chips(c24) 137 9 0 1 10
+dip(d31) 138 10 0 1 37
+pop(p16) 139 11 0 1 86
+crackers(k22) 140 13 0 1 148
+crackers(k33) 141 13 0 1 137
+chips(c33) 142 9 0 1 1
+cheese(z3) 143 12 0 1 133
+pop(p3) 144 11 0 1 99
+cheese(z28) 145 12 0 1 108
+cheese(z13) 146 12 0 1 123
+cheese(z26) 147 12 0 1 110
+chips(c10) 148 9 0 1 24
+chips(c9) 149 9 0 1 25
+chips(c14) 150 9 0 1 20
+crackers(k4) 151 13 0 1 166
+pop(p12) 152 11 0 1 90
+crackers(k30) 153 13 0 1 140
+dip(d32) 154 10 0 1 36
+dip(d14) 155 10 0 1 54
+dip(d13) 156 10 0 1 55
+cheese(z11) 157 12 0 1 125
+crackers(k28) 158 13 0 1 142
+pop(p6) 159 11 0 1 96
+pop(p33) 160 11 0 1 69
+dip(d21) 161 10 0 1 47
+crackers(k18) 162 13 0 1 152
+cheese(z24) 163 12 0 1 112
+chips(c8) 164 9 0 1 26
+crackers(k1) 165 13 0 1 169
+cheese(z23) 166 12 0 1 113
+pop(p32) 167 11 0 1 70
+crackers(k25) 168 13 0 1 145
+crackers(k32) 169 13 0 1 138
+dip(d18) 170 10 0 1 50
 =(c34,c34) 171 14 0 2 0 0
 =(c33,c33) 172 14 0 2 1 1
 =(c32,c32) 173 14 0 2 2 2
@@ -727,37 +727,37 @@ have-pop() 6 0 0
 have-cheese() 7 0 0 
 have-crackers() 8 0 0 
 ACTION-SCHEMAS 8
-get-dip 1 1 2 1
-?x 0 0
-dip 10 0 1 p 0
-type_object 15 0 1 p 0
-have-dip 5 0 0 
-rewind-movie-2 1 0 1 1
-counter-at-two-hours 1 0 0 
-movie-rewound 0 0 0 
+reset-counter 1 0 0 1
+counter-at-zero 3 0 0 
 get-chips 1 1 2 1
 ?x 0 0
 chips 9 0 1 p 0
 type_object 15 0 1 p 0
 have-chips 4 0 0 
-rewind-movie 1 0 1 2
-counter-at-other-than-two-hours 2 0 0 
-counter-at-zero 3 1 0 
-movie-rewound 0 0 0 
-get-crackers 1 1 2 1
-?x 0 0
-crackers 13 0 1 p 0
-type_object 15 0 1 p 0
-have-crackers 8 0 0 
-reset-counter 1 0 0 1
-counter-at-zero 3 0 0 
 get-cheese 1 1 2 1
 ?x 0 0
 cheese 12 0 1 p 0
 type_object 15 0 1 p 0
 have-cheese 7 0 0 
+rewind-movie 1 0 1 2
+counter-at-other-than-two-hours 2 0 0 
+counter-at-zero 3 1 0 
+movie-rewound 0 0 0 
 get-pop 1 1 2 1
 ?x 0 0
 pop 11 0 1 p 0
 type_object 15 0 1 p 0
 have-pop 6 0 0 
+rewind-movie-2 1 0 1 1
+counter-at-two-hours 1 0 0 
+movie-rewound 0 0 0 
+get-dip 1 1 2 1
+?x 0 0
+dip 10 0 1 p 0
+type_object 15 0 1 p 0
+have-dip 5 0 0 
+get-crackers 1 1 2 1
+?x 0 0
+crackers 13 0 1 p 0
+type_object 15 0 1 p 0
+have-crackers 8 0 0 
