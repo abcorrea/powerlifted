@@ -41,6 +41,7 @@ def test_if_experiment(test):
         sys.exit(0)
 
 
+
 def main():
     timer = timers.Timer()
     with timers.timing("Parsing", True):
@@ -49,6 +50,7 @@ def main():
     print('Processing task', task.task_name)
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
+    assert isinstance(task.goal, pddl.Conjunction), "Goal is not conjunctive."
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
@@ -83,6 +85,8 @@ def main():
     if is_trivially_unsolvable(task, static_pred):
         output_dummy_task()
         sys.exit(0)
+
+    remove_static_predicates_from_goal(task, static_pred)
 
     domain = os.path.basename(os.path.dirname(options.domain))
     inst = os.path.basename(options.task)
@@ -323,6 +327,14 @@ def get_initial_state_size(static_pred, task):
         if atom.predicate not in static_pred:
             initial_state_size += 1
     print("Initial state size: %d" % initial_state_size)
+
+
+def remove_static_predicates_from_goal(task, static_pred):
+    parts = []
+    for g in task.goal.parts:
+        if g.predicate not in static_pred:
+            parts.append(g)
+    task.goal = pddl.Conjunction(parts)
 
 
 def is_trivially_unsolvable(task, static_pred):
