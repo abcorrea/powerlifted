@@ -6,7 +6,7 @@
 
 class GreedyBestFirstSearch : public Search {
 public:
-    const int search(const Task &task,
+    int search(const Task &task,
                      SuccessorGenerator *generator,
                      Heuristic &heuristic) const override;
     std::vector<Action> plan;

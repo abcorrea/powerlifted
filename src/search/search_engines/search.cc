@@ -18,15 +18,13 @@
 
 using namespace std;
 
-int Search::getNumberExploredStates() const {
-    return number_explored_states;
-}
+int Search::generations = 0;
+int Search::generations_last_jump = 0;
+int Search::g_layer = 0;
+int Search::heuristic_layer = 0;
+size_t Search::state_counter = 0;
 
-int Search::getNumberGeneratedStates() const {
-    return number_generated_states;
-}
-
-const int Search::search(const Task &task,
+int Search::search(const Task &task,
                          SuccessorGenerator *generator,
                          Heuristic &heuristic) const {
     // This implementation should be specialized in child classes
@@ -66,7 +64,7 @@ void Search::print_goal_found(
     const SuccessorGenerator *generator,
     clock_t timer_start,
     const StatePacker &state_packer,
-    int generations_last_jump,
+    int generations_until_last_jump,
     segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
     segmented_vector::SegmentedVector<PackedState> &index_to_state,
     unordered_map<PackedState, int, PackedStateHash> &visited,
@@ -78,7 +76,7 @@ void Search::print_goal_found(
              /(double(clock() - timer_start)/CLOCKS_PER_SEC) << endl;
     cout << "Total time: " << double(clock() - timer_start)/CLOCKS_PER_SEC
          << endl;
-    cout << "Generations before the last jump: " << generations_last_jump
+    cout << "Generations before the last jump: " << generations_until_last_jump
          << endl;
     extract_plan(cheapest_parent, state_packer.pack_state(state),
                  visited,index_to_state, state_packer, task);

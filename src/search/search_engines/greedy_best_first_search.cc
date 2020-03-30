@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const int GreedyBestFirstSearch::search(const Task &task,
+int GreedyBestFirstSearch::search(const Task &task,
                                         SuccessorGenerator *generator,
                                         Heuristic &heuristic) const {
   /*
@@ -23,10 +23,7 @@ const int GreedyBestFirstSearch::search(const Task &task,
   clock_t timer_start = clock();
   StatePacker state_packer(task);
 
-  size_t state_counter = 0;
-  int generations = 0;
-  int generations_last_jump = 0;
-  int g_layer = 0;
+
   priority_queue<Node, vector<Node>, NodeComparison>
       q; // Queue has Node structures
   segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
@@ -39,7 +36,7 @@ const int GreedyBestFirstSearch::search(const Task &task,
   index_to_state.push_back(state_packer.pack_state(task.initial_state));
   cheapest_parent.push_back(make_pair(-1, Action(-1, vector<int>())));
 
-  int heuristic_layer =
+  heuristic_layer =
       heuristic.compute_heuristic(task.initial_state, task) + 1;
   cout << "Initial heuristic value " << heuristic_layer << endl;
 
@@ -73,7 +70,7 @@ const int GreedyBestFirstSearch::search(const Task &task,
     if (h < heuristic_layer) {
       heuristic_layer = h;
       cout << "New heuristic value expanded: h=" << h <<
-           " [expansions: " << state_counter << ", generations: " << generations
+           " [state_counter: " << state_counter << ", generations: " << generations
            << ", time: " << double(clock() - timer_start)/CLOCKS_PER_SEC << "]"
            << '\n';
     }

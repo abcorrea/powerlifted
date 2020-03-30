@@ -39,15 +39,9 @@ class Search {
  public:
   Search() = default;
 
-  int getNumberExploredStates() const;
-
-  int getNumberGeneratedStates() const;
-
-  virtual const int search(const Task &task,
+  virtual int search(const Task &task,
                            SuccessorGenerator *generator,
                            Heuristic &heuristic) const = 0;
-
-  bool is_goal(const State &state, const GoalCondition &goal) const;
 
   static void extract_plan(
       segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
@@ -63,14 +57,18 @@ class Search {
       const SuccessorGenerator *generator,
       clock_t timer_start,
       const StatePacker &state_packer,
-      int generations_last_jump,
+      int generations_until_last_jump,
       segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
       segmented_vector::SegmentedVector<PackedState> &index_to_state,
       unordered_map<PackedState, int, PackedStateHash> &visited,
       const State &state) const;
- private:
-  int number_explored_states = 0;
-  int number_generated_states = 0;
+
+ protected:
+  static size_t state_counter;
+  static int generations;
+  static int generations_last_jump;
+  static int g_layer;
+  static int heuristic_layer;
 
 };
 

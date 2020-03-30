@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const int BreadthFirstSearch::search(const Task &task,
+int BreadthFirstSearch::search(const Task &task,
                                      SuccessorGenerator *generator,
                                      Heuristic &heuristic) const {
   /*
@@ -17,10 +17,6 @@ const int BreadthFirstSearch::search(const Task &task,
   clock_t timer_start = clock();
   StatePacker state_packer(task);
 
-  size_t state_counter = 0;
-  int generations = 0;
-  int generations_last_jump = 0;
-  int expansions = 0;
   queue<Node> q; // Queue has Node structures
   segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
   segmented_vector::SegmentedVector<PackedState> index_to_state;
@@ -28,8 +24,6 @@ const int BreadthFirstSearch::search(const Task &task,
 
   index_to_state.push_back(state_packer.pack_state(task.initial_state));
   cheapest_parent.push_back(make_pair(-1, Action(-1, vector<int>())));
-
-  int g_layer = 0;
 
   q.emplace(0, 0, state_counter);
   visited[state_packer.pack_state(task.initial_state)] = state_counter++;
@@ -45,7 +39,6 @@ const int BreadthFirstSearch::search(const Task &task,
     Node head = q.front();
     size_t next = head.id;
     int g = head.g;
-    expansions++;
     q.pop();
     if (g_layer < g) {
       generations_last_jump = generations;
