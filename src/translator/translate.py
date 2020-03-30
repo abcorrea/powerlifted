@@ -81,17 +81,13 @@ def main():
     output = open(options.output_file, "w")
     sys.stdout = output
 
-
     if is_trivially_unsolvable(task, static_pred):
         output_dummy_task()
         sys.exit(0)
 
     remove_static_predicates_from_goal(task, static_pred)
 
-    domain = os.path.basename(os.path.dirname(options.domain))
-    inst = os.path.basename(options.task)
-
-    print_names_and_representation(domain, inst)
+    print_names_and_representation(task.domain_name, task.task_name)
 
     type_index = {}
     print_types(task, type_index)
@@ -330,11 +326,16 @@ def get_initial_state_size(static_pred, task):
 
 
 def remove_static_predicates_from_goal(task, static_pred):
-    print("Removing satisfied static predicates from the goal.")
     parts = []
+    removed = 0
     for g in task.goal.parts:
         if g.predicate not in static_pred:
             parts.append(g)
+        else:
+            removed += 1
+    if removed > 0:
+        print("Removing satisfied static predicates from the goal.",
+              file=native_stdout)
     task.goal = pddl.Conjunction(parts)
 
 
