@@ -52,7 +52,7 @@ public:
   const void add_object(const std::string &name, int index,
                         const std::vector<int> &types);
 
-  void create_empty_initial_state();
+  void create_empty_initial_state(size_t number_predicates);
 
   void create_goal_condition(std::vector<AtomicGoal> goals,
                              std::unordered_set<int> nullary_goals,

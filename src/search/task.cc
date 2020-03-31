@@ -22,7 +22,7 @@ const void Task::add_type(const string &type_name) {
   type_names.push_back(type_name);
 }
 
-void Task::create_empty_initial_state() {
+void Task::create_empty_initial_state(size_t number_predicates) {
   /*
    * Creates one empty relation for every predicate of the task in the initial
    * state.
@@ -40,6 +40,8 @@ void Task::create_empty_initial_state() {
   static_info = StaticInformation(move(static_preds),
                                   vector<bool>(predicates.size(),
                                       false));
+  initial_state.nullary_atoms.clear();
+  initial_state.nullary_atoms.resize(number_predicates, false);
 }
 
 void Task::dump_state(State s) const {
