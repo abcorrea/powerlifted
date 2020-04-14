@@ -44,13 +44,13 @@ public:
 
   const std::string &get_task_name() const { return task_name; }
 
-  const void add_type(const std::string &type_name);
+  void add_type(const std::string &type_name);
 
   const void add_predicate(std::string &name, int index, int arity,
                            bool static_predicate, std::vector<int> &types);
 
-  const void add_object(const std::string &name, int index,
-                        const std::vector<int> &types);
+  void add_object(const std::string &name, int index,
+                  const std::vector<int> &types);
 
   void create_empty_initial_state(size_t number_predicates);
 

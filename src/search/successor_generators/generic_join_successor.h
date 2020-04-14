@@ -54,11 +54,11 @@ public:
                                                        int action_index) override;
 
 protected:
-    const void get_indices_and_constants_in_preconditions(std::vector<int> &indices,
+    static void get_indices_and_constants_in_preconditions(std::vector<int> &indices,
                                                           std::vector<int> &constants,
                                                           const Atom &a);
 
-    const void project_tuples(const State &s,
+    static void project_tuples(const State &s,
                               const Atom &a,
                               unordered_set<GroundAtom, TupleHash> &tuples,
                               const std::vector<int> &constants);

@@ -13,12 +13,12 @@ const void Task::add_predicate(string &name, int index, int arity,
                                 move(types));
 }
 
-const void Task::add_object(const string &name, int index,
+void Task::add_object(const string &name, int index,
                             const vector<int> &types) {
   Task::objects.emplace_back(name, index, types);
 }
 
-const void Task::add_type(const string &type_name) {
+void Task::add_type(const string &type_name) {
   type_names.push_back(type_name);
 }
 

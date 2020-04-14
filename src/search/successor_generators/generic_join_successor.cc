@@ -76,9 +76,9 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action, const State 
 }
 
 
-const void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int> &indices,
-                                                                          vector<int> &constants,
-                                                                          const Atom &a) {
+void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int> &indices,
+                                                                      vector<int> &constants,
+                                                                      const Atom &a) {
     int cont = 0;
     for (Argument arg : a.arguments) {
         if (!arg.constant)
@@ -91,10 +91,10 @@ const void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vect
     }
 }
 
-const void GenericJoinSuccessor::project_tuples(const State &s,
-                                              const Atom &a,
-                                              unordered_set<GroundAtom, TupleHash> &tuples,
-                                              const std::vector<int> &constants) {
+void GenericJoinSuccessor::project_tuples(const State &s,
+                                          const Atom &a,
+                                          unordered_set<GroundAtom, TupleHash> &tuples,
+                                          const std::vector<int> &constants) {
     bool match_constants;
     for (const GroundAtom &atom : s.relations[a.predicate_symbol].tuples) {
         match_constants = true;
