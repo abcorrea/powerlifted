@@ -23,46 +23,57 @@
  */
 
 class GenericJoinSuccessor : public SuccessorGenerator {
-public:
-    explicit GenericJoinSuccessor(const Task &task) : SuccessorGenerator(task) {}
+ public:
+  explicit GenericJoinSuccessor(const Task &task) : SuccessorGenerator(task) {}
 
-    std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
+  std::vector<std::vector<int>>
+      obj_per_type; // position I is a list of object indices of type I
 
-    Table instantiate(const ActionSchema &action, const State &state,
-                      const StaticInformation &staticInformation) override;
+  Table instantiate(const ActionSchema &action, const State &state,
+                    const StaticInformation &staticInformation) override;
 
-    /**
-    * Parse the state and the atom preconditions into a set of tables
-    * to perform the join-program more easily.
-    *
-    * We first obtain all indices in the precondition that are constants.
-    * Then, we create the table applying the projection over the arguments
-    * that satisfy the instantiation of the constants. There are two cases
-    * for the projection:
-    *    1. The table comes from the static information; or
-    *    2. The table comes directly from the current state.
-    *
-    * @param precond: list of atoms in the preconditions
-    * @param state: state being evaluated
-    * @param staticInformation: static predicates of the task
-    * @param action_index: index of the action being instantiated
-    * @return Table containing the tuples satisfying the query established by the precondition
-    */
-    std::vector<Table> parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                                       const State &state,
-                                                       const StaticInformation &staticInformation,
-                                                       int action_index) override;
+  /**
+  * Parse the state and the atom preconditions into a set of tables
+  * to perform the join-program more easily.
+  *
+  * We first obtain all indices in the precondition that are constants.
+  * Then, we create the table applying the projection over the arguments
+  * that satisfy the instantiation of the constants. There are two cases
+  * for the projection:
+  *    1. The table comes from the static information; or
+  *    2. The table comes directly from the current state.
+  *
+  * @param precond: list of atoms in the preconditions
+  * @param state: state being evaluated
+  * @param staticInformation: static predicates of the task
+  * @param action_index: index of the action being instantiated
+  * @return Table containing the tuples satisfying the query established by the precondition
+  */
+  std::vector<Table> parse_precond_into_join_program(const std::vector<Atom> &precond,
+                                                     const State &state,
+                                                     const StaticInformation &staticInformation,
+                                                     int action_index) override;
 
-protected:
-    static void get_indices_and_constants_in_preconditions(std::vector<int> &indices,
-                                                          std::vector<int> &constants,
-                                                          const Atom &a);
+ protected:
+  static void get_indices_and_constants_in_preconditions(std::vector<int> &indices,
+                                                         std::vector<int> &constants,
+                                                         const Atom &a);
 
-    static void project_tuples(const State &s,
-                              const Atom &a,
-                              unordered_set<GroundAtom, TupleHash> &tuples,
-                              const std::vector<int> &constants);
+  static void project_tuples(const State &s,
+                             const Atom &a,
+                             unordered_set<GroundAtom, TupleHash> &tuples,
+                             const std::vector<int> &constants);
+
+  void filter_inequalities(const ActionSchema &action,
+                           Table &working_table) const;
+  static void create_hypergraph(
+      const ActionSchema &action,
+      vector<int> &hypernodes,
+      vector<set<int>> &hyperedges,
+      vector<int> &missing_precond,
+      map<int, int> &node_index,
+      map<int, int> &node_counter,
+      map<int, int> &edge_to_precond);
 };
-
 
 #endif //SEARCH_GENERIC_JOIN_SUCCESSOR_H

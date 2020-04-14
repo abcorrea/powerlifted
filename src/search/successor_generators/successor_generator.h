@@ -21,6 +21,21 @@
  */
 
 class SuccessorGenerator {
+  static bool is_ground_action_applicable(const ActionSchema &action,
+                                   const State &state,
+                                   const StaticInformation &staticInformation);
+
+  void apply_lifted_action_effects(const ActionSchema &action,
+                                   const vector<int> &tuple,
+                                   const vector<int> &indices,
+                                   vector<Relation> &new_relation);
+
+  void apply_ground_action_effects(const ActionSchema &action,
+                                   vector<Relation> &new_relation) const;
+
+  void apply_nullary_effects(const ActionSchema &action,
+                             vector<bool> &new_nullary_atoms) const;
+
 public:
     std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
 
@@ -60,6 +75,7 @@ public:
 protected:
     size_t largest_intermediate_relation = 0;
     double cyclic_time = 0;
+
 };
 
 
