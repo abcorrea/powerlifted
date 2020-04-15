@@ -99,11 +99,15 @@ void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int
   }
 }
 
-void GenericJoinSuccessor::project_tuples(const State &s,
-                                          const Atom &a,
-                                          unordered_set<GroundAtom,
+/*
+ * Select only those tuples matching the constants of a partially grounded
+ * precondition.
+ */
+void GenericJoinSuccessor::select_tuples(const State &s,
+                                         const Atom &a,
+                                         unordered_set<GroundAtom,
                                                         TupleHash> &tuples,
-                                          const std::vector<int> &constants) {
+                                         const std::vector<int> &constants) {
   bool match_constants;
   for (const GroundAtom &atom : s.relations[a.predicate_symbol].tuples) {
     match_constants = true;
@@ -144,11 +148,11 @@ vector<Table> GenericJoinSuccessor::parse_precond_into_join_program(const vector
     if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
       // If this predicate has information in the static information table,
       // then it must be a static predicate
-      project_tuples(staticInformation, a, tuples, constants);
+      select_tuples(staticInformation, a, tuples, constants);
     } else {
       // If this predicate does not have information in the static information table,
       // then it must be a fluent
-      project_tuples(state, a, tuples, constants);
+      select_tuples(state, a, tuples, constants);
     }
     if (!tuples.empty())
       parsed_tables.emplace_back(move(tuples), move(indices));
@@ -156,6 +160,18 @@ vector<Table> GenericJoinSuccessor::parse_precond_into_join_program(const vector
   return parsed_tables;
 }
 
+/*
+ * Create hypergraph of precondition
+ *
+ * Loop through every precondition and filters out negated and nullary atoms.
+ * Then, assign each free variable of the precondition to a corresponding index
+ * and create the hyperedge of the vertice with these indices.
+ *
+ * If there is no free variable in a precondition (i.e., ground atom
+ * precondition), we add this precondition to a list so we know we need
+ * to join it after performing the full-reducer/Yannakakis.
+ *
+ */
 void GenericJoinSuccessor::create_hypergraph(
     const ActionSchema &action,
     vector<int> &hypernodes,
@@ -190,8 +206,8 @@ void GenericJoinSuccessor::create_hypergraph(
       }
     }
     if (!args.empty() and has_free_variables) {
-      edge_to_precond[hyperedges.size()] =
-          cont; // map ith-precondition to a given edge
+      // map ith-precondition to a given edge
+      edge_to_precond[hyperedges.size()] = cont;
       hyperedges.emplace_back(args.begin(), args.end());
     } else {
       // If all args of a preconditions are constant, we check it first

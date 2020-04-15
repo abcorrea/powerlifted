@@ -37,6 +37,7 @@ const std::vector<std::pair<State, Action>>
                                          const State &state,
                                          const StaticInformation &staticInformation) {
 
+  // TODO Apply nullary effects only once
   successors.clear();
   // Duplicate code from generic join implementation
   for (const ActionSchema &action : actions) {
@@ -107,6 +108,10 @@ const std::vector<std::pair<State, Action>>
 
 void SuccessorGenerator::apply_nullary_effects(const ActionSchema &action,
                                                vector<bool> &new_nullary_atoms) const {
+  /*
+   * Loop over positive and negative nullary effects and apply them accordingly
+   * to the state.
+   */
   for (size_t i = 0; i < action.get_negative_nullary_effects().size(); ++i) {
     if (action.get_negative_nullary_effects()[i])
       new_nullary_atoms[i] = false;
@@ -122,16 +127,17 @@ void SuccessorGenerator::apply_ground_action_effects(const ActionSchema &action,
   for (const Atom &eff : action.get_effects()) {
     GroundAtom ga;
     for (const Argument &a : eff.arguments) {
-      //assert(a.constant);
+      // Create ground atom for each effect given the instantiation
+      assert(a.constant);
       ga.push_back(a.index);
     }
-    //assert (eff.predicate_symbol
-        //        ==new_relation[eff.predicate_symbol].predicate_symbol);
+    assert (eff.predicate_symbol
+                ==new_relation[eff.predicate_symbol].predicate_symbol);
     if (eff.negated) {
-      // Remove from relation
+      // If ground effect is negated, remove it from relation
       new_relation[eff.predicate_symbol].tuples.erase(ga);
     } else {
-      // If ground atom is not in the state, we add it
+      // If ground effect is not in the state, we add it
       new_relation[eff.predicate_symbol].tuples.insert(ga);
     }
   }
@@ -192,6 +198,15 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
   return ground_atom;
 }
 
+/*
+ * Check the applicability of an already ground action (given grounded in the
+ * PDDL). We just need to check applicability for completely ground actions
+ * because the successor generations find only applicable actions for lifted
+ * ones.
+ *
+ * In this case, the parameter type is slightly misleading, but the parameter
+ * 'action' is a ground action here.
+ */
 bool SuccessorGenerator::is_ground_action_applicable(const ActionSchema &action,
                                                      const State &state,
                                                      const StaticInformation &staticInformation) {

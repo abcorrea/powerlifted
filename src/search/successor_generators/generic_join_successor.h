@@ -59,10 +59,10 @@ class GenericJoinSuccessor : public SuccessorGenerator {
                                                          std::vector<int> &constants,
                                                          const Atom &a);
 
-  static void project_tuples(const State &s,
-                             const Atom &a,
-                             unordered_set<GroundAtom, TupleHash> &tuples,
-                             const std::vector<int> &constants);
+  static void select_tuples(const State &s,
+                            const Atom &a,
+                            unordered_set<GroundAtom, TupleHash> &tuples,
+                            const std::vector<int> &constants);
 
   void filter_inequalities(const ActionSchema &action,
                            Table &working_table) const;
