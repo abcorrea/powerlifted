@@ -7,8 +7,9 @@
 #include "../state_packer.h"
 #include "../structures.h"
 #include "../task.h"
-#include "../successor_generators/successor_generator.h"
+
 #include "../heuristics/heuristic.h"
+#include "../successor_generators/successor_generator.h"
 #include "../utils/segmented_vector.h"
 
 #include <utility>

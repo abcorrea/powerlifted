@@ -1,20 +1,16 @@
-#include <vector>
-#include "../utils/segmented_vector.h"
-#include "../state_packer.h"
-#include "greedy_best_first_search.h"
 #include "search.h"
 
-#include "../utils.h"
+#include "../state_packer.h"
 
-#include "../successor_generators/successor_generator.h"
 #include "../heuristics/goalcount.h"
+#include "../successor_generators/successor_generator.h"
+#include "../utils/segmented_vector.h"
 
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <queue>
-#include <stack>
 #include <unordered_map>
+#include <vector>
 
 using namespace std;
 

@@ -1,9 +1,7 @@
-#include <iostream>
-#include <cassert>
+#include "ordered_join_successor.h"
+
 #include <vector>
 #include <queue>
-
-#include "ordered_join_successor.h"
 
 using namespace std;
 

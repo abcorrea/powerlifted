@@ -1,9 +1,9 @@
 #include "greedy_best_first_search.h"
 
-#include "../state_packer.h"
-
-#include "../utils/segmented_vector.h"
 #include "search.h"
+
+#include "../state_packer.h"
+#include "../utils/segmented_vector.h"
 
 #include <algorithm>
 #include <iostream>

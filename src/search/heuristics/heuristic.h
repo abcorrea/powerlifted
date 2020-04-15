@@ -1,7 +1,6 @@
 #ifndef SEARCH_HEURISTIC_H
 #define SEARCH_HEURISTIC_H
 
-
 #include "../state.h"
 #include "../task.h"
 

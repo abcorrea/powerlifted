@@ -1,10 +1,10 @@
-#include <queue>
-#include <stack>
-
 #include "full_reducer_successor_generator.h"
 
 #include "../database/semi_join.h"
 #include "../database/hash_join.h"
+
+#include <queue>
+#include <stack>
 
 using namespace std;
 

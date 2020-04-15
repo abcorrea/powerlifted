@@ -3,7 +3,6 @@
 #include "../database/semi_join.h"
 #include "../database/hash_join.h"
 
-#include <stack>
 #include <cassert>
 #include <vector>
 

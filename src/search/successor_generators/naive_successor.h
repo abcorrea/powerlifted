@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <ctime>
 
-
 class NaiveSuccessorGenerator : public GenericJoinSuccessor {
 public:
     explicit NaiveSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {}

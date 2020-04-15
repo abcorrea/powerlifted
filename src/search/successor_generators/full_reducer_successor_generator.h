@@ -1,7 +1,6 @@
 #ifndef SEARCH_FULL_REDUCER_SUCCESSOR_GENERATOR_H
 #define SEARCH_FULL_REDUCER_SUCCESSOR_GENERATOR_H
 
-
 #include "generic_join_successor.h"
 
 class FullReducerSuccessorGenerator : public GenericJoinSuccessor {

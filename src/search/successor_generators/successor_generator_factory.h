@@ -9,6 +9,7 @@
 #include "yannakakis.h"
 
 #include <iostream>
+
 #include <boost/algorithm/string.hpp>
 
 class SuccessorGeneratorFactory {
