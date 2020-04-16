@@ -13,20 +13,18 @@ void project(Table &t, const std::unordered_set<int> &over) {
             if (x == t.tuple_index[i])
                 matches.push_back(i);
 
-    unordered_map<vector<int>, vector<int>, TupleHash> hash_map;
-
+    unordered_set<vector<int>, TupleHash> projected_tuples;
     for (const vector<int> &tuple : t.tuples) {
         vector<int> key(matches.size());
         for (size_t i = 0; i < matches.size(); i++) {
                 key[i] = tuple[matches[i]];
             }
-        if (hash_map.count(key) == 0)
-            hash_map[key] = tuple;
+        projected_tuples.insert(tuple);
     }
 
     unordered_set<vector<int>, TupleHash> new_tuples;
-    for (const auto& it: hash_map) {
-        new_tuples.insert(it.second);
+    for (const auto& tup: projected_tuples) {
+        new_tuples.insert(tup);
     }
     t.tuples = new_tuples;
 
