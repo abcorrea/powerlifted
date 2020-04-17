@@ -83,6 +83,8 @@ def main():
     output = open(options.output_file, "w")
     sys.stdout = output
 
+    remove_functions_from_initial_state(task)
+
     if is_trivially_unsolvable(task, static_pred):
         output_trivially_unsolvable_task()
         sys.exit(0)
@@ -380,6 +382,16 @@ def is_trivially_unsolvable(task, static_pred):
             # in the initial state
             return True
     return False
+
+
+def remove_functions_from_initial_state(task):
+    new_init = []
+    for i in task.init:
+        if not isinstance(i, pddl.Assign):
+            new_init.append(i)
+    for i in new_init:
+        assert (isinstance(i, pddl.Atom))
+    task.init = new_init
 
 
 def output_trivially_solvable_task():
