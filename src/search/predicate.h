@@ -17,7 +17,7 @@ public:
     // Constructor
   }
 
-  void addArgument(int index) { types.push_back(index); }
+  void addArgument(int i) { types.push_back(i); }
 
   const std::string &getName() const;
 

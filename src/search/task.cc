@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const void Task::add_predicate(string &name, int index, int arity,
+void Task::add_predicate(string &name, int index, int arity,
                                bool static_predicate, vector<int> &types) {
   Task::predicates.emplace_back(move(name), index, arity, static_predicate,
                                 move(types));

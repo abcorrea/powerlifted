@@ -20,12 +20,6 @@ int Search::g_layer = 0;
 int Search::heuristic_layer = 0;
 size_t Search::state_counter = 0;
 
-int Search::search(const Task &task,
-                         SuccessorGenerator *generator,
-                         Heuristic &heuristic) const {
-    // This implementation should be specialized in child classes
-    return NOT_SOLVED;
-}
 
 void Search::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent, PackedState state,
                                     unordered_map<PackedState, int, PackedStateHash> &visited,

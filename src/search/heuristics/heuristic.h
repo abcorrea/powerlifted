@@ -4,8 +4,9 @@
 #include "../state.h"
 #include "../task.h"
 
-class Heuristic{
+class Heuristic {
 public:
+    virtual ~Heuristic() = default;
     /**
      * @brief Virtual implementation of a heuristic function
      * @param s: State being evaluated
@@ -14,6 +15,5 @@ public:
      */
     virtual int compute_heuristic(const State &s, const Task &task) = 0;
 };
-
 
 #endif //SEARCH_HEURISTIC_H

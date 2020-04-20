@@ -21,24 +21,22 @@
  */
 
 class SuccessorGenerator {
-  static bool is_ground_action_applicable(const ActionSchema &action,
-                                   const State &state,
-                                   const StaticInformation &staticInformation);
+    static bool is_ground_action_applicable(const ActionSchema &action,
+                                            const State &state,
+                                            const StaticInformation &staticInformation);
 
-  void apply_lifted_action_effects(const ActionSchema &action,
-                                   const vector<int> &tuple,
-                                   const vector<int> &indices,
-                                   vector<Relation> &new_relation);
+    void apply_lifted_action_effects(const ActionSchema &action,
+                                     const vector<int> &tuple,
+                                     const vector<int> &indices,
+                                     vector<Relation> &new_relation);
 
-  void apply_ground_action_effects(const ActionSchema &action,
-                                   vector<Relation> &new_relation) const;
+    void apply_ground_action_effects(const ActionSchema &action,
+                                     vector<Relation> &new_relation) const;
 
-  void apply_nullary_effects(const ActionSchema &action,
-                             vector<bool> &new_nullary_atoms) const;
+    void apply_nullary_effects(const ActionSchema &action,
+                               vector<bool> &new_nullary_atoms) const;
 
 public:
-    std::vector<std::vector<int>> obj_per_type; // position I is a list of object indices of type I
-
     explicit SuccessorGenerator(const Task &task) {
         obj_per_type.resize(task.type_names.size());
         for (const Object &obj : task.objects) {
@@ -49,13 +47,19 @@ public:
 
     }
 
+    virtual ~SuccessorGenerator() = default;
+
+    // position I is a list of object indices of type I
+    std::vector<std::vector<int>> obj_per_type;
+
     const
-    std::vector<std::pair<State, Action>> &generate_successors(const std::vector<ActionSchema> &actions,
-                                                                       const State &state,
-                                                                       const StaticInformation &staticInformation);
+    std::vector<std::pair<State, Action>> &generate_successors(const std::vector<
+        ActionSchema> &actions,
+                                                               const State &state,
+                                                               const StaticInformation &staticInformation);
 
     virtual Table instantiate(const ActionSchema &action, const State &state,
-                                    const StaticInformation &staticInformation) = 0;
+                              const StaticInformation &staticInformation) = 0;
 
     virtual std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
@@ -63,7 +67,9 @@ public:
                                     const StaticInformation &staticInformation,
                                     int action_index) = 0;
 
-    const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const std::vector<int> &indices, const Atom &eff);
+    const GroundAtom &tuple_to_atom(const std::vector<int> &tuple,
+                                    const std::vector<int> &indices,
+                                    const Atom &eff);
 
     double get_cyclic_time() const {
         return cyclic_time;
@@ -77,6 +83,5 @@ protected:
     double cyclic_time = 0;
 
 };
-
 
 #endif //SEARCH_SUCCESSOR_GENERATOR_H
