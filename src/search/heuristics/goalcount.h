@@ -3,7 +3,7 @@
 
 #include "heuristic.h"
 
-#include "../state.h"
+#include "../states/state.h"
 #include "../task.h"
 
 /**

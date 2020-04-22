@@ -1,7 +1,7 @@
 #ifndef SEARCH_STATE_H
 #define SEARCH_STATE_H
 
-#include "structures.h"
+#include "../structures.h"
 
 #include <algorithm>
 #include <tuple>
@@ -40,7 +40,7 @@ class State {
 
   State() = default;
 
-  const std::vector<int> getObjects();
+  std::vector<int> getObjects();
 
   void addTuple(int relation, const GroundAtom &args);
 

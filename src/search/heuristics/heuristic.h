@@ -1,7 +1,7 @@
 #ifndef SEARCH_HEURISTIC_H
 #define SEARCH_HEURISTIC_H
 
-#include "../state.h"
+#include "../states/state.h"
 #include "../task.h"
 
 class Heuristic {

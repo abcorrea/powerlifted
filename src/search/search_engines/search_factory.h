@@ -9,13 +9,14 @@
 
 class SearchFactory {
 public:
-    static Search *new_search_engine(const std::string& method) {
+
+    static SearchBase *new_search_engine(const std::string& method) {
         std::cout << "Creating search factory..." << std::endl;
         if (boost::iequals(method, "naive")) {
-            return new BreadthFirstSearch;
+            return new BreadthFirstSearch<SparsePackedState>();
         }
         else if (boost::iequals(method, "gbfs")) {
-            return new GreedyBestFirstSearch;
+            return new GreedyBestFirstSearch<SparsePackedState>();
         }
         else {
             return nullptr;

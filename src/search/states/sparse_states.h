@@ -1,10 +1,10 @@
-#ifndef SEARCH_STATE_PACKER_H
-#define SEARCH_STATE_PACKER_H
+#ifndef SEARCH_SPARSE_STATES_H
+#define SEARCH_SPARSE_STATES_H
 
-#include "task.h"
-#include "utils.h"
+#include "../task.h"
+#include "../utils.h"
 
-#include "utils/hash.h"
+#include "../utils/hash.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -29,13 +29,13 @@
  *
  */
 
-struct PackedState {
+struct SparsePackedState {
     std::vector<std::vector<long>> packed_relations;
     std::vector<int> predicate_symbols;
     std::vector<bool> nullary_atoms;
 
 
-    bool operator==(const PackedState &b) const{
+    bool operator==(const SparsePackedState &b) const{
         if (predicate_symbols.size() != b.predicate_symbols.size())
             return false;
         for (size_t i = 0; i < predicate_symbols.size(); ++i) {
@@ -60,7 +60,7 @@ struct PackedState {
 };
 
 struct PackedStateHash {
-    std::size_t operator() (const PackedState &s) const {
+    std::size_t operator() (const SparsePackedState &s) const {
        std::size_t seed = 0;
         for (int i : s.predicate_symbols) {
             boost::hash_combine(seed, i);
@@ -81,9 +81,9 @@ struct PackedStateHash {
  * @brief Pack and unpack states into a more compact representation
  */
 
-class StatePacker {
+class SparseStatePacker {
 public:
-    StatePacker(const Task &task) {
+    SparseStatePacker(const Task &task) {
 
         // First, create a vector with one bucket for each type and
         // count the number of objects in each bucket.
@@ -127,8 +127,8 @@ public:
         }
     }
 
-    PackedState pack_state(const State &state) const {
-        PackedState packed_state;
+    SparsePackedState pack_state(const State &state) const {
+        SparsePackedState packed_state;
         packed_state.packed_relations.reserve(state.relations.size());
         packed_state.predicate_symbols.reserve(state.relations.size());
         packed_state.nullary_atoms = state.nullary_atoms;
@@ -146,7 +146,7 @@ public:
         return packed_state;
     }
 
-    State unpack_state(const PackedState &packed_state) const {
+    State unpack_state(const SparsePackedState &packed_state) const {
         std::vector<Relation> relations;
         std::vector<bool> nullary_atoms = packed_state.nullary_atoms;
         relations.reserve(packed_state.packed_relations.size());
@@ -198,4 +198,4 @@ private:
 };
 
 
-#endif //SEARCH_STATE_PACKER_H
+#endif //SEARCH_SPARSE_STATES_H

@@ -1,6 +1,6 @@
 #include "search.h"
 
-#include "../state_packer.h"
+#include "../states/sparse_states.h"
 
 #include "../heuristics/goalcount.h"
 #include "../successor_generators/successor_generator.h"
@@ -14,17 +14,12 @@
 
 using namespace std;
 
-int Search::generations = 0;
-int Search::generations_last_jump = 0;
-int Search::g_layer = 0;
-int Search::heuristic_layer = 0;
-size_t Search::state_counter = 0;
 
-
-void Search::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent, PackedState state,
-                                    unordered_map<PackedState, int, PackedStateHash> &visited,
-                                    segmented_vector::SegmentedVector<PackedState> &index_to_state,
-                                    const StatePacker &packer, const Task &task) {
+template<class PackedStateT>
+void Search<PackedStateT>::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent, SparsePackedState state,
+                          unordered_map<SparsePackedState, int, PackedStateHash> &visited,
+                          segmented_vector::SegmentedVector<SparsePackedState> &index_to_state,
+                          const SparseStatePacker &packer, const Task &task) {
     vector<Action> actions_in_the_plan;
     int total_plan_cost = 0;
     while (cheapest_parent[visited[state]].first != -1) {
@@ -44,20 +39,22 @@ void Search::extract_plan(segmented_vector::SegmentedVector<pair<int, Action>> &
     cout << "Total plan cost: " << total_plan_cost << endl;
 }
 
-void Search::print_no_solution_found(clock_t timer_start) const {
+template<class PackedStateT>
+void Search<PackedStateT>::print_no_solution_found(clock_t timer_start) const {
   cout << "Total time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
   cerr << "No solution found!" << endl;
 }
 
-void Search::print_goal_found(
+template<class PackedStateT>
+void Search<PackedStateT>::print_goal_found(
     const Task &task,
     const SuccessorGenerator *generator,
     clock_t timer_start,
-    const StatePacker &state_packer,
+    const SparseStatePacker &state_packer,
     int generations_until_last_jump,
     segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
-    segmented_vector::SegmentedVector<PackedState> &index_to_state,
-    unordered_map<PackedState, int, PackedStateHash> &visited,
+    segmented_vector::SegmentedVector<SparsePackedState> &index_to_state,
+    unordered_map<SparsePackedState, int, PackedStateHash> &visited,
     const State &state) const {
     cout << "Goal found at: " << double(clock() - timer_start)/CLOCKS_PER_SEC
          << endl;
@@ -71,3 +68,6 @@ void Search::print_goal_found(
     extract_plan(cheapest_parent, state_packer.pack_state(state),
                  visited,index_to_state, state_packer, task);
 }
+
+// explicit template instantiations
+template class Search<SparsePackedState>;

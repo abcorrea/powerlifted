@@ -22,7 +22,7 @@ add_executable(search
         task.cc task.h
         predicate.cc predicate.h
         object.h
-        state.cc state.h
+        states/state.cc states/state.h
         parser.cc parser.h
         goal_condition.h
         action_schema.cc action_schema.h
@@ -53,4 +53,8 @@ add_executable(search
         successor_generators/random_successor.h successor_generators/random_successor.cc
         successor_generators/yannakakis.cc successor_generators/yannakakis.h
         database/project.cc database/project.h
-        utils/segmented_vector.h state_packer.h utils/hash.h)
+        utils/segmented_vector.h
+        states/extensional_states
+        states/sparse_states
+        utils/hash.h
+)

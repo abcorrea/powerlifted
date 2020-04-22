@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
           "(This is guaranteed by the default translator.)"
        << endl;
 
-  Search *search = SearchFactory::new_search_engine(argv[2]);
+  auto* search = SearchFactory::new_search_engine(argv[2]);
   if (!search) {
     cerr << "Invalid search method." << endl;
     return -1;

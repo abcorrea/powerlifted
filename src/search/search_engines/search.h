@@ -3,8 +3,8 @@
 
 #include "../action_schema.h"
 #include "../action.h"
-#include "../state.h"
-#include "../state_packer.h"
+#include "../states/state.h"
+#include "../states/sparse_states.h"
 #include "../structures.h"
 #include "../task.h"
 
@@ -35,22 +35,29 @@ struct NodeComparison {
     }
 };
 
-class Search {
-
+class SearchBase {
 public:
-    Search() = default;
-    virtual ~Search() = default;
+    SearchBase() = default;
+    virtual ~SearchBase() = default;
 
     virtual int search(const Task &task,
                        SuccessorGenerator *generator,
-                       Heuristic &heuristic) const = 0;
+                       Heuristic &heuristic) = 0;
+};
+
+template<class PackedStateT>
+class Search : public SearchBase {
+
+public:
+    Search() = default;
+    ~Search() override = default;
 
     static void extract_plan(
-        segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
-        PackedState state,
-        unordered_map<PackedState, int, PackedStateHash> &visited,
-        segmented_vector::SegmentedVector<PackedState> &index_to_state,
-        const StatePacker &packer, const Task &task);
+            segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
+            SparsePackedState state,
+            unordered_map<SparsePackedState, int, PackedStateHash> &visited,
+            segmented_vector::SegmentedVector<SparsePackedState> &index_to_state,
+            const SparseStatePacker &packer, const Task &task);
 
     std::vector<Action> plan;
     void print_no_solution_found(clock_t timer_start) const;
@@ -58,20 +65,19 @@ public:
         const Task &task,
         const SuccessorGenerator *generator,
         clock_t timer_start,
-        const StatePacker &state_packer,
+        const SparseStatePacker &state_packer,
         int generations_until_last_jump,
         segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
-        segmented_vector::SegmentedVector<PackedState> &index_to_state,
-        unordered_map<PackedState, int, PackedStateHash> &visited,
+        segmented_vector::SegmentedVector<SparsePackedState> &index_to_state,
+        unordered_map<SparsePackedState, int, PackedStateHash> &visited,
         const State &state) const;
 
 protected:
-    static size_t state_counter;
-    static int generations;
-    static int generations_last_jump;
-    static int g_layer;
-    static int heuristic_layer;
-
+    size_t state_counter{};
+    int generations{};
+    int generations_last_jump{};
+    int g_layer{};
+    int heuristic_layer{};
 };
 
 #endif //SEARCH_SEARCH_H

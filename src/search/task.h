@@ -5,7 +5,7 @@
 #include "goal_condition.h"
 #include "object.h"
 #include "predicate.h"
-#include "state.h"
+#include "states/state.h"
 
 #include <ostream>
 #include <string>

@@ -3,12 +3,14 @@
 
 #include "search.h"
 
-class BreadthFirstSearch: public Search {
+template<class PackedStateT>
+class BreadthFirstSearch: public Search<PackedStateT> {
 public:
     int search(const Task &task,
                      SuccessorGenerator *generator,
-                     Heuristic &heuristic) const override;
-    std::vector<Action> plan;
+                     Heuristic &heuristic) override;
+
+    using Search<PackedStateT>::print_goal_found;
 };
 
 

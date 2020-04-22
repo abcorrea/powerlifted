@@ -2,7 +2,7 @@
 
 #include "search.h"
 
-#include "../state_packer.h"
+#include "../states/sparse_states.h"
 #include "../utils/segmented_vector.h"
 
 #include <algorithm>
@@ -12,44 +12,41 @@
 
 using namespace std;
 
-int GreedyBestFirstSearch::search(const Task &task,
+template<class PackedStateT>
+int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                                         SuccessorGenerator *generator,
-                                        Heuristic &heuristic) const {
-  /*
-   * Greedy best first search
-   *
-   */
+                                        Heuristic &heuristic) {
   cout << "Starting greedy best first search" << endl;
   clock_t timer_start = clock();
-  StatePacker state_packer(task);
+  SparseStatePacker state_packer(task);
 
 
   priority_queue<Node, vector<Node>, NodeComparison>
       q; // Queue has Node structures
   segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
 
-  segmented_vector::SegmentedVector<PackedState> index_to_state;
-  unordered_map<PackedState, int, PackedStateHash> visited;
+  segmented_vector::SegmentedVector<SparsePackedState> index_to_state;
+  unordered_map<SparsePackedState, int, PackedStateHash> visited;
 
   segmented_vector::SegmentedVector<int> shortest_distance;
 
   index_to_state.push_back(state_packer.pack_state(task.initial_state));
   cheapest_parent.push_back(make_pair(-1, Action(-1, vector<int>())));
 
-  heuristic_layer =
+  this->heuristic_layer =
       heuristic.compute_heuristic(task.initial_state, task) + 1;
-  cout << "Initial heuristic value " << heuristic_layer << endl;
+  cout << "Initial heuristic value " << this->heuristic_layer << endl;
 
   q.emplace(0,
             heuristic.compute_heuristic(task.initial_state, task),
-            state_counter);
+            this->state_counter);
   shortest_distance.push_back(0);
-  visited[state_packer.pack_state(task.initial_state)] = state_counter++;
+  visited[state_packer.pack_state(task.initial_state)] = this->state_counter++;
 
   if (task.is_goal(task.initial_state, task.goal)) {
     cout << "Initial state is a goal" << endl;
     print_goal_found(
-        task, generator, timer_start, state_packer, generations_last_jump,
+        task, generator, timer_start, state_packer, this->generations_last_jump,
         cheapest_parent, index_to_state,visited, task.initial_state);
     return SOLVED;
   }
@@ -60,17 +57,17 @@ int GreedyBestFirstSearch::search(const Task &task,
     int h = head.h;
     int g = head.g;
     q.pop();
-    if (g_layer < g) {
-      generations_last_jump = generations;
-      g_layer = g;
+    if (this->g_layer < g) {
+      this->generations_last_jump = this->generations;
+      this->g_layer = g;
     }
     if (g > shortest_distance[next]) {
       continue;
     }
-    if (h < heuristic_layer) {
-      heuristic_layer = h;
+    if (h < this->heuristic_layer) {
+        this->heuristic_layer = h;
       cout << "New heuristic value expanded: h=" << h <<
-           " [state_counter: " << state_counter << ", generations: " << generations
+           " [this->state_counter: " << this->state_counter << ", this->generations: " << this->generations
            << ", time: " << double(clock() - timer_start)/CLOCKS_PER_SEC << "]"
            << '\n';
     }
@@ -78,30 +75,30 @@ int GreedyBestFirstSearch::search(const Task &task,
     State state = state_packer.unpack_state(index_to_state[next]);
     if (task.is_goal(state, task.goal)) {
       print_goal_found(
-          task, generator, timer_start, state_packer, generations_last_jump,
+          task, generator, timer_start, state_packer, this->generations_last_jump,
           cheapest_parent,index_to_state,visited, state);
       return SOLVED;
     }
     vector<pair<State, Action>> successors =
         generator->generate_successors(task.actions, state, task.static_info);
-    generations += successors.size();
+    this->generations += successors.size();
     int init_state_succ = 0;
     for (const pair<State, Action> &successor : successors) {
       const State &s = successor.first;
-      const PackedState packed = state_packer.pack_state(s);
+      const SparsePackedState packed = state_packer.pack_state(s);
       const Action &a = successor.second;
       int dist = g + task.actions[a.index].get_cost();
       int new_h = heuristic.compute_heuristic(s, task);
-      pair<unordered_map<PackedState, int, PackedStateHash>::iterator, bool>
-          try_to_insert = visited.insert(make_pair(packed, state_counter));
+      pair<unordered_map<SparsePackedState, int, PackedStateHash>::iterator, bool>
+          try_to_insert = visited.insert(make_pair(packed, this->state_counter));
       if (try_to_insert.second) {
         // Inserted for the first time in the map
         init_state_succ++;
         cheapest_parent.push_back(make_pair(next, a));
-        q.emplace(dist, new_h, state_counter);
+        q.emplace(dist, new_h, this->state_counter);
         shortest_distance.push_back(dist);
         index_to_state.push_back(packed);
-        state_counter++;
+        this->state_counter++;
       } else {
         int index = visited[packed];
         if (dist < shortest_distance[index]) {
@@ -113,9 +110,12 @@ int GreedyBestFirstSearch::search(const Task &task,
     }
   }
 
-  print_no_solution_found(timer_start);
+  this->print_no_solution_found(timer_start);
 
   return NOT_SOLVED;
 
 }
 
+
+// explicit template instantiations
+template class GreedyBestFirstSearch<SparsePackedState>;
