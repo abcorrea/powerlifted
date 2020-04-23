@@ -140,21 +140,11 @@ bool Task::is_trivially_unsolvable() const
         if (!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate())
             continue;
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
-        if (!atomicGoal.negated) {
-            // Positive goal_condition
-            if (find(relation_at_goal_predicate.tuples.begin(),
-                     relation_at_goal_predicate.tuples.end(),
-                     atomicGoal.args) == relation_at_goal_predicate.tuples.end()) {
-                return true;
-            }
-        }
-        else {
-            // Negative goal_condition
-            if (find(relation_at_goal_predicate.tuples.begin(),
-                     relation_at_goal_predicate.tuples.end(),
-                     atomicGoal.args) != relation_at_goal_predicate.tuples.end()) {
-                return true;
-            }
+
+        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.args);
+        const auto end = relation_at_goal_predicate.tuples.end();
+        if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
+            return true;
         }
     }
     return false;
