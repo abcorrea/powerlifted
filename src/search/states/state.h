@@ -45,12 +45,7 @@ class State {
   void addTuple(int relation, const GroundAtom &args);
 
   bool operator==(const State &other) const {
-    for (size_t i = 0; i < nullary_atoms.size(); ++i) {
-      if (nullary_atoms[i] != other.nullary_atoms[i]) {
-        return false;
-      }
-    }
-    return relations == other.relations;
+      return nullary_atoms == other.nullary_atoms && relations == other.relations;
   }
 
   friend std::size_t hash_value(const State &s) {
