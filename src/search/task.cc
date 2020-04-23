@@ -117,21 +117,10 @@ bool Task::is_goal(const State &state, const GoalCondition &goal_condition) cons
         assert(!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate());
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
 
-        if (!atomicGoal.negated) {
-            // Positive goal_condition
-            if (find(relation_at_goal_predicate.tuples.begin(),
-                     relation_at_goal_predicate.tuples.end(),
-                     atomicGoal.args) == relation_at_goal_predicate.tuples.end()) {
-                return false;
-            }
-        }
-        else {
-            // Negative goal_condition
-            if (find(relation_at_goal_predicate.tuples.begin(),
-                     relation_at_goal_predicate.tuples.end(),
-                     atomicGoal.args) != relation_at_goal_predicate.tuples.end()) {
-                return false;
-            }
+        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.args);
+        const auto end = relation_at_goal_predicate.tuples.end();
+        if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
+            return false;
         }
     }
     return true;
