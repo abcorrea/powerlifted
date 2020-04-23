@@ -25,23 +25,10 @@ int Goalcount::compute_heuristic(const State &s, const Task &task) {
 
 int Goalcount::atom_not_satisfied(const State &s,
                                   const AtomicGoal &atomicGoal) const {
-    if (!atomicGoal.negated) {
-        // Positive goal
-        if (find(s.relations[atomicGoal.predicate].tuples.begin(),
-                 s.relations[atomicGoal.predicate].tuples.end(),
-                 atomicGoal.args)==
-            s.relations[atomicGoal.predicate].tuples.end()) {
-            return 1;
-        }
-    }
-    else {
-        // Negative goal
-        if (find(s.relations[atomicGoal.predicate].tuples.begin(),
-                 s.relations[atomicGoal.predicate].tuples.end(),
-                 atomicGoal.args)!=
-            s.relations[atomicGoal.predicate].tuples.end()) {
-            return 1;
-        }
+    const auto it = s.relations[atomicGoal.predicate].tuples.find(atomicGoal.args);
+    const auto end = s.relations[atomicGoal.predicate].tuples.end();
+    if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
+        return 1;
     }
     return 0;
 }
