@@ -112,7 +112,7 @@ bool Task::is_goal(const State &state, const GoalCondition &goal_condition) cons
     }
     for (const AtomicGoal &atomicGoal : goal_condition.goal) {
         int goal_predicate = atomicGoal.predicate;
-        const Relation& relation_at_goal_predicate = state.relations[goal_predicate];
+        const Relation &relation_at_goal_predicate = state.relations[goal_predicate];
 
         assert(!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate());
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
