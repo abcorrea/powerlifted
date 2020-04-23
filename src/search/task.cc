@@ -10,12 +10,12 @@ using namespace std;
 void Task::add_predicate(
     string &name, int index, int arity, bool static_predicate, vector<int> &types)
 {
-    Task::predicates.emplace_back(move(name), index, arity, static_predicate, move(types));
+    predicates.emplace_back(move(name), index, arity, static_predicate, move(types));
 }
 
 void Task::add_object(const string &name, int index, const vector<int> &types)
 {
-    Task::objects.emplace_back(name, index, types);
+    objects.emplace_back(name, index, types);
 }
 
 void Task::add_type(const string &type_name) { type_names.push_back(type_name); }
