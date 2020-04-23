@@ -26,15 +26,15 @@ class SuccessorGenerator {
                                             const StaticInformation &staticInformation);
 
     void apply_lifted_action_effects(const ActionSchema &action,
-                                     const vector<int> &tuple,
-                                     const vector<int> &indices,
-                                     vector<Relation> &new_relation);
+                                     const std::vector<int> &tuple,
+                                     const std::vector<int> &indices,
+                                     std::vector<Relation> &new_relation);
 
     void apply_ground_action_effects(const ActionSchema &action,
-                                     vector<Relation> &new_relation) const;
+                                     std::vector<Relation> &new_relation) const;
 
     void apply_nullary_effects(const ActionSchema &action,
-                               vector<bool> &new_nullary_atoms) const;
+                               std::vector<bool> &new_nullary_atoms) const;
 
 public:
     explicit SuccessorGenerator(const Task &task) {
@@ -76,7 +76,7 @@ public:
     }
 
     GroundAtom ground_atom;
-    vector<pair<State, Action>> successors;
+    std::vector<std::pair<State, Action>> successors;
 
 protected:
     size_t largest_intermediate_relation = 0;

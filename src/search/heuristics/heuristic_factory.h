@@ -23,7 +23,8 @@ public:
             return new Goalcount;
         }
         else {
-            return nullptr;
+            std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;
+            exit(-1);
         }
     }
 };

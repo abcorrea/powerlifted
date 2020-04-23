@@ -1,10 +1,9 @@
 #include "search.h"
 
+#include "../action.h"
+#include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
-
-#include "../heuristics/goalcount.h"
 #include "../successor_generators/successor_generator.h"
-#include "../utils/segmented_vector.h"
 
 #include <algorithm>
 #include <fstream>
@@ -71,3 +70,4 @@ void Search<PackedStateT>::print_goal_found(
 
 // explicit template instantiations
 template class Search<SparsePackedState>;
+template class Search<ExtensionalPackedState>;

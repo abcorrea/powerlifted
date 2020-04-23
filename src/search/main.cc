@@ -43,36 +43,22 @@ int main(int argc, char *argv[]) {
     bool parsed = parse(task, in);
     if (!parsed) {
         cerr << "Parser failed." << endl;
-        return -1;
+        exit(-1);
     }
 
     cout << "IMPORTANT: Asumming that negative effects are always listed first. "
-            "(This is guaranteed by the default translator.)"
-         << endl;
+            "(This is guaranteed by the default translator.)" << endl;
 
-    auto *search = SearchFactory::new_search_engine(argv[2]);
-    if (!search) {
-        cerr << "Invalid search method." << endl;
-        return -1;
-    }
+    // Let's create a couple unique_ptr's that deal with mem allocation themselves
+    std::unique_ptr<SearchBase> search(SearchFactory::new_search_engine(argv[2], "sparse"));
+    std::unique_ptr<Heuristic> heuristic(HeuristicFactory::new_heuristic(argv[3], task));
 
-    Heuristic *heuristic = HeuristicFactory::new_heuristic(argv[3], task);
-    if (!heuristic) {
-        cerr << "Invalid heuristic." << endl;
-        return -1;
-    }
-
-    SuccessorGenerator *successorGenerator =
-        SuccessorGeneratorFactory::new_generator(argv[4], task);
-    if (!successorGenerator) {
-        cerr << "Invalid successor generator method." << endl;
-        return -1;
-    }
+    // TODO Move this to a unique_ptr as well and pass it around as a reference instead of pointer.
+    SuccessorGenerator *successorGenerator = SuccessorGeneratorFactory::new_generator(argv[4], task);
 
     // Start search
     if (task.is_trivially_unsolvable()) {
-        cout << "Goal condition has static information which is not satisfied in "
-                "the initial state."
+        cout << "Goal condition has static information which is not satisfied in the initial state."
              << endl;
         return 0;
     }

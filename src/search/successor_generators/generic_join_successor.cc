@@ -6,6 +6,8 @@
 #include <cassert>
 #include <vector>
 
+using namespace std;
+
 Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
                                         const State &state,
                                         const StaticInformation &staticInformation) {
@@ -16,13 +18,13 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
    *    - We only perform the join over the POSITIVE preconditions, NEGATIVE preconditions
    *      are not supported by now
    */
-  vector<vector<int>> instantiations;
-  const vector<Parameter> &params = action.get_parameters();
+  std::vector<std::vector<int>> instantiations;
+  const std::vector<Parameter> &params = action.get_parameters();
 
   if (params.empty()) {
     return Table();
   }
-  vector<Atom> precond;
+    std::vector<Atom> precond;
   for (const Atom &p : action.get_precondition()) {
     // Ignoring negative preconditions when instantiating
     if ((!p.negated) and p.arguments.size() > 0) {

@@ -10,6 +10,8 @@
 #include <queue>
 #include <iostream>
 
+using namespace std;
+
 /**
  *
  * @attention This code has a lot of duplication from full_reducer_successor_generator.cc

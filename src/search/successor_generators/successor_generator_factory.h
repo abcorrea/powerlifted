@@ -35,7 +35,8 @@ public:
             return new YannakakisSuccessorGenerator(task);
         }
         else {
-            return nullptr;
+            std::cerr << "Invalid successor generator method \"" << method << "\"" << std::endl;
+            exit(-1);
         }
     }
 };

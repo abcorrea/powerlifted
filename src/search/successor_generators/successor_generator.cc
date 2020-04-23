@@ -58,7 +58,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
         Table instantiations = instantiate(action, state, staticInformation);
 
         if (instantiations.tuples.empty()) {
-            // Or there is no applicable instantiation, or the action is ground
+            // Either there is no applicable instantiation, or the action is ground
             if (action.get_parameters().empty()) {
                 // Action is ground
                 bool applicable = is_ground_action_applicable(action, state, staticInformation);

@@ -68,6 +68,9 @@ public:
 
   bool is_trivially_unsolvable() const;
 
+  //! Return a vector R where R[i] contains all objects of type i (or of some subtype).
+  std::vector<std::vector<int>> compute_object_index() const;
+
 private:
   const std::string &domain_name;
   const std::string &task_name;

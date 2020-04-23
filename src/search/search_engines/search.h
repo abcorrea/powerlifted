@@ -1,15 +1,6 @@
 #ifndef SEARCH_SEARCH_H
 #define SEARCH_SEARCH_H
 
-#include "../action_schema.h"
-#include "../action.h"
-#include "../states/state.h"
-#include "../states/sparse_states.h"
-#include "../structures.h"
-#include "../task.h"
-
-#include "../heuristics/heuristic.h"
-#include "../successor_generators/successor_generator.h"
 #include "../utils/segmented_vector.h"
 
 #include <utility>
@@ -17,7 +8,18 @@
 
 #define SOLVED 0
 #define NOT_SOLVED 1
-#define DEBUG_GRACEFUL_EXIT 0
+
+
+// Forward declarations
+class Action;
+class State;
+class SuccessorGenerator;
+class Heuristic;
+class Task;
+class SparsePackedState;
+class PackedStateHash;
+class SparseStatePacker;
+
 
 class Node {
 public:
@@ -53,13 +55,12 @@ public:
     ~Search() override = default;
 
     static void extract_plan(
-            segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
+            segmented_vector::SegmentedVector<std::pair<int, Action>> &cheapest_parent,
             SparsePackedState state,
-            unordered_map<SparsePackedState, int, PackedStateHash> &visited,
+            std::unordered_map<SparsePackedState, int, PackedStateHash> &visited,
             segmented_vector::SegmentedVector<SparsePackedState> &index_to_state,
             const SparseStatePacker &packer, const Task &task);
 
-    std::vector<Action> plan;
     void print_no_solution_found(clock_t timer_start) const;
     void print_goal_found(
         const Task &task,
@@ -67,9 +68,9 @@ public:
         clock_t timer_start,
         const SparseStatePacker &state_packer,
         int generations_until_last_jump,
-        segmented_vector::SegmentedVector<pair<int, Action>> &cheapest_parent,
+        segmented_vector::SegmentedVector<std::pair<int, Action>> &cheapest_parent,
         segmented_vector::SegmentedVector<SparsePackedState> &index_to_state,
-        unordered_map<SparsePackedState, int, PackedStateHash> &visited,
+        std::unordered_map<SparsePackedState, int, PackedStateHash> &visited,
         const State &state) const;
 
 protected:

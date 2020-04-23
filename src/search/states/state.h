@@ -32,13 +32,16 @@ class State {
   std::vector<Relation> relations;
   std::vector<bool> nullary_atoms;
 
-  explicit State(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms) :
+  State() = default;
+  explicit State(unsigned num_predicates) :
+      relations(num_predicates), nullary_atoms(num_predicates, false)
+  {}
+
+  State(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms) :
     relations(std::move(relations)), nullary_atoms(std::move(nullary_atoms))
   {
     // Explicit state constructor
   }
-
-  State() = default;
 
   std::vector<int> getObjects();
 

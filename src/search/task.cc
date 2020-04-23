@@ -149,3 +149,16 @@ bool Task::is_trivially_unsolvable() const
     }
     return false;
 }
+
+
+std::vector<std::vector<int>> Task::compute_object_index() const {
+    std::vector<std::vector<int>> objects_per_type(type_names.size());
+
+    for (const Object &o:objects) {
+        for (int t : o.getTypes()) {
+            objects_per_type[t].push_back(o.getIndex());
+        }
+    }
+
+    return objects_per_type;
+}

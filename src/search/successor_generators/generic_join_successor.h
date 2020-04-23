@@ -61,19 +61,19 @@ class GenericJoinSuccessor : public SuccessorGenerator {
 
   static void select_tuples(const State &s,
                             const Atom &a,
-                            unordered_set<GroundAtom, TupleHash> &tuples,
+                            std::unordered_set<GroundAtom, TupleHash> &tuples,
                             const std::vector<int> &constants);
 
   void filter_inequalities(const ActionSchema &action,
                            Table &working_table) const;
   static void create_hypergraph(
       const ActionSchema &action,
-      vector<int> &hypernodes,
-      vector<set<int>> &hyperedges,
-      vector<int> &missing_precond,
-      map<int, int> &node_index,
-      map<int, int> &node_counter,
-      map<int, int> &edge_to_precond);
+      std::vector<int> &hypernodes,
+      std::vector<std::set<int>> &hyperedges,
+      std::vector<int> &missing_precond,
+      std::map<int, int> &node_index,
+      std::map<int, int> &node_counter,
+      std::map<int, int> &edge_to_precond);
 };
 
 #endif //SEARCH_GENERIC_JOIN_SUCCESSOR_H

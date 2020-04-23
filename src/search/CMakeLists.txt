@@ -34,7 +34,7 @@ add_executable(search
         database/join.cc database/join.h
         heuristics/goalcount.cc heuristics/goalcount.h
         search_engines/breadth_first_search.cc search_engines/breadth_first_search.h
-        search_engines/search_factory.h
+        search_engines/search_factory
         heuristics/heuristic.h
         heuristics/heuristic_factory.h
         heuristics/blind_heuristic.h
@@ -57,4 +57,5 @@ add_executable(search
         states/extensional_states
         states/sparse_states
         utils/hash.h
+        utils/cartesian_iterator.h
 )

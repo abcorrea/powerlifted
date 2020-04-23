@@ -1,28 +1,13 @@
 #ifndef SEARCH_SEARCH_FACTORY_H
 #define SEARCH_SEARCH_FACTORY_H
 
-#include "breadth_first_search.h"
-#include "greedy_best_first_search.h"
-#include "search.h"
+#include <string>
 
-#include <boost/algorithm/string.hpp>
+class SearchBase;
 
 class SearchFactory {
 public:
-
-    static SearchBase *new_search_engine(const std::string& method) {
-        std::cout << "Creating search factory..." << std::endl;
-        if (boost::iequals(method, "naive")) {
-            return new BreadthFirstSearch<SparsePackedState>();
-        }
-        else if (boost::iequals(method, "gbfs")) {
-            return new GreedyBestFirstSearch<SparsePackedState>();
-        }
-        else {
-            return nullptr;
-        }
-    }
-
+    static SearchBase* new_search_engine(const std::string& method, const std::string& state_type);
 };
 
 #endif //SEARCH_SEARCH_FACTORY_H

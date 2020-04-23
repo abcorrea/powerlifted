@@ -1,4 +1,10 @@
+
 #include "breadth_first_search.h"
+
+#include "../action.h"
+#include "../states/extensional_states.h"
+#include "../states/sparse_states.h"
+#include "../successor_generators/successor_generator.h"
 
 #include <iostream>
 #include <queue>
@@ -89,3 +95,4 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
 // explicit template instantiations
 template class BreadthFirstSearch<SparsePackedState>;
+template class BreadthFirstSearch<ExtensionalPackedState>;

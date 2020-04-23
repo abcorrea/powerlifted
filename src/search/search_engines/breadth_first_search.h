@@ -6,6 +6,8 @@
 template <class PackedStateT>
 class BreadthFirstSearch : public Search<PackedStateT> {
   public:
+      using StatePackerT = typename PackedStateT::StatePackerT;
+
     int search(const Task &task, SuccessorGenerator *generator, Heuristic &heuristic) override;
 
     using Search<PackedStateT>::print_goal_found;

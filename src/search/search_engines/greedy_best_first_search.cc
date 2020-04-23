@@ -1,5 +1,9 @@
 #include "greedy_best_first_search.h"
 
+#include "../action.h"
+#include "../heuristics/heuristic.h"
+#include "../states/sparse_states.h"
+#include "../successor_generators/successor_generator.h"
 #include "search.h"
 
 #include <algorithm>

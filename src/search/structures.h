@@ -60,27 +60,20 @@ struct Argument {
  *
  */
 struct Relation {
+    Relation() = default;
     Relation(int predicate_symbol,
         std::unordered_set<GroundAtom, TupleHash> &&tuples)
             : predicate_symbol(predicate_symbol),
               tuples (std::move(tuples)) {}
 
-    Relation(const Relation &rhs) = default;
+    Relation(const Relation &) = default;
 
-    Relation() = default;
 
     bool operator==(const Relation &other) const {
-        if (predicate_symbol != other.predicate_symbol)
-            return false;
-
-        if (tuples.size() != other.tuples.size()) {
-            return false;
-        }
-
-        return (tuples == other.tuples);
+        return predicate_symbol == other.predicate_symbol && tuples == other.tuples;
     }
 
-    int predicate_symbol;
+    int predicate_symbol{};
     std::unordered_set<GroundAtom, TupleHash> tuples;
 };
 
