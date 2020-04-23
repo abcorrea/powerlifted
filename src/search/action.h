@@ -6,21 +6,22 @@
 
 /*
  * The Action class represents a grounded action.
- * The attribute index is the action schema index, from where we can retrieve its name and number of parameters.
- * The attribute instantiation is a list of object indices that instantiate each argument of the corresponding action
- * schema, in order as they appear in the action schema.
+ * The attribute index is the action schema index, from where we can retrieve its name and number of
+ * parameters. The attribute instantiation is a list of object indices that instantiate each
+ * argument of the corresponding action schema, in order as they appear in the action schema.
  */
 
 class Action {
-public:
+  public:
     int index;
     std::vector<int> instantiation;
 
-    explicit Action(int index, std::vector<int> &&instantiation) : index(index),
-                                                                   instantiation(std::move(instantiation)) {}
+    Action(int index, std::vector<int> &&instantiation)
+        : index(index), instantiation(std::move(instantiation))
+    {
+    }
 
     Action() = default;
-
 };
 
-#endif //SEARCH_ACTION_H
+#endif  // SEARCH_ACTION_H
