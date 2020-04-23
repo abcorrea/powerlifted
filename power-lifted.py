@@ -1,15 +1,13 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import argparse
 import os
 import subprocess
-import sys
 
-from distutils.dir_util import copy_tree
-from shutil import copyfile
 
-from build import get_build_dir, build, PROJECT_ROOT
+from build import build, PROJECT_ROOT
+
 
 def parse_options():
     parser = argparse.ArgumentParser()
@@ -64,7 +62,6 @@ def find_domain_filename(task_filename):
             return domain_filename
 
 
-
 if __name__ == '__main__':
     options = parse_options()
 
@@ -78,7 +75,6 @@ if __name__ == '__main__':
     # Create build path
     if not os.path.exists(BUILD):
         raise OSError("Planner not built!")
-
 
     os.chdir(PROJECT_ROOT)
     subprocess.check_call([os.path.join(BUILD, 'translator', 'translate.py'),
