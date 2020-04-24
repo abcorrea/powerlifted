@@ -27,18 +27,21 @@ add_executable(search
         goal_condition.h
         action_schema.cc action_schema.h
         structures.h
-        search_engines/search.cc search_engines/search.h
-        action.h
+        search_engines/search_factory
+        search_engines/search
+        search_engines/breadth_first_search
+        search_engines/greedy_best_first_search
+        search_engines/nodes
+        search_engines/utils
+        search_engines/search_space
+        action
         successor_generators/successor_generator.cc successor_generators/successor_generator.h
         database/table.h
-        database/join.cc database/join.h
-        heuristics/goalcount.cc heuristics/goalcount.h
-        search_engines/breadth_first_search.cc search_engines/breadth_first_search.h
-        search_engines/search_factory
+        database/join
+        heuristics/goalcount
         heuristics/heuristic.h
         heuristics/heuristic_factory.h
         heuristics/blind_heuristic.h
-        search_engines/greedy_best_first_search.cc search_engines/greedy_best_first_search.h
         successor_generators/successor_generator_factory.h
         successor_generators/naive_successor.cc successor_generators/naive_successor.h
         successor_generators/ordered_join_successor.cc successor_generators/ordered_join_successor.h

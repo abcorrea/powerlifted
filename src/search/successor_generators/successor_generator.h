@@ -53,7 +53,7 @@ public:
     std::vector<std::vector<int>> obj_per_type;
 
     const
-    std::vector<std::pair<State, Action>> &generate_successors(const std::vector<
+    std::vector<std::pair<State, LiftedOperatorId>> &generate_successors(const std::vector<
         ActionSchema> &actions,
                                                                const State &state,
                                                                const StaticInformation &staticInformation);
@@ -76,7 +76,7 @@ public:
     }
 
     GroundAtom ground_atom;
-    std::vector<std::pair<State, Action>> successors;
+    std::vector<std::pair<State, LiftedOperatorId>> successors;
 
 protected:
     size_t largest_intermediate_relation = 0;

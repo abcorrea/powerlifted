@@ -5,11 +5,9 @@
 #include "search.h"
 
 template <class PackedStateT>
-class GreedyBestFirstSearch : public Search<PackedStateT> {
+class GreedyBestFirstSearch : public SearchBase {
   public:
     int search(const Task &task, SuccessorGenerator *generator, Heuristic &heuristic) override;
-
-    using Search<PackedStateT>::print_goal_found;
 };
 
 

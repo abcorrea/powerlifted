@@ -64,7 +64,7 @@ public:
 
   void dump_goal();
 
-  bool is_goal(const State &state, const GoalCondition &goal_condition) const;
+  bool is_goal(const State &state) const;
 
   bool is_trivially_unsolvable() const;
 

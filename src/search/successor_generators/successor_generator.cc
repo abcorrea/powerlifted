@@ -32,7 +32,7 @@ using namespace std;
  * @return vector of pairs <State, Action> where state is the successor state and
  * action is the ground action generating it from the current state
  */
-const std::vector<std::pair<State, Action>> &
+const std::vector<std::pair<State, LiftedOperatorId>> &
 SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions,
                                         const State &state,
                                         const StaticInformation &staticInformation)
@@ -69,7 +69,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
                 vector<Relation> new_relation(state.relations);
                 apply_ground_action_effects(action, new_relation);
                 successors.emplace_back(State(move(new_relation), move(new_nullary_atoms)),
-                                        Action(action.get_index(), vector<int>()));
+                                        LiftedOperatorId(action.get_index(), vector<int>()));
             }
             else {
                 // Action not applicable
@@ -97,7 +97,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
                 vector<Relation> new_relation(state.relations);
                 apply_lifted_action_effects(action, tuple, indices, new_relation);
                 successors.emplace_back(State(move(new_relation), vector<bool>(new_nullary_atoms)),
-                                        Action(action.get_index(), move(ordered_tuple)));
+                                        LiftedOperatorId(action.get_index(), move(ordered_tuple)));
             }
         }
     }

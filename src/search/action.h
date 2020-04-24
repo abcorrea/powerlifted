@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <vector>
+#include <ostream>
 
 /*
  * The Action class represents a grounded action.
@@ -11,17 +12,23 @@
  * argument of the corresponding action schema, in order as they appear in the action schema.
  */
 
-class Action {
+class LiftedOperatorId {
   public:
     int index;
     std::vector<int> instantiation;
 
-    Action(int index, std::vector<int> &&instantiation)
-        : index(index), instantiation(std::move(instantiation))
-    {
-    }
+    static const LiftedOperatorId no_operator;
 
-    Action() = default;
+    LiftedOperatorId(int index, std::vector<int> &&instantiation)
+        : index(index), instantiation(std::move(instantiation))
+    {}
+
+    LiftedOperatorId() = delete;
+
+    bool operator==(const LiftedOperatorId &other) const { return index == other.index; }
+    bool operator!=(const LiftedOperatorId &other) const { return !(*this == other); }
 };
+
+std::ostream &operator<<(std::ostream &os, const LiftedOperatorId& id);
 
 #endif  // SEARCH_ACTION_H

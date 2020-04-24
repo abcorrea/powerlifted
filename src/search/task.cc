@@ -100,17 +100,17 @@ void Task::initialize_action_schemas(const std::vector<ActionSchema> &action_lis
     actions = action_list;
 }
 
-bool Task::is_goal(const State &state, const GoalCondition &goal_condition) const
+bool Task::is_goal(const State &state) const
 {
-    for (int pred : goal_condition.positive_nullary_goals) {
+    for (int pred : goal.positive_nullary_goals) {
         if (!state.nullary_atoms[pred])
             return false;
     }
-    for (int pred : goal_condition.negative_nullary_goals) {
+    for (int pred : goal.negative_nullary_goals) {
         if (!state.nullary_atoms[pred])
             return false;
     }
-    for (const AtomicGoal &atomicGoal : goal_condition.goal) {
+    for (const AtomicGoal &atomicGoal : goal.goal) {
         int goal_predicate = atomicGoal.predicate;
         const Relation &relation_at_goal_predicate = state.relations[goal_predicate];
 

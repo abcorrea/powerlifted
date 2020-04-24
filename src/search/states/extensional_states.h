@@ -36,6 +36,8 @@ public:
     struct Hash {
         std::size_t operator() (const ExtensionalPackedState &s) const;
     };
+
+    using HashT = Hash;
 };
 
 

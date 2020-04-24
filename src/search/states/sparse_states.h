@@ -28,7 +28,7 @@ class Task;
 class State;
 
 class SparseStatePacker;
-
+class PackedStateHash;
 
 class SparsePackedState {
 public:
@@ -40,6 +40,8 @@ public:
 
 
     bool operator==(const SparsePackedState &b) const;
+
+    using HashT = PackedStateHash;
 
 };
 
