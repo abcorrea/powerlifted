@@ -61,4 +61,10 @@ add_executable(search
         states/sparse_states
         utils/hash.h
         utils/cartesian_iterator.h
+        utils/collections.h
+        utils/language.h
+        utils/system
+        utils/system_unix
+        utils/system_windows
+        algorithms/int_hash_set.h
 )
