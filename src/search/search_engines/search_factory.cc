@@ -9,18 +9,17 @@
 #include <boost/algorithm/string.hpp>
 
 SearchBase*
-SearchFactory::new_search_engine(const std::string& method, const std::string& state_type) {
+SearchFactory::create(const std::string& method, const std::string& state_type) {
     std::cout << "Creating search factory for method " << method << "..." << std::endl;
     bool using_ext_state = boost::iequals(state_type, "extensional");
 
     if (boost::iequals(method, "naive")) {
-        if (using_ext_state) {
-                return new BreadthFirstSearch<ExtensionalPackedState>();
-        }
+        if (using_ext_state) return new BreadthFirstSearch<ExtensionalPackedState>();
         else return new BreadthFirstSearch<SparsePackedState>();
     }
     else if (boost::iequals(method, "gbfs")) {
-        return new GreedyBestFirstSearch<SparsePackedState>();
+        if (using_ext_state) return new GreedyBestFirstSearch<ExtensionalPackedState>();
+        else return new GreedyBestFirstSearch<SparsePackedState>();
     }
     else {
         std::cerr << "Invalid search method \"" << method << "\"" << std::endl;

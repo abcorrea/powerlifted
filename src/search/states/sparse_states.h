@@ -47,7 +47,7 @@ public:
 
 class PackedStateHash {
 public:
-    std::size_t operator() (const SparsePackedState &s) const;
+    unsigned operator() (const SparsePackedState &s) const;
 };
 
 

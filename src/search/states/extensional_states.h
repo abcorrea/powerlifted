@@ -34,7 +34,7 @@ public:
     bool operator==(const ExtensionalPackedState &b) const { return atoms == b.atoms; }
 
     struct Hash {
-        std::size_t operator() (const ExtensionalPackedState &s) const;
+        unsigned operator() (const ExtensionalPackedState &s) const;
     };
 
     using HashT = Hash;

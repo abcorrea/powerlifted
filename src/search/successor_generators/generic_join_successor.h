@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <random>
+#include <set>
+#include <map>
 
 /**
  * This class is not a successor generator per se. It just contain most of the common functions

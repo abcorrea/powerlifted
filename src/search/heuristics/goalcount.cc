@@ -1,7 +1,8 @@
-#include "goalcount.h"
 
-#include "../goal_condition.h"
+#include "goalcount.h"
 #include "../task.h"
+
+#include <cassert>
 
 int Goalcount::compute_heuristic(const State &s, const Task &task) {
     /*

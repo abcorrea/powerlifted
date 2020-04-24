@@ -35,19 +35,19 @@ bool SparsePackedState::operator==(const SparsePackedState &b) const {
 }
 
 
-std::size_t PackedStateHash::operator() (const SparsePackedState &s) const {
-   std::size_t seed = 0;
+unsigned PackedStateHash::operator() (const SparsePackedState &s) const {
+    utils::HashState hash_state;
+
     for (int i : s.predicate_symbols) {
-        boost::hash_combine(seed, i);
+        utils::feed(hash_state, i);
     }
     for (bool b : s.nullary_atoms) {
-        boost::hash_combine(seed, b);
+        utils::feed(hash_state, b);
     }
     for (const auto &r : s.packed_relations) {
-        size_t x = boost::hash_range(r.begin(), r.end());
-        boost::hash_combine(seed, x);
+        utils::feed(hash_state, r);
     }
-    return seed;
+    return hash_state.get_hash32();
 }
 
 

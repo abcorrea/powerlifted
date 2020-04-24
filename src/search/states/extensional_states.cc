@@ -1,8 +1,8 @@
 
 #include "extensional_states.h"
+#include "../algorithms/cartesian_iterator.h"
 #include "../task.h"
 #include "../utils.h"
-#include "../utils/cartesian_iterator.h"
 #include "../utils/hash.h"
 
 #include <algorithm>
@@ -11,8 +11,9 @@
 #include <vector>
 
 
-std::size_t ExtensionalPackedState::Hash::operator() (const ExtensionalPackedState &s) const {
-    return boost::hash_range(s.atoms.cbegin(), s.atoms.cend());
+unsigned ExtensionalPackedState::Hash::operator() (const ExtensionalPackedState &s) const {
+    utils::HashState hash_state;
+    return hash_state.get_hash32();
 }
 
 

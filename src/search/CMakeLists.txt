@@ -50,7 +50,7 @@ add_executable(search
         successor_generators/full_reducer_successor_generator.cc successor_generators/full_reducer_successor_generator.h
         database/semi_join.h database/semi_join.cc
         database/hash_join.cc database/hash_join.h
-        hash_structures.h
+        hash_structures
         database/hash_semi_join.cc database/hash_semi_join.h
         utils.cc utils.h
         successor_generators/random_successor.h successor_generators/random_successor.cc
@@ -60,11 +60,14 @@ add_executable(search
         states/extensional_states
         states/sparse_states
         utils/hash.h
-        utils/cartesian_iterator.h
+        algorithms/cartesian_iterator.h
         utils/collections.h
         utils/language.h
         utils/system
         utils/system_unix
         utils/system_windows
+        utils/logging
+        utils/timer
         algorithms/int_hash_set.h
+        search_statistics
 )

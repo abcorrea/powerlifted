@@ -16,7 +16,7 @@ using namespace std;
 
 template <class PackedStateT>
 int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
-                                                SuccessorGenerator *generator,
+                                                SuccessorGenerator &generator,
                                                 Heuristic &heuristic)
 {
     cout << "Starting greedy best first search" << endl;
@@ -37,6 +37,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
     this->heuristic_layer = heuristic.compute_heuristic(task.initial_state, task) + 1;
     cout << "Initial heuristic value " << this->heuristic_layer << endl;
+    statistics.report_f_value_progress(this->heuristic_layer);
 
     q.emplace(0, heuristic.compute_heuristic(task.initial_state, task), this->state_counter);
     shortest_distance.push_back(0);
@@ -44,7 +45,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
     if (task.is_goal(task.initial_state)) {
         cout << "Initial state is a goal" << endl;
-        print_goal_found(*generator, timer_start, this->generations_last_jump);
+        print_goal_found(generator, timer_start);
         extract_plan(
             cheapest_parent, state_packer.pack_state(task.initial_state), visited, index_to_state, state_packer, task);
 
@@ -57,8 +58,11 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         int h = head.h;
         int g = head.g;
         q.pop();
+
+        statistics.report_f_value_progress(g);
+        statistics.inc_expanded();
+
         if (this->g_layer < g) {
-            this->generations_last_jump = this->generations;
             this->g_layer = g;
         }
         if (g > shortest_distance[next]) {
@@ -74,20 +78,25 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         assert(index_to_state.size() >= next);
         State state = state_packer.unpack_state(index_to_state[next]);
         if (task.is_goal(state)) {
-            print_goal_found(*generator, timer_start, this->generations_last_jump);
+            print_goal_found(generator, timer_start);
             extract_plan(
                 cheapest_parent, state_packer.pack_state(state), visited,index_to_state, state_packer, task);
             return SOLVED;
         }
         vector<pair<State, LiftedOperatorId>> successors =
-            generator->generate_successors(task.actions, state, task.static_info);
+            generator.generate_successors(task.actions, state, task.static_info);
+
         this->generations += successors.size();
+        statistics.inc_generated(successors.size());
+
         for (const pair<State, LiftedOperatorId> &successor : successors) {
             const State &s = successor.first;
             const SparsePackedState packed = state_packer.pack_state(s);
             const LiftedOperatorId &a = successor.second;
             int dist = g + task.actions[a.index].get_cost();
             int new_h = heuristic.compute_heuristic(s, task);
+            statistics.inc_evaluations();
+
             auto try_to_insert = visited.insert(make_pair(packed, this->state_counter));
             if (try_to_insert.second) {
                 // Inserted for the first time in the map
@@ -98,7 +107,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                 this->state_counter++;
             }
             else {
-                int index = visited[packed];
+                int index = try_to_insert.first->second;
                 if (dist < shortest_distance[index]) {
                     cheapest_parent[index] = make_pair(next, a);
                     q.emplace(dist, new_h, index);
@@ -111,6 +120,12 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     print_no_solution_found(timer_start);
 
     return NOT_SOLVED;
+}
+
+template <class PackedStateT>
+void GreedyBestFirstSearch<PackedStateT>::print_statistics() const {
+    statistics.print_detailed_statistics();
+//    space.print_statistics();
 }
 
 

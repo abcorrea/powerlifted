@@ -7,7 +7,7 @@ class SearchBase;
 
 class SearchFactory {
 public:
-    static SearchBase* new_search_engine(const std::string& method, const std::string& state_type);
+    static SearchBase*create(const std::string& method, const std::string& state_type);
 };
 
 #endif //SEARCH_SEARCH_FACTORY_H

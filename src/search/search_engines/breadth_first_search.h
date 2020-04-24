@@ -2,13 +2,19 @@
 #define SEARCH_BREADTH_FIRST_SEARCH_H
 
 #include "search.h"
+#include "search_space.h"
 
 template <class PackedStateT>
 class BreadthFirstSearch : public SearchBase {
-  public:
-      using StatePackerT = typename PackedStateT::StatePackerT;
+protected:
+    SearchSpace<PackedStateT> space;
 
-    int search(const Task &task, SuccessorGenerator *generator, Heuristic &heuristic) override;
+public:
+    using StatePackerT = typename PackedStateT::StatePackerT;
+
+    int search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
+
+    void print_statistics() const override;
 };
 
 

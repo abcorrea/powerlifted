@@ -1,6 +1,7 @@
 #ifndef SEARCH_SEARCH_H
 #define SEARCH_SEARCH_H
 
+#include "../search_statistics.h"
 #include <utility>
 #include <vector>
 
@@ -36,15 +37,15 @@ public:
     virtual ~SearchBase() = default;
 
     virtual int search(const Task &task,
-                       SuccessorGenerator *generator,
+                       SuccessorGenerator &generator,
                        Heuristic &heuristic) = 0;
 
+    virtual void print_statistics() const = 0;
+
 protected:
-    size_t state_counter{};
-    int generations{};
-    int generations_last_jump{};
-    int g_layer{};
-    int heuristic_layer{};
+
+    SearchStatistics statistics;
+
 };
 
 #endif //SEARCH_SEARCH_H

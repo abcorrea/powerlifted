@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include <boost/functional/hash.hpp>
 
 /**
  * @brief Represents a state in the search space. Intuitively, it is represented
@@ -51,27 +50,7 @@ class State {
       return nullary_atoms == other.nullary_atoms && relations == other.relations;
   }
 
-  friend std::size_t hash_value(const State &s) {
-    std::size_t seed = 0;
-    for (bool b : s.nullary_atoms) {
-      boost::hash_combine(seed, b);
-    }
-    for (const Relation &r : s.relations) {
-      std::vector<std::size_t> x;
-      for (const GroundAtom &vga : r.tuples) {
-        std::size_t aux_seed = vga.size();
-        for (auto &i : vga)
-          aux_seed ^= i + 0x9e3779b9 + (aux_seed << 6) + (aux_seed >> 2);
-        x.push_back(aux_seed);
-        //boost::hash_combine(seed, vga);
-      }
-      std::sort(x.begin(), x.end());
-      for (std::size_t e : x) {
-        boost::hash_combine(seed, e);
-      }
-    }
-    return seed;
-  }
+  friend std::size_t hash_value(const State &s);
 };
 
 /**

@@ -8,8 +8,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include <boost/functional/hash.hpp>
-
 /**
  * @brief GroundAtom is an alias for vector of integers. It is represented
  * as a list of object indices.

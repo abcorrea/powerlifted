@@ -18,8 +18,7 @@ void print_no_solution_found(clock_t timer_start);
 
 void print_goal_found(
     const SuccessorGenerator& generator,
-    const clock_t& timer_start,
-    int generations_until_last_jump);
+    const clock_t& timer_start);
 
 
 void extract_plan(
@@ -29,3 +28,5 @@ void extract_plan(
     segmented_vector::SegmentedVector<SparsePackedState> &index_to_state,
     const SparseStatePacker &packer,
     const Task &task);
+
+void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task);

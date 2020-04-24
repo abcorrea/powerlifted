@@ -14,7 +14,7 @@
  */
 class HeuristicFactory {
 public:
-    static Heuristic *new_heuristic(const std::string& method, const Task &task) {
+    static Heuristic *create(const std::string& method, const Task &task) {
         std::cout << "Creating search factory..." << std::endl;
         if (boost::iequals(method, "blind")) {
             return new BlindHeuristic;

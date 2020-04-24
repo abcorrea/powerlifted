@@ -3,8 +3,11 @@
 
 #include "heuristic.h"
 
-#include "../states/state.h"
-#include "../task.h"
+#include <unordered_set>
+#include <vector>
+
+
+struct AtomicGoal;
 
 /**
  * @brief Compute hamming distance between goal condition and state s.
