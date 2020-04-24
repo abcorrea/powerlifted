@@ -1,11 +1,12 @@
 #include "greedy_best_first_search.h"
 
-#include "utils.h"
 #include "../action.h"
 #include "../heuristics/heuristic.h"
+#include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
 #include "search.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <iostream>
@@ -131,3 +132,4 @@ void GreedyBestFirstSearch<PackedStateT>::print_statistics() const {
 
 // explicit template instantiations
 template class GreedyBestFirstSearch<SparsePackedState>;
+template class GreedyBestFirstSearch<ExtensionalPackedState>;

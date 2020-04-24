@@ -30,6 +30,8 @@ def parse_options():
     parser.add_argument('-g', '--generator', dest='generator', action='store',
                         default=None, help='Successor generator method',
                         required=True)
+    parser.add_argument('--state', action='store', help='Successor generator method',
+                        default="sparse", choices=("sparse", "extensional"))
     parser.add_argument('--translator-output-file', dest='translator_file',
                         default='output.lifted',
                         help='Output file of the translator')
@@ -80,8 +82,12 @@ if __name__ == '__main__':
     subprocess.check_call([os.path.join(BUILD, 'translator', 'translate.py'),
                            options.domain, options.instance,
                            '--output-file', options.translator_file])
-    subprocess.check_call([os.path.join(BUILD, 'search', 'search'),
-                           options.translator_file,
-                           options.search,
-                           options.heuristic,
-                           options.generator])
+
+    cmd = [os.path.join(BUILD, 'search', 'search'),
+           options.translator_file,
+           options.search,
+           options.heuristic,
+           options.generator,
+           options.state]
+    print(f'Executing "{" ".join(cmd)}"')
+    subprocess.check_call(cmd)
