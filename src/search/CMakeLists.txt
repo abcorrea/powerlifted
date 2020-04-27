@@ -3,6 +3,9 @@ project(search)
 
 set(CMAKE_CXX_STANDARD 17)
 
+add_compile_definitions(BOOST_DYNAMIC_BITSET_DONT_USE_FRIENDS)
+
+
 if(CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES Debug Release)
 endif()

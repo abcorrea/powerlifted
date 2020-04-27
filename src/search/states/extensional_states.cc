@@ -11,7 +11,11 @@
 
 
 unsigned ExtensionalPackedState::Hash::operator() (const ExtensionalPackedState &s) const {
-    return (unsigned) boost::hash_value(s.atoms);
+    std::size_t seed = 0;
+    boost::hash_combine(seed, s.atoms.m_num_bits);
+    boost::hash_combine(seed, s.atoms.m_bits);
+    return (unsigned) seed;
+//    return (unsigned) boost::hash_value(s.atoms);
 //    return (unsigned) boost::hash_range(s.atoms.cbegin(), s.atoms.cend());
 //    std::hash<std::vector<bool>> hasher;
 //    hasher.operator()(s.atoms);
