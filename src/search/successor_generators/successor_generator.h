@@ -22,7 +22,7 @@
 
 class SuccessorGenerator {
     static bool is_ground_action_applicable(const ActionSchema &action,
-                                            const State &state,
+                                            const DBState &state,
                                             const StaticInformation &staticInformation);
 
     void apply_lifted_action_effects(const ActionSchema &action,
@@ -53,17 +53,17 @@ public:
     std::vector<std::vector<int>> obj_per_type;
 
     const
-    std::vector<std::pair<State, LiftedOperatorId>> &generate_successors(const std::vector<
+    std::vector<std::pair<DBState, LiftedOperatorId>> &generate_successors(const std::vector<
         ActionSchema> &actions,
-                                                               const State &state,
+                                                               const DBState &state,
                                                                const StaticInformation &staticInformation);
 
-    virtual Table instantiate(const ActionSchema &action, const State &state,
+    virtual Table instantiate(const ActionSchema &action, const DBState &state,
                               const StaticInformation &staticInformation) = 0;
 
     virtual std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                    const State &state,
+                                    const DBState &state,
                                     const StaticInformation &staticInformation,
                                     int action_index) = 0;
 
@@ -76,7 +76,7 @@ public:
     }
 
     GroundAtom ground_atom;
-    std::vector<std::pair<State, LiftedOperatorId>> successors;
+    std::vector<std::pair<DBState, LiftedOperatorId>> successors;
 
 protected:
     size_t largest_intermediate_relation = 0;

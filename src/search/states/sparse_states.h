@@ -25,7 +25,7 @@
  */
 
 class Task;
-class State;
+class DBState;
 
 class SparseStatePacker;
 class PackedStateHash;
@@ -59,9 +59,9 @@ class SparseStatePacker {
 public:
     SparseStatePacker(const Task &task);
 
-    SparsePackedState pack_state(const State &state) const;
+    SparsePackedState pack(const DBState &state) const;
 
-    State unpack_state(const SparsePackedState &packed_state) const;
+    DBState unpack(const SparsePackedState &packed_state) const;
 
 private:
     long pack_tuple(const std::vector<int> &tuple, int predicate_index) const;

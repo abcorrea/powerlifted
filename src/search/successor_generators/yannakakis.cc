@@ -193,7 +193,7 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
  * @return
  */
 Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
-                                                const State &state,
+                                                const DBState &state,
                                                 const StaticInformation &staticInformation) {
 
   /*

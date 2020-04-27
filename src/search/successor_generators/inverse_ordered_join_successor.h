@@ -16,7 +16,7 @@ public:
 
     std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                    const State &state,
+                                    const DBState &state,
                                     const StaticInformation &staticInformation,
                                     int action_index) override;
 

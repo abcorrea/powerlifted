@@ -12,7 +12,7 @@ using namespace std;
  */
 vector<Table> InverseOrderedJoinSuccessorGenerator::parse_precond_into_join_program(
         const vector<Atom> &precond,
-        const State &state,
+        const DBState &state,
         const StaticInformation &staticInformation,
         int action_index) {
     /*

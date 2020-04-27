@@ -9,7 +9,7 @@
 using namespace std;
 
 Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
-                                        const State &state,
+                                        const DBState &state,
                                         const StaticInformation &staticInformation) {
   /*
    * We first certify that there are preconditions for the action.
@@ -105,7 +105,7 @@ void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int
  * Select only those tuples matching the constants of a partially grounded
  * precondition.
  */
-void GenericJoinSuccessor::select_tuples(const State &s,
+void GenericJoinSuccessor::select_tuples(const DBState &s,
                                          const Atom &a,
                                          unordered_set<GroundAtom,
                                                         TupleHash> &tuples,
@@ -125,7 +125,7 @@ void GenericJoinSuccessor::select_tuples(const State &s,
 
 vector<Table> GenericJoinSuccessor::parse_precond_into_join_program(const vector<
     Atom> &precond,
-                                                                    const State &state,
+                                                                    const DBState &state,
                                                                     const StaticInformation &staticInformation,
                                                                     int action_index) {
   /*

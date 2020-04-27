@@ -1,7 +1,7 @@
 #ifndef SEARCH_HEURISTIC_H
 #define SEARCH_HEURISTIC_H
 
-class State;
+class DBState;
 class Task;
 
 class Heuristic {
@@ -13,7 +13,7 @@ public:
      * @param task: Planning task
      * @return Heuristic value
      */
-    virtual int compute_heuristic(const State &s, const Task &task) = 0;
+    virtual int compute_heuristic(const DBState &s, const Task &task) = 0;
 };
 
 #endif //SEARCH_HEURISTIC_H

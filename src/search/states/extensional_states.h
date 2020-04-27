@@ -1,9 +1,10 @@
 #ifndef EXTENSIONAL_SEARCH_STATE_PACKER_H
 #define EXTENSIONAL_SEARCH_STATE_PACKER_H
 
+#include "state.h"
+
 #include <boost/functional/hash.hpp>
 
-#include "state.h"
 #include <unordered_map>
 #include <vector>
 
@@ -54,8 +55,8 @@ protected:
     std::vector<std::unordered_map<args_t, unsigned, boost::hash<args_t>>> args_to_index;
     std::vector<std::pair<int, args_t>> index_to_args;
 
-    //! A state placeholder for faster creation of states in ExtensionalStatePacker::pack_state
-    State blank_state;
+    //! A state placeholder for faster creation of states in ExtensionalStatePacker::pack
+    DBState blank_state;
 
 
 public:
@@ -65,9 +66,9 @@ public:
 
     unsigned to_index(int predicate, const std::vector<int>& arguments) const;
 
-    ExtensionalPackedState pack_state(const State &state) const;
+    ExtensionalPackedState pack(const DBState &state) const;
 
-    State unpack_state(const ExtensionalPackedState &packed) const;
+    DBState unpack(const ExtensionalPackedState &packed) const;
 };
 
 #endif // EXTENSIONAL_SEARCH_STATE_PACKER_H

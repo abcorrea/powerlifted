@@ -28,7 +28,7 @@ class Task {
 public:
   std::vector<Predicate> predicates;
   std::vector<Object> objects;
-  State initial_state;
+  DBState initial_state;
   StaticInformation static_info;
   GoalCondition goal;
   std::vector<ActionSchema> actions;
@@ -60,11 +60,11 @@ public:
 
   void initialize_action_schemas(const std::vector<ActionSchema> &action_list);
 
-  void dump_state(State s) const;
+  void dump_state(DBState s) const;
 
   void dump_goal();
 
-  bool is_goal(const State &state) const;
+  bool is_goal(const DBState &state) const;
 
   bool is_trivially_unsolvable() const;
 

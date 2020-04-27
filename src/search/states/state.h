@@ -25,18 +25,18 @@
  * @see state_packer.h
  *
  */
-class State {
+class DBState {
 
  public:
   std::vector<Relation> relations;
   std::vector<bool> nullary_atoms;
 
-  State() = default;
-  explicit State(unsigned num_predicates) :
+  DBState() = default;
+  explicit DBState(unsigned num_predicates) :
       relations(num_predicates), nullary_atoms(num_predicates, false)
   {}
 
-  State(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms) :
+  DBState(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms) :
     relations(std::move(relations)), nullary_atoms(std::move(nullary_atoms))
   {
     // Explicit state constructor
@@ -46,17 +46,17 @@ class State {
 
   void addTuple(int relation, const GroundAtom &args);
 
-  bool operator==(const State &other) const {
+  bool operator==(const DBState &other) const {
       return nullary_atoms == other.nullary_atoms && relations == other.relations;
   }
 
-  friend std::size_t hash_value(const State &s);
+  friend std::size_t hash_value(const DBState &s);
 };
 
 /**
  * @brief Syntatic sugar to avoid passing the static predicated to
  * every single successor.
  */
-typedef State StaticInformation;
+typedef DBState StaticInformation;
 
 #endif //SEARCH_STATE_H

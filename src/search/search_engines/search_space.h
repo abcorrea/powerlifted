@@ -38,6 +38,8 @@ protected:
         {}
 
         bool operator()(int lhs, int rhs) const {
+            assert(lhs >= 0 && (unsigned) lhs < state_data.size() &&
+                   rhs >= 0 && (unsigned) rhs < state_data.size());
             return state_data[lhs] == state_data[rhs];
         }
     };

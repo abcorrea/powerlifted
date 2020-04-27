@@ -11,7 +11,7 @@ class YannakakisSuccessorGenerator : public GenericJoinSuccessor {
  */
   explicit YannakakisSuccessorGenerator(const Task &task);
   Table instantiate(const ActionSchema &action,
-                    const State &state,
+                    const DBState &state,
                     const StaticInformation &staticInformation) final;
 
  private:

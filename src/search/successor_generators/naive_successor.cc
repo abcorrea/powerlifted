@@ -12,7 +12,7 @@ using namespace std;
  * @see generic_join_successor.h
  */
 vector<Table> NaiveSuccessorGenerator::parse_precond_into_join_program(const vector<Atom> &precond,
-                                                                       const State &state,
+                                                                       const DBState &state,
                                                                        const StaticInformation &staticInformation,
                                                                        int action_index) {
 

@@ -169,7 +169,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task) :
  * @return
  */
 Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
-                                                 const State &state,
+                                                 const DBState &state,
                                                  const StaticInformation &staticInformation) {
 
   /*

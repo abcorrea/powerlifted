@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-int Goalcount::compute_heuristic(const State &s, const Task &task) {
+int Goalcount::compute_heuristic(const DBState &s, const Task &task) {
     /*
      * First, loop over all nullary atoms.  Then loop over all arguments in the
      * goal condition and checks which ones are satisfied or not.
@@ -24,7 +24,7 @@ int Goalcount::compute_heuristic(const State &s, const Task &task) {
 }
 
 
-int Goalcount::atom_not_satisfied(const State &s,
+int Goalcount::atom_not_satisfied(const DBState &s,
                                   const AtomicGoal &atomicGoal) const {
     const auto it = s.relations[atomicGoal.predicate].tuples.find(atomicGoal.args);
     const auto end = s.relations[atomicGoal.predicate].tuples.end();

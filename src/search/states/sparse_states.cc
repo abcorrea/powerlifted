@@ -87,7 +87,7 @@ SparseStatePacker::SparseStatePacker(const Task &task) {
     }
 }
 
-SparsePackedState SparseStatePacker::pack_state(const State &state) const {
+SparsePackedState SparseStatePacker::pack(const DBState &state) const {
     SparsePackedState packed_state;
     packed_state.packed_relations.reserve(state.relations.size());
     packed_state.predicate_symbols.reserve(state.relations.size());
@@ -106,7 +106,7 @@ SparsePackedState SparseStatePacker::pack_state(const State &state) const {
     return packed_state;
 }
 
-State SparseStatePacker::unpack_state(const SparsePackedState &packed_state) const {
+DBState SparseStatePacker::unpack(const SparsePackedState &packed_state) const {
     std::vector<Relation> relations;
     std::vector<bool> nullary_atoms = packed_state.nullary_atoms;
     relations.reserve(packed_state.packed_relations.size());
@@ -117,7 +117,7 @@ State SparseStatePacker::unpack_state(const SparsePackedState &packed_state) con
         }
         relations.emplace_back(packed_state.predicate_symbols[i], move(tuples));
     }
-    return State(move(relations), move(nullary_atoms));
+    return DBState(move(relations), move(nullary_atoms));
 }
 
 long SparseStatePacker::pack_tuple(const std::vector<int> &tuple, int predicate_index) const {

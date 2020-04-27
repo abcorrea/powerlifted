@@ -24,7 +24,7 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
     StatePackerT packer(task);
     std::queue<StateID> queue;
 
-    SearchNode& root_node = space.insert_or_get_previous_node(packer.pack_state(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
+    SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
     root_node.open(0);
     statistics.report_f_value_progress(root_node.g);
     queue.emplace(root_node.state_id);
@@ -52,15 +52,15 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
 
-        auto successors = generator.generate_successors(task.actions, packer.unpack_state(space.get_state(sid)), task.static_info);
+        auto successors = generator.generate_successors(task.actions, packer.unpack(space.get_state(sid)), task.static_info);
 
         statistics.inc_generated(successors.size());
 
         for (const auto &successor : successors) {
-            const State &s = successor.first;
+            const DBState &s = successor.first;
             const LiftedOperatorId &a = successor.second;
 
-            auto& child_node = space.insert_or_get_previous_node(packer.pack_state(s), a, node.state_id);
+            auto& child_node = space.insert_or_get_previous_node(packer.pack(s), a, node.state_id);
             if (child_node.status == SearchNode::Status::NEW) {
                 child_node.open(node.g+1);
 

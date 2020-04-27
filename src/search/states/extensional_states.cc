@@ -5,7 +5,6 @@
 #include "../utils.h"
 #include "../utils/hash.h"
 
-#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -13,6 +12,7 @@
 
 unsigned ExtensionalPackedState::Hash::operator() (const ExtensionalPackedState &s) const {
     utils::HashState hash_state;
+    utils::feed(hash_state, s.atoms);
     return hash_state.get_hash32();
 }
 
@@ -60,7 +60,7 @@ unsigned ExtensionalStatePacker::to_index(int predicate, const std::vector<int>&
 }
 
 
-ExtensionalPackedState ExtensionalStatePacker::pack_state(const State &state) const {
+ExtensionalPackedState ExtensionalStatePacker::pack(const DBState &state) const {
     ExtensionalPackedState packed(num_atoms());
 
     // state.nullary_atoms contains one element per predicate index, regardless of whether
@@ -80,8 +80,8 @@ ExtensionalPackedState ExtensionalStatePacker::pack_state(const State &state) co
     return packed;
 }
 
-State ExtensionalStatePacker::unpack_state(const ExtensionalPackedState &packed) const {
-    State result(blank_state);  // Let's start off with the precomputed state
+DBState ExtensionalStatePacker::unpack(const ExtensionalPackedState &packed) const {
+    DBState result(blank_state);  // Let's start off with the precomputed state
 
     auto natoms = packed.atoms.size();
     assert(natoms == num_atoms());

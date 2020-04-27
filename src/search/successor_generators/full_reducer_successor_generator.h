@@ -11,7 +11,7 @@ public:
    */
     explicit FullReducerSuccessorGenerator(const Task &task);
 
-    Table instantiate(const ActionSchema &action, const State &state,
+    Table instantiate(const ActionSchema &action, const DBState &state,
                       const StaticInformation &staticInformation) override;
 
 private:

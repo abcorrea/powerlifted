@@ -32,9 +32,9 @@ using namespace std;
  * @return vector of pairs <State, Action> where state is the successor state and
  * action is the ground action generating it from the current state
  */
-const std::vector<std::pair<State, LiftedOperatorId>> &
+const std::vector<std::pair<DBState, LiftedOperatorId>> &
 SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions,
-                                        const State &state,
+                                        const DBState &state,
                                         const StaticInformation &staticInformation)
 {
 
@@ -68,7 +68,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
                 apply_nullary_effects(action, new_nullary_atoms);
                 vector<Relation> new_relation(state.relations);
                 apply_ground_action_effects(action, new_relation);
-                successors.emplace_back(State(move(new_relation), move(new_nullary_atoms)),
+                successors.emplace_back(DBState(move(new_relation), move(new_nullary_atoms)),
                                         LiftedOperatorId(action.get_index(), vector<int>()));
             }
             else {
@@ -96,7 +96,8 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
                 }
                 vector<Relation> new_relation(state.relations);
                 apply_lifted_action_effects(action, tuple, indices, new_relation);
-                successors.emplace_back(State(move(new_relation), vector<bool>(new_nullary_atoms)),
+                successors.emplace_back(
+                    DBState(move(new_relation), vector<bool>(new_nullary_atoms)),
                                         LiftedOperatorId(action.get_index(), move(ordered_tuple)));
             }
         }
@@ -210,7 +211,7 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
  * 'action' is a ground action here.
  */
 bool SuccessorGenerator::is_ground_action_applicable(const ActionSchema &action,
-                                                     const State &state,
+                                                     const DBState &state,
                                                      const StaticInformation &staticInformation)
 {
     for (const Atom &precond : action.get_precondition()) {

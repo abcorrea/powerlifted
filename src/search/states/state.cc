@@ -5,7 +5,7 @@
 
 using namespace std;
 
-vector<int> State::getObjects() {
+vector<int> DBState::getObjects() {
   /*
    * Return a set of all objects occurring in any tuple of any relation in the
    * state
@@ -21,12 +21,12 @@ vector<int> State::getObjects() {
   return obj;
 }
 
-void State::addTuple(int relation, const GroundAtom &args) {
+void DBState::addTuple(int relation, const GroundAtom &args) {
   relations[relation].tuples.insert(args);
 }
 
 
-std::size_t hash_value(const State &s) {
+std::size_t hash_value(const DBState &s) {
     std::size_t seed = 0;
     for (bool b : s.nullary_atoms) {
         boost::hash_combine(seed, b);

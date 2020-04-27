@@ -34,13 +34,13 @@ void Task::create_empty_initial_state(size_t number_predicates)
         static_preds.push_back(r);
         fluents.push_back(r);
     }
-    initial_state = State(move(fluents), vector<bool>(predicates.size(), false));
+    initial_state = DBState(move(fluents), vector<bool>(predicates.size(), false));
     static_info = StaticInformation(move(static_preds), vector<bool>(predicates.size(), false));
     initial_state.nullary_atoms.clear();
     initial_state.nullary_atoms.resize(number_predicates, false);
 }
 
-void Task::dump_state(State s) const
+void Task::dump_state(DBState s) const
 {
     /*
      * Output initial state in a human readable way.
@@ -100,7 +100,7 @@ void Task::initialize_action_schemas(const std::vector<ActionSchema> &action_lis
     actions = action_list;
 }
 
-bool Task::is_goal(const State &state) const
+bool Task::is_goal(const DBState &state) const
 {
     for (int pred : goal.positive_nullary_goals) {
         if (!state.nullary_atoms[pred])

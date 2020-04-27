@@ -31,7 +31,7 @@ class GenericJoinSuccessor : public SuccessorGenerator {
   std::vector<std::vector<int>>
       obj_per_type; // position I is a list of object indices of type I
 
-  Table instantiate(const ActionSchema &action, const State &state,
+  Table instantiate(const ActionSchema &action, const DBState &state,
                     const StaticInformation &staticInformation) override;
 
   /**
@@ -52,7 +52,7 @@ class GenericJoinSuccessor : public SuccessorGenerator {
   * @return Table containing the tuples satisfying the query established by the precondition
   */
   std::vector<Table> parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                                     const State &state,
+                                                     const DBState &state,
                                                      const StaticInformation &staticInformation,
                                                      int action_index) override;
 
@@ -61,7 +61,7 @@ class GenericJoinSuccessor : public SuccessorGenerator {
                                                          std::vector<int> &constants,
                                                          const Atom &a);
 
-  static void select_tuples(const State &s,
+  static void select_tuples(const DBState &s,
                             const Atom &a,
                             std::unordered_set<GroundAtom, TupleHash> &tuples,
                             const std::vector<int> &constants);
