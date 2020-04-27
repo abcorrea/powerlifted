@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/dynamic_bitset.hpp>
+
 class Task;
 
 /**
@@ -23,7 +25,8 @@ class ExtensionalPackedState {
 public:
     using StatePackerT = ExtensionalStatePacker;
 
-    std::vector<bool> atoms;
+//    std::vector<bool> atoms;
+    boost::dynamic_bitset<> atoms;
 
     explicit ExtensionalPackedState(std::size_t size) : atoms(size, false) {}
 
