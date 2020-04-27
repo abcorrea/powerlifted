@@ -3,12 +3,11 @@
 
 #include "state.h"
 
-#include <boost/functional/hash.hpp>
-
 #include <unordered_map>
 #include <vector>
 
 #include <boost/dynamic_bitset.hpp>
+#include <boost/functional/hash.hpp>
 
 class Task;
 

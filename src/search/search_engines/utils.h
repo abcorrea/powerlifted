@@ -5,6 +5,8 @@
 
 #include <ctime>
 #include <utility>
+#include <unordered_map>
+#include <vector>
 
 class LiftedOperatorId;
 class PackedStateHash;

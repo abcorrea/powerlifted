@@ -5,7 +5,9 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
+#include <boost/functional/hash/hash.hpp>
 
 /**
  * @brief The packed state representation is a more concise representation of states,
