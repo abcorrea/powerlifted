@@ -6,10 +6,12 @@ generator.
 (See [References](#references) for more details)
 
 ## Usage
-The `power-lifted.py` script solves a PDDL task provided as
-input. The script has the following parameters:
 
-```power-lifted.py -d DOMAIN -i INSTANCE -s SEARCH -e HEURISTIC -g GENERATOR```
+The `powerlifted.py` script solves a PDDL task provided as input. It also builds
+the planner if the `--build` parameter is passed. The script has the following
+parameters:
+
+```powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e HEURISTIC -g GENERATOR [--build] [--state STATE REPR.]```
 
 Use the `build.py` script to build the planner first.
 
@@ -31,12 +33,22 @@ Use the `build.py` script to build the planner first.
 - `yannakakis`: Same as above but replaces the final join of the full
       reducer method by the Yannakakis' project-join program.
 
+### Available Options for STATE REPR.:
+
+- `sparse`: Use the sparse state representation where a state is only
+  represented by the facts that are true in this state.
+- `extensional`: Use the extensional representation where a state is a bitset
+  where the ith-bit is true if the fact associated to it is true in this
+  state. This representation requires the grounding of facts (but not of
+  actions) which, right now, is performed in the search component.
+
 ## Components
  - Translator
  - Search component
 
 ## Requirements
  - C++ 17
+ - CMake 3.12+
  - Python 3.5+
 
 ## Limitations
