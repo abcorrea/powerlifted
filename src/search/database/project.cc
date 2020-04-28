@@ -1,33 +1,32 @@
 #include "project.h"
 
 #include <vector>
-#include <unordered_map>
+#include <unordered_set>
 
 using namespace std;
 
 void project(Table &t, const std::unordered_set<int> &over) {
 
-    vector<int> matches;
+    vector<int> matches(over.size());
+    vector<int> new_indices(over.size());
+    int counter = 0 ;
     for (int x : over) {
+        new_indices[counter] = x;
         for (size_t i = 0; i < t.tuple_index.size(); i++) {
             if (x==t.tuple_index[i])
-                matches.push_back(i);
+                matches[counter++] = i;
         }
     }
 
-    unordered_map<vector<int>, vector<int>, TupleHash> hash_map;
+    unordered_set<vector<int>, TupleHash> new_tuples;
     for (const vector<int> &tuple : t.tuples) {
         vector<int> key(matches.size());
         for (size_t i = 0; i < matches.size(); i++) {
                 key[i] = tuple[matches[i]];
-            }
-        if (hash_map.count(key) == 0)
-            hash_map[key] = tuple;
+        }
+        new_tuples.insert(key);
     }
 
-    unordered_set<vector<int>, TupleHash> new_tuples;
-    for (const auto& entry: hash_map) {
-        new_tuples.insert(entry.second);
-    }
     t.tuples = new_tuples;
+    t.tuple_index = new_indices;
 }
