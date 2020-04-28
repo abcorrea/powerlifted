@@ -8,8 +8,6 @@
 using namespace std;
 
 void project(Table &t, const std::unordered_set<int> &over) {
-    // TODO This method is currently doing nothing at all, we'll fix it on master
-    //      and then merge here :-)
     vector<int> matches;
     for (int x : over) {
         for (size_t i = 0; i < t.tuple_index.size(); i++) {
