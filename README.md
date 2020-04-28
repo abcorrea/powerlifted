@@ -47,8 +47,8 @@ Use the `build.py` script to build the planner first.
  - Search component
 
 ## Requirements
- - C++ 17
- - CMake 3.12+
+ - A C++17-compliant compiler
+ - CMake 3.9+
  - Python 3.5+
 
 ## Limitations
