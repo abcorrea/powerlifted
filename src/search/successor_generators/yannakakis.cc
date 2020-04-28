@@ -1,14 +1,12 @@
+
 #include "yannakakis.h"
-
-#include "generic_join_successor.h"
-
 #include "../database/hash_join.h"
 #include "../database/project.h"
 #include "../database/semi_join.h"
 
+#include <cassert>
 #include <stack>
 #include <queue>
-#include <iostream>
 
 using namespace std;
 

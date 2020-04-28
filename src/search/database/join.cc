@@ -1,6 +1,11 @@
+
 #include "join.h"
+#include "table.h"
+#include "utils.h"
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -23,14 +28,7 @@ void join(Table &t1, Table &t2) {
      * 2. If at least one parameter matches, we perform a nested loop join.
      *
      */
-
-    vector<pair<int, int>> matches;
-    for (size_t i = 0; i < t1.tuple_index.size(); ++i) {
-        for (size_t j = 0; j < t2.tuple_index.size(); ++j) {
-            if (t1.tuple_index[i] == t2.tuple_index[j])
-                matches.emplace_back(i, j);
-        }
-    }
+    auto matches = compute_matching_columns(t1, t2);
 
     unordered_set<vector<int>, TupleHash> new_tuples;
     if (matches.empty()) {
@@ -86,7 +84,7 @@ void join(Table &t1, Table &t2) {
             }
         }
     }
-    t1.tuples = new_tuples;
+    t1.tuples = std::move(new_tuples);
 }
 
 

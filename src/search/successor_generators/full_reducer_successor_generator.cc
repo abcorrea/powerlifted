@@ -3,6 +3,7 @@
 #include "../database/hash_join.h"
 #include "../database/semi_join.h"
 
+#include <cassert>
 #include <queue>
 #include <stack>
 
@@ -174,14 +175,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
                                                  const DBState &state,
                                                  const StaticInformation &staticInformation)
 {
-
-    /*
-     *  We need to parse precond first
-     */
-
     clock_t time = clock();
 
-    vector<vector<int>> instantiations;
     const vector<Parameter> &params = action.get_parameters();
     vector<Atom> precond;
 
@@ -198,34 +193,42 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
 
     assert(!precond.empty());
 
+    const auto& fjr = full_join_order[action.get_index()];
+
+    // We need to parse precond first
     vector<Table> tables =
         parse_precond_into_join_program(precond, state, staticInformation, action.get_index());
-    if (tables.size() != full_join_order[action.get_index()].size()) {
+
+    if (tables.size() != fjr.size()) {
         // This means that the projection over the constants completely eliminated one table,
         // we can return no instantiation.
         if (!acyclic_vec[action.get_index()])
             cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
         return Table();
     }
+
     assert(!tables.empty());
+
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s == 0) {
-            if (!acyclic_vec[action.get_index()])
+            if (!acyclic_vec[action.get_index()]) {
                 cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
+            }
             return Table();
         }
     }
 
-    Table &working_table = tables[full_join_order[action.get_index()][0]];
-    for (size_t i = 1; i < full_join_order[action.get_index()].size(); ++i) {
-        hash_join(working_table, tables[full_join_order[action.get_index()][i]]);
+    Table &working_table = tables[fjr[0]];
+    for (size_t i = 1; i < fjr.size(); ++i) {
+        hash_join(working_table, tables[fjr[i]]);
         if (working_table.tuples.size() > largest_intermediate_relation)
             largest_intermediate_relation = working_table.tuples.size();
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
-            if (!acyclic_vec[action.get_index()])
+            if (!acyclic_vec[action.get_index()]) {
                 cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
+            }
             return working_table;
         }
     }
