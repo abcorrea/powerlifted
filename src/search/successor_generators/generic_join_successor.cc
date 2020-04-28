@@ -28,7 +28,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     std::vector<Atom> precond;
     for (const Atom &p : action.get_precondition()) {
         // Ignoring negative preconditions when instantiating
-        if ((!p.negated) and p.arguments.size() > 0) {
+        if ((!p.negated) and !p.arguments.empty()) {
             precond.push_back((p));
         }
     }
@@ -64,7 +64,7 @@ void GenericJoinSuccessor::filter_inequalities(const ActionSchema &action,
      * Loop over inequalities and remove those not consistent with the
      * current instantiation
      */
-    for (const pair<int, int> ineq : action.get_inequalities()) {
+    for (const pair<int, int>& ineq : action.get_inequalities()) {
         auto it_1 =
             find(working_table.tuple_index.begin(), working_table.tuple_index.end(), ineq.first);
         auto it_2 =
@@ -109,16 +109,16 @@ void GenericJoinSuccessor::select_tuples(const DBState &s,
                                          unordered_set<GroundAtom, TupleHash> &tuples,
                                          const std::vector<int> &constants)
 {
-    bool match_constants;
     for (const GroundAtom &atom : s.relations[a.predicate_symbol].tuples) {
-        match_constants = true;
+        bool match_constants = true;
         for (int c : constants) {
             assert(a.arguments[c].constant);
-            if (atom[c] != a.arguments[c].index)
+            if (atom[c] != a.arguments[c].index) {
                 match_constants = false;
+                break;
+            }
         }
-        if (match_constants)
-            tuples.insert(atom);
+        if (match_constants) tuples.insert(atom);
     }
 }
 
@@ -192,11 +192,10 @@ void GenericJoinSuccessor::create_hypergraph(const ActionSchema &action,
         bool has_free_variables = false;
         for (Argument arg : p.arguments) {
             // We parse constants to negative numbers so they're uniquely identified
-            int node;
             if (arg.constant)
                 continue;
             has_free_variables = true;
-            node = arg.index;
+            int node = arg.index;
 
             args.insert(node);
             if (find(hypernodes.begin(), hypernodes.end(), node) == hypernodes.end()) {
