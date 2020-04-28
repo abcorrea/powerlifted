@@ -13,18 +13,19 @@
  */
 class Table {
 public:
+    using tuple_t = std::vector<int>;
+
     /// @var tuples: Unordered set of vector corresponding to tuples.
-    std::unordered_set<std::vector<int>, TupleHash> tuples;
+    std::vector<tuple_t> tuples;
     /// @var tuple_index: Indices of each variable in order
     std::vector<int> tuple_index;
 
-    Table(std::unordered_set<std::vector<int>, TupleHash> &&tuples,
-          std::vector<int> &&tuple_index) : tuples(std::move(tuples)),
-                                          tuple_index (std::move(tuple_index)) {}
+    Table(std::vector<tuple_t> &&tuples, std::vector<int> &&tuple_index) :
+        tuples(std::move(tuples)),
+        tuple_index(std::move(tuple_index))
+    {}
 
     Table() = default;
-
-
 };
 
 /// @brief Order tables from lowest to highest arity.

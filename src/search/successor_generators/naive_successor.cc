@@ -22,18 +22,19 @@ vector<Table> NaiveSuccessorGenerator::parse_precond_into_join_program(const vec
         vector<int> constants;
         vector<int> indices;
         get_indices_and_constants_in_preconditions(indices, constants, a);
-        unordered_set<GroundAtom, TupleHash> tuples;
+        vector<GroundAtom> tuples;
         if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
             // If this predicate has information in the static information table,
             // then it must be a static predicate
-          select_tuples(staticInformation, a, tuples, constants);
+            select_tuples(staticInformation, a, tuples, constants);
         } else {
             // If this predicate does not have information in the static information table,
             // then it must be a fluent
-          select_tuples(state, a, tuples, constants);
+            select_tuples(state, a, tuples, constants);
         }
-        if (!tuples.empty())
+        if (!tuples.empty()) {
             parsed_tables.emplace_back(move(tuples), move(indices));
+        }
     }
     return parsed_tables;
 }

@@ -7,7 +7,8 @@
 using namespace std;
 
 void project(Table &t, const std::unordered_set<int> &over) {
-
+    // TODO This method is currently doing nothing at all, we'll fix it on master
+    //      and then merge here :-)
     vector<int> matches;
     for (int x : over)
         for (size_t i = 0; i < t.tuple_index.size(); i++)
@@ -23,9 +24,9 @@ void project(Table &t, const std::unordered_set<int> &over) {
         projected_tuples.insert(tuple);
     }
 
-    unordered_set<vector<int>, TupleHash> new_tuples;
+    vector<vector<int>> new_tuples;
     for (const auto& tup: projected_tuples) {
-        new_tuples.insert(tup);
+        new_tuples.push_back(tup);
     }
     t.tuples = std::move(new_tuples);
 }

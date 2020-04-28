@@ -28,7 +28,7 @@ size_t semi_join(Table &t1, const Table &t2) {
     }
 
     // Otherwise, we perform the join and the projection
-    unordered_set<vector<int>, TupleHash> new_tuples;
+    vector<vector<int>> new_tuples;
     for (const vector<int> &tuple_t1 : t1.tuples) {
         for (const vector<int> &tuple_t2 : t2.tuples) {
             bool match = true;
@@ -40,7 +40,7 @@ size_t semi_join(Table &t1, const Table &t2) {
             }
             if (match) {
                 // If a tuple matches at least one other tuple, then it is sufficient for the semi-join
-                new_tuples.insert(tuple_t1);
+                new_tuples.push_back(tuple_t1);
                 break;
             }
         }

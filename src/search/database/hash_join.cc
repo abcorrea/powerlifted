@@ -19,7 +19,7 @@ void hash_join(Table &t1, const Table &t2) {
      */
     auto matches = compute_matching_columns(t1, t2);
 
-    unordered_set<vector<int>, TupleHash> new_tuples;
+    vector<vector<int>> new_tuples;
     if (matches.empty()) {
         /*
          * If no attribute matches, then we apply a cartesian product
@@ -30,7 +30,7 @@ void hash_join(Table &t1, const Table &t2) {
             for (const vector<int> &tuple_t2 : t2.tuples) {
                 vector<int> aux(tuple_t1);
                 aux.insert(aux.end(), tuple_t2.begin(), tuple_t2.end());
-                new_tuples.insert(aux);
+                new_tuples.push_back(std::move(aux));
             }
         }
     }
@@ -70,7 +70,7 @@ void hash_join(Table &t1, const Table &t2) {
                 }
                 for (vector<int> t : hash_join_map[key]) {
                     t.insert(t.end(), tuple.begin(), tuple.end());
-                    new_tuples.insert(t);
+                    new_tuples.push_back(std::move(t));
                 }
 
             }

@@ -63,7 +63,7 @@ class GenericJoinSuccessor : public SuccessorGenerator {
 
   static void select_tuples(const DBState &s,
                             const Atom &a,
-                            std::unordered_set<GroundAtom, TupleHash> &tuples,
+                            std::vector<GroundAtom> &tuples,
                             const std::vector<int> &constants);
 
   void filter_inequalities(const ActionSchema &action,

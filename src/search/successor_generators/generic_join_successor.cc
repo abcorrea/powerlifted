@@ -60,26 +60,26 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
 void GenericJoinSuccessor::filter_inequalities(const ActionSchema &action,
                                                Table &working_table) const
 {
-    /*
-     * Loop over inequalities and remove those not consistent with the
-     * current instantiation
-     */
+    const auto& tup_idx = working_table.tuple_index;
+
+    // Loop over inequalities and remove those not consistent with the current instantiation
     for (const pair<int, int>& ineq : action.get_inequalities()) {
-        auto it_1 =
-            find(working_table.tuple_index.begin(), working_table.tuple_index.end(), ineq.first);
-        auto it_2 =
-            find(working_table.tuple_index.begin(), working_table.tuple_index.end(), ineq.second);
-        int index1 = distance(working_table.tuple_index.begin(), it_1);
-        int index2 = distance(working_table.tuple_index.begin(), it_2);
-        if (it_1 != working_table.tuple_index.end() and it_2 != working_table.tuple_index.end()) {
-            vector<vector<int>> to_remove;
-            for (auto &&t : working_table.tuples) {
-                if (t[index1] == t[index2])
-                    to_remove.push_back(t);
+        // TODO Revise this, looks that some work could be offloaded to preprocessing so that we
+        //      do not need to do all this linear-time finds at runtime?
+        auto it_1 = find(tup_idx.begin(), tup_idx.end(), ineq.first);
+        auto it_2 = find(tup_idx.begin(), tup_idx.end(), ineq.second);
+
+        if (it_1 != tup_idx.end() and it_2 != tup_idx.end()) {
+            int index1 = distance(tup_idx.begin(), it_1);
+            int index2 = distance(tup_idx.begin(), it_2);
+
+            vector<vector<int>> newtuples;
+            for (const auto &t : working_table.tuples) {
+                if (t[index1] != t[index2]) {
+                    newtuples.push_back(t);
+                }
             }
-            for (auto &&t : to_remove) {
-                working_table.tuples.erase(t);
-            }
+            working_table.tuples = std::move(newtuples);
         }
     }
 }
@@ -106,7 +106,7 @@ void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int
  */
 void GenericJoinSuccessor::select_tuples(const DBState &s,
                                          const Atom &a,
-                                         unordered_set<GroundAtom, TupleHash> &tuples,
+                                         std::vector<GroundAtom> &tuples,
                                          const std::vector<int> &constants)
 {
     for (const GroundAtom &atom : s.relations[a.predicate_symbol].tuples) {
@@ -118,7 +118,7 @@ void GenericJoinSuccessor::select_tuples(const DBState &s,
                 break;
             }
         }
-        if (match_constants) tuples.insert(atom);
+        if (match_constants) tuples.push_back(atom);
     }
 }
 
@@ -146,7 +146,7 @@ GenericJoinSuccessor::parse_precond_into_join_program(const vector<Atom> &precon
         vector<int> constants;
         vector<int> indices;
         get_indices_and_constants_in_preconditions(indices, constants, a);
-        unordered_set<GroundAtom, TupleHash> tuples;
+        vector<GroundAtom> tuples;
         if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
             // If this predicate has information in the static information table,
             // then it must be a static predicate
