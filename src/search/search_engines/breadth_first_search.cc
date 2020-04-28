@@ -12,6 +12,21 @@
 
 using namespace std;
 
+template <class PackedStateT>
+bool BreadthFirstSearch<PackedStateT>::check_goal(
+    const Task &task,
+    const SuccessorGenerator &generator,
+    clock_t timer_start,
+    const DBState &state,
+    const SearchNode &node) const
+{
+    if (!task.is_goal(state)) return false;
+
+    print_goal_found(generator, timer_start);
+    auto plan = space.extract_plan(node);
+    print_plan(plan, task);
+    return true;
+}
 
 template <class PackedStateT>
 int BreadthFirstSearch<PackedStateT>::search(const Task &task,
@@ -29,15 +44,7 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
     statistics.report_f_value_progress(root_node.g);
     queue.emplace(root_node.state_id);
 
-
-    if (task.is_goal(task.initial_state)) {
-        cout << "Initial state is a goal" << endl;
-        print_goal_found(generator, timer_start);
-        auto plan = space.extract_plan(root_node);
-        print_plan(plan, task);
-        return SOLVED;
-    }
-
+    if (check_goal(task, generator, timer_start, task.initial_state, root_node)) return SOLVED;
 
     while (not queue.empty()) {
         StateID sid = queue.front();
@@ -64,12 +71,7 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
             if (child_node.status == SearchNode::Status::NEW) {
                 child_node.open(node.g+1);
 
-                if (task.is_goal(s)) {
-                    print_goal_found(generator, timer_start);
-                    auto plan = space.extract_plan(child_node);
-                    print_plan(plan, task);
-                    return SOLVED;
-                }
+                if (check_goal(task, generator, timer_start, s, child_node)) return SOLVED;
 
                 queue.emplace(child_node.state_id);
             }

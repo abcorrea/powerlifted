@@ -15,6 +15,12 @@ public:
     int search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
 
     void print_statistics() const override;
+
+    bool check_goal(const Task &task,
+                    const SuccessorGenerator &generator,
+                    clock_t timer_start,
+                    const DBState &state,
+                    const SearchNode &node) const;
 };
 
 
