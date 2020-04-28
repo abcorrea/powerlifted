@@ -1,11 +1,12 @@
 #include "hash_join.h"
+#include "table.h"
 
 #include <algorithm>
 #include <unordered_map>
 
 using namespace std;
 
-void hash_join(Table &t1, Table &t2) {
+void hash_join(Table &t1, const Table &t2) {
     /*
      * This function implements a hash join as follows
      *
@@ -81,5 +82,5 @@ void hash_join(Table &t1, Table &t2) {
         }
 
     }
-    t1.tuples = new_tuples;
+    t1.tuples = std::move(new_tuples);
 }

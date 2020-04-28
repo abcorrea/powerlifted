@@ -1,12 +1,9 @@
 #ifndef SEARCH_SEMI_JOIN_H
 #define SEARCH_SEMI_JOIN_H
 
-#include "table.h"
+#include <cstddef>
 
-#include "../hash_structures.h"
-
-#include <utility>
-#include <vector>
+class Table;
 
 /**
  * @brief Semi join two tables using loop-based approach. Result is written in
@@ -20,6 +17,6 @@
  * @param t2: Table on the right of the semi-join.
  * @return  Size of the working table.
  */
-size_t semi_join(Table &t1, Table &t2);
+std::size_t semi_join(Table &t1, const Table &t2);
 
 #endif //SEARCH_SEMI_JOIN_H
