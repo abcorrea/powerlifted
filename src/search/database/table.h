@@ -14,6 +14,7 @@
 class Table {
 public:
     using tuple_t = std::vector<int>;
+    using index_t = std::vector<int>;
 
     /// @var tuples: Unordered set of vector corresponding to tuples.
     std::vector<tuple_t> tuples;

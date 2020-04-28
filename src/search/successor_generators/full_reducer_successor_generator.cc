@@ -2,6 +2,7 @@
 
 #include "../database/hash_join.h"
 #include "../database/semi_join.h"
+#include "../database/utils.h"
 
 #include <cassert>
 #include <queue>
@@ -196,8 +197,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
     const auto& fjr = full_join_order[action.get_index()];
 
     // We need to parse precond first
-    vector<Table> tables =
-        parse_precond_into_join_program(precond, state, staticInformation, action.get_index());
+    auto tables = convert_to_compact_tables(
+        parse_precond_into_join_program(precond, state, staticInformation, action.get_index()));
 
     if (tables.size() != fjr.size()) {
         // This means that the projection over the constants completely eliminated one table,
@@ -210,8 +211,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
     assert(!tables.empty());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
-        size_t s = semi_join(tables[sj.first], tables[sj.second]);
-        if (s == 0) {
+        if (semi_join(tables[sj.first], tables[sj.second]) == 0) {
             if (!acyclic_vec[action.get_index()]) {
                 cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
             }
@@ -219,17 +219,18 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
         }
     }
 
-    Table &working_table = tables[fjr[0]];
+    Table working_table = tables[fjr[0]].consolidate();
+
     for (size_t i = 1; i < fjr.size(); ++i) {
-        hash_join(working_table, tables[fjr[i]]);
-        if (working_table.tuples.size() > largest_intermediate_relation)
-            largest_intermediate_relation = working_table.tuples.size();
+        hash_join(working_table, tables[fjr[i]].consolidate());
+
+        largest_intermediate_relation = std::max(working_table.tuples.size(), largest_intermediate_relation);
+
         filter_inequalities(action, working_table);
+
         if (working_table.tuples.empty()) {
-            if (!acyclic_vec[action.get_index()]) {
-                cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
-            }
-            return working_table;
+            if (!acyclic_vec[action.get_index()]) cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
+            break; // No need to go further!
         }
     }
 

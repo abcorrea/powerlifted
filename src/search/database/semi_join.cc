@@ -7,6 +7,17 @@
 
 using namespace std;
 
+inline bool check_tuples_match(
+    const vector<int> &tup1,
+    const vector<int> &tup2,
+    const std::vector<std::pair<int, int>>& columns_to_match)
+{
+    for (const auto& m:columns_to_match) {
+        if (tup1[m.first] != tup2[m.second]) return false;
+    }
+    return true;
+}
+
 /**
 * Semi-join two tables into one. t1 is the working table and will be modified.
 *
@@ -19,34 +30,37 @@ using namespace std;
 * an empty relation is produced.
 *
 */
-size_t semi_join(Table &t1, const Table &t2) {
+std::size_t semi_join(CompactTable& t1, const CompactTable& t2) {
 
     auto matches = compute_matching_columns(t1, t2);
 
     if (matches.empty()) { // If no attribute matches, then we return
-        return t1.tuple_index.size();
+        return t1.num_valid();
     }
 
     // Otherwise, we perform the join and the projection
-    vector<vector<int>> new_tuples;
-    for (const vector<int> &tuple_t1 : t1.tuples) {
-        for (const vector<int> &tuple_t2 : t2.tuples) {
-            bool match = true;
-            for (const pair<int, int>& m : matches) {
-                if (tuple_t1[m.first] != tuple_t2[m.second]) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
-                // If a tuple matches at least one other tuple, then it is sufficient for the semi-join
-                new_tuples.push_back(tuple_t1);
+    auto sz1 = t1.size();
+    auto sz2 = t2.size();
+
+    for (unsigned i = 0; i < sz1; ++i) {
+        if (!t1.is_valid(i)) continue;
+
+        bool has_match = false;
+        for (unsigned j = 0; j < sz2; ++j) {
+            if (!t2.is_valid(j)) continue;
+            if (check_tuples_match(t1.tuples()[i], t2.tuples()[j], matches)) {
+                // If a matching tuple was found, no need to iterate further
+                has_match = true;
                 break;
             }
         }
+
+        if (!has_match) {
+            t1.invalidate(i);  // tuple at index i1 has no support
+        }
     }
-    t1.tuples = std::move(new_tuples);
-    return t1.tuples.size();
+
+    return t1.num_valid();
 }
 
 

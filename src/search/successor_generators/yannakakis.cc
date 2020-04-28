@@ -3,10 +3,11 @@
 #include "../database/hash_join.h"
 #include "../database/project.h"
 #include "../database/semi_join.h"
+#include "../database/utils.h"
 
 #include <cassert>
-#include <stack>
 #include <queue>
+#include <stack>
 
 using namespace std;
 
@@ -215,9 +216,10 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
 
   assert (!precond.empty());
 
-  vector<Table> tables =
-      parse_precond_into_join_program(precond, state, staticInformation,
-                                      action.get_index());
+    // We need to parse precond first
+    auto tables = convert_to_compact_tables(
+        parse_precond_into_join_program(precond, state, staticInformation, action.get_index()));
+
   if (tables.size()!=precond.size()) {
     // This means that the projection over the constants completely eliminated one table,
     // we can return no instantiation.
@@ -233,16 +235,16 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
 
   for (const auto &j : join_tree_order[action.get_index()]) {
     unordered_set<int> project_over;
-    for (auto x : tables[j.second].tuple_index) {
+    for (auto x : tables[j.second].table().tuple_index) {
       project_over.insert(x);
     }
-    for (auto x : tables[j.first].tuple_index) {
+    for (auto x : tables[j.first].table().tuple_index) {
       if (distinguished_variables[action.get_index()].count(x) > 0) {
         project_over.insert(x);
       }
     }
-    Table &working_table = tables[j.second];
-    hash_join(working_table, tables[j.first]);
+    Table &working_table = tables[j.second].table();
+    hash_join(working_table, tables[j.first].table());
     if (working_table.tuples.size() > largest_intermediate_relation)
       largest_intermediate_relation = working_table.tuples.size();
     filter_inequalities(action, working_table);
@@ -256,9 +258,9 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
   }
 
   // For the case where the action schema is cyclic
-  Table &working_table = tables[remaining_join[action.get_index()][0]];
+  Table &working_table = tables[remaining_join[action.get_index()][0]].table();
   for (size_t i = 1; i < remaining_join[action.get_index()].size(); ++i) {
-    hash_join(working_table, tables[remaining_join[action.get_index()][i]]);
+    hash_join(working_table, tables[remaining_join[action.get_index()][i]].table());
     if (working_table.tuples.size() > largest_intermediate_relation)
       largest_intermediate_relation = working_table.tuples.size();
     filter_inequalities(action, working_table);
