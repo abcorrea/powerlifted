@@ -11,18 +11,19 @@
 
 
 unsigned ExtensionalPackedState::Hash::operator() (const ExtensionalPackedState &s) const {
-    std::size_t seed = 0;
-    boost::hash_combine(seed, s.atoms.m_num_bits);
-    boost::hash_combine(seed, s.atoms.m_bits);
-    return (unsigned) seed;
+
+//    std::size_t seed = 0;
+//    boost::hash_combine(seed, s.atoms.m_num_bits);
+//    boost::hash_combine(seed, s.atoms.m_bits);
+//    return (unsigned) seed;
 //    return (unsigned) boost::hash_value(s.atoms);
 //    return (unsigned) boost::hash_range(s.atoms.cbegin(), s.atoms.cend());
 //    std::hash<std::vector<bool>> hasher;
 //    hasher.operator()(s.atoms);
 //    return (unsigned) hasher(s.atoms);
-//    utils::HashState hash_state;
-//    utils::feed(hash_state, s.atoms);
-//    return hash_state.get_hash32();
+    utils::HashState hash_state;
+    utils::feed(hash_state, s.atoms);
+    return hash_state.get_hash32();
 }
 
 
@@ -76,14 +77,16 @@ ExtensionalPackedState ExtensionalStatePacker::pack(const DBState &state) const 
     // the predicate is nullary or not
     for (std::size_t i = 0, sz = state.nullary_atoms.size(); i < sz; ++i) {
         if (state.nullary_atoms[i]) {
-            packed.atoms[to_index(i, {})] = true;
+//            packed.atoms[to_index(i, {})] = true;
+            packed.atoms.set(to_index(i, {}));
         }
     }
 
     for (const Relation &relation:state.relations) {
         int pid = relation.predicate_symbol;
         for (const auto &tuple:relation.tuples) {
-            packed.atoms[to_index(pid, tuple)] = true;
+//            packed.atoms[to_index(pid, tuple)] = true;
+            packed.atoms.set(to_index(pid, tuple));
         }
     }
     return packed;

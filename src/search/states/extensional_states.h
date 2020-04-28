@@ -2,6 +2,7 @@
 #define EXTENSIONAL_SEARCH_STATE_PACKER_H
 
 #include "state.h"
+#include "../algorithms/dynamic_bitset.h"
 
 #include <unordered_map>
 #include <vector>
@@ -25,9 +26,11 @@ public:
     using StatePackerT = ExtensionalStatePacker;
 
 //    std::vector<bool> atoms;
-    boost::dynamic_bitset<> atoms;
+//    boost::dynamic_bitset<> atoms;
 
-    explicit ExtensionalPackedState(std::size_t size) : atoms(size, false) {}
+    dynamic_bitset::DynamicBitset<> atoms;
+
+    explicit ExtensionalPackedState(std::size_t size) : atoms(size) {}
 
     ExtensionalPackedState(const ExtensionalPackedState&) = default;
     ExtensionalPackedState(ExtensionalPackedState&&) = default;
