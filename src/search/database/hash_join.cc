@@ -1,5 +1,6 @@
 #include "hash_join.h"
 #include "table.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <unordered_map>
@@ -16,13 +17,7 @@ void hash_join(Table &t1, const Table &t2) {
      *    matching keys. Then, loop over the second table searching for hits
      *    in the hash table.
      */
-    vector<pair<int, int>> matches;
-    for (size_t i = 0; i < t1.tuple_index.size(); ++i) {
-        for (size_t j = 0; j < t2.tuple_index.size(); ++j) {
-            if (t1.tuple_index[i] == t2.tuple_index[j])
-                matches.emplace_back(i, j);
-        }
-    }
+    auto matches = compute_matching_columns(t1, t2);
 
     unordered_set<vector<int>, TupleHash> new_tuples;
     if (matches.empty()) {
