@@ -31,7 +31,7 @@ OPTIMAL_PLAN_COSTS = {'airport-p01.lifted': 8,
 SEARCH_CONFIGS = ['naive', 'gbfs']
 HEURISTIC_CONFIGS = ['blind']
 GENERATOR_CONFIGS = ['full_reducer', 'join', 'ordered_join', 'yannakakis']
-
+STATE_REPR_CONFIGS = ['sparse', 'extensional']
 
 
 class TestRun:
@@ -40,12 +40,14 @@ class TestRun:
         self.search = config[0]
         self.heuristic = config[1]
         self.generator = config[2]
+        self.state_representation = config[3]
         self.build = build
 
     def get_config(self):
-        return "{}, {}, and {}".format(self.search,
-                                       self.heuristic,
-                                       self.generator)
+        return "{}, {}, {}, and {}".format(self.search,
+                                           self.heuristic,
+                                           self.generator,
+                                           self.state_representation)
 
     def __str__(self):
         return ("{} with {}".format(self.instance, self.get_config()))
@@ -56,7 +58,8 @@ class TestRun:
                                           self.instance,
                                           self.search,
                                           self.heuristic,
-                                          self.generator])
+                                          self.generator,
+                                          self.state_representation])
         return output
 
     def evaluate(self, output, optimal_cost):
@@ -91,7 +94,7 @@ if __name__ == '__main__':
 
 
     for instance, cost in OPTIMAL_PLAN_COSTS.items():
-        for config in product(SEARCH_CONFIGS, HEURISTIC_CONFIGS, GENERATOR_CONFIGS):
+        for config in product(SEARCH_CONFIGS, HEURISTIC_CONFIGS, GENERATOR_CONFIGS, STATE_REPR_CONFIGS):
             test = TestRun(instance, config, BUILD_DIR)
             output = test.run()
             passed = test.evaluate(output, cost)
