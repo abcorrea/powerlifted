@@ -1,7 +1,8 @@
+
 #include "project.h"
+#include "table.h"
 
 #include <vector>
-#include <unordered_map>
 
 using namespace std;
 
@@ -26,6 +27,5 @@ void project(Table &t, const std::unordered_set<int> &over) {
     for (const auto& tup: projected_tuples) {
         new_tuples.insert(tup);
     }
-    t.tuples = new_tuples;
-
+    t.tuples = std::move(new_tuples);
 }

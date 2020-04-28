@@ -1,6 +1,10 @@
+
 #include "join.h"
+#include "table.h"
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -86,7 +90,7 @@ void join(Table &t1, Table &t2) {
             }
         }
     }
-    t1.tuples = new_tuples;
+    t1.tuples = std::move(new_tuples);
 }
 
 
