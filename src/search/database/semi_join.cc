@@ -1,6 +1,7 @@
 
 #include "semi_join.h"
 #include "table.h"
+#include "utils.h"
 
 #include <algorithm>
 
@@ -20,20 +21,10 @@ using namespace std;
 */
 size_t semi_join(Table &t1, const Table &t2) {
 
-    vector<pair<int, int>> matches;
-    auto sz1 = t1.tuple_index.size();
-    auto sz2 = t2.tuple_index.size();
-    for (size_t i = 0; i < sz1; ++i) {
-        for (size_t j = 0; j < sz2; ++j) {
-            if (t1.tuple_index[i] == t2.tuple_index[j]) {
-                matches.emplace_back(i, j);
-            }
-        }
-    }
+    auto matches = compute_matching_columns(t1, t2);
 
-    if (matches.empty()) {
-        // If no attribute matches, then we return
-        return sz1;
+    if (matches.empty()) { // If no attribute matches, then we return
+        return t1.tuple_index.size();
     }
 
     // Otherwise, we perform the join and the projection

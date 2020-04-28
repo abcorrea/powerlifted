@@ -39,6 +39,7 @@ add_executable(search
         successor_generators/successor_generator.cc successor_generators/successor_generator.h
         database/table.h
         database/join
+        database/utils
         heuristics/goalcount
         heuristics/heuristic.h
         heuristics/heuristic_factory.h
