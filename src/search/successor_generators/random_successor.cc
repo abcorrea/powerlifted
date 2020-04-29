@@ -11,7 +11,7 @@ using namespace std;
 vector<Table> RandomSuccessorGenerator::parse_precond_into_join_program(const vector<Atom> &precond,
                                                                        const DBState &state) {
     /*
-     * See the comments in naive_successor.cc
+     * See the comments in generic_successor.cc
      *
      */
     vector<Table> parsed_tables;
