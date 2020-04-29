@@ -23,7 +23,7 @@ using namespace std;
  *
  * @param task
  */
-YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
+YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(Task &task)
     : GenericJoinSuccessor(task) {
     /*
       * Apply GYO algorithm for every action schema to check whether it has acyclic precondition/

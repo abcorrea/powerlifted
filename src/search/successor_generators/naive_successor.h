@@ -9,7 +9,7 @@
 // TODO Why does this class exist?
 class NaiveSuccessorGenerator : public GenericJoinSuccessor {
 public:
-    explicit NaiveSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {}
+    explicit NaiveSuccessorGenerator(Task &task) : GenericJoinSuccessor(task) {}
 
     /**
     * @see generic_join_successor.h

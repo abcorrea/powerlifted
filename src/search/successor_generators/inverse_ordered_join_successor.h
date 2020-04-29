@@ -12,7 +12,7 @@
 
 class InverseOrderedJoinSuccessorGenerator : public GenericJoinSuccessor {
 public:
-    explicit InverseOrderedJoinSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {};
+    explicit InverseOrderedJoinSuccessorGenerator(Task &task) : GenericJoinSuccessor(task) {};
 
     std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,

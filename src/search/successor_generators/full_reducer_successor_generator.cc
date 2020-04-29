@@ -18,9 +18,8 @@ using namespace std;
  *
  * @param task: planning task
  */
-FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
-    : GenericJoinSuccessor(task)
-{
+FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(Task &task)
+    : GenericJoinSuccessor(task) {
     /*
      * Apply GYO algorithm for every action schema to check whether it
      * has an acyclic precondition.
@@ -68,7 +67,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
                     continue;
                 }
                 for (size_t j = 0; j < hyperedges.size() and !has_ear; ++j) {
-                    if (removed[j] or i == j) {
+                    if (removed[j] or i==j) {
                         continue;
                     }
                     set<int> diff;
@@ -95,7 +94,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
                     }
                 }
                 if (has_ear) {
-                    assert(ear != -1 and in_favor != -1);
+                    assert(ear!=-1 and in_favor!=-1);
                     removed[ear] = true;
                     full_reducer_order[action.get_index()].emplace_back(edge_to_precond[ear],
                                                                         edge_to_precond[in_favor]);
@@ -121,7 +120,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
                 ++not_removed_counter;
             }
         }
-        if (not_removed_counter == 1) {
+        if (not_removed_counter==1) {
             for (size_t k = 0; k < removed.size(); ++k) {
                 if (!removed[k]) {
                     full_join_order[action.get_index()].push_back(edge_to_precond[k]);
@@ -129,8 +128,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
             }
             // cout << "Action " << action.get_name() << " is acyclic.\n";
             acyclic_vec[action.get_index()] = true;
-        }
-        else {
+        } else {
             priority_queue<pair<int, int>> q;
             full_join_order[action.get_index()].clear();
             full_join_order[action.get_index()].reserve(removed.size() + missing_precond.size());
@@ -172,8 +170,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
  * @return
  */
 Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
-                                                 const DBState &state)
-{
+                                                 const DBState &state) {
     clock_t time = clock();
 
     const vector<Parameter> &params = action.get_parameters();
@@ -192,17 +189,17 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
 
     assert(!precond.empty());
 
-    const auto& fjr = full_join_order[action.get_index()];
+    const auto &fjr = full_join_order[action.get_index()];
 
     // We need to parse precond first
     vector<Table> tables =
         parse_precond_into_join_program(precond, state);
 
-    if (tables.size() != fjr.size()) {
+    if (tables.size()!=fjr.size()) {
         // This means that the projection over the constants completely eliminated one table,
         // we can return no instantiation.
         if (!acyclic_vec[action.get_index()])
-            cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
+            cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
         return Table();
     }
 
@@ -210,9 +207,9 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = semi_join(tables[sj.first], tables[sj.second]);
-        if (s == 0) {
+        if (s==0) {
             if (!acyclic_vec[action.get_index()]) {
-                cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
+                cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
             }
             return Table();
         }
@@ -226,7 +223,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
             if (!acyclic_vec[action.get_index()]) {
-                cyclic_time += double(clock() - time) / CLOCKS_PER_SEC;
+                cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
             }
             return working_table;
         }

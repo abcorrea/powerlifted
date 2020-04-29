@@ -14,7 +14,7 @@
 
 class SuccessorGeneratorFactory {
 public:
-    static SuccessorGenerator *create(const std::string & method, const Task &task) {
+    static SuccessorGenerator *create(const std::string & method, Task &task) {
         std::cout << "Creating successor generator factory..." << std::endl;
         if (boost::iequals(method, "join")) {
             return new NaiveSuccessorGenerator(task);

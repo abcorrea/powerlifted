@@ -15,7 +15,7 @@
 
 class OrderedJoinSuccessorGenerator : public GenericJoinSuccessor {
 public:
-    explicit OrderedJoinSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {};
+    explicit OrderedJoinSuccessorGenerator(Task &task) : GenericJoinSuccessor(task) {};
 
   /**
   * @see generic_join_successor.h
