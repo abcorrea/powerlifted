@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <random>
+#include <set>
+#include <map>
 
 /**
  * This class is not a successor generator per se. It just contain most of the common functions
@@ -29,7 +31,7 @@ class GenericJoinSuccessor : public SuccessorGenerator {
   std::vector<std::vector<int>>
       obj_per_type; // position I is a list of object indices of type I
 
-  Table instantiate(const ActionSchema &action, const State &state,
+  Table instantiate(const ActionSchema &action, const DBState &state,
                     const StaticInformation &staticInformation) override;
 
   /**
@@ -50,7 +52,7 @@ class GenericJoinSuccessor : public SuccessorGenerator {
   * @return Table containing the tuples satisfying the query established by the precondition
   */
   std::vector<Table> parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                                     const State &state,
+                                                     const DBState &state,
                                                      const StaticInformation &staticInformation,
                                                      int action_index) override;
 
@@ -59,21 +61,21 @@ class GenericJoinSuccessor : public SuccessorGenerator {
                                                          std::vector<int> &constants,
                                                          const Atom &a);
 
-  static void select_tuples(const State &s,
+  static void select_tuples(const DBState &s,
                             const Atom &a,
-                            unordered_set<GroundAtom, TupleHash> &tuples,
+                            std::vector<GroundAtom> &tuples,
                             const std::vector<int> &constants);
 
   void filter_inequalities(const ActionSchema &action,
                            Table &working_table) const;
   static void create_hypergraph(
       const ActionSchema &action,
-      vector<int> &hypernodes,
-      vector<set<int>> &hyperedges,
-      vector<int> &missing_precond,
-      map<int, int> &node_index,
-      map<int, int> &node_counter,
-      map<int, int> &edge_to_precond);
+      std::vector<int> &hypernodes,
+      std::vector<std::set<int>> &hyperedges,
+      std::vector<int> &missing_precond,
+      std::map<int, int> &node_index,
+      std::map<int, int> &node_counter,
+      std::map<int, int> &edge_to_precond);
 };
 
 #endif //SEARCH_GENERIC_JOIN_SUCCESSOR_H

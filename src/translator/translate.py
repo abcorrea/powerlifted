@@ -143,6 +143,9 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
     #    - list of pairs in the format (O, i), where O is 'c' if it is a
     # constant and 'p' if it is a parameter. In the case it is a constant, 'i'
     # is its object index; otherwise it is the parameter index
+
+    task.actions = list(task.actions)
+    task.actions.sort(key=lambda ac: ac.name)
     print("ACTION-SCHEMAS %d" % len(task.actions))
     for action in task.actions:
         parameter_index = {}
@@ -155,7 +158,7 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
         for index, par in enumerate(action.parameters):
             parameter_index[par.name] = index
             print(par.name, index, type_index[par.type_name])
-        for cond in precond:
+        for cond in sorted(precond):
             assert isinstance(cond, pddl.Literal)
             args_list = []
             for x in cond.args:
@@ -228,7 +231,7 @@ def print_initial_state(task, atom_index, object_index, predicate_index):
     for a in task.init:
         if isinstance(a, pddl.conditions.Atom):
             new_s0.append(a)
-    task.init = new_s0
+    task.init = sorted(new_s0)
     print("INITIAL-STATE %d" % len(task.init))
     for index, atom in enumerate(task.init):
         atom_index[str(atom)] = index

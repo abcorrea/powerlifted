@@ -1,15 +1,13 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import argparse
 import os
 import subprocess
-import sys
 
-from distutils.dir_util import copy_tree
-from shutil import copyfile
 
-from build import get_build_dir, build, PROJECT_ROOT
+from build import build, PROJECT_ROOT
+
 
 def parse_options():
     parser = argparse.ArgumentParser()
@@ -32,6 +30,8 @@ def parse_options():
     parser.add_argument('-g', '--generator', dest='generator', action='store',
                         default=None, help='Successor generator method',
                         required=True)
+    parser.add_argument('--state', action='store', help='Successor generator method',
+                        default="sparse", choices=("sparse", "extensional"))
     parser.add_argument('--translator-output-file', dest='translator_file',
                         default='output.lifted',
                         help='Output file of the translator')
@@ -64,7 +64,6 @@ def find_domain_filename(task_filename):
             return domain_filename
 
 
-
 if __name__ == '__main__':
     options = parse_options()
 
@@ -79,13 +78,16 @@ if __name__ == '__main__':
     if not os.path.exists(BUILD):
         raise OSError("Planner not built!")
 
-
     os.chdir(PROJECT_ROOT)
     subprocess.check_call([os.path.join(BUILD, 'translator', 'translate.py'),
                            options.domain, options.instance,
                            '--output-file', options.translator_file])
-    subprocess.check_call([os.path.join(BUILD, 'search', 'search'),
-                           options.translator_file,
-                           options.search,
-                           options.heuristic,
-                           options.generator])
+
+    cmd = [os.path.join(BUILD, 'search', 'search'),
+           options.translator_file,
+           options.search,
+           options.heuristic,
+           options.generator,
+           options.state]
+    print(f'Executing "{" ".join(cmd)}"')
+    subprocess.check_call(cmd)

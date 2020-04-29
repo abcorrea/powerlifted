@@ -1,4 +1,10 @@
+
 #include "breadth_first_search.h"
+
+#include "utils.h"
+#include "../states/extensional_states.h"
+#include "../successor_generators/successor_generator.h"
+
 
 #include <iostream>
 #include <queue>
@@ -6,73 +12,83 @@
 
 using namespace std;
 
-int BreadthFirstSearch::search(const Task &task,
-                                     SuccessorGenerator *generator,
-                                     Heuristic &heuristic) const {
-  /*
-   * Simple Breadth first search
-   */
+template <class PackedStateT>
+bool BreadthFirstSearch<PackedStateT>::check_goal(
+    const Task &task,
+    const SuccessorGenerator &generator,
+    clock_t timer_start,
+    const DBState &state,
+    const SearchNode &node) const
+{
+    if (!task.is_goal(state)) return false;
 
-  cout << "Starting breadth first search" << endl;
-  clock_t timer_start = clock();
-  StatePacker state_packer(task);
-
-  queue<Node> q; // Queue has Node structures
-  segmented_vector::SegmentedVector<pair<int, Action>> cheapest_parent;
-  segmented_vector::SegmentedVector<PackedState> index_to_state;
-  unordered_map<PackedState, int, PackedStateHash> visited;
-
-  index_to_state.push_back(state_packer.pack_state(task.initial_state));
-  cheapest_parent.push_back(make_pair(-1, Action(-1, vector<int>())));
-
-  q.emplace(0, 0, state_counter);
-  visited[state_packer.pack_state(task.initial_state)] = state_counter++;
-
-  if (task.is_goal(task.initial_state, task.goal)) {
-    cout << "Initial state is a goal" << endl;
-    print_goal_found(
-        task, generator, timer_start, state_packer, generations_last_jump,
-        cheapest_parent, index_to_state,visited, task.initial_state);
-    return SOLVED;
-  }
-  while (not q.empty()) {
-    Node head = q.front();
-    size_t next = head.id;
-    int g = head.g;
-    q.pop();
-    if (g_layer < g) {
-      generations_last_jump = generations;
-      g_layer = g;
-    }
-    assert (index_to_state.size() >= next);
-    State state = state_packer.unpack_state(index_to_state[next]);
-    vector<pair<State, Action>> successors =
-        generator->generate_successors(task.actions, state, task.static_info);
-
-    generations += successors.size();
-    int init_state_succ = 0;
-    for (const pair<State, Action> &successor : successors) {
-      const State &s = successor.first;
-      const PackedState &packed = state_packer.pack_state(s);
-      const Action &a = successor.second;
-      if (visited.find(packed)==visited.end()) {
-        init_state_succ++;
-        cheapest_parent.push_back(make_pair(next, a));
-        q.emplace(g + 1, 0, state_counter);
-        index_to_state.push_back(packed);
-        visited[packed] = state_counter;
-        if (task.is_goal(s, task.goal)) {
-          print_goal_found(
-              task, generator, timer_start, state_packer, generations_last_jump,
-              cheapest_parent,index_to_state,visited, s);
-          return SOLVED;
-        }
-        state_counter++;
-      }
-    }
-  }
-
-  print_no_solution_found(timer_start);
-
-  return NOT_SOLVED;
+    print_goal_found(generator, timer_start);
+    auto plan = space.extract_plan(node);
+    print_plan(plan, task);
+    return true;
 }
+
+template <class PackedStateT>
+int BreadthFirstSearch<PackedStateT>::search(const Task &task,
+                                             SuccessorGenerator &generator,
+                                             Heuristic &heuristic)
+{
+    cout << "Starting breadth first search" << endl;
+    clock_t timer_start = clock();
+
+    StatePackerT packer(task);
+    std::queue<StateID> queue;
+
+    SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
+    root_node.open(0);
+    statistics.report_f_value_progress(root_node.g);
+    queue.emplace(root_node.state_id);
+
+    if (check_goal(task, generator, timer_start, task.initial_state, root_node)) return SOLVED;
+
+    while (not queue.empty()) {
+        StateID sid = queue.front();
+        queue.pop();
+        SearchNode node = space.get_node(sid);
+        if (node.status == SearchNode::Status::CLOSED) {
+            continue;
+        }
+        node.close();
+        statistics.report_f_value_progress(node.g);
+        statistics.inc_expanded();
+
+        assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
+
+        auto successors = generator.generate_successors(task.actions, packer.unpack(space.get_state(sid)), task.static_info);
+
+        statistics.inc_generated(successors.size());
+
+        for (const auto &successor : successors) {
+            const DBState &s = successor.first;
+            const LiftedOperatorId &a = successor.second;
+
+            auto& child_node = space.insert_or_get_previous_node(packer.pack(s), a, node.state_id);
+            if (child_node.status == SearchNode::Status::NEW) {
+                child_node.open(node.g+1);
+
+                if (check_goal(task, generator, timer_start, s, child_node)) return SOLVED;
+
+                queue.emplace(child_node.state_id);
+            }
+        }
+    }
+
+    print_no_solution_found(timer_start);
+
+    return NOT_SOLVED;
+}
+
+template <class PackedStateT>
+void BreadthFirstSearch<PackedStateT>::print_statistics() const {
+    statistics.print_detailed_statistics();
+    space.print_statistics();
+}
+
+// explicit template instantiations
+template class BreadthFirstSearch<SparsePackedState>;
+template class BreadthFirstSearch<ExtensionalPackedState>;

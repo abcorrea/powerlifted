@@ -13,3 +13,4 @@ output.lifted
 sas_plan
 reports/
 local-tests/
+*.out

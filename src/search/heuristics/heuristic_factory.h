@@ -14,7 +14,7 @@
  */
 class HeuristicFactory {
 public:
-    static Heuristic *new_heuristic(const std::string& method, const Task &task) {
+    static Heuristic *create(const std::string& method, const Task &task) {
         std::cout << "Creating search factory..." << std::endl;
         if (boost::iequals(method, "blind")) {
             return new BlindHeuristic;
@@ -23,7 +23,8 @@ public:
             return new Goalcount;
         }
         else {
-            return nullptr;
+            std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;
+            exit(-1);
         }
     }
 };

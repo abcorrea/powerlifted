@@ -3,7 +3,7 @@
 
 #include "../action.h"
 #include "../action_schema.h"
-#include "../state.h"
+#include "../states/state.h"
 #include "../task.h"
 
 #include "../database/join.h"
@@ -22,19 +22,19 @@
 
 class SuccessorGenerator {
     static bool is_ground_action_applicable(const ActionSchema &action,
-                                            const State &state,
+                                            const DBState &state,
                                             const StaticInformation &staticInformation);
 
     void apply_lifted_action_effects(const ActionSchema &action,
-                                     const vector<int> &tuple,
-                                     const vector<int> &indices,
-                                     vector<Relation> &new_relation);
+                                     const std::vector<int> &tuple,
+                                     const std::vector<int> &indices,
+                                     std::vector<Relation> &new_relation);
 
     void apply_ground_action_effects(const ActionSchema &action,
-                                     vector<Relation> &new_relation) const;
+                                     std::vector<Relation> &new_relation) const;
 
     void apply_nullary_effects(const ActionSchema &action,
-                               vector<bool> &new_nullary_atoms) const;
+                               std::vector<bool> &new_nullary_atoms) const;
 
 public:
     explicit SuccessorGenerator(const Task &task) {
@@ -53,17 +53,17 @@ public:
     std::vector<std::vector<int>> obj_per_type;
 
     const
-    std::vector<std::pair<State, Action>> &generate_successors(const std::vector<
+    std::vector<std::pair<DBState, LiftedOperatorId>> &generate_successors(const std::vector<
         ActionSchema> &actions,
-                                                               const State &state,
+                                                               const DBState &state,
                                                                const StaticInformation &staticInformation);
 
-    virtual Table instantiate(const ActionSchema &action, const State &state,
+    virtual Table instantiate(const ActionSchema &action, const DBState &state,
                               const StaticInformation &staticInformation) = 0;
 
     virtual std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                    const State &state,
+                                    const DBState &state,
                                     const StaticInformation &staticInformation,
                                     int action_index) = 0;
 
@@ -76,7 +76,7 @@ public:
     }
 
     GroundAtom ground_atom;
-    vector<pair<State, Action>> successors;
+    std::vector<std::pair<DBState, LiftedOperatorId>> successors;
 
 protected:
     size_t largest_intermediate_relation = 0;

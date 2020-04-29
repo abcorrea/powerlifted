@@ -11,7 +11,7 @@
  */
 class BlindHeuristic : public Heuristic {
 public:
-    int compute_heuristic(const State &s, const Task &task) override {
+    int compute_heuristic(const DBState &s, const Task &task) override {
         return 1;
     }
 };

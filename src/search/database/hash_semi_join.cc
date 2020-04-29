@@ -1,20 +1,19 @@
+
 #include "hash_semi_join.h"
+#include "table.h"
+#include "utils.h"
 
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 using namespace std;
 
-size_t hash_semi_join(Table &t1, Table &t2) {
-    vector<pair<int, int>> matches;
-    for (size_t i = 0; i < t1.tuple_index.size(); ++i) {
-        for (size_t j = 0; j < t2.tuple_index.size(); ++j) {
-            if (t1.tuple_index[i] == t2.tuple_index[j])
-                matches.emplace_back(i, j);
-        }
-    }
+size_t hash_semi_join(Table &t1, const Table &t2) {
+    auto matches = compute_matching_columns(t1, t2);
 
-    unordered_set<vector<int>, TupleHash> new_tuples;
+    vector<vector<int>> new_tuples;
     if (matches.empty()) {
         /*
          * If no attribute matches, then we return
@@ -41,11 +40,11 @@ size_t hash_semi_join(Table &t1, Table &t2) {
                 key[i] = tuple[matches[i].first];
             }
             if (hash_join_map.count(key) > 0) {
-                new_tuples.insert(tuple);
+                new_tuples.push_back(tuple);
             }
         }
     }
-    t1.tuples = new_tuples;
+    t1.tuples = std::move(new_tuples);
     return t1.tuples.size();
 }
 

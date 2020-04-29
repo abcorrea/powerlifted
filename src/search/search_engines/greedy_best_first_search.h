@@ -4,13 +4,20 @@
 
 #include "search.h"
 
-class GreedyBestFirstSearch : public Search {
-public:
-    int search(const Task &task,
-                     SuccessorGenerator *generator,
-                     Heuristic &heuristic) const override;
-    std::vector<Action> plan;
+template <class PackedStateT>
+class GreedyBestFirstSearch : public SearchBase {
+  public:
+    int search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
+
+    void print_statistics() const override;
+
+protected:
+    size_t state_counter{};
+
+    int generations{};
+    int g_layer{};
+    int heuristic_layer{};
 };
 
 
-#endif //SEARCH_GREEDY_BEST_FIRST_SEARCH_H
+#endif  // SEARCH_GREEDY_BEST_FIRST_SEARCH_H

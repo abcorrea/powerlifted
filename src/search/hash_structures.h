@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include <boost/functional/hash/hash.hpp>
 
 /**
  * @brief Generic hash function for vector of integers. The name "TupleHash" is
@@ -12,9 +11,7 @@
  * @note Uses boost hash_range function
  */
 struct TupleHash {
-  std::size_t operator()(const std::vector<int> &c) const {
-    return boost::hash_range(c.begin(), c.end());
-  }
+  std::size_t operator()(const std::vector<int> &c) const;
 };
 
 #endif // SEARCH_HASH_STRUCTURES_H

@@ -12,7 +12,7 @@ using namespace std;
  */
 vector<Table> InverseOrderedJoinSuccessorGenerator::parse_precond_into_join_program(
         const vector<Atom> &precond,
-        const State &state,
+        const DBState &state,
         const StaticInformation &staticInformation,
         int action_index) {
     /*
@@ -26,7 +26,7 @@ vector<Table> InverseOrderedJoinSuccessorGenerator::parse_precond_into_join_prog
         vector<int> indices;
         vector<int> constants;
         get_indices_and_constants_in_preconditions(indices, constants, a);
-        unordered_set<GroundAtom, TupleHash> tuples;
+        vector<GroundAtom> tuples;
         if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
             // If this predicate has information in the static information table,
             // then it must be a static predicate

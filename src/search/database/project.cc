@@ -1,7 +1,9 @@
-#include "project.h"
 
-#include <vector>
+#include "project.h"
+#include "table.h"
+
 #include <unordered_set>
+#include <vector>
 
 using namespace std;
 
@@ -27,6 +29,6 @@ void project(Table &t, const std::unordered_set<int> &over) {
         new_tuples.insert(key);
     }
 
-    t.tuples = new_tuples;
-    t.tuple_index = new_indices;
+    t.tuples = std::move(new_tuples);
+    t.tuple_index = std::move(new_indices);
 }

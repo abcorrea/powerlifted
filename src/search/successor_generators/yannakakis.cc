@@ -1,14 +1,14 @@
+
 #include "yannakakis.h"
-
-#include "generic_join_successor.h"
-
 #include "../database/hash_join.h"
 #include "../database/project.h"
 #include "../database/semi_join.h"
 
+#include <cassert>
 #include <stack>
 #include <queue>
-#include <iostream>
+
+using namespace std;
 
 /**
  *
@@ -191,7 +191,7 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
  * @return
  */
 Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
-                                                const State &state,
+                                                const DBState &state,
                                                 const StaticInformation &staticInformation) {
 
   /*

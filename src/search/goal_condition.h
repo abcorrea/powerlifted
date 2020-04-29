@@ -5,8 +5,6 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
-
 /**
  * @brief Define a single atom contained in the goal condition.
  *

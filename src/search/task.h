@@ -5,7 +5,7 @@
 #include "goal_condition.h"
 #include "object.h"
 #include "predicate.h"
-#include "state.h"
+#include "states/state.h"
 
 #include <ostream>
 #include <string>
@@ -28,7 +28,7 @@ class Task {
 public:
   std::vector<Predicate> predicates;
   std::vector<Object> objects;
-  State initial_state;
+  DBState initial_state;
   StaticInformation static_info;
   GoalCondition goal;
   std::vector<ActionSchema> actions;
@@ -60,13 +60,16 @@ public:
 
   void initialize_action_schemas(const std::vector<ActionSchema> &action_list);
 
-  void dump_state(State s) const;
+  void dump_state(DBState s) const;
 
   void dump_goal();
 
-  bool is_goal(const State &state, const GoalCondition &goal_condition) const;
+  bool is_goal(const DBState &state) const;
 
   bool is_trivially_unsolvable() const;
+
+  //! Return a vector R where R[i] contains all objects of type i (or of some subtype).
+  std::vector<std::vector<int>> compute_object_index() const;
 
 private:
   const std::string &domain_name;

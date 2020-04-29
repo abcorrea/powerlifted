@@ -1,11 +1,26 @@
 #include "hash_join.h"
+#include "table.h"
+#include "utils.h"
 
 #include <algorithm>
+#include <cassert>
 #include <unordered_map>
 
 using namespace std;
 
-void hash_join(Table &t1, Table &t2) {
+std::vector<int> project_tuple(
+    const std::vector<int>& tuple,
+    const std::vector<int>& pattern)
+{
+    auto sz = pattern.size();
+    vector<int> projected(sz);
+    for (size_t i = 0; i < sz; ++i) {
+        projected[i] = tuple[pattern[i]];
+    }
+    return projected;
+}
+
+void hash_join(Table &t1, const Table &t2) {
     /*
      * This function implements a hash join as follows
      *
@@ -15,16 +30,12 @@ void hash_join(Table &t1, Table &t2) {
      *    matching keys. Then, loop over the second table searching for hits
      *    in the hash table.
      */
-    vector<pair<int, int>> matches;
-    for (size_t i = 0; i < t1.tuple_index.size(); ++i) {
-        for (size_t j = 0; j < t2.tuple_index.size(); ++j) {
-            if (t1.tuple_index[i] == t2.tuple_index[j])
-                matches.emplace_back(i, j);
-        }
-    }
+    std::vector<int> matches1, matches2;
+    compute_matching_columns(t1, t2, matches1, matches2);
+    assert(matches1.size()==matches2.size());
 
-    unordered_set<vector<int>, TupleHash> new_tuples;
-    if (matches.empty()) {
+    vector<vector<int>> new_tuples;
+    if (matches1.empty()) {
         /*
          * If no attribute matches, then we apply a cartesian product
          * TODO this code is duplicate from join.cc, make it an auxiliary function
@@ -34,26 +45,23 @@ void hash_join(Table &t1, Table &t2) {
             for (const vector<int> &tuple_t2 : t2.tuples) {
                 vector<int> aux(tuple_t1);
                 aux.insert(aux.end(), tuple_t2.begin(), tuple_t2.end());
-                new_tuples.insert(aux);
+                new_tuples.push_back(std::move(aux));
             }
         }
     }
     else {
-        unordered_map<vector<int>, unordered_set<vector<int>, TupleHash>, TupleHash> hash_join_map;
+        unordered_map<vector<int>, vector<vector<int>>, TupleHash> hash_join_map;
         // Build phase
         for (const vector<int> &tuple : t1.tuples) {
-            vector<int> key(matches.size());
-            for (size_t i = 0; i < matches.size(); i++) {
-                key[i] = tuple[matches[i].first];
-            }
-            hash_join_map[key].insert(tuple);
+            hash_join_map[project_tuple(tuple, matches1)].push_back(tuple);
         }
 
         // Remove duplicated index. Duplicate code from join.cc
         vector<bool> to_remove(t2.tuple_index.size(), false);
-        for (const pair<int, int> &m : matches) {
-            to_remove[m.second] = true;
+        for (const auto &m : matches2) {
+            to_remove[m] = true;
         }
+
         for (size_t j = 0; j < t2.tuple_index.size(); ++j) {
             if (!to_remove[j]) {
                 t1.tuple_index.push_back(t2.tuple_index[j]);
@@ -62,24 +70,20 @@ void hash_join(Table &t1, Table &t2) {
 
         // Probe phase
         for (vector<int> tuple : t2.tuples) {
-            vector<int> key(matches.size());
-            for (size_t i = 0; i < matches.size(); i++) {
-                key[i] = tuple[matches[i].second];
-            }
-            if (hash_join_map.count(key) > 0) {
-                for (int i = to_remove.size()-1; i >= 0 ; --i) {
-                    if (to_remove[i]) {
-                        tuple.erase(tuple.begin() + i);
-                    }
-                }
-                for (vector<int> t : hash_join_map[key]) {
-                    t.insert(t.end(), tuple.begin(), tuple.end());
-                    new_tuples.insert(t);
-                }
 
+            auto it = hash_join_map.find(project_tuple(tuple, matches2));
+
+            if (it != hash_join_map.end()) {
+                const auto& matching_tuples = it->second;
+                for (vector<int> t:matching_tuples) {
+                    for (unsigned j = 0; j < to_remove.size(); ++j) {
+                        if (!to_remove[j]) t.push_back(tuple[j]);
+                    }
+                    new_tuples.push_back(std::move(t));
+                }
             }
         }
 
     }
-    t1.tuples = new_tuples;
+    t1.tuples = std::move(new_tuples);
 }
