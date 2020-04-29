@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <ctime>
 
+// TODO Why does this class exist?
 class NaiveSuccessorGenerator : public GenericJoinSuccessor {
 public:
     explicit NaiveSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {}
@@ -15,9 +16,7 @@ public:
     */
     std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                    const DBState &state,
-                                    const StaticInformation &staticInformation,
-                                    int action_index) final;
+                                    const DBState &state) final;
 };
 
 

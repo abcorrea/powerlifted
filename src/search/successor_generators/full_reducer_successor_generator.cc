@@ -172,8 +172,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
  * @return
  */
 Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
-                                                 const DBState &state,
-                                                 const StaticInformation &staticInformation)
+                                                 const DBState &state)
 {
     clock_t time = clock();
 
@@ -197,7 +196,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
 
     // We need to parse precond first
     vector<Table> tables =
-        parse_precond_into_join_program(precond, state, staticInformation, action.get_index());
+        parse_precond_into_join_program(precond, state);
 
     if (tables.size() != fjr.size()) {
         // This means that the projection over the constants completely eliminated one table,

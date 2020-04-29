@@ -21,9 +21,11 @@
  */
 
 class SuccessorGenerator {
-    static bool is_ground_action_applicable(const ActionSchema &action,
-                                            const DBState &state,
-                                            const StaticInformation &staticInformation);
+
+    std::vector<bool> is_predicate_static;
+
+    bool is_ground_action_applicable(const ActionSchema &action,
+                                     const DBState &state);
 
     void apply_lifted_action_effects(const ActionSchema &action,
                                      const std::vector<int> &tuple,
@@ -35,16 +37,20 @@ class SuccessorGenerator {
 
     void apply_nullary_effects(const ActionSchema &action,
                                std::vector<bool> &new_nullary_atoms) const;
+    bool is_trivially_inapplicable(const DBState &state, const ActionSchema &action) const;
 
 public:
-    explicit SuccessorGenerator(const Task &task) {
+    explicit SuccessorGenerator(const Task &task) : static_information(task.static_info) {
         obj_per_type.resize(task.type_names.size());
         for (const Object &obj : task.objects) {
             for (int type : obj.getTypes()) {
                 obj_per_type[type].push_back(obj.getIndex());
             }
         }
-
+        is_predicate_static.reserve(static_information.get_relations().size());
+        for (const auto &r : static_information.get_relations()) {
+            is_predicate_static.push_back(!r.tuples.empty());
+        }
     }
 
     virtual ~SuccessorGenerator() = default;
@@ -53,26 +59,31 @@ public:
     std::vector<std::vector<int>> obj_per_type;
 
     const
-    std::vector<std::pair<DBState, LiftedOperatorId>> &generate_successors(const std::vector<
-        ActionSchema> &actions,
-                                                               const DBState &state,
-                                                               const StaticInformation &staticInformation);
+    std::vector<std::pair<DBState, LiftedOperatorId>> &generate_successors(
+        const std::vector<ActionSchema> &actions,
+        const DBState &state);
 
-    virtual Table instantiate(const ActionSchema &action, const DBState &state,
-                              const StaticInformation &staticInformation) = 0;
+    virtual Table instantiate(const ActionSchema &action, const DBState &state) = 0;
 
     virtual std::vector<Table>
     parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                    const DBState &state,
-                                    const StaticInformation &staticInformation,
-                                    int action_index) = 0;
+                                    const DBState &state) = 0;
 
     const GroundAtom &tuple_to_atom(const std::vector<int> &tuple,
                                     const std::vector<int> &indices,
                                     const Atom &eff);
 
+    const std::unordered_set<GroundAtom,
+                             TupleHash> &get_tuples_from_static_relation(size_t i) const {
+        return static_information.get_tuples_of_relation(i);
+    }
+
     double get_cyclic_time() const {
         return cyclic_time;
+    }
+
+    bool is_static(size_t i) {
+        return is_predicate_static[i];
     }
 
     GroundAtom ground_atom;
@@ -81,7 +92,7 @@ public:
 protected:
     size_t largest_intermediate_relation = 0;
     double cyclic_time = 0;
-
+    StaticInformation static_information;
 };
 
 #endif //SEARCH_SUCCESSOR_GENERATOR_H

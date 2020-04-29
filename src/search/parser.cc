@@ -242,15 +242,15 @@ void parse_initial_state(Task &task, int initial_state_size)
         cin >> name >> index >> predicate_index >> negated >> number_args;
         if (number_args == 0) {
             assert(task.nullary_predicates.find(predicate_index) != task.nullary_predicates.end());
-            task.initial_state.nullary_atoms[predicate_index] = true;
+            task.initial_state.set_nullary_atom(predicate_index, true);
         }
         vector<int> args;
         copy_next_n_values(number_args, args);
-        if (!task.initial_state.nullary_atoms[predicate_index]) {
+        if (!task.initial_state.get_nullary_atoms()[predicate_index]) {
             if (!task.predicates[predicate_index].isStaticPredicate())
-                task.initial_state.addTuple(predicate_index, args);
+                task.initial_state.add_tuple(predicate_index, args);
             else
-                task.static_info.addTuple(predicate_index, args);
+                task.static_info.add_tuple(predicate_index, args);
         }
     }
 }

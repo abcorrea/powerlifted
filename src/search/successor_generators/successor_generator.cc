@@ -34,39 +34,28 @@ using namespace std;
  */
 const std::vector<std::pair<DBState, LiftedOperatorId>> &
 SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions,
-                                        const DBState &state,
-                                        const StaticInformation &staticInformation)
+                                        const DBState &state)
 {
 
-    // TODO Apply nullary effects only once
     successors.clear();
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
-        bool trivially_inapplicable = false;
-        for (size_t i = 0;
-             i < action.get_positive_nullary_precond().size() and !trivially_inapplicable;
-             ++i) {
-            if ((action.get_positive_nullary_precond()[i] and !state.nullary_atoms[i]) or
-                (action.get_negative_nullary_precond()[i] and state.nullary_atoms[i])) {
-                trivially_inapplicable = true;
-            }
-        }
-        if (trivially_inapplicable) {
+        if (is_trivially_inapplicable(state, action)) {
             continue;
         }
 
-        Table instantiations = instantiate(action, state, staticInformation);
+        Table instantiations = instantiate(action, state);
 
         if (instantiations.tuples.empty()) {
             // Either there is no applicable instantiation, or the action is ground
             if (action.get_parameters().empty()) {
                 // Action is ground
-                bool applicable = is_ground_action_applicable(action, state, staticInformation);
+                bool applicable = is_ground_action_applicable(action, state);
                 if (!applicable)
                     continue;
-                vector<bool> new_nullary_atoms(state.nullary_atoms);
+                vector<bool> new_nullary_atoms(state.get_nullary_atoms());
                 apply_nullary_effects(action, new_nullary_atoms);
-                vector<Relation> new_relation(state.relations);
+                vector<Relation> new_relation(state.get_relations());
                 apply_ground_action_effects(action, new_relation);
                 successors.emplace_back(DBState(move(new_relation), move(new_nullary_atoms)),
                                         LiftedOperatorId(action.get_index(), vector<int>()));
@@ -77,7 +66,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
             }
         }
         else {
-            vector<bool> new_nullary_atoms(state.nullary_atoms);
+            vector<bool> new_nullary_atoms(state.get_nullary_atoms());
             apply_nullary_effects(action, new_nullary_atoms);
             for (const vector<int> &tuple_with_const : instantiations.tuples) {
                 // First, order tuple of indices and then apply effects
@@ -94,7 +83,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
                 for (size_t i = 0; i < indices.size(); ++i) {
                     ordered_tuple[indices[i]] = tuple[i];
                 }
-                vector<Relation> new_relation(state.relations);
+                vector<Relation> new_relation(state.get_relations());
                 apply_lifted_action_effects(action, tuple, indices, new_relation);
                 successors.emplace_back(
                     DBState(move(new_relation), vector<bool>(new_nullary_atoms)),
@@ -103,6 +92,20 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
         }
     }
     return successors;
+}
+
+
+bool SuccessorGenerator::is_trivially_inapplicable(const DBState &state, const ActionSchema &action) const {
+    const auto& positive_precond = action.get_positive_nullary_precond();
+    const auto& negative_precond = action.get_negative_nullary_precond();
+    const auto& nullary_atoms = state.get_nullary_atoms();
+    for (size_t i = 0; i < positive_precond.size(); ++i) {
+        if ((positive_precond[i] and !nullary_atoms[i]) or
+            (negative_precond[i] and nullary_atoms[i])) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void SuccessorGenerator::apply_nullary_effects(const ActionSchema &action,
@@ -211,8 +214,7 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
  * 'action' is a ground action here.
  */
 bool SuccessorGenerator::is_ground_action_applicable(const ActionSchema &action,
-                                                     const DBState &state,
-                                                     const StaticInformation &staticInformation)
+                                                     const DBState &state)
 {
     for (const Atom &precond : action.get_precondition()) {
         int index = precond.predicate_symbol;
@@ -222,27 +224,27 @@ bool SuccessorGenerator::is_ground_action_applicable(const ActionSchema &action,
             assert(arg.constant);
             tuple.push_back(arg.index);  // Index of a constant is the obj index
         }
-        if (!state.relations[index].tuples.empty()) {
+        const auto& tuples_in_relation = state.get_tuples_of_relation(index);
+        const auto& it_end_tuples_in_relation = tuples_in_relation.end();
+        const auto& static_tuples = get_tuples_from_static_relation(index);
+        const auto& it_end_static_tuples = static_tuples.end();
+        if (!tuples_in_relation.empty()) {
             if (precond.negated) {
-                if (state.relations[index].tuples.find(tuple) !=
-                    state.relations[index].tuples.end())
+                if (tuples_in_relation.find(tuple) != it_end_tuples_in_relation)
                     return false;
             }
             else {
-                if (state.relations[index].tuples.find(tuple) ==
-                    state.relations[index].tuples.end())
+                if (tuples_in_relation.find(tuple) == it_end_tuples_in_relation)
                     return false;
             }
         }
-        else if (!staticInformation.relations[index].tuples.empty()) {
+        else if (!static_tuples.empty()) {
             if (precond.negated) {
-                if (staticInformation.relations[index].tuples.find(tuple) !=
-                    staticInformation.relations[index].tuples.end())
+                if (static_tuples.find(tuple) != it_end_static_tuples)
                     return false;
             }
             else {
-                if (staticInformation.relations[index].tuples.find(tuple) ==
-                    staticInformation.relations[index].tuples.end())
+                if (static_tuples.find(tuple) == it_end_static_tuples)
                     return false;
             }
         }

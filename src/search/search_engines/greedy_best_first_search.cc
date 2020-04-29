@@ -85,7 +85,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             return SOLVED;
         }
         vector<pair<DBState, LiftedOperatorId>> successors =
-            generator.generate_successors(task.actions, state, task.static_info);
+            generator.generate_successors(task.actions, state);
 
         this->generations += successors.size();
         statistics.inc_generated(successors.size());

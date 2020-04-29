@@ -59,7 +59,7 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
 
-        auto successors = generator.generate_successors(task.actions, packer.unpack(space.get_state(sid)), task.static_info);
+        auto successors = generator.generate_successors(task.actions, packer.unpack(space.get_state(sid)));
 
         statistics.inc_generated(successors.size());
 
