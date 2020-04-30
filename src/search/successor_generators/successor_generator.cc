@@ -68,23 +68,21 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
             }
             vector<bool> new_nullary_atoms(state.get_nullary_atoms());
             apply_nullary_effects(action, new_nullary_atoms);
-            for (const vector<int> &tuple_with_const : instantiations.tuples) {
-                // First, order tuple of indices and then apply effects
-                vector<int> tuple;
-                vector<int> indices;
-                for (size_t j = 0; j < instantiations.tuple_index.size(); ++j) {
-                    if (instantiations.tuple_index[j] >= 0) {
-                        indices.push_back(instantiations.tuple_index[j]);
-                        tuple.push_back(tuple_with_const[j]);
-                    }
+            vector<int> free_var_indices;
+            vector<int> map_indices_to_position;
+            for (size_t j = 0; j < instantiations.tuple_index.size(); ++j) {
+                if (instantiations.index_is_variable(j)) {
+                    free_var_indices.push_back(instantiations.tuple_index[j]);
+                    map_indices_to_position.push_back(j);
                 }
-                vector<int> ordered_tuple(tuple.size());
-                assert(ordered_tuple.size() == indices.size());
-                for (size_t i = 0; i < indices.size(); ++i) {
-                    ordered_tuple[indices[i]] = tuple[i];
+            }
+            for (const vector<int> &tuple_with_const : instantiations.tuples) {
+                vector<int> ordered_tuple(free_var_indices.size());
+                for (size_t i = 0; i < free_var_indices.size(); ++i) {
+                    ordered_tuple[free_var_indices[i]] = tuple_with_const[map_indices_to_position[i]];
                 }
                 vector<Relation> new_relation(state.get_relations());
-                apply_lifted_action_effects(action, tuple, indices, new_relation);
+                apply_lifted_action_effects(action, ordered_tuple, free_var_indices, new_relation);
                 successors.emplace_back(
                     DBState(move(new_relation), vector<bool>(new_nullary_atoms)),
                                         LiftedOperatorId(action.get_index(), move(ordered_tuple)));
@@ -184,17 +182,11 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
                                                     const Atom &eff)
 {
 
-    vector<int> ordered_tuple(tuple.size(), -1);
-    assert(tuple.size() == indices.size());
-    for (size_t i = 0; i < indices.size(); ++i) {
-        ordered_tuple[indices[i]] = tuple[i];
-    }
-
     ground_atom.clear();
     ground_atom.reserve(eff.arguments.size());
     for (size_t i = 0; i < eff.arguments.size(); i++) {
         if (!eff.arguments[i].constant)
-            ground_atom.push_back(ordered_tuple[eff.arguments[i].index]);
+            ground_atom.push_back(tuple[eff.arguments[i].index]);
         else
             ground_atom.push_back(eff.arguments[i].index);
     }

@@ -25,6 +25,10 @@ public:
         tuple_index(std::move(tuple_index))
     {}
 
+    bool index_is_variable(size_t i) const {
+        return tuple_index[i] >= 0;
+    }
+
     Table() = default;
 };
 
