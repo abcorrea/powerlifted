@@ -59,14 +59,13 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
 
-        auto successors = generator.generate_successors(task.actions, packer.unpack(space.get_state(sid)));
+        const auto &state = packer.unpack(space.get_state(sid));
+        vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
-        statistics.inc_generated(successors.size());
+        statistics.inc_generated(applicable_actions.size());
 
-        for (const auto &successor : successors) {
-            const DBState &s = successor.first;
-            const LiftedOperatorId &a = successor.second;
-
+        for (const LiftedOperatorId &a : applicable_actions) {
+            const DBState &s = generator.generate_successors(a, task.actions[a.get_index()], state);
             auto& child_node = space.insert_or_get_previous_node(packer.pack(s), a, node.state_id);
             if (child_node.status == SearchNode::Status::NEW) {
                 child_node.open(node.g+1);

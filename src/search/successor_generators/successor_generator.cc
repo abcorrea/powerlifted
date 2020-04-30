@@ -32,11 +32,9 @@ using namespace std;
  * @return vector of pairs <State, Action> where state is the successor state and
  * action is the ground action generating it from the current state
  */
-const std::vector<std::pair<DBState, LiftedOperatorId>> &
-SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions,
-                                        const DBState &state)
-{
-
+vector<LiftedOperatorId>
+SuccessorGenerator::get_applicable_actions(const std::vector<ActionSchema> &actions,
+                                           const DBState &state) {
     successors.clear();
     vector<LiftedOperatorId> applicable_operators;
     // Duplicate code from generic join implementation
@@ -49,8 +47,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
             bool applicable = is_ground_action_applicable(action, state);
             if (applicable)
                 applicable_operators.emplace_back(action.get_index(), vector<int>());
-        }
-        else {
+        } else {
             Table instantiations = instantiate(action, state);
             if (instantiations.tuples.empty()) {
                 // No applicable action, skip this action schema;
@@ -58,35 +55,40 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
             }
             vector<int> free_var_indices;
             vector<int> map_indices_to_position;
-            compute_map_indices_to_table_positions(instantiations,free_var_indices,map_indices_to_position);
-            for (const vector<int>& tuple_with_const : instantiations.tuples) {
+            compute_map_indices_to_table_positions(instantiations,
+                                                   free_var_indices,
+                                                   map_indices_to_position);
+            for (const vector<int> &tuple_with_const : instantiations.tuples) {
                 vector<int> ordered_tuple(free_var_indices.size());
                 order_tuple_by_free_variable_order(free_var_indices, map_indices_to_position,
-                    tuple_with_const,ordered_tuple);
+                                                   tuple_with_const, ordered_tuple);
                 applicable_operators.emplace_back(action.get_index(), move(ordered_tuple));
             }
         }
     }
-    for (const auto& op : applicable_operators) {
-        const auto& action = actions[op.get_index()];
-        if (action.is_ground()) {
-            vector<bool> new_nullary_atoms(state.get_nullary_atoms());
-            vector<Relation> new_relation(state.get_relations());
+
+    return applicable_operators;
+}
+
+DBState SuccessorGenerator::generate_successors(
+    const LiftedOperatorId &op,
+    const ActionSchema& action,
+    const DBState &state) {
+
+    if (action.is_ground()) {
+        vector<bool> new_nullary_atoms(state.get_nullary_atoms());
+        vector<Relation> new_relation(state.get_relations());
             apply_nullary_effects(action, new_nullary_atoms);
             apply_ground_action_effects(action, new_relation);
-            successors.emplace_back(DBState(move(new_relation), move(new_nullary_atoms)),
-                                    op);
-        }
-        else {
-            vector<bool> new_nullary_atoms(state.get_nullary_atoms());
-            vector<Relation> new_relation(state.get_relations());
-            apply_nullary_effects(action, new_nullary_atoms);
-            apply_lifted_action_effects(action, op.get_instantiation(), new_relation);
-            successors.emplace_back(DBState(move(new_relation), vector<bool>(new_nullary_atoms)), op);
-        }
+            return DBState(move(new_relation), move(new_nullary_atoms));
     }
-
-    return successors;
+    else {
+        vector<bool> new_nullary_atoms(state.get_nullary_atoms());
+        vector<Relation> new_relation(state.get_relations());
+        apply_nullary_effects(action, new_nullary_atoms);
+        apply_lifted_action_effects(action, op.get_instantiation(), new_relation);
+        return DBState(move(new_relation), vector<bool>(new_nullary_atoms));
+    }
 }
 
 void SuccessorGenerator::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,

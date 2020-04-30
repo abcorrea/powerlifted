@@ -63,10 +63,13 @@ public:
     // position I is a list of object indices of type I
     std::vector<std::vector<int>> obj_per_type;
 
-    const
-    std::vector<std::pair<DBState, LiftedOperatorId>> &generate_successors(
+    std::vector<LiftedOperatorId> get_applicable_actions(
         const std::vector<ActionSchema> &actions,
         const DBState &state);
+
+    DBState generate_successors(const LiftedOperatorId &op,
+                                const ActionSchema& action,
+                                const DBState &state);
 
     virtual Table instantiate(const ActionSchema &action, const DBState &state) = 0;
 

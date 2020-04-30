@@ -84,16 +84,14 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                 cheapest_parent, state_packer.pack(state), visited,index_to_state, state_packer, task);
             return SOLVED;
         }
-        vector<pair<DBState, LiftedOperatorId>> successors =
-            generator.generate_successors(task.actions, state);
+        vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
-        this->generations += successors.size();
-        statistics.inc_generated(successors.size());
+        this->generations += applicable_actions.size();
+        statistics.inc_generated(applicable_actions.size());
 
-        for (const pair<DBState, LiftedOperatorId> &successor : successors) {
-            const DBState &s = successor.first;
+        for (const LiftedOperatorId &a : applicable_actions) {
+            const DBState &s = generator.generate_successors(a, task.actions[a.get_index()], state);
             const SparsePackedState packed = state_packer.pack(s);
-            const LiftedOperatorId &a = successor.second;
             int dist = g + task.actions[a.get_index()].get_cost();
             int new_h = heuristic.compute_heuristic(s, task);
             statistics.inc_evaluations();
