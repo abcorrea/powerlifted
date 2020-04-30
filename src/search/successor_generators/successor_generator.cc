@@ -70,19 +70,13 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
             apply_nullary_effects(action, new_nullary_atoms);
             vector<int> free_var_indices;
             vector<int> map_indices_to_position;
-            for (size_t j = 0; j < instantiations.tuple_index.size(); ++j) {
-                if (instantiations.index_is_variable(j)) {
-                    free_var_indices.push_back(instantiations.tuple_index[j]);
-                    map_indices_to_position.push_back(j);
-                }
-            }
+            compute_map_indices_to_table_positions(instantiations,free_var_indices,map_indices_to_position);
             for (const vector<int> &tuple_with_const : instantiations.tuples) {
                 vector<int> ordered_tuple(free_var_indices.size());
-                for (size_t i = 0; i < free_var_indices.size(); ++i) {
-                    ordered_tuple[free_var_indices[i]] = tuple_with_const[map_indices_to_position[i]];
-                }
+                order_tuple_by_free_variable_order(free_var_indices, map_indices_to_position,
+                    tuple_with_const,ordered_tuple);
                 vector<Relation> new_relation(state.get_relations());
-                apply_lifted_action_effects(action, ordered_tuple, free_var_indices, new_relation);
+                apply_lifted_action_effects(action, ordered_tuple, new_relation);
                 successors.emplace_back(
                     DBState(move(new_relation), vector<bool>(new_nullary_atoms)),
                                         LiftedOperatorId(action.get_index(), move(ordered_tuple)));
@@ -90,9 +84,29 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
         }
     }
 
+
     return successors;
 }
 
+void SuccessorGenerator::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,
+                                                            const vector<int> &map_indices_to_position,
+                                                            const vector<int> &tuple_with_const,
+                                                            vector<int> &ordered_tuple) const {
+    for (size_t i = 0; i < free_var_indices.size(); ++i) {
+        ordered_tuple[free_var_indices[i]] = tuple_with_const[map_indices_to_position[i]];
+    }
+}
+
+void SuccessorGenerator::compute_map_indices_to_table_positions(const Table &instantiations,
+                                                                vector<int> &free_var_indices,
+                                                                vector<int> &map_indices_to_position) const {
+    for (size_t j = 0; j < instantiations.tuple_index.size(); ++j) {
+        if (instantiations.index_is_variable(j)) {
+            free_var_indices.push_back(instantiations.tuple_index[j]);
+            map_indices_to_position.push_back(j);
+        }
+    }
+}
 
 bool SuccessorGenerator::is_trivially_inapplicable(const DBState &state, const ActionSchema &action) const {
     const auto& positive_precond = action.get_positive_nullary_precond();
@@ -148,11 +162,10 @@ void SuccessorGenerator::apply_ground_action_effects(const ActionSchema &action,
 
 void SuccessorGenerator::apply_lifted_action_effects(const ActionSchema &action,
                                                      const vector<int> &tuple,
-                                                     const vector<int> &indices,
                                                      vector<Relation> &new_relation)
 {
     for (const Atom &eff : action.get_effects()) {
-        const GroundAtom &ga = tuple_to_atom(tuple, indices, eff);
+        const GroundAtom &ga = tuple_to_atom(tuple, eff);
         assert(eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
         if (eff.negated) {
             // Remove from relation
@@ -177,9 +190,7 @@ void SuccessorGenerator::apply_lifted_action_effects(const ActionSchema &action,
  * argument is a constant or not. If it is, then we simply pass the constant value; otherwise we use
  *    the instantiation that we found.
  */
-const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
-                                                    const vector<int> &indices,
-                                                    const Atom &eff)
+const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple, const Atom &eff)
 {
 
     ground_atom.clear();
