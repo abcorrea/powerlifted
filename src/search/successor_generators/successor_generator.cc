@@ -44,9 +44,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
             continue;
         }
 
-        Table instantiations = instantiate(action, state);
-
-        if (instantiations.tuples.empty()) {
+        if (action.is_ground()) {
             // Either there is no applicable instantiation, or the action is ground
             if (action.get_parameters().empty()) {
                 // Action is ground
@@ -60,12 +58,13 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
                 successors.emplace_back(DBState(move(new_relation), move(new_nullary_atoms)),
                                         LiftedOperatorId(action.get_index(), vector<int>()));
             }
-            else {
-                // Action not applicable
-                continue;
-            }
         }
         else {
+            Table instantiations = instantiate(action, state);
+            if (instantiations.tuples.empty()) {
+                // No applicable action, skip this action schema;
+                continue;
+            }
             vector<bool> new_nullary_atoms(state.get_nullary_atoms());
             apply_nullary_effects(action, new_nullary_atoms);
             for (const vector<int> &tuple_with_const : instantiations.tuples) {
