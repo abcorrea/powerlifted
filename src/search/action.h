@@ -13,10 +13,10 @@
  */
 
 class LiftedOperatorId {
-  public:
     int index;
     std::vector<int> instantiation;
 
+public:
     static const LiftedOperatorId no_operator;
 
     LiftedOperatorId(int index, std::vector<int> &&instantiation)
@@ -24,6 +24,15 @@ class LiftedOperatorId {
     {}
 
     LiftedOperatorId() = delete;
+
+
+    int get_index() const {
+        return index;
+    }
+
+    const std::vector<int>& get_instantiation() const {
+        return instantiation;
+    }
 
     bool operator==(const LiftedOperatorId &other) const { return index == other.index; }
     bool operator!=(const LiftedOperatorId &other) const { return !(*this == other); }

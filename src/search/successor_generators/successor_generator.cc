@@ -38,6 +38,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
 {
 
     successors.clear();
+    //vector<LiftedOperatorId> applicable_operators;
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
         if (is_trivially_inapplicable(state, action)) {
@@ -90,6 +91,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
             }
         }
     }
+
     return successors;
 }
 

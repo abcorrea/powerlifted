@@ -6,7 +6,7 @@
 using namespace std;
 
 ostream &operator<<(ostream &os, const LiftedOperatorId& id) {
-    os << "op" << id.index;
+    os << "op" << id.get_index();
     return os;
 }
 

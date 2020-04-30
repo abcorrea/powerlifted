@@ -94,7 +94,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             const DBState &s = successor.first;
             const SparsePackedState packed = state_packer.pack(s);
             const LiftedOperatorId &a = successor.second;
-            int dist = g + task.actions[a.index].get_cost();
+            int dist = g + task.actions[a.get_index()].get_cost();
             int new_h = heuristic.compute_heuristic(s, task);
             statistics.inc_evaluations();
 
