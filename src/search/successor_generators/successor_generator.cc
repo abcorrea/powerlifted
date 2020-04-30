@@ -38,7 +38,7 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
 {
 
     successors.clear();
-    //vector<LiftedOperatorId> applicable_operators;
+    vector<LiftedOperatorId> applicable_operators;
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
         if (is_trivially_inapplicable(state, action)) {
@@ -46,19 +46,9 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
         }
 
         if (action.is_ground()) {
-            // Either there is no applicable instantiation, or the action is ground
-            if (action.get_parameters().empty()) {
-                // Action is ground
-                bool applicable = is_ground_action_applicable(action, state);
-                if (!applicable)
-                    continue;
-                vector<bool> new_nullary_atoms(state.get_nullary_atoms());
-                apply_nullary_effects(action, new_nullary_atoms);
-                vector<Relation> new_relation(state.get_relations());
-                apply_ground_action_effects(action, new_relation);
-                successors.emplace_back(DBState(move(new_relation), move(new_nullary_atoms)),
-                                        LiftedOperatorId(action.get_index(), vector<int>()));
-            }
+            bool applicable = is_ground_action_applicable(action, state);
+            if (applicable)
+                applicable_operators.emplace_back(action.get_index(), vector<int>());
         }
         else {
             Table instantiations = instantiate(action, state);
@@ -66,24 +56,35 @@ SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions
                 // No applicable action, skip this action schema;
                 continue;
             }
-            vector<bool> new_nullary_atoms(state.get_nullary_atoms());
-            apply_nullary_effects(action, new_nullary_atoms);
             vector<int> free_var_indices;
             vector<int> map_indices_to_position;
             compute_map_indices_to_table_positions(instantiations,free_var_indices,map_indices_to_position);
-            for (const vector<int> &tuple_with_const : instantiations.tuples) {
+            for (const vector<int>& tuple_with_const : instantiations.tuples) {
                 vector<int> ordered_tuple(free_var_indices.size());
                 order_tuple_by_free_variable_order(free_var_indices, map_indices_to_position,
                     tuple_with_const,ordered_tuple);
-                vector<Relation> new_relation(state.get_relations());
-                apply_lifted_action_effects(action, ordered_tuple, new_relation);
-                successors.emplace_back(
-                    DBState(move(new_relation), vector<bool>(new_nullary_atoms)),
-                                        LiftedOperatorId(action.get_index(), move(ordered_tuple)));
+                applicable_operators.emplace_back(action.get_index(), move(ordered_tuple));
             }
         }
     }
-
+    for (const auto& op : applicable_operators) {
+        const auto& action = actions[op.get_index()];
+        if (action.is_ground()) {
+            vector<bool> new_nullary_atoms(state.get_nullary_atoms());
+            vector<Relation> new_relation(state.get_relations());
+            apply_nullary_effects(action, new_nullary_atoms);
+            apply_ground_action_effects(action, new_relation);
+            successors.emplace_back(DBState(move(new_relation), move(new_nullary_atoms)),
+                                    op);
+        }
+        else {
+            vector<bool> new_nullary_atoms(state.get_nullary_atoms());
+            vector<Relation> new_relation(state.get_relations());
+            apply_nullary_effects(action, new_nullary_atoms);
+            apply_lifted_action_effects(action, op.get_instantiation(), new_relation);
+            successors.emplace_back(DBState(move(new_relation), vector<bool>(new_nullary_atoms)), op);
+        }
+    }
 
     return successors;
 }
