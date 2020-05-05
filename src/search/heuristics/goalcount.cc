@@ -11,7 +11,7 @@ int Goalcount::compute_heuristic(const DBState &s, const Task &task) {
      * goal condition and checks which ones are satisfied or not.
      *
      */
-    auto nullary_atoms = s.get_nullary_atoms();
+    const auto& nullary_atoms = s.get_nullary_atoms();
     int h = compute_unreached_nullary_atoms(task.goal.positive_nullary_goals,
                                             task.goal.negative_nullary_goals,
                                             nullary_atoms);
@@ -25,14 +25,12 @@ int Goalcount::compute_heuristic(const DBState &s, const Task &task) {
 }
 
 
-int Goalcount::atom_not_satisfied(const DBState &s,
-                                  const AtomicGoal &atomicGoal) const {
-    const auto it = s.get_relations()[atomicGoal.predicate].tuples.find(atomicGoal.args);
-    const auto end = s.get_relations()[atomicGoal.predicate].tuples.end();
-    if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
-        return 1;
-    }
-    return 0;
+bool Goalcount::atom_not_satisfied(const DBState &s,
+                                   const AtomicGoal &atomicGoal) const {
+    const auto &tuples = s.get_relations()[atomicGoal.predicate].tuples;
+    const auto it = tuples.find(atomicGoal.args);
+    const auto end = tuples.end();
+    return (!atomicGoal.negated && it==end) || (atomicGoal.negated && it!=end);
 }
 
 int
