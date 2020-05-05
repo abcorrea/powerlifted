@@ -58,7 +58,7 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
 
-        const auto &state = packer.unpack(space.get_state(sid));
+        DBState state = packer.unpack(space.get_state(sid));
         vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
         statistics.inc_generated(applicable_actions.size());

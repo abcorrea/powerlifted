@@ -94,20 +94,18 @@ DBState SuccessorGenerator::generate_successors(
     const ActionSchema& action,
     const DBState &state) {
 
+    vector<bool> new_nullary_atoms(state.get_nullary_atoms());
+    vector<Relation> new_relation(state.get_relations());
+    apply_nullary_effects(action, new_nullary_atoms);
+
     if (action.is_ground()) {
-        vector<bool> new_nullary_atoms(state.get_nullary_atoms());
-        vector<Relation> new_relation(state.get_relations());
-            apply_nullary_effects(action, new_nullary_atoms);
-            apply_ground_action_effects(action, new_relation);
-            return DBState(move(new_relation), move(new_nullary_atoms));
+        apply_ground_action_effects(action, new_relation);
     }
     else {
-        vector<bool> new_nullary_atoms(state.get_nullary_atoms());
-        vector<Relation> new_relation(state.get_relations());
-        apply_nullary_effects(action, new_nullary_atoms);
         apply_lifted_action_effects(action, op.get_instantiation(), new_relation);
-        return DBState(move(new_relation), vector<bool>(new_nullary_atoms));
     }
+
+    return DBState(move(new_relation), move(new_nullary_atoms));
 }
 
 void SuccessorGenerator::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,

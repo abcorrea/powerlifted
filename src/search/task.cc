@@ -43,12 +43,12 @@ void Task::dump_state(DBState s) const
     /*
      * Output initial state in a human readable way.
      */
-    auto nullary_atoms = s.get_nullary_atoms();
+    const auto& nullary_atoms = s.get_nullary_atoms();
     for (size_t j = 0; j < nullary_atoms.size(); ++j) {
         if (nullary_atoms[j])
             cout << predicates[j].getName() << ", ";
     }
-    auto relations = s.get_relations();
+    const auto& relations = s.get_relations();
     for (size_t i = 0; i < relations.size(); ++i) {
         string relation_name = predicates[i].getName();
         unordered_set<GroundAtom, TupleHash> tuples = relations[i].tuples;
