@@ -11,7 +11,9 @@
 
 #include <boost/algorithm/string.hpp>
 
-SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method, Task &task)
+SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method,
+                                                      int seed,
+                                                      Task &task)
 {
     std::cout << "Creating successor generator factory..." << std::endl;
     if (boost::iequals(method, "join")) {
