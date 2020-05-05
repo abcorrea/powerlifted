@@ -3,8 +3,6 @@
 
 #include "generic_join_successor.h"
 
-#include <cstdlib>
-#include <ctime>
 
 /**
  * This class implements a successor generator based on a randomly ordered
@@ -12,16 +10,14 @@
  */
 class RandomSuccessorGenerator : public GenericJoinSuccessor {
 public:
-    explicit RandomSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {
-        srand(time(nullptr));
-    }
+    explicit RandomSuccessorGenerator(const Task &task);
 
-  /**
-  * @see generic_join_successor.h
-  */
-  std::vector<Table>
-    parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                    const DBState &state) final;
+    /**
+    * @see generic_join_successor.h
+    */
+    std::vector<Table> parse_precond_into_join_program(
+        const std::vector<Atom> &precond,
+        const DBState &state) override;
 };
 
 
