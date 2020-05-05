@@ -21,14 +21,15 @@ def parse_options():
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Run planner in debug mode.')
     parser.add_argument('-s', '--search', dest='search', action='store',
-                        default=None, help='Search algorithm',
+                        default=None, help='Search algorithm', choices=("naive", "gbfs"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
-                        default=None,
+                        default=None, choices=("blind", "goalcount"),
                         help='Heuristic to guide the search (ignore in case of blind search)',
                         required=True)
     parser.add_argument('-g', '--generator', dest='generator', action='store',
                         default=None, help='Successor generator method',
+                        choices=('yannakakis', 'random_join', 'ordered_join', 'inverse_ordered_join', 'full_reducer'),
                         required=True)
     parser.add_argument('--state', action='store', help='Successor generator method',
                         default="sparse", choices=("sparse", "extensional"))
@@ -42,7 +43,7 @@ def parse_options():
     if args.domain is None:
         args.domain = find_domain_filename(args.instance)
         if args.domain is None:
-            raise RuntimeError('Could not find domain filename that matches instance file ', args.domain)
+            raise RuntimeError(f'Could not find domain filename matching instance file "{args.instance}"')
 
     return args
 
