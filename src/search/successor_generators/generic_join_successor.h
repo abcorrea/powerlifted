@@ -27,7 +27,7 @@
 class GenericJoinSuccessor : public SuccessorGenerator {
 
 public:
-    explicit GenericJoinSuccessor(Task &task) : SuccessorGenerator(task) {}
+    explicit GenericJoinSuccessor(const Task &task) : SuccessorGenerator(task) {}
 
     std::vector<std::vector<int>>
         obj_per_type; // position I is a list of object indices of type I

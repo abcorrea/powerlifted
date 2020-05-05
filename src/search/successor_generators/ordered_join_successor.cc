@@ -22,7 +22,7 @@ vector<Table> OrderedJoinSuccessorGenerator::parse_precond_into_join_program(con
         if (is_static(a.predicate_symbol)) {
             // If this predicate has information in the static information table,
             // then it must be a static predicate
-          select_tuples(*static_information, a, tuples, constants);
+          select_tuples(static_information, a, tuples, constants);
             ordered_tables.emplace(move(tuples), move(indices));
         } else {
             // If this predicate does not have information in the static information table,

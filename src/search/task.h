@@ -68,8 +68,8 @@ public:
 
   bool is_trivially_unsolvable() const;
 
-  StaticInformation* get_pointer_to_static_info() {
-      return &static_info;
+  const StaticInformation& get_static_info() const {
+      return static_info;
   }
 
   //! Return a vector R where R[i] contains all objects of type i (or of some subtype).

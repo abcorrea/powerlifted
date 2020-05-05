@@ -44,16 +44,17 @@ class SuccessorGenerator {
                                                 std::vector<int> &map_indices_to_position) const;
 
 public:
-    explicit SuccessorGenerator(Task &task) {
+    explicit SuccessorGenerator(const Task &task) :
+        static_information(task.get_static_info())
+    {
         obj_per_type.resize(task.type_names.size());
         for (const Object &obj : task.objects) {
             for (int type : obj.getTypes()) {
                 obj_per_type[type].push_back(obj.getIndex());
             }
         }
-        static_information = task.get_pointer_to_static_info();
-        is_predicate_static.reserve(static_information->get_relations().size());
-        for (const auto &r : static_information->get_relations()) {
+        is_predicate_static.reserve(static_information.get_relations().size());
+        for (const auto &r : static_information.get_relations()) {
             is_predicate_static.push_back(!r.tuples.empty());
         }
     }
@@ -81,7 +82,7 @@ public:
 
     const std::unordered_set<GroundAtom,
                              TupleHash> &get_tuples_from_static_relation(size_t i) const {
-        return static_information->get_tuples_of_relation(i);
+        return static_information.get_tuples_of_relation(i);
     }
 
     double get_cyclic_time() const {
@@ -98,7 +99,7 @@ public:
 protected:
     size_t largest_intermediate_relation = 0;
     double cyclic_time = 0;
-    StaticInformation* static_information;
+    const StaticInformation& static_information;
     void order_tuple_by_free_variable_order(const std::vector<int> &free_var_indices,
                                             const std::vector<int> &map_indices_to_position,
                                             const std::vector<int> &tuple_with_const,

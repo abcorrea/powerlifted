@@ -18,7 +18,7 @@ using namespace std;
  *
  * @param task: planning task
  */
-FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(Task &task)
+FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
     : GenericJoinSuccessor(task) {
     /*
      * Apply GYO algorithm for every action schema to check whether it

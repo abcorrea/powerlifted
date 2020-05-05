@@ -9,7 +9,7 @@ public:
    * @see full_reducer_successor_generator.cc
    * @param task
    */
-    explicit FullReducerSuccessorGenerator(Task &task);
+    explicit FullReducerSuccessorGenerator(const Task &task);
 
     Table instantiate(const ActionSchema &action, const DBState &state) override;
 

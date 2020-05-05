@@ -12,7 +12,7 @@
  */
 class RandomSuccessorGenerator : public GenericJoinSuccessor {
 public:
-    explicit RandomSuccessorGenerator(Task &task) : GenericJoinSuccessor(task) {
+    explicit RandomSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {
         srand(time(nullptr));
     }
 
