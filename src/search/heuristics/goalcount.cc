@@ -41,13 +41,11 @@ Goalcount::compute_unreached_nullary_atoms(const std::unordered_set<int> &positi
     for (int pred : positive) {
         if (!nullary_atoms[pred]) {
             h++;
-            std::cerr << "positive" << std::endl;
         }
     }
     for (int pred : negative) {
         if (nullary_atoms[pred]) {
             h++;
-            std::cerr << "negative" << std::endl;
         }
     }
     return h;
