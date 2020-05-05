@@ -4,14 +4,14 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <ctime>
-#include <random>
 #include <vector>
 
 using namespace std;
 
-RandomSuccessorGenerator::RandomSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {
-    srand(time(nullptr));
+RandomSuccessorGenerator::RandomSuccessorGenerator(const Task &task, unsigned seed) :
+    GenericJoinSuccessor(task),
+    rng(seed)
+{
 }
 
 vector<Table> RandomSuccessorGenerator::parse_precond_into_join_program(
@@ -20,6 +20,6 @@ vector<Table> RandomSuccessorGenerator::parse_precond_into_join_program(
 {
     // We just shuffle the result of the standard successor generator
     auto result = GenericJoinSuccessor::parse_precond_into_join_program(precond, state);
-    shuffle(result.begin(), result.end(), std::default_random_engine(rand()));
+    shuffle(result.begin(), result.end(), rng);
     return result;
 }

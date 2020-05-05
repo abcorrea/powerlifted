@@ -8,6 +8,13 @@ if (CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES Debug Release)
 endif ()
 
+find_package(Boost COMPONENTS program_options REQUIRED)
+if (Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    add_definitions( "-DHAS_BOOST" )
+endif()
+
+
 set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor")
 
 # Release
@@ -16,7 +23,8 @@ set(CMAKE_CXX_FLAGS_RELEASE
 
 # Debug and Profile
 set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -O0 -D_GLIBCXX_DEBUG -pg")
+        "${CMAKE_CXX_FLAGS_DEBUG} -O0 -pg")
+
 
 add_executable(search
         main.cc
@@ -72,4 +80,6 @@ add_executable(search
         algorithms/int_hash_set.h
         algorithms/dynamic_bitset.h
         search_statistics
-        )
+        options.h)
+
+target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})

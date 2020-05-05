@@ -11,7 +11,9 @@
 
 #include <boost/algorithm/string.hpp>
 
-SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method, Task &task)
+SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method,
+                                                      unsigned seed,
+                                                      Task &task)
 {
     std::cout << "Creating successor generator factory..." << std::endl;
     if (boost::iequals(method, "join")) {
@@ -27,7 +29,7 @@ SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method,
         return new OrderedJoinSuccessorGenerator<OrderTable>(task);
     }
     else if (boost::iequals(method, "random_join")) {
-        return new RandomSuccessorGenerator(task);
+        return new RandomSuccessorGenerator(task, seed);
     }
     else if (boost::iequals(method, "yannakakis")) {
         return new YannakakisSuccessorGenerator(task);

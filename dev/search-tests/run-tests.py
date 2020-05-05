@@ -55,11 +55,11 @@ class TestRun:
     def run(self):
         print ("Testing {} with {}...".format(self.instance, self.get_config()), end='', flush=True)
         output = subprocess.check_output([os.path.join(self.build, 'search', 'search'),
-                                          self.instance,
-                                          self.search,
-                                          self.heuristic,
-                                          self.generator,
-                                          self.state_representation])
+                                          '-f', self.instance,
+                                          '-s', self.search,
+                                          '-e', self.heuristic,
+                                          '-g', self.generator,
+                                          '-r', self.state_representation])
         return output
 
     def evaluate(self, output, optimal_cost):

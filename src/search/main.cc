@@ -1,3 +1,4 @@
+#include "options.h"
 #include "parser.h"
 #include "task.h"
 #include "utils.h"
@@ -17,13 +18,9 @@ using namespace std;
 int main(int argc, char *argv[]) {
     cout << "Initializing planner" << endl;
 
-    if (argc != 6) {
-        cerr << "Usage: ./planner [TASK INPUT] [SEARCH METHOD] [HEURISTIC] [SUCCESSOR GENERATOR] [STATE REPRESENTATION]"
-             << endl;
-        exit(-1);
-    }
+    Options opt(argc, argv);
 
-    ifstream in(argv[1]);
+    ifstream in(opt.get_filename());
     if (!in) {
         cerr << "Error opening the task file." << endl;
         exit(-1);
@@ -48,9 +45,11 @@ int main(int argc, char *argv[]) {
             "(This is guaranteed by the default translator.)" << endl;
 
     // Let's create a couple unique_ptr's that deal with mem allocation themselves
-    std::unique_ptr<SearchBase> search(SearchFactory::create(argv[2], argv[5]));
-    std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(argv[3], task));
-    std::unique_ptr<SuccessorGenerator> sgen(SuccessorGeneratorFactory::create(argv[4], task));
+    std::unique_ptr<SearchBase> search(SearchFactory::create(opt.get_search_engine(), opt.get_state_representation()));
+    std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt.get_evaluator(), task));
+    std::unique_ptr<SuccessorGenerator> sgen(SuccessorGeneratorFactory::create(opt.get_successor_generator(),
+                                                                               opt.get_seed(),
+                                                                               task));
 
     // Start search
     if (task.is_trivially_unsolvable()) {
