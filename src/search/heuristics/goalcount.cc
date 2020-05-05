@@ -3,7 +3,6 @@
 #include "../task.h"
 
 #include <cassert>
-#include <iostream>
 
 int Goalcount::compute_heuristic(const DBState &s, const Task &task) {
     /*
