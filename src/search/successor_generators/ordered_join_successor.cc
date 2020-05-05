@@ -5,12 +5,13 @@
 
 using namespace std;
 
-vector<Table> OrderedJoinSuccessorGenerator::parse_precond_into_join_program(const vector<Atom> &precond,
+template <typename OrderT>
+vector<Table> OrderedJoinSuccessorGenerator<OrderT>::parse_precond_into_join_program(const vector<Atom> &precond,
                                                                              const DBState &state) {
     /*
      * See comment in generic join successor.
      */
-    priority_queue<Table, vector<Table>, OrderTable> ordered_tables;
+    priority_queue<Table, vector<Table>, OrderT> ordered_tables;
     vector<Table> parsed_tables;
     parsed_tables.reserve(precond.size());
 
@@ -38,4 +39,12 @@ vector<Table> OrderedJoinSuccessorGenerator::parse_precond_into_join_program(con
     return parsed_tables;
 }
 
+template <typename OrderT>
+OrderedJoinSuccessorGenerator<OrderT>::OrderedJoinSuccessorGenerator(const Task &task)
+    : GenericJoinSuccessor(task)
+{
+}
 
+// explicit template instantiations
+template class OrderedJoinSuccessorGenerator<OrderTable>;
+template class OrderedJoinSuccessorGenerator<InverseOrderTable>;

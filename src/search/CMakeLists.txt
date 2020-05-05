@@ -47,7 +47,6 @@ add_executable(search
         successor_generators/successor_generator_factory.h
         successor_generators/naive_successor.h
         successor_generators/ordered_join_successor.cc successor_generators/ordered_join_successor.h
-        successor_generators/inverse_ordered_join_successor.cc successor_generators/inverse_ordered_join_successor.h
         successor_generators/generic_join_successor.cc successor_generators/generic_join_successor.h
         successor_generators/full_reducer_successor_generator.cc successor_generators/full_reducer_successor_generator.h
         database/semi_join.h database/semi_join.cc
