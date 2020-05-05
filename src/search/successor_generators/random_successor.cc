@@ -8,8 +8,8 @@
 
 using namespace std;
 
-RandomSuccessorGenerator::RandomSuccessorGenerator(const Task &task) : GenericJoinSuccessor(task) {
-    rng = std::default_random_engine(rand());
+RandomSuccessorGenerator::RandomSuccessorGenerator(const Task &task, int seed) : GenericJoinSuccessor(task) {
+    rng = std::default_random_engine(seed);
 }
 
 vector<Table> RandomSuccessorGenerator::parse_precond_into_join_program(

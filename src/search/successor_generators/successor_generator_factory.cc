@@ -29,7 +29,7 @@ SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method,
         return new OrderedJoinSuccessorGenerator<OrderTable>(task);
     }
     else if (boost::iequals(method, "random_join")) {
-        return new RandomSuccessorGenerator(task);
+        return new RandomSuccessorGenerator(task, seed);
     }
     else if (boost::iequals(method, "yannakakis")) {
         return new YannakakisSuccessorGenerator(task);

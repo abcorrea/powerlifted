@@ -14,7 +14,7 @@ class RandomSuccessorGenerator : public GenericJoinSuccessor {
 
 
 public:
-    explicit RandomSuccessorGenerator(const Task &task);
+    explicit RandomSuccessorGenerator(const Task &task, int seed);
 
     /**
     * @see generic_join_successor.h
