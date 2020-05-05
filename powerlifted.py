@@ -32,6 +32,8 @@ def parse_options():
                         required=True)
     parser.add_argument('--state', action='store', help='Successor generator method',
                         default="sparse", choices=("sparse", "extensional"))
+    parser.add_argument('--seed', action='store', help='Random seed.',
+                        default=1)
     parser.add_argument('--translator-output-file', dest='translator_file',
                         default='output.lifted',
                         help='Output file of the translator')
@@ -84,10 +86,11 @@ if __name__ == '__main__':
                            '--output-file', options.translator_file])
 
     cmd = [os.path.join(BUILD, 'search', 'search'),
-           options.translator_file,
-           options.search,
-           options.heuristic,
-           options.generator,
-           options.state]
+           '-f', options.translator_file,
+           '-s', options.search,
+           '-e', options.heuristic,
+           '-g', options.generator,
+           '-r', options.state,
+           '--seed', str(options.seed)]
     print(f'Executing "{" ".join(cmd)}"')
     subprocess.check_call(cmd)
