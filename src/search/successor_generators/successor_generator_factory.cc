@@ -12,7 +12,7 @@
 #include <boost/algorithm/string.hpp>
 
 SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method,
-                                                      int seed,
+                                                      unsigned seed,
                                                       Task &task)
 {
     std::cout << "Creating successor generator factory..." << std::endl;

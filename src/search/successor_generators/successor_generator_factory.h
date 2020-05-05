@@ -9,7 +9,7 @@ class SuccessorGenerator;
 class SuccessorGeneratorFactory {
 public:
     static SuccessorGenerator *create(const std::string &method,
-                                      int seed,
+                                      unsigned seed,
                                       Task &task);
 };
 
