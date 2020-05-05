@@ -41,7 +41,7 @@ public:
         } catch(const std::exception& ex) {
             std::cout << "Error with command-line options:" << ex.what() << std::endl;
             std::cout << std::endl << description << std::endl;
-            exit(0);
+            exit(1);
         }
 
         filename = vm["filename"].as<std::string>();
@@ -72,6 +72,7 @@ public:
     const std::string &get_state_representation() const {
         return state_representation;
     }
+
     unsigned get_seed() const {
         return seed;
     }
