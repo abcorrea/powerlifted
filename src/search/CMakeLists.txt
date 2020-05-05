@@ -42,9 +42,9 @@ add_executable(search
         database/utils
         heuristics/goalcount
         heuristics/heuristic.h
-        heuristics/heuristic_factory.h
+        heuristics/heuristic_factory
         heuristics/blind_heuristic.h
-        successor_generators/successor_generator_factory.h
+        successor_generators/successor_generator_factory
         successor_generators/naive_successor.h
         successor_generators/ordered_join_successor.cc successor_generators/ordered_join_successor.h
         successor_generators/generic_join_successor.cc successor_generators/generic_join_successor.h

@@ -1,4 +1,5 @@
 #include "hash_join.h"
+#include "../hash_structures.h"
 #include "table.h"
 #include "utils.h"
 

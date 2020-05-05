@@ -1,7 +1,7 @@
 #include "parser.h"
-
 #include "action_schema.h"
 #include "goal_condition.h"
+#include "task.h"
 
 #include <boost/algorithm/string.hpp>
 

@@ -6,6 +6,7 @@
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
 #include "search.h"
+#include "../task.h"
 #include "utils.h"
 
 #include <algorithm>

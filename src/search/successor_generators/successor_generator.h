@@ -1,15 +1,22 @@
 #ifndef SEARCH_SUCCESSOR_GENERATOR_H
 #define SEARCH_SUCCESSOR_GENERATOR_H
 
-#include "../action.h"
-#include "../action_schema.h"
-#include "../states/state.h"
-#include "../task.h"
-
-#include "../database/join.h"
-#include "../database/table.h"
-
+#include <unordered_set>
 #include <vector>
+
+// A few forward declarations :-)
+class ActionSchema;
+class DBState;
+class LiftedOperatorId;
+class Task;
+class Table;
+
+struct Atom;
+struct Relation;
+struct TupleHash;
+
+typedef std::vector<int> GroundAtom;
+typedef DBState StaticInformation;
 
 /**
  * This base class implements a join-successor using the join of all positive preconditions in the
@@ -44,20 +51,7 @@ class SuccessorGenerator {
                                                 std::vector<int> &map_indices_to_position) const;
 
 public:
-    explicit SuccessorGenerator(const Task &task) :
-        static_information(task.get_static_info())
-    {
-        obj_per_type.resize(task.type_names.size());
-        for (const Object &obj : task.objects) {
-            for (int type : obj.getTypes()) {
-                obj_per_type[type].push_back(obj.getIndex());
-            }
-        }
-        is_predicate_static.reserve(static_information.get_relations().size());
-        for (const auto &r : static_information.get_relations()) {
-            is_predicate_static.push_back(!r.tuples.empty());
-        }
-    }
+    explicit SuccessorGenerator(const Task &task);
 
     virtual ~SuccessorGenerator() = default;
 
@@ -80,10 +74,8 @@ public:
 
     const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
 
-    const std::unordered_set<GroundAtom,
-                             TupleHash> &get_tuples_from_static_relation(size_t i) const {
-        return static_information.get_tuples_of_relation(i);
-    }
+    const std::unordered_set<GroundAtom, TupleHash> &get_tuples_from_static_relation(
+        size_t i) const;
 
     double get_cyclic_time() const {
         return cyclic_time;
@@ -94,7 +86,6 @@ public:
     }
 
     GroundAtom ground_atom;
-    std::vector<std::pair<DBState, LiftedOperatorId>> successors;
 
 protected:
     size_t largest_intermediate_relation = 0;

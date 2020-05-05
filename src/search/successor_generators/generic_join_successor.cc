@@ -1,8 +1,14 @@
 #include "generic_join_successor.h"
 
+#include "../action_schema.h"
 #include "../database/hash_join.h"
 #include "../database/semi_join.h"
+#include "../database/table.h"
+#include "../structures.h"
+#include "../states/state.h"
 
+
+#include <algorithm>
 #include <cassert>
 #include <vector>
 

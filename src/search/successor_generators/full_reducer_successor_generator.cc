@@ -1,7 +1,9 @@
 #include "full_reducer_successor_generator.h"
-
+#include "../action.h"
 #include "../database/hash_join.h"
 #include "../database/semi_join.h"
+#include "../database/table.h"
+#include "../task.h"
 
 #include <cassert>
 #include <queue>

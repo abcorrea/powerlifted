@@ -3,6 +3,8 @@
 #include "../database/hash_join.h"
 #include "../database/project.h"
 #include "../database/semi_join.h"
+#include "../database/table.h"
+#include "../task.h"
 
 #include <cassert>
 #include <stack>
@@ -192,12 +194,7 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
  */
 Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
                                                 const DBState &state) {
-
-    /*
-     *  We need to parse precond first
-     */
-
-    vector<vector<int>> instantiations;
+    // We need to parse precond first
     const vector<Parameter> &params = action.get_parameters();
     vector<Atom> precond;
 

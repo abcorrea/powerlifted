@@ -1,8 +1,12 @@
 #include "random_successor.h"
 
-#include <vector>
+#include "../database/table.h"
+
+#include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <random>
+#include <vector>
 
 using namespace std;
 

@@ -1,12 +1,6 @@
 #ifndef SEARCH_HASH_JOIN_H
 #define SEARCH_HASH_JOIN_H
 
-//
-//
-//
-//
-//#include <boost/functional/hash.hpp>
-
 class Table;
 
 /**

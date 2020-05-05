@@ -1,7 +1,11 @@
 #include "ordered_join_successor.h"
+#include "../action.h"
+#include "../database/table.h"
+#include "../states/state.h"
+#include "../structures.h"
 
-#include <vector>
 #include <queue>
+#include <vector>
 
 using namespace std;
 

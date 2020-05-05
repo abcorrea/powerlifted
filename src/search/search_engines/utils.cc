@@ -1,7 +1,9 @@
 
 #include "utils.h"
+#include "../action.h"
 #include "../successor_generators/successor_generator.h"
 #include "../states/sparse_states.h"
+#include "../task.h"
 
 #include <algorithm>
 #include <fstream>
@@ -11,8 +13,7 @@
 
 using namespace std;
 
-//template<class PackedStateT>
-void print_no_solution_found(clock_t timer_start) {
+void print_no_solution_found(const clock_t& timer_start) {
     cerr << "No solution found!" << endl;
     cout << "Total time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
 }

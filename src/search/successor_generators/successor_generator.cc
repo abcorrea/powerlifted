@@ -1,11 +1,31 @@
 #include "successor_generator.h"
 
 #include "../action.h"
+#include "../action_schema.h"
+#include "../states/state.h"
+#include "../task.h"
+#include "../database/table.h"
 
 #include <cassert>
 #include <vector>
 
 using namespace std;
+
+SuccessorGenerator::SuccessorGenerator(const Task &task)  :
+    static_information(task.get_static_info())
+{
+    obj_per_type.resize(task.type_names.size());
+    for (const Object &obj : task.objects) {
+        for (int type : obj.getTypes()) {
+            obj_per_type[type].push_back(obj.getIndex());
+        }
+    }
+    is_predicate_static.reserve(static_information.get_relations().size());
+    for (const auto &r : static_information.get_relations()) {
+        is_predicate_static.push_back(!r.tuples.empty());
+    }
+}
+
 
 /**
  * Generate successors states for a given state
@@ -35,7 +55,6 @@ using namespace std;
 vector<LiftedOperatorId>
 SuccessorGenerator::get_applicable_actions(const std::vector<ActionSchema> &actions,
                                            const DBState &state) {
-    successors.clear();
     vector<LiftedOperatorId> applicable_operators;
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
@@ -260,4 +279,9 @@ bool SuccessorGenerator::is_ground_action_applicable(const ActionSchema &action,
         }
     }
     return true;
+}
+const std::unordered_set<GroundAtom, TupleHash> &
+SuccessorGenerator::get_tuples_from_static_relation(size_t i) const
+{
+    return static_information.get_tuples_of_relation(i);
 }

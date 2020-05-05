@@ -3,11 +3,8 @@
 
 #include "successor_generator.h"
 
-#include <cstdlib>
-#include <ctime>
-#include <random>
-#include <set>
 #include <map>
+#include <set>
 
 /**
  * This class is not a successor generator per se. It just contain most of the common functions
