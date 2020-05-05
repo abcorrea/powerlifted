@@ -3,6 +3,7 @@
 #include "../task.h"
 
 #include <cassert>
+#include <iostream>
 
 int Goalcount::compute_heuristic(const DBState &s, const Task &task) {
     /*
@@ -11,10 +12,9 @@ int Goalcount::compute_heuristic(const DBState &s, const Task &task) {
      *
      */
     auto nullary_atoms = s.get_nullary_atoms();
-    int h = compute_reached_nullary_atoms(task.goal.positive_nullary_goals,
-                                          nullary_atoms);
-    h += compute_reached_nullary_atoms(task.goal.negative_nullary_goals,
-                                       nullary_atoms);;
+    int h = compute_unreached_nullary_atoms(task.goal.positive_nullary_goals,
+                                            task.goal.negative_nullary_goals,
+                                            nullary_atoms);
 
     for (const AtomicGoal &atomicGoal : task.goal.goal) {
         assert(atomicGoal.predicate==
@@ -36,12 +36,21 @@ int Goalcount::atom_not_satisfied(const DBState &s,
 }
 
 int
-Goalcount::compute_reached_nullary_atoms(const std::unordered_set<int> &indices,
-                                         const std::vector<bool> &nullary_atoms) {
+Goalcount::compute_unreached_nullary_atoms(const std::unordered_set<int> &positive,
+                                           const std::unordered_set<int> &negative,
+                                           const std::vector<bool> &nullary_atoms) {
     int h = 0;
-    for (int pred : indices) {
-        if (!nullary_atoms[pred])
+    for (int pred : positive) {
+        if (!nullary_atoms[pred]) {
             h++;
+            std::cerr << "positive" << std::endl;
+        }
+    }
+    for (int pred : negative) {
+        if (nullary_atoms[pred]) {
+            h++;
+            std::cerr << "negative" << std::endl;
+        }
     }
     return h;
 }

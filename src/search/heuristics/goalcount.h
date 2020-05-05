@@ -20,9 +20,9 @@ public:
     int compute_heuristic(const DBState & s, const Task& task) final;
 
 private:
-  static int compute_reached_nullary_atoms(
-      const std::unordered_set<int> &indices,
-      const std::vector<bool> &nullary_atoms);
+  static int compute_unreached_nullary_atoms(const std::unordered_set<int> &positive,
+                                             const std::unordered_set<int> &negative,
+                                             const std::vector<bool> &nullary_atoms);
   int atom_not_satisfied(const DBState &s, const AtomicGoal &atomicGoal) const;
 };
 

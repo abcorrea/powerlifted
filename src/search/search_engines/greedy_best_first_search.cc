@@ -37,7 +37,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     index_to_state.push_back(state_packer.pack(task.initial_state));
     cheapest_parent.push_back(make_pair(-1, LiftedOperatorId(-1, vector<int>())));
 
-    this->heuristic_layer = heuristic.compute_heuristic(task.initial_state, task) + 1;
+    this->heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
     cout << "Initial heuristic value " << this->heuristic_layer << endl;
     statistics.report_f_value_progress(this->heuristic_layer);
 
