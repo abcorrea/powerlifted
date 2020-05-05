@@ -13,7 +13,7 @@ class Options {
     std::string search_engine;
     std::string evaluator;
     std::string state_representation;
-    int seed;
+    unsigned seed;
 
 public:
     Options(int argc, char** argv) {
@@ -21,7 +21,7 @@ public:
         description.add_options()
             ("filename,f", po::value<std::string>()->default_value("output.lifted"), "Lifted task file name.")
             ("help,h", "Display this help message.")
-            ("seed", po::value<int>()->default_value(1), "Random seed.")
+            ("seed", po::value<unsigned>()->default_value(1), "Random seed.")
             ("evaluator,e", po::value<std::string>()->required(), "Heuristic evaluator.")
             ("generator,g", po::value<std::string>()->required(), "Successor generator method.")
             ("search,s", po::value<std::string>()->required(), "Search engine.")
@@ -49,7 +49,7 @@ public:
         evaluator = vm["evaluator"].as<std::string>();
         search_engine = vm["search"].as<std::string>();
         state_representation = vm["state-representation"].as<std::string>();
-        seed = vm["seed"].as<int>();
+        seed = vm["seed"].as<unsigned>();
 
     }
 
@@ -72,7 +72,7 @@ public:
     const std::string &get_state_representation() const {
         return state_representation;
     }
-    int get_seed() const {
+    unsigned get_seed() const {
         return seed;
     }
 

@@ -12,9 +12,8 @@
 class RandomSuccessorGenerator : public GenericJoinSuccessor {
     std::default_random_engine rng;
 
-
 public:
-    explicit RandomSuccessorGenerator(const Task &task, int seed);
+    explicit RandomSuccessorGenerator(const Task &task, unsigned seed);
 
     /**
     * @see generic_join_successor.h
