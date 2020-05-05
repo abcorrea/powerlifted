@@ -51,7 +51,8 @@ def main():
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
     assert isinstance(task.goal, pddl.Conjunction) or \
-           isinstance(task.goal, pddl.Atom), \
+           isinstance(task.goal, pddl.Atom) or \
+           isinstance(task.goal, pddl.NegatedAtom), \
         "Goal is not conjunctive."
 
     with timers.timing("Compiling types into unary predicates"):
@@ -336,7 +337,9 @@ def get_initial_state_size(static_pred, task):
 def remove_static_predicates_from_goal(task, static_pred):
     parts = []
     removed = 0
-    if isinstance(task.goal, pddl.conditions.Atom) or isinstance(task.goal, pddl.Atom):
+    if isinstance(task.goal, pddl.conditions.Atom) or \
+       isinstance(task.goal, pddl.Atom) or \
+       isinstance(task.goal, pddl.NegatedAtom):
         if task.goal.predicate not in static_pred:
             return
         else:
