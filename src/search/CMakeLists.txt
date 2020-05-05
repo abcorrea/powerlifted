@@ -4,9 +4,9 @@ project(search)
 set(CMAKE_CXX_STANDARD 17)
 
 
-if(CMAKE_CONFIGURATION_TYPES)
+if (CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES Debug Release)
-endif()
+endif ()
 
 set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor")
 
@@ -42,12 +42,11 @@ add_executable(search
         database/utils
         heuristics/goalcount
         heuristics/heuristic.h
-        heuristics/heuristic_factory.h
+        heuristics/heuristic_factory
         heuristics/blind_heuristic.h
-        successor_generators/successor_generator_factory.h
-        successor_generators/naive_successor.cc successor_generators/naive_successor.h
+        successor_generators/successor_generator_factory
+        successor_generators/naive_successor.h
         successor_generators/ordered_join_successor.cc successor_generators/ordered_join_successor.h
-        successor_generators/inverse_ordered_join_successor.cc successor_generators/inverse_ordered_join_successor.h
         successor_generators/generic_join_successor.cc successor_generators/generic_join_successor.h
         successor_generators/full_reducer_successor_generator.cc successor_generators/full_reducer_successor_generator.h
         database/semi_join.h database/semi_join.cc
@@ -73,4 +72,4 @@ add_executable(search
         algorithms/int_hash_set.h
         algorithms/dynamic_bitset.h
         search_statistics
-)
+        )

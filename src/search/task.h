@@ -68,6 +68,10 @@ public:
 
   bool is_trivially_unsolvable() const;
 
+  const StaticInformation& get_static_info() const {
+      return static_info;
+  }
+
   //! Return a vector R where R[i] contains all objects of type i (or of some subtype).
   std::vector<std::vector<int>> compute_object_index() const;
 

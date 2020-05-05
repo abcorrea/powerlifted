@@ -6,6 +6,7 @@
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
 #include "search.h"
+#include "../task.h"
 #include "utils.h"
 
 #include <algorithm>
@@ -36,7 +37,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     index_to_state.push_back(state_packer.pack(task.initial_state));
     cheapest_parent.push_back(make_pair(-1, LiftedOperatorId(-1, vector<int>())));
 
-    this->heuristic_layer = heuristic.compute_heuristic(task.initial_state, task) + 1;
+    this->heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
     cout << "Initial heuristic value " << this->heuristic_layer << endl;
     statistics.report_f_value_progress(this->heuristic_layer);
 
@@ -84,17 +85,15 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                 cheapest_parent, state_packer.pack(state), visited,index_to_state, state_packer, task);
             return SOLVED;
         }
-        vector<pair<DBState, LiftedOperatorId>> successors =
-            generator.generate_successors(task.actions, state, task.static_info);
+        vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
-        this->generations += successors.size();
-        statistics.inc_generated(successors.size());
+        this->generations += applicable_actions.size();
+        statistics.inc_generated(applicable_actions.size());
 
-        for (const pair<DBState, LiftedOperatorId> &successor : successors) {
-            const DBState &s = successor.first;
+        for (const LiftedOperatorId &a : applicable_actions) {
+            const DBState &s = generator.generate_successors(a, task.actions[a.get_index()], state);
             const SparsePackedState packed = state_packer.pack(s);
-            const LiftedOperatorId &a = successor.second;
-            int dist = g + task.actions[a.index].get_cost();
+            int dist = g + task.actions[a.get_index()].get_cost();
             int new_h = heuristic.compute_heuristic(s, task);
             statistics.inc_evaluations();
 

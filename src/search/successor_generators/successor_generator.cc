@@ -1,11 +1,31 @@
 #include "successor_generator.h"
 
 #include "../action.h"
+#include "../action_schema.h"
+#include "../states/state.h"
+#include "../task.h"
+#include "../database/table.h"
 
 #include <cassert>
 #include <vector>
 
 using namespace std;
+
+SuccessorGenerator::SuccessorGenerator(const Task &task)  :
+    static_information(task.get_static_info())
+{
+    obj_per_type.resize(task.type_names.size());
+    for (const Object &obj : task.objects) {
+        for (int type : obj.getTypes()) {
+            obj_per_type[type].push_back(obj.getIndex());
+        }
+    }
+    is_predicate_static.reserve(static_information.get_relations().size());
+    for (const auto &r : static_information.get_relations()) {
+        is_predicate_static.push_back(!r.tuples.empty());
+    }
+}
+
 
 /**
  * Generate successors states for a given state
@@ -32,77 +52,93 @@ using namespace std;
  * @return vector of pairs <State, Action> where state is the successor state and
  * action is the ground action generating it from the current state
  */
-const std::vector<std::pair<DBState, LiftedOperatorId>> &
-SuccessorGenerator::generate_successors(const std::vector<ActionSchema> &actions,
-                                        const DBState &state,
-                                        const StaticInformation &staticInformation)
-{
-
-    // TODO Apply nullary effects only once
-    successors.clear();
+vector<LiftedOperatorId>
+SuccessorGenerator::get_applicable_actions(const std::vector<ActionSchema> &actions,
+                                           const DBState &state) {
+    vector<LiftedOperatorId> applicable_operators;
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
-        bool trivially_inapplicable = false;
-        for (size_t i = 0;
-             i < action.get_positive_nullary_precond().size() and !trivially_inapplicable;
-             ++i) {
-            if ((action.get_positive_nullary_precond()[i] and !state.nullary_atoms[i]) or
-                (action.get_negative_nullary_precond()[i] and state.nullary_atoms[i])) {
-                trivially_inapplicable = true;
-            }
-        }
-        if (trivially_inapplicable) {
+        if (is_trivially_inapplicable(state, action)) {
             continue;
         }
 
-        Table instantiations = instantiate(action, state, staticInformation);
-
-        if (instantiations.tuples.empty()) {
-            // Either there is no applicable instantiation, or the action is ground
-            if (action.get_parameters().empty()) {
-                // Action is ground
-                bool applicable = is_ground_action_applicable(action, state, staticInformation);
-                if (!applicable)
-                    continue;
-                vector<bool> new_nullary_atoms(state.nullary_atoms);
-                apply_nullary_effects(action, new_nullary_atoms);
-                vector<Relation> new_relation(state.relations);
-                apply_ground_action_effects(action, new_relation);
-                successors.emplace_back(DBState(move(new_relation), move(new_nullary_atoms)),
-                                        LiftedOperatorId(action.get_index(), vector<int>()));
-            }
-            else {
-                // Action not applicable
+        if (action.is_ground()) {
+            bool applicable = is_ground_action_applicable(action, state);
+            if (applicable)
+                applicable_operators.emplace_back(action.get_index(), vector<int>());
+        } else {
+            Table instantiations = instantiate(action, state);
+            if (instantiations.tuples.empty()) {
+                // No applicable action, skip this action schema;
                 continue;
             }
-        }
-        else {
-            vector<bool> new_nullary_atoms(state.nullary_atoms);
-            apply_nullary_effects(action, new_nullary_atoms);
+            vector<int> free_var_indices;
+            vector<int> map_indices_to_position;
+            compute_map_indices_to_table_positions(instantiations,
+                                                   free_var_indices,
+                                                   map_indices_to_position);
             for (const vector<int> &tuple_with_const : instantiations.tuples) {
-                // First, order tuple of indices and then apply effects
-                vector<int> tuple;
-                vector<int> indices;
-                for (size_t j = 0; j < instantiations.tuple_index.size(); ++j) {
-                    if (instantiations.tuple_index[j] >= 0) {
-                        indices.push_back(instantiations.tuple_index[j]);
-                        tuple.push_back(tuple_with_const[j]);
-                    }
-                }
-                vector<int> ordered_tuple(tuple.size());
-                assert(ordered_tuple.size() == indices.size());
-                for (size_t i = 0; i < indices.size(); ++i) {
-                    ordered_tuple[indices[i]] = tuple[i];
-                }
-                vector<Relation> new_relation(state.relations);
-                apply_lifted_action_effects(action, tuple, indices, new_relation);
-                successors.emplace_back(
-                    DBState(move(new_relation), vector<bool>(new_nullary_atoms)),
-                                        LiftedOperatorId(action.get_index(), move(ordered_tuple)));
+                vector<int> ordered_tuple(free_var_indices.size());
+                order_tuple_by_free_variable_order(free_var_indices, map_indices_to_position,
+                                                   tuple_with_const, ordered_tuple);
+                applicable_operators.emplace_back(action.get_index(), move(ordered_tuple));
             }
         }
     }
-    return successors;
+
+    return applicable_operators;
+}
+
+DBState SuccessorGenerator::generate_successors(
+    const LiftedOperatorId &op,
+    const ActionSchema& action,
+    const DBState &state) {
+
+    vector<bool> new_nullary_atoms(state.get_nullary_atoms());
+    vector<Relation> new_relation(state.get_relations());
+    apply_nullary_effects(action, new_nullary_atoms);
+
+    if (action.is_ground()) {
+        apply_ground_action_effects(action, new_relation);
+    }
+    else {
+        apply_lifted_action_effects(action, op.get_instantiation(), new_relation);
+    }
+
+    return DBState(move(new_relation), move(new_nullary_atoms));
+}
+
+void SuccessorGenerator::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,
+                                                            const vector<int> &map_indices_to_position,
+                                                            const vector<int> &tuple_with_const,
+                                                            vector<int> &ordered_tuple) const {
+    for (size_t i = 0; i < free_var_indices.size(); ++i) {
+        ordered_tuple[free_var_indices[i]] = tuple_with_const[map_indices_to_position[i]];
+    }
+}
+
+void SuccessorGenerator::compute_map_indices_to_table_positions(const Table &instantiations,
+                                                                vector<int> &free_var_indices,
+                                                                vector<int> &map_indices_to_position) const {
+    for (size_t j = 0; j < instantiations.tuple_index.size(); ++j) {
+        if (instantiations.index_is_variable(j)) {
+            free_var_indices.push_back(instantiations.tuple_index[j]);
+            map_indices_to_position.push_back(j);
+        }
+    }
+}
+
+bool SuccessorGenerator::is_trivially_inapplicable(const DBState &state, const ActionSchema &action) const {
+    const auto& positive_precond = action.get_positive_nullary_precond();
+    const auto& negative_precond = action.get_negative_nullary_precond();
+    const auto& nullary_atoms = state.get_nullary_atoms();
+    for (size_t i = 0; i < positive_precond.size(); ++i) {
+        if ((positive_precond[i] and !nullary_atoms[i]) or
+            (negative_precond[i] and nullary_atoms[i])) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void SuccessorGenerator::apply_nullary_effects(const ActionSchema &action,
@@ -146,11 +182,10 @@ void SuccessorGenerator::apply_ground_action_effects(const ActionSchema &action,
 
 void SuccessorGenerator::apply_lifted_action_effects(const ActionSchema &action,
                                                      const vector<int> &tuple,
-                                                     const vector<int> &indices,
                                                      vector<Relation> &new_relation)
 {
     for (const Atom &eff : action.get_effects()) {
-        const GroundAtom &ga = tuple_to_atom(tuple, indices, eff);
+        const GroundAtom &ga = tuple_to_atom(tuple, eff);
         assert(eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
         if (eff.negated) {
             // Remove from relation
@@ -175,22 +210,14 @@ void SuccessorGenerator::apply_lifted_action_effects(const ActionSchema &action,
  * argument is a constant or not. If it is, then we simply pass the constant value; otherwise we use
  *    the instantiation that we found.
  */
-const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
-                                                    const vector<int> &indices,
-                                                    const Atom &eff)
+const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple, const Atom &eff)
 {
-
-    vector<int> ordered_tuple(tuple.size(), -1);
-    assert(tuple.size() == indices.size());
-    for (size_t i = 0; i < indices.size(); ++i) {
-        ordered_tuple[indices[i]] = tuple[i];
-    }
 
     ground_atom.clear();
     ground_atom.reserve(eff.arguments.size());
     for (size_t i = 0; i < eff.arguments.size(); i++) {
         if (!eff.arguments[i].constant)
-            ground_atom.push_back(ordered_tuple[eff.arguments[i].index]);
+            ground_atom.push_back(tuple[eff.arguments[i].index]);
         else
             ground_atom.push_back(eff.arguments[i].index);
     }
@@ -211,8 +238,7 @@ const GroundAtom &SuccessorGenerator::tuple_to_atom(const vector<int> &tuple,
  * 'action' is a ground action here.
  */
 bool SuccessorGenerator::is_ground_action_applicable(const ActionSchema &action,
-                                                     const DBState &state,
-                                                     const StaticInformation &staticInformation)
+                                                     const DBState &state)
 {
     for (const Atom &precond : action.get_precondition()) {
         int index = precond.predicate_symbol;
@@ -222,27 +248,27 @@ bool SuccessorGenerator::is_ground_action_applicable(const ActionSchema &action,
             assert(arg.constant);
             tuple.push_back(arg.index);  // Index of a constant is the obj index
         }
-        if (!state.relations[index].tuples.empty()) {
+        const auto& tuples_in_relation = state.get_tuples_of_relation(index);
+        const auto& it_end_tuples_in_relation = tuples_in_relation.end();
+        const auto& static_tuples = get_tuples_from_static_relation(index);
+        const auto& it_end_static_tuples = static_tuples.end();
+        if (!tuples_in_relation.empty()) {
             if (precond.negated) {
-                if (state.relations[index].tuples.find(tuple) !=
-                    state.relations[index].tuples.end())
+                if (tuples_in_relation.find(tuple) != it_end_tuples_in_relation)
                     return false;
             }
             else {
-                if (state.relations[index].tuples.find(tuple) ==
-                    state.relations[index].tuples.end())
+                if (tuples_in_relation.find(tuple) == it_end_tuples_in_relation)
                     return false;
             }
         }
-        else if (!staticInformation.relations[index].tuples.empty()) {
+        else if (!static_tuples.empty()) {
             if (precond.negated) {
-                if (staticInformation.relations[index].tuples.find(tuple) !=
-                    staticInformation.relations[index].tuples.end())
+                if (static_tuples.find(tuple) != it_end_static_tuples)
                     return false;
             }
             else {
-                if (staticInformation.relations[index].tuples.find(tuple) ==
-                    staticInformation.relations[index].tuples.end())
+                if (static_tuples.find(tuple) == it_end_static_tuples)
                     return false;
             }
         }
@@ -251,4 +277,9 @@ bool SuccessorGenerator::is_ground_action_applicable(const ActionSchema &action,
         }
     }
     return true;
+}
+const std::unordered_set<GroundAtom, TupleHash> &
+SuccessorGenerator::get_tuples_from_static_relation(size_t i) const
+{
+    return static_information.get_tuples_of_relation(i);
 }

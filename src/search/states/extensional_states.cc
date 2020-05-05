@@ -58,7 +58,7 @@ ExtensionalStatePacker::ExtensionalStatePacker(const Task &task) :
         }
 
         // Looks a bit redundant, but that's the way it is:
-        blank_state.relations[pid].predicate_symbol = pid;
+        blank_state.set_relation_predicate_symbol(pid, pid);
     }
 
     std::cout << "Indexed a total of " << num_atoms() << " atoms" << std::endl;
@@ -75,14 +75,15 @@ ExtensionalPackedState ExtensionalStatePacker::pack(const DBState &state) const 
 
     // state.nullary_atoms contains one element per predicate index, regardless of whether
     // the predicate is nullary or not
-    for (std::size_t i = 0, sz = state.nullary_atoms.size(); i < sz; ++i) {
-        if (state.nullary_atoms[i]) {
+    const auto& nullary_atoms = state.get_nullary_atoms();
+    for (std::size_t i = 0, sz = nullary_atoms.size(); i < sz; ++i) {
+        if (nullary_atoms[i]) {
 //            packed.atoms[to_index(i, {})] = true;
             packed.atoms.set(to_index(i, {}));
         }
     }
 
-    for (const Relation &relation:state.relations) {
+    for (const Relation &relation:state.get_relations()) {
         int pid = relation.predicate_symbol;
         for (const auto &tuple:relation.tuples) {
 //            packed.atoms[to_index(pid, tuple)] = true;
@@ -105,10 +106,10 @@ DBState ExtensionalStatePacker::unpack(const ExtensionalPackedState &packed) con
         const args_t& args = x.second;
         if (args.empty()) {  // A nullary predicate
             // Make true the position corresponding to *the predicate*
-            result.nullary_atoms[pid] = true;
+            result.set_nullary_atom(pid, true);
 
         } else {  // An arity > 0 predicate
-            result.relations[pid].tuples.insert(args);
+            result.insert_tuple_in_relation(args, pid);
         }
     }
 

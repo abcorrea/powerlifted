@@ -10,37 +10,42 @@ int Goalcount::compute_heuristic(const DBState &s, const Task &task) {
      * goal condition and checks which ones are satisfied or not.
      *
      */
-    int h = compute_reached_nullary_atoms(task.goal.positive_nullary_goals,
-                                          s.nullary_atoms);
-    h += compute_reached_nullary_atoms(task.goal.negative_nullary_goals,
-                                       s.nullary_atoms);;
+    const auto& nullary_atoms = s.get_nullary_atoms();
+    int h = compute_unreached_nullary_atoms(task.goal.positive_nullary_goals,
+                                            task.goal.negative_nullary_goals,
+                                            nullary_atoms);
 
     for (const AtomicGoal &atomicGoal : task.goal.goal) {
         assert(atomicGoal.predicate==
-            s.relations[atomicGoal.predicate].predicate_symbol);
+            s.get_relations()[atomicGoal.predicate].predicate_symbol);
         h += atom_not_satisfied(s, atomicGoal);
     }
     return h;
 }
 
 
-int Goalcount::atom_not_satisfied(const DBState &s,
-                                  const AtomicGoal &atomicGoal) const {
-    const auto it = s.relations[atomicGoal.predicate].tuples.find(atomicGoal.args);
-    const auto end = s.relations[atomicGoal.predicate].tuples.end();
-    if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
-        return 1;
-    }
-    return 0;
+bool Goalcount::atom_not_satisfied(const DBState &s,
+                                   const AtomicGoal &atomicGoal) const {
+    const auto &tuples = s.get_relations()[atomicGoal.predicate].tuples;
+    const auto it = tuples.find(atomicGoal.args);
+    const auto end = tuples.end();
+    return (!atomicGoal.negated && it==end) || (atomicGoal.negated && it!=end);
 }
 
 int
-Goalcount::compute_reached_nullary_atoms(const std::unordered_set<int> &indices,
-                                         const std::vector<bool> &nullary_atoms) {
+Goalcount::compute_unreached_nullary_atoms(const std::unordered_set<int> &positive,
+                                           const std::unordered_set<int> &negative,
+                                           const std::vector<bool> &nullary_atoms) {
     int h = 0;
-    for (int pred : indices) {
-        if (!nullary_atoms[pred])
+    for (int pred : positive) {
+        if (!nullary_atoms[pred]) {
             h++;
+        }
+    }
+    for (int pred : negative) {
+        if (nullary_atoms[pred]) {
+            h++;
+        }
     }
     return h;
 }

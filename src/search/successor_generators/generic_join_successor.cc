@@ -1,16 +1,21 @@
 #include "generic_join_successor.h"
 
+#include "../action_schema.h"
 #include "../database/hash_join.h"
 #include "../database/semi_join.h"
+#include "../database/table.h"
+#include "../structures.h"
+#include "../states/state.h"
 
+
+#include <algorithm>
 #include <cassert>
 #include <vector>
 
 using namespace std;
 
 Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
-                                        const DBState &state,
-                                        const StaticInformation &staticInformation)
+                                        const DBState &state)
 {
     /*
      * We first certify that there are preconditions for the action.
@@ -35,7 +40,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     assert(!precond.empty());
 
     vector<Table> tables =
-        parse_precond_into_join_program(precond, state, staticInformation, action.get_index());
+        parse_precond_into_join_program(precond, state);
     assert(!tables.empty());
     if (tables.size() != precond.size()) {
         // This means that the projection over the constants completely eliminated one table,
@@ -109,7 +114,7 @@ void GenericJoinSuccessor::select_tuples(const DBState &s,
                                          std::vector<GroundAtom> &tuples,
                                          const std::vector<int> &constants)
 {
-    for (const GroundAtom &atom : s.relations[a.predicate_symbol].tuples) {
+    for (const GroundAtom &atom : s.get_relations()[a.predicate_symbol].tuples) {
         bool match_constants = true;
         for (int c : constants) {
             assert(a.arguments[c].constant);
@@ -124,9 +129,7 @@ void GenericJoinSuccessor::select_tuples(const DBState &s,
 
 vector<Table>
 GenericJoinSuccessor::parse_precond_into_join_program(const vector<Atom> &precond,
-                                                      const DBState &state,
-                                                      const StaticInformation &staticInformation,
-                                                      int action_index)
+                                                      const DBState &state)
 {
     /*
      * Parse the state and the atom preconditions into a set of tables
@@ -147,10 +150,10 @@ GenericJoinSuccessor::parse_precond_into_join_program(const vector<Atom> &precon
         vector<int> indices;
         get_indices_and_constants_in_preconditions(indices, constants, a);
         vector<GroundAtom> tuples;
-        if (!staticInformation.relations[a.predicate_symbol].tuples.empty()) {
+        if (is_static(a.predicate_symbol)) {
             // If this predicate has information in the static information table,
             // then it must be a static predicate
-            select_tuples(staticInformation, a, tuples, constants);
+            select_tuples(static_information, a, tuples, constants);
         }
         else {
             // If this predicate does not have information in the static information table,

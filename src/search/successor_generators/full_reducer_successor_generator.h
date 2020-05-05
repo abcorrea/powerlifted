@@ -11,8 +11,7 @@ public:
    */
     explicit FullReducerSuccessorGenerator(const Task &task);
 
-    Table instantiate(const ActionSchema &action, const DBState &state,
-                      const StaticInformation &staticInformation) override;
+    Table instantiate(const ActionSchema &action, const DBState &state) override;
 
 private:
     std::vector<std::vector<std::pair<int, int>>> full_reducer_order;

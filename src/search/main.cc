@@ -10,6 +10,7 @@
 #include "successor_generators/successor_generator_factory.h"
 
 #include <iostream>
+#include <memory>
 
 using namespace std;
 

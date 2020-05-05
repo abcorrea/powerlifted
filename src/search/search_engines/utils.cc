@@ -1,7 +1,9 @@
 
 #include "utils.h"
+#include "../action.h"
 #include "../successor_generators/successor_generator.h"
 #include "../states/sparse_states.h"
+#include "../task.h"
 
 #include <algorithm>
 #include <fstream>
@@ -11,8 +13,7 @@
 
 using namespace std;
 
-//template<class PackedStateT>
-void print_no_solution_found(clock_t timer_start) {
+void print_no_solution_found(const clock_t& timer_start) {
     cerr << "No solution found!" << endl;
     cout << "Total time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << endl;
 }
@@ -47,8 +48,8 @@ void extract_plan(
     ofstream plan_file("sas_plan");
     for (const LiftedOperatorId &a : actions_in_the_plan) {
         total_plan_cost += 1;
-        plan_file << '(' << task.actions[a.index].get_name() << " ";
-        for (const int obj : a.instantiation) {
+        plan_file << '(' << task.actions[a.get_index()].get_name() << " ";
+        for (const int obj : a.get_instantiation()) {
             plan_file << task.objects[obj].getName() << " ";
         }
         plan_file << ")\n";
@@ -62,8 +63,8 @@ void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
     std::ofstream plan_file("sas_plan");
     for (const LiftedOperatorId &a:plan) {
         total_plan_cost += 1;
-        plan_file << '(' << task.actions[a.index].get_name() << " ";
-        for (const int obj : a.instantiation) {
+        plan_file << '(' << task.actions[a.get_index()].get_name() << " ";
+        for (const int obj : a.get_instantiation()) {
             plan_file << task.objects[obj].getName() << " ";
         }
         plan_file << ")\n";

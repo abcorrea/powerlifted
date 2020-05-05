@@ -1,9 +1,10 @@
 #ifndef SEARCH_PARSER_H
 #define SEARCH_PARSER_H
 
-#include "task.h"
-
 #include <fstream>
+#include <vector>
+
+class Task;
 
 bool parse(Task &task, const std::ifstream &in);
 void output_error(std::string &msg);

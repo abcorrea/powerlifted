@@ -89,10 +89,11 @@ SparseStatePacker::SparseStatePacker(const Task &task) {
 
 SparsePackedState SparseStatePacker::pack(const DBState &state) const {
     SparsePackedState packed_state;
-    packed_state.packed_relations.reserve(state.relations.size());
-    packed_state.predicate_symbols.reserve(state.relations.size());
-    packed_state.nullary_atoms = state.nullary_atoms;
-    for (const Relation &r : state.relations) {
+    const auto &relations = state.get_relations();
+    packed_state.packed_relations.reserve(relations.size());
+    packed_state.predicate_symbols.reserve(relations.size());
+    packed_state.nullary_atoms = state.get_nullary_atoms();
+    for (const Relation &r : relations) {
         std::vector<long> packed_relation;
         packed_relation.reserve(r.tuples.size());
         int predicate_index = r.predicate_symbol;

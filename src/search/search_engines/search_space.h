@@ -1,9 +1,7 @@
 
 #pragma once
 
-
 #include "../algorithms/int_hash_set.h"
-#include "../states/sparse_states.h"
 #include "../utils/segmented_vector.h"
 #include "nodes.h"
 

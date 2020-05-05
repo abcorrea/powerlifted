@@ -2,6 +2,8 @@
 #include "project.h"
 #include "table.h"
 
+#include "../hash_structures.h"
+
 #include <unordered_map>
 #include <vector>
 

@@ -36,8 +36,6 @@ void Task::create_empty_initial_state(size_t number_predicates)
     }
     initial_state = DBState(move(fluents), vector<bool>(predicates.size(), false));
     static_info = StaticInformation(move(static_preds), vector<bool>(predicates.size(), false));
-    initial_state.nullary_atoms.clear();
-    initial_state.nullary_atoms.resize(number_predicates, false);
 }
 
 void Task::dump_state(DBState s) const
@@ -45,13 +43,15 @@ void Task::dump_state(DBState s) const
     /*
      * Output initial state in a human readable way.
      */
-    for (size_t j = 0; j < s.nullary_atoms.size(); ++j) {
-        if (s.nullary_atoms[j])
+    const auto& nullary_atoms = s.get_nullary_atoms();
+    for (size_t j = 0; j < nullary_atoms.size(); ++j) {
+        if (nullary_atoms[j])
             cout << predicates[j].getName() << ", ";
     }
-    for (size_t i = 0; i < s.relations.size(); ++i) {
+    const auto& relations = s.get_relations();
+    for (size_t i = 0; i < relations.size(); ++i) {
         string relation_name = predicates[i].getName();
-        unordered_set<GroundAtom, TupleHash> tuples = s.relations[i].tuples;
+        unordered_set<GroundAtom, TupleHash> tuples = relations[i].tuples;
         for (auto &tuple : tuples) {
             cout << relation_name << "(";
             for (auto obj : tuple) {
@@ -103,16 +103,16 @@ void Task::initialize_action_schemas(const std::vector<ActionSchema> &action_lis
 bool Task::is_goal(const DBState &state) const
 {
     for (int pred : goal.positive_nullary_goals) {
-        if (!state.nullary_atoms[pred])
+        if (!state.get_nullary_atoms()[pred])
             return false;
     }
     for (int pred : goal.negative_nullary_goals) {
-        if (!state.nullary_atoms[pred])
+        if (!state.get_nullary_atoms()[pred])
             return false;
     }
     for (const AtomicGoal &atomicGoal : goal.goal) {
         int goal_predicate = atomicGoal.predicate;
-        const Relation &relation_at_goal_predicate = state.relations[goal_predicate];
+        const Relation &relation_at_goal_predicate = state.get_relations()[goal_predicate];
 
         assert(!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate());
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
@@ -136,7 +136,7 @@ bool Task::is_trivially_unsolvable() const
      */
     for (const AtomicGoal &atomicGoal : goal.goal) {
         int goal_predicate = atomicGoal.predicate;
-        Relation relation_at_goal_predicate = static_info.relations[goal_predicate];
+        Relation relation_at_goal_predicate = static_info.get_relations()[goal_predicate];
         if (!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate())
             continue;
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);

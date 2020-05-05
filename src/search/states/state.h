@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-
 /**
  * @brief Represents a state in the search space. Intuitively, it is represented
  * as a list of relations (tables).
@@ -27,30 +26,51 @@
  */
 class DBState {
 
- public:
-  std::vector<Relation> relations;
-  std::vector<bool> nullary_atoms;
+    std::vector<Relation> relations;
+    std::vector<bool> nullary_atoms;
 
-  DBState() = default;
-  explicit DBState(unsigned num_predicates) :
-      relations(num_predicates), nullary_atoms(num_predicates, false)
-  {}
+public:
 
-  DBState(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms) :
-    relations(std::move(relations)), nullary_atoms(std::move(nullary_atoms))
-  {
-    // Explicit state constructor
-  }
+    DBState() = default;
+    explicit DBState(unsigned num_predicates) :
+        relations(num_predicates), nullary_atoms(num_predicates, false) {}
 
-  std::vector<int> getObjects();
+    DBState(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms) :
+        relations(std::move(relations)), nullary_atoms(std::move(nullary_atoms)) {
+        // Explicit state constructor
+    }
 
-  void addTuple(int relation, const GroundAtom &args);
+    const std::vector<Relation>& get_relations() const {
+        return relations;
+    }
 
-  bool operator==(const DBState &other) const {
-      return nullary_atoms == other.nullary_atoms && relations == other.relations;
-  }
+    const std::vector<bool> &get_nullary_atoms() const {
+        return nullary_atoms;
+    }
 
-  friend std::size_t hash_value(const DBState &s);
+    const std::unordered_set<GroundAtom, TupleHash>& get_tuples_of_relation(size_t i) const {
+        return relations[i].tuples;
+    }
+
+    void set_nullary_atom(size_t index, bool v) {
+        nullary_atoms[index] = v;
+    }
+
+    void set_relation_predicate_symbol(size_t i, int id) {
+        relations[i].predicate_symbol = id;
+    }
+
+    void insert_tuple_in_relation(GroundAtom ga, int id) {
+        relations[id].tuples.insert(ga);
+    }
+
+    void add_tuple(int relation, const GroundAtom &args);
+
+    bool operator==(const DBState &other) const {
+        return nullary_atoms==other.nullary_atoms && relations==other.relations;
+    }
+
+    friend std::size_t hash_value(const DBState &s);
 };
 
 /**

@@ -5,23 +5,7 @@
 
 using namespace std;
 
-vector<int> DBState::getObjects() {
-  /*
-   * Return a set of all objects occurring in any tuple of any relation in the
-   * state
-   */
-  vector<int> obj;
-  for (auto &relation : relations) {
-    for (auto &tuple : relation.tuples) {
-      for (int object : tuple) {
-        obj.push_back(object);
-      }
-    }
-  }
-  return obj;
-}
-
-void DBState::addTuple(int relation, const GroundAtom &args) {
+void DBState::add_tuple(int relation, const GroundAtom &args) {
   relations[relation].tuples.insert(args);
 }
 
