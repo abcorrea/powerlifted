@@ -62,6 +62,12 @@ public:
         const std::vector<ActionSchema> &actions,
         const DBState &state);
 
+    void get_applicable_actions(
+        const ActionSchema &action,
+        const DBState &state,
+        std::vector<LiftedOperatorId>& applicable
+        );
+
     DBState generate_successors(const LiftedOperatorId &op,
                                 const ActionSchema& action,
                                 const DBState &state);

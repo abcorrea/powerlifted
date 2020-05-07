@@ -58,35 +58,40 @@ SuccessorGenerator::get_applicable_actions(const std::vector<ActionSchema> &acti
     vector<LiftedOperatorId> applicable_operators;
     // Duplicate code from generic join implementation
     for (const ActionSchema &action : actions) {
-        if (is_trivially_inapplicable(state, action)) {
-            continue;
-        }
+        get_applicable_actions(action, state, applicable_operators);
+    }
+    return applicable_operators;
+}
 
-        if (action.is_ground()) {
-            bool applicable = is_ground_action_applicable(action, state);
-            if (applicable)
-                applicable_operators.emplace_back(action.get_index(), vector<int>());
-        } else {
-            Table instantiations = instantiate(action, state);
-            if (instantiations.tuples.empty()) {
-                // No applicable action, skip this action schema;
-                continue;
-            }
-            vector<int> free_var_indices;
-            vector<int> map_indices_to_position;
-            compute_map_indices_to_table_positions(instantiations,
-                                                   free_var_indices,
-                                                   map_indices_to_position);
-            for (const vector<int> &tuple_with_const : instantiations.tuples) {
-                vector<int> ordered_tuple(free_var_indices.size());
-                order_tuple_by_free_variable_order(free_var_indices, map_indices_to_position,
-                                                   tuple_with_const, ordered_tuple);
-                applicable_operators.emplace_back(action.get_index(), move(ordered_tuple));
-            }
-        }
+void SuccessorGenerator::get_applicable_actions(
+    const ActionSchema &action, const DBState &state, std::vector<LiftedOperatorId>& applicable)
+{
+    if (is_trivially_inapplicable(state, action)) {
+        return;
     }
 
-    return applicable_operators;
+    if (action.is_ground()) {
+        if (is_ground_action_applicable(action, state)) {
+            applicable.emplace_back(action.get_index(), vector<int>());
+        }
+        return;
+    }
+
+    Table instantiations = instantiate(action, state);
+    if (instantiations.tuples.empty()) { // No applicable action from this schema
+        return;
+    }
+    vector<int> free_var_indices;
+    vector<int> map_indices_to_position;
+    compute_map_indices_to_table_positions(
+        instantiations, free_var_indices, map_indices_to_position);
+
+    for (const vector<int> &tuple_with_const : instantiations.tuples) {
+        vector<int> ordered_tuple(free_var_indices.size());
+        order_tuple_by_free_variable_order(
+            free_var_indices, map_indices_to_position, tuple_with_const, ordered_tuple);
+        applicable.emplace_back(action.get_index(), move(ordered_tuple));
+    }
 }
 
 DBState SuccessorGenerator::generate_successors(
