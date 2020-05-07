@@ -17,7 +17,6 @@ class YannakakisSuccessorGenerator : public GenericJoinSuccessor {
   std::vector<std::vector<std::pair<int, int>>> full_reducer_order;
   std::vector<std::vector<std::pair<int, int>>> join_tree_order;
   std::vector<std::vector<int>> remaining_join;
-  std::vector<bool> acyclic_vec;
   std::vector<std::unordered_set<int>> distinguished_variables;
   void get_distinguished_variables(const ActionSchema &action);
 };

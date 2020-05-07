@@ -40,7 +40,6 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
     // E is a child of F in the tree.
     join_tree_order.resize(task.actions.size());
     remaining_join.resize(task.actions.size());
-    acyclic_vec.resize(task.actions.size());
     distinguished_variables.resize(task.actions.size());
     for (const ActionSchema &action : task.actions) {
         get_distinguished_variables(action);
@@ -137,7 +136,6 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
                 }
             }
             //cout << "Action " << action.get_name() << " is acyclic.\n";
-            acyclic_vec[action.get_index()] = true;
         } else {
             priority_queue<pair<int, int>> q;
             remaining_join[action.get_index()].clear();
@@ -156,7 +154,6 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
                 q.pop();
             }
             //cout << "Action " << action.get_name() << " is cyclic.\n";
-            acyclic_vec[action.get_index()] = false;
         }
     }
 

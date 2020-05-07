@@ -24,8 +24,6 @@ void print_goal_found(
     const clock_t& timer_start)
 {
     cout << "Goal found at: " << double(clock() - timer_start)/CLOCKS_PER_SEC << endl;
-    cout << "Proportion of time processing cyclic precond: "
-         << generator.get_cyclic_time() /(double(clock() - timer_start)/CLOCKS_PER_SEC) << endl;
     cout << "Total time: " << double(clock() - timer_start)/CLOCKS_PER_SEC << endl;
 }
 
