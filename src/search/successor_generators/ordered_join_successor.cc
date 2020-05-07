@@ -10,37 +10,16 @@
 using namespace std;
 
 template <typename OrderT>
-vector<Table> OrderedJoinSuccessorGenerator<OrderT>::parse_precond_into_join_program(const vector<Atom> &precond,
-                                                                             const DBState &state) {
-    /*
-     * See comment in generic join successor.
-     */
-    priority_queue<Table, vector<Table>, OrderT> ordered_tables;
-    vector<Table> parsed_tables;
-    parsed_tables.reserve(precond.size());
+bool OrderedJoinSuccessorGenerator<OrderT>::parse_precond_into_join_program(
+    const PrecompiledActionData &adata, const DBState &state, std::vector<Table>& tables)
+{
+    // TODO This is highly inefficient. See issue #6:
+    //      https://github.com/abcorrea/powerlifted/issues/6
+    bool res = GenericJoinSuccessor::parse_precond_into_join_program(adata, state, tables);
+    if (!res) return false;
 
-    for (const Atom &a : precond) {
-        vector<int> indices;
-        vector<int> constants;
-        get_indices_and_constants_in_preconditions(indices, constants, a);
-        vector<GroundAtom> tuples;
-        if (is_static(a.predicate_symbol)) {
-            // If this predicate has information in the static information table,
-            // then it must be a static predicate
-          select_tuples(static_information, a, tuples, constants);
-            ordered_tables.emplace(move(tuples), move(indices));
-        } else {
-            // If this predicate does not have information in the static information table,
-            // then it must be a fluent
-          select_tuples(state, a, tuples, constants);
-            ordered_tables.emplace(move(tuples), move(indices));
-        }
-    }
-    while (!ordered_tables.empty()) {
-        parsed_tables.push_back(ordered_tables.top());
-        ordered_tables.pop();
-    }
-    return parsed_tables;
+    std::sort(tables.begin(), tables.end(), OrderT());
+    return true;
 }
 
 template <typename OrderT>

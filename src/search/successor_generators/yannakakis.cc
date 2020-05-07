@@ -194,31 +194,20 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
  */
 Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
                                                 const DBState &state) {
-    // We need to parse precond first
-    const vector<Parameter> &params = action.get_parameters();
-    vector<Atom> precond;
 
-    if (params.empty()) {
-        return Table::EMPTY_TABLE();
+    if (action.is_ground()) {
+        throw std::runtime_error("Shouldn't be calling instantiate() on a ground action");
     }
 
-    for (const Atom &p : action.get_precondition()) {
-        // Ignoring negative preconditions when instantiating
-        if (!p.negated and !p.arguments.empty()) {
-            precond.push_back((p));
-        }
-    }
+    const auto& actiondata = action_data[action.get_index()];
 
-    assert (!precond.empty());
+    vector<Table> tables;
+    auto res = parse_precond_into_join_program(actiondata, state, tables);
+    if (!res) return Table::EMPTY_TABLE();
 
-    vector<Table> tables =
-        parse_precond_into_join_program(precond, state);
-    if (tables.size()!=precond.size()) {
-        // This means that the projection over the constants completely eliminated one table,
-        // we can return no instantiation.
-        return Table::EMPTY_TABLE();
-    }
     assert (!tables.empty());
+    assert(tables.size() == actiondata.relevant_precondition_atoms.size());
+
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s==0) {

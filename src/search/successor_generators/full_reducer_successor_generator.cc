@@ -175,35 +175,22 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
                                                  const DBState &state) {
     clock_t time = clock();
 
-    const vector<Parameter> &params = action.get_parameters();
-    vector<Atom> precond;
+    if (action.is_ground()) {
+        throw std::runtime_error("Shouldn't be calling instantiate() on a ground action");
+    }
 
-    if (params.empty()) {
+    const auto& actiondata = action_data[action.get_index()];
+
+    // Retrieve the set of tables corresponding to the action precondition
+    vector<Table> tables;
+    auto res = parse_precond_into_join_program(actiondata, state, tables);
+    if (!res) {
+        if (!acyclic_vec[action.get_index()]) cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
         return Table::EMPTY_TABLE();
     }
-
-    for (const Atom &p : action.get_precondition()) {
-        // Ignoring negative preconditions when instantiating
-        if (!p.negated and !p.arguments.empty()) {
-            precond.push_back((p));
-        }
-    }
-
-    assert(!precond.empty());
 
     const auto &fjr = full_join_order[action.get_index()];
-
-    // We need to parse precond first
-    vector<Table> tables = parse_precond_into_join_program(precond, state);
-
-    if (tables.size()!=fjr.size()) {
-        // This means that the projection over the constants completely eliminated one table,
-        // we can return no instantiation.
-        if (!acyclic_vec[action.get_index()])
-            cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
-        return Table::EMPTY_TABLE();
-    }
-
+    assert(tables.size()==fjr.size());
     assert(!tables.empty());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {

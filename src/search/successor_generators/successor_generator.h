@@ -73,10 +73,6 @@ public:
 
     virtual Table instantiate(const ActionSchema &action, const DBState &state) = 0;
 
-    virtual std::vector<Table>
-    parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                    const DBState &state) = 0;
-
     const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
 
     const std::unordered_set<GroundAtom, TupleHash> &get_tuples_from_static_relation(

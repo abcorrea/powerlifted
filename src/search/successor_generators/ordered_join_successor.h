@@ -13,12 +13,10 @@ class OrderedJoinSuccessorGenerator : public GenericJoinSuccessor {
 public:
     explicit OrderedJoinSuccessorGenerator(const Task &task);
 
-  /**
-  * @see generic_join_successor.h
-  */
-  std::vector<Table> parse_precond_into_join_program(
-        const std::vector<Atom> &precond,
-        const DBState &state) override ;
+    // @see generic_join_successor.h
+    bool parse_precond_into_join_program(const PrecompiledActionData &adata,
+                                         const DBState &state,
+                                         std::vector<Table>& tables) override;
 };
 
 
