@@ -199,7 +199,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     vector<Atom> precond;
 
     if (params.empty()) {
-        return Table();
+        return Table::EMPTY_TABLE();
     }
 
     for (const Atom &p : action.get_precondition()) {
@@ -216,13 +216,13 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     if (tables.size()!=precond.size()) {
         // This means that the projection over the constants completely eliminated one table,
         // we can return no instantiation.
-        return Table();
+        return Table::EMPTY_TABLE();
     }
     assert (!tables.empty());
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s==0) {
-            return Table();
+            return Table::EMPTY_TABLE();
         }
     }
 

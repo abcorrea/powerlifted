@@ -28,7 +28,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     const std::vector<Parameter> &params = action.get_parameters();
 
     if (params.empty()) {
-        return Table();
+        return Table::EMPTY_TABLE();
     }
     std::vector<Atom> precond;
     for (const Atom &p : action.get_precondition()) {
@@ -45,7 +45,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     if (tables.size() != precond.size()) {
         // This means that the projection over the constants completely eliminated one table,
         // we can return no instantiation.
-        return Table();
+        return Table::EMPTY_TABLE();
     }
     Table &working_table = tables[0];
     for (size_t i = 1; i < tables.size(); ++i) {
@@ -160,8 +160,9 @@ GenericJoinSuccessor::parse_precond_into_join_program(const vector<Atom> &precon
             // then it must be a fluent
             select_tuples(state, a, tuples, constants);
         }
-        if (!tuples.empty())
+        if (!tuples.empty()) {
             parsed_tables.emplace_back(move(tuples), move(indices));
+        }
     }
     return parsed_tables;
 }

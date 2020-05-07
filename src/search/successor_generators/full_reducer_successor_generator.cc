@@ -179,7 +179,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
     vector<Atom> precond;
 
     if (params.empty()) {
-        return Table();
+        return Table::EMPTY_TABLE();
     }
 
     for (const Atom &p : action.get_precondition()) {
@@ -194,15 +194,14 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
     const auto &fjr = full_join_order[action.get_index()];
 
     // We need to parse precond first
-    vector<Table> tables =
-        parse_precond_into_join_program(precond, state);
+    vector<Table> tables = parse_precond_into_join_program(precond, state);
 
     if (tables.size()!=fjr.size()) {
         // This means that the projection over the constants completely eliminated one table,
         // we can return no instantiation.
         if (!acyclic_vec[action.get_index()])
             cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
-        return Table();
+        return Table::EMPTY_TABLE();
     }
 
     assert(!tables.empty());
@@ -213,7 +212,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
             if (!acyclic_vec[action.get_index()]) {
                 cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
             }
-            return Table();
+            return Table::EMPTY_TABLE();
         }
     }
 

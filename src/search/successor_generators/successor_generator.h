@@ -65,8 +65,7 @@ public:
     void get_applicable_actions(
         const ActionSchema &action,
         const DBState &state,
-        std::vector<LiftedOperatorId>& applicable
-        );
+        std::vector<LiftedOperatorId>& applicable);
 
     DBState generate_successors(const LiftedOperatorId &op,
                                 const ActionSchema& action,
