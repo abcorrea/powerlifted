@@ -1,7 +1,6 @@
 #include "options.h"
 #include "parser.h"
 #include "task.h"
-#include "utils.h"
 
 #include "heuristics/heuristic.h"
 #include "heuristics/heuristic_factory.h"
@@ -9,11 +8,13 @@
 #include "search_engines/search_factory.h"
 #include "successor_generators/successor_generator.h"
 #include "successor_generators/successor_generator_factory.h"
+#include "utils/system.h"
 
 #include <iostream>
 #include <memory>
 
 using namespace std;
+using namespace utils;
 
 int main(int argc, char *argv[]) {
     cout << "Initializing planner" << endl;
@@ -53,19 +54,14 @@ int main(int argc, char *argv[]) {
 
     // Start search
     if (task.is_trivially_unsolvable()) {
-        cout << "Goal condition has static information which is not satisfied in the initial state."
-             << endl;
-        return 0;
+        cout << "Problem goal was statically determined to be unsatisfiable." << endl;
+        exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
     }
 
-    int result = search->search(task, *sgen, *heuristic);
-
-    if (result == NOT_SOLVED) {
-        cerr << "State space completely explored and no solution found!" << endl;
-    }
-
+    auto exitcode = search->search(task, *sgen, *heuristic);
     search->print_statistics();
-
     cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
-    return 0;
+
+    utils::report_exit_code_reentrant(exitcode);
+    return static_cast<int>(exitcode);
 }

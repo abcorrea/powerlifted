@@ -28,7 +28,7 @@ bool BreadthFirstSearch<PackedStateT>::check_goal(
 }
 
 template <class PackedStateT>
-int BreadthFirstSearch<PackedStateT>::search(const Task &task,
+utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
                                              SuccessorGenerator &generator,
                                              Heuristic &heuristic)
 {
@@ -43,7 +43,7 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
     statistics.report_f_value_progress(root_node.g);
     queue.emplace(root_node.state_id);
 
-    if (check_goal(task, generator, timer_start, task.initial_state, root_node)) return SOLVED;
+    if (check_goal(task, generator, timer_start, task.initial_state, root_node)) return utils::ExitCode::SUCCESS;
 
     while (not queue.empty()) {
         StateID sid = queue.front();
@@ -69,7 +69,7 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
             if (child_node.status == SearchNode::Status::NEW) {
                 child_node.open(node.g+1);
 
-                if (check_goal(task, generator, timer_start, s, child_node)) return SOLVED;
+                if (check_goal(task, generator, timer_start, s, child_node)) return utils::ExitCode::SUCCESS;
 
                 queue.emplace(child_node.state_id);
             }
@@ -78,7 +78,7 @@ int BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
     print_no_solution_found(timer_start);
 
-    return NOT_SOLVED;
+    return utils::ExitCode::SEARCH_UNSOLVABLE;
 }
 
 template <class PackedStateT>

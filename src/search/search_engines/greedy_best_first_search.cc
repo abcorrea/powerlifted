@@ -17,7 +17,7 @@
 using namespace std;
 
 template <class PackedStateT>
-int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
+utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                                                 SuccessorGenerator &generator,
                                                 Heuristic &heuristic)
 {
@@ -51,7 +51,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         extract_plan(
             cheapest_parent, state_packer.pack(task.initial_state), visited, index_to_state, state_packer, task);
 
-        return SOLVED;
+        return utils::ExitCode::SUCCESS;
     }
 
     while (not q.empty()) {
@@ -83,7 +83,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             print_goal_found(generator, timer_start);
             extract_plan(
                 cheapest_parent, state_packer.pack(state), visited,index_to_state, state_packer, task);
-            return SOLVED;
+            return utils::ExitCode::SUCCESS;
         }
         vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
@@ -119,7 +119,7 @@ int GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
     print_no_solution_found(timer_start);
 
-    return NOT_SOLVED;
+    return utils::ExitCode::SEARCH_UNSOLVABLE;
 }
 
 template <class PackedStateT>

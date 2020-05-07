@@ -14,7 +14,7 @@ protected:
 public:
     using StatePackerT = typename PackedStateT::StatePackerT;
 
-    int search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
+    utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
 
     void print_statistics() const override;
 

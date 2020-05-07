@@ -15,10 +15,9 @@ SEARCH_DIR = os.path.join(PROJECT_ROOT, 'src', 'search')
 def parse_arguments():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description='Build Power Lifted planner.')
-    parser.add_argument('--debug',
+    parser.add_argument('-d', '--debug',
                         action="store_true", help="Build in debug mode.")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 def get_build_dir(debug):
     if debug:
