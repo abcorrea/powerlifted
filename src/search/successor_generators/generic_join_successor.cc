@@ -133,7 +133,9 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
 
 
     for (const Atom &p : action.get_precondition()) {
-        if (p.negated) throw std::runtime_error("Actions with negated preconditions not supported yet");
+        if (p.negated and p.name != "=") {
+            throw std::runtime_error("Actions with negated preconditions not supported yet");
+        }
 
         // Nullary atoms are handled differently, they don't result in DB tables
         if (!p.arguments.empty()) {
