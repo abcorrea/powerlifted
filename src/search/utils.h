@@ -6,13 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-/**
- * @brief Utility functions, mostly related to memory. Originally from Fast
- * Downward. See Fast Downward source code for more details.
- *
- */
-
-int get_peak_memory_in_kb();
 
 template <typename T> int estimate_vector_bytes(int num_elements) {
   /*

@@ -7,7 +7,7 @@
 template <class PackedStateT>
 class GreedyBestFirstSearch : public SearchBase {
   public:
-    int search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
+    utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
 
     void print_statistics() const override;
 

@@ -3,7 +3,6 @@
 #include "../database/table.h"
 
 #include <algorithm>
-#include <cstdlib>
 #include <vector>
 
 using namespace std;

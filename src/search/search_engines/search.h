@@ -2,11 +2,9 @@
 #define SEARCH_SEARCH_H
 
 #include "../search_statistics.h"
+#include "../utils/system.h"
 #include <utility>
 #include <vector>
-
-#define SOLVED 0
-#define NOT_SOLVED 1
 
 
 // Forward declarations
@@ -36,7 +34,7 @@ public:
     SearchBase() = default;
     virtual ~SearchBase() = default;
 
-    virtual int search(const Task &task,
+    virtual utils::ExitCode search(const Task &task,
                        SuccessorGenerator &generator,
                        Heuristic &heuristic) = 0;
 
