@@ -81,6 +81,12 @@ protected:
 
 class PrecompiledActionData {
 public:
+    PrecompiledActionData() :
+        is_ground(false), statically_inapplicable(false),
+        relevant_precondition_atoms(), fluent_tables(),
+        precompiled_db()
+    {}
+
     //! Whether the action has no parameters
     bool is_ground;
 
