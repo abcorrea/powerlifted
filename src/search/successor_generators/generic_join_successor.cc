@@ -21,6 +21,7 @@ GenericJoinSuccessor::GenericJoinSuccessor(const Task &task)
 Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
                                         const DBState &state)
 {
+
     if (action.is_ground()) {
         throw std::runtime_error("Shouldn't be calling instantiate() on a ground action");
     }
@@ -133,12 +134,13 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
 
 
     for (const Atom &p : action.get_precondition()) {
-        if (p.negated and p.name != "=") {
+        bool is_ineq = (p.name == "=");
+        if (p.negated and !is_ineq) {
             throw std::runtime_error("Actions with negated preconditions not supported yet");
         }
 
         // Nullary atoms are handled differently, they don't result in DB tables
-        if (!p.arguments.empty()) {
+        if (!p.arguments.empty() and !is_ineq) {
             data.relevant_precondition_atoms.push_back(p);
         }
     }
