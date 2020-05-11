@@ -65,6 +65,7 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
         bool has_ear = true;
         stack<pair<int, int>> full_reducer_back;
         vector<bool> removed(hyperedges.size(), false);
+        number_of_child.emplace_back(hyperedges.size(), 0);
         while (has_ear) {
             has_ear = false;
             int ear = -1;
@@ -93,7 +94,7 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
                         }
                     }
                     if (has_ear) {
-                        for (int n : hyperedges[i]) {
+                        for (int n : hyperedges[ear]) {
                             node_counter[n] = node_counter[n] - 1;
                         }
                     }
@@ -107,6 +108,7 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
                                               edge_to_precond[ear]);
                     join_tree_order[action.get_index()].emplace_back(edge_to_precond[ear],
                                                                      edge_to_precond[in_favor]);
+                    number_of_child[action.get_index()][edge_to_precond[in_favor]]++;
                 }
             }
         }
@@ -135,7 +137,6 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
                     remaining_join[action.get_index()].push_back(edge_to_precond[k]);
                 }
             }
-            //cout << "Action " << action.get_name() << " is acyclic.\n";
         } else {
             priority_queue<pair<int, int>> q;
             remaining_join[action.get_index()].clear();
@@ -153,7 +154,6 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
                 remaining_join[action.get_index()].push_back(p);
                 q.pop();
             }
-            //cout << "Action " << action.get_name() << " is cyclic.\n";
         }
     }
 
@@ -212,6 +212,8 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         }
     }
 
+    vector<int> copy_number_of_child = number_of_child[action.get_index()];
+
     for (const auto &j : join_tree_order[action.get_index()]) {
         unordered_set<int> project_over;
         for (auto x : tables[j.second].tuple_index) {
@@ -224,13 +226,12 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         }
         Table &working_table = tables[j.second];
         hash_join(working_table, tables[j.first]);
-        if (working_table.tuples.size() > largest_intermediate_relation)
-            largest_intermediate_relation = working_table.tuples.size();
-        filter_inequalities(action, working_table);
         // Project must be after removal of inequality constraints, otherwise we might keep only the tuple violating
-        // some inequality.
-        // This is the main difference to the full reducer successor generator
-        project(working_table, project_over);
+        // some inequality. They should also be done only after all children were joined.
+        filter_inequalities(action, working_table);
+        copy_number_of_child[j.second]--;
+        if (copy_number_of_child[j.second] == 0)
+            project(working_table, project_over);
         if (working_table.tuples.empty()) {
             return working_table;
         }
@@ -248,5 +249,6 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         }
     }
 
+    project(working_table, distinguished_variables[action.get_index()]);
     return working_table;
 }
