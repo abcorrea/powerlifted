@@ -50,6 +50,7 @@ Use the `build.py` script to build the planner first.
  - A C++17-compliant compiler
  - CMake 3.9+
  - Python 3.5+
+ - [VAL](https://github.com/KCL-Planning/VAL) (added as `validate` to the `PATH`)
 
 ## Limitations
  - **Axioms**: not supported
