@@ -63,16 +63,23 @@ class TestRun:
 
     def evaluate(self, output, optimal_cost):
         plan_length_found = None
+        plan_valid = None
         for line in output.splitlines():
             if b'Total plan cost:' in line:
                 plan_length_found = int(line.split()[3])
-                break
+            if b'Plan valid' in line:
+                plan_valid = True
 
-        if plan_length_found == optimal_cost:
+        if plan_length_found == optimal_cost and plan_valid:
             print("PASSED")
             return True
         else:
-            print("FAILED [expected: {}, plan length found: {}]".format(optimal_cost, plan_length_found))
+            print("FAILED ", end="")
+            if plan_length_found != optimal_cost:
+                print("[expected: {}, plan length found: {}]".format(optimal_cost, plan_length_found), end="")
+            if not plan_valid:
+                print("[VAL did not validate the plan]", end="")
+            print("")
             return False
 
     def remove_plan_file(self):
