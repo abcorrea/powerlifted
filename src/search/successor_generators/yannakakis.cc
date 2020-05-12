@@ -9,6 +9,7 @@
 #include <cassert>
 #include <stack>
 #include <queue>
+#include <iostream>
 
 using namespace std;
 
@@ -38,11 +39,12 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
     // The idea is that we can compute a join tree from the GYO algorithm in a bottom-up
     // style based on the ear removal order. E.g., if we remove E in favor of F, then
     // E is a child of F in the tree.
-    join_tree_order.resize(task.actions.size());
-    remaining_join.resize(task.actions.size());
+    join_trees.reserve(task.actions.size());
     distinguished_variables.resize(task.actions.size());
+    remaining_join.resize(task.actions.size());
     for (const ActionSchema &action : task.actions) {
         get_distinguished_variables(action);
+        JoinTree jt;
         vector<int> hypernodes;
         vector<set<int>> hyperedges;
         vector<int> missing_precond;
@@ -65,7 +67,7 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
         bool has_ear = true;
         stack<pair<int, int>> full_reducer_back;
         vector<bool> removed(hyperedges.size(), false);
-        number_of_child.emplace_back(hyperedges.size(), 0);
+        jt.set_number_of_nodes(action.get_precondition().size());
         while (has_ear) {
             has_ear = false;
             int ear = -1;
@@ -106,20 +108,21 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
                                                                         edge_to_precond[in_favor]);
                     full_reducer_back.emplace(edge_to_precond[in_favor],
                                               edge_to_precond[ear]);
-                    join_tree_order[action.get_index()].emplace_back(edge_to_precond[ear],
-                                                                     edge_to_precond[in_favor]);
-                    number_of_child[action.get_index()][edge_to_precond[in_favor]]++;
+                    jt.add_node(edge_to_precond[ear], edge_to_precond[in_favor]);
                 }
             }
         }
+        hypernodes.clear();
+        join_trees.emplace_back(jt);
         while (!full_reducer_back.empty()) {
             pair<int, int> p = full_reducer_back.top();
             full_reducer_order[action.get_index()].push_back(p);
             full_reducer_back.pop();
         }
         // Add all hyperedges that were not removed to the join. If it is acyclic, there is only left.
-        for (int k : missing_precond)
+        for (int k : missing_precond) {
             remaining_join[action.get_index()].push_back(k);
+        }
         int not_removed_counter = 0;
         for (auto &&k : removed) {
             if (!k) {
@@ -212,9 +215,10 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         }
     }
 
-    vector<int> copy_number_of_child = number_of_child[action.get_index()];
+    const JoinTree &jt = join_trees[action.get_index()];
+    vector<int> copy_number_of_child = jt.get_copy_number_children();
 
-    for (const auto &j : join_tree_order[action.get_index()]) {
+    for (const auto &j : jt.get_join_tree()) {
         unordered_set<int> project_over;
         for (auto x : tables[j.second].tuple_index) {
             project_over.insert(x);
@@ -241,8 +245,6 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     Table &working_table = tables[remaining_join[action.get_index()][0]];
     for (size_t i = 1; i < remaining_join[action.get_index()].size(); ++i) {
         hash_join(working_table, tables[remaining_join[action.get_index()][i]]);
-        if (working_table.tuples.size() > largest_intermediate_relation)
-            largest_intermediate_relation = working_table.tuples.size();
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
             return working_table;
