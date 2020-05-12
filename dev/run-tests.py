@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import argparse
 import os
 import subprocess
 import sys
+import timeit
 
 from distutils.dir_util import copy_tree
 from itertools import product
@@ -20,28 +22,25 @@ The expected run time of each run is less than 30s.
 
 
 # Commented instances have costs which are currently ignored
-OPTIMAL_PLAN_COSTS = {'airport-p01.lifted': 8,
-                      'airport-p05.lifted': 21,
-                      'blocks-4-0.lifted': 6,
-                      'gripper-prob01.lifted': 11,
-                      'movie-prob30.lifted':  7,
-                      #'openstacks-opt08-strips-p01.lifted': 2,
-                      'organic-synthesis-opt18-strips-p05.lifted': 2}
-
+OPTIMAL_PLAN_COSTS = {'domains/airport/p05-airport2-p1.pddl': 21,
+                      'domains/blocks/probBLOCKS-4-0.pddl': 6,
+                      'domains/gripper/prob01.pddl': 11,
+                      'domains/movie/prob30.pddl':  7,
+                      'domains/openstacks/p01.pddl': 17,
+                      'domains/organic-synthesis/p05.pddl': 2}
 SEARCH_CONFIGS = ['naive', 'gbfs']
 HEURISTIC_CONFIGS = ['blind']
-GENERATOR_CONFIGS = ['full_reducer', 'join', 'ordered_join', 'yannakakis']
+GENERATOR_CONFIGS = ['full_reducer', 'join', 'yannakakis']
 STATE_REPR_CONFIGS = ['sparse', 'extensional']
 
 
 class TestRun:
-    def __init__(self, instance, config, build):
+    def __init__(self, instance, config):
         self.instance = instance
         self.search = config[0]
         self.heuristic = config[1]
         self.generator = config[2]
         self.state_representation = config[3]
-        self.build = build
 
     def get_config(self):
         return "{}, {}, {}, and {}".format(self.search,
@@ -53,25 +52,27 @@ class TestRun:
         return ("{} with {}".format(self.instance, self.get_config()))
 
     def run(self):
-        print ("Testing {} with {}...".format(self.instance, self.get_config()), end='', flush=True)
-        output = subprocess.check_output([os.path.join(self.build, 'search', 'search'),
-                                          '-f', self.instance,
+        print ("Testing {} with {}: ".format(self.instance, self.get_config()), end='', flush=True)
+        output = subprocess.check_output([os.path.join('..', 'powerlifted.py'),
+                                          '-i', os.path.join(os.getcwd(), self.instance),
                                           '-s', self.search,
                                           '-e', self.heuristic,
                                           '-g', self.generator,
-                                          '-r', self.state_representation])
+                                          '--state', self.state_representation])
         return output
 
     def evaluate(self, output, optimal_cost):
-        cost_plan_found = None
+        plan_length_found = None
         for line in output.splitlines():
             if b'Total plan cost:' in line:
-                cost_plan_found = int(line.split()[3])
+                plan_length_found = int(line.split()[3])
                 break
 
-        if cost_plan_found == optimal_cost:
+        if plan_length_found == optimal_cost:
+            print("PASSED")
             return True
         else:
+            print("FAILED [expected: {}, plan length found: {}]".format(optimal_cost, plan_length_found))
             return False
 
     def remove_plan_file(self):
@@ -80,26 +81,46 @@ class TestRun:
             os.remove(plan_file)
 
 
+def print_summary(passes, failures, starting_time):
+    total = passes + failures
+    print("Total number of passed tests: %d/%d" % (passes, total))
+    print("Total number of failed tests: %d/%d" % (failures, total))
+    print("Total time: %.2fs" % (timeit.default_timer() - starting_time))
+
+
+def parse_options():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--minimal', dest='minimal', action='store_true',
+                        help='Use minimal test set.')
+    args = parser.parse_args()
+
+    return args
+
 
 if __name__ == '__main__':
+    args = parse_options()
 
-    if len(sys.argv) != 2:
-        print("Usage: ./run-tests.py BUILD_DIRECTORY")
-        sys.exit()
+    if args.minimal:
+        OPTIMAL_PLAN_COSTS = {'domains/blocks/probBLOCKS-4-0.pddl': 6,
+                              'domains/gripper/prob01.pddl': 11,
+                              'domains/movie/prob30.pddl':  7}
+        SEARCH_CONFIGS = ['naive']
+        HEURISTIC_CONFIGS = ['blind']
+        GENERATOR_CONFIGS = ['full_reducer', 'yannakakis']
+        STATE_REPR_CONFIGS = ['sparse', 'extensional']
 
-
-    BUILD_DIR = os.path.join(sys.argv[1])
-    if not os.path.exists(BUILD_DIR):
-        raise FileNotFoundError("Build directory %s does not exist." % BUILD_DIR)
-
-
+    start = timeit.default_timer()
+    failures = 0
+    passes = 0
     for instance, cost in OPTIMAL_PLAN_COSTS.items():
         for config in product(SEARCH_CONFIGS, HEURISTIC_CONFIGS, GENERATOR_CONFIGS, STATE_REPR_CONFIGS):
-            test = TestRun(instance, config, BUILD_DIR)
+            test = TestRun(instance, config)
             output = test.run()
             passed = test.evaluate(output, cost)
             if passed:
-                print(" PASS")
+                passes +=1
             else:
-                print(" FAIL")
+                failures +=1
             test.remove_plan_file()
+
+    print_summary(passes, failures, start)
