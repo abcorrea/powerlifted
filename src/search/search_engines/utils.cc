@@ -58,9 +58,11 @@ void extract_plan(
 
 void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
     int total_plan_cost = 0;
+    int total_plan_length = 0;
     std::ofstream plan_file("sas_plan");
     for (const LiftedOperatorId &a:plan) {
-        total_plan_cost += 1;
+        total_plan_cost += task.actions[a.get_index()].get_cost();
+        total_plan_length += 1;
         plan_file << total_plan_cost << ": (" << task.actions[a.get_index()].get_name() << " ";
         for (const int obj : a.get_instantiation()) {
             plan_file << task.objects[obj].getName() << " ";
@@ -68,4 +70,5 @@ void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
         plan_file << ")\n";
     }
     std::cout << "Total plan cost: " << total_plan_cost << std::endl;
+    std::cout << "Plan length: " << total_plan_length << " step(s)." << std::endl;
 }
