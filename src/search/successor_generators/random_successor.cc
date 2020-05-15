@@ -13,12 +13,12 @@ RandomSuccessorGenerator::RandomSuccessorGenerator(const Task &task, unsigned se
 {
 }
 
-vector<Table> RandomSuccessorGenerator::parse_precond_into_join_program(
-    const vector<Atom> &precond,
-    const DBState &state)
+bool RandomSuccessorGenerator::parse_precond_into_join_program(
+    const PrecompiledActionData &adata, const DBState &state, std::vector<Table>& tables)
 {
-    // We just shuffle the result of the standard successor generator
-    auto result = GenericJoinSuccessor::parse_precond_into_join_program(precond, state);
-    shuffle(result.begin(), result.end(), rng);
-    return result;
+    bool res = GenericJoinSuccessor::parse_precond_into_join_program(adata, state, tables);
+    if (!res) return false;
+
+    shuffle(tables.begin(), tables.end(), rng);
+    return true;
 }

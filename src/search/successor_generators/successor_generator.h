@@ -62,24 +62,21 @@ public:
         const std::vector<ActionSchema> &actions,
         const DBState &state);
 
+    void get_applicable_actions(
+        const ActionSchema &action,
+        const DBState &state,
+        std::vector<LiftedOperatorId>& applicable);
+
     DBState generate_successors(const LiftedOperatorId &op,
                                 const ActionSchema& action,
                                 const DBState &state);
 
     virtual Table instantiate(const ActionSchema &action, const DBState &state) = 0;
 
-    virtual std::vector<Table>
-    parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                    const DBState &state) = 0;
-
     const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
 
     const std::unordered_set<GroundAtom, TupleHash> &get_tuples_from_static_relation(
         size_t i) const;
-
-    double get_cyclic_time() const {
-        return cyclic_time;
-    }
 
     bool is_static(size_t i) {
         return is_predicate_static[i];
@@ -89,7 +86,6 @@ public:
 
 protected:
     size_t largest_intermediate_relation = 0;
-    double cyclic_time = 0;
     const StaticInformation& static_information;
     void order_tuple_by_free_variable_order(const std::vector<int> &free_var_indices,
                                             const std::vector<int> &map_indices_to_position,

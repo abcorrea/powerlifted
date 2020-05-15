@@ -30,7 +30,6 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
      */
     full_reducer_order.resize(task.actions.size());
     full_join_order.resize(task.actions.size());
-    acyclic_vec.resize(task.actions.size());
     for (const ActionSchema &action : task.actions) {
         vector<int> hypernodes;
         vector<set<int>> hyperedges;
@@ -129,7 +128,6 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
                 }
             }
             // cout << "Action " << action.get_name() << " is acyclic.\n";
-            acyclic_vec[action.get_index()] = true;
         } else {
             priority_queue<pair<int, int>> q;
             full_join_order[action.get_index()].clear();
@@ -146,7 +144,6 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
                 q.pop();
             }
             // cout << "Action " << action.get_name() << " is cyclic.\n";
-            acyclic_vec[action.get_index()] = false;
         }
     }
 }
@@ -171,49 +168,29 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
  * @param staticInformation  Static predicates of the task
  * @return
  */
-Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
-                                                 const DBState &state) {
-    clock_t time = clock();
-
-    const vector<Parameter> &params = action.get_parameters();
-    vector<Atom> precond;
-
-    if (params.empty()) {
-        return Table();
+Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, const DBState &state)
+{
+    if (action.is_ground()) {
+        throw std::runtime_error("Shouldn't be calling instantiate() on a ground action");
     }
 
-    for (const Atom &p : action.get_precondition()) {
-        // Ignoring negative preconditions when instantiating
-        if (!p.negated and !p.arguments.empty()) {
-            precond.push_back((p));
-        }
-    }
+    const auto& actiondata = action_data[action.get_index()];
 
-    assert(!precond.empty());
+    // Retrieve the set of tables corresponding to the action precondition
+    vector<Table> tables;
+    auto res = parse_precond_into_join_program(actiondata, state, tables);
+    if (!res) {
+        return Table::EMPTY_TABLE();
+    }
 
     const auto &fjr = full_join_order[action.get_index()];
-
-    // We need to parse precond first
-    vector<Table> tables =
-        parse_precond_into_join_program(precond, state);
-
-    if (tables.size()!=fjr.size()) {
-        // This means that the projection over the constants completely eliminated one table,
-        // we can return no instantiation.
-        if (!acyclic_vec[action.get_index()])
-            cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
-        return Table();
-    }
-
+    assert(tables.size()==fjr.size());
     assert(!tables.empty());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s==0) {
-            if (!acyclic_vec[action.get_index()]) {
-                cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
-            }
-            return Table();
+            return Table::EMPTY_TABLE();
         }
     }
 
@@ -224,9 +201,6 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action,
             largest_intermediate_relation = working_table.tuples.size();
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
-            if (!acyclic_vec[action.get_index()]) {
-                cyclic_time += double(clock() - time)/CLOCKS_PER_SEC;
-            }
             return working_table;
         }
     }

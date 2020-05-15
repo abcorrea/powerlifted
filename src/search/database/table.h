@@ -26,6 +26,8 @@ public:
     }
 
     Table() = default;
+
+    static const Table& EMPTY_TABLE();
 };
 
 /// @brief Order tables from lowest to highest arity.

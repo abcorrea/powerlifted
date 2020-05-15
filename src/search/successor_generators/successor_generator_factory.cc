@@ -1,11 +1,13 @@
 
 #include "successor_generator_factory.h"
-#include "../database/table.h"
+
 #include "full_reducer_successor_generator.h"
 #include "naive_successor.h"
 #include "ordered_join_successor.h"
 #include "random_successor.h"
 #include "yannakakis.h"
+
+#include "../database/table.h"
 
 #include <iostream>
 

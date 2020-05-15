@@ -4,9 +4,8 @@
 #include "../database/hash_join.h"
 #include "../database/semi_join.h"
 #include "../database/table.h"
-#include "../structures.h"
 #include "../states/state.h"
-
+#include "../task.h"
 
 #include <algorithm>
 #include <cassert>
@@ -14,39 +13,29 @@
 
 using namespace std;
 
+GenericJoinSuccessor::GenericJoinSuccessor(const Task &task)
+    : SuccessorGenerator(task), action_data(precompile_action_data(task.actions))
+{
+}
+
 Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
                                         const DBState &state)
 {
-    /*
-     * We first certify that there are preconditions for the action.
-     *
-     * IMPORTANT:
-     *    - We only perform the join over the POSITIVE preconditions, NEGATIVE preconditions
-     *      are not supported by now
-     */
-    std::vector<std::vector<int>> instantiations;
-    const std::vector<Parameter> &params = action.get_parameters();
 
-    if (params.empty()) {
-        return Table();
+    if (action.is_ground()) {
+        throw std::runtime_error("Shouldn't be calling instantiate() on a ground action");
     }
-    std::vector<Atom> precond;
-    for (const Atom &p : action.get_precondition()) {
-        // Ignoring negative preconditions when instantiating
-        if ((!p.negated) and !p.arguments.empty()) {
-            precond.push_back((p));
-        }
-    }
-    assert(!precond.empty());
 
-    vector<Table> tables =
-        parse_precond_into_join_program(precond, state);
+    const auto& actiondata = action_data[action.get_index()];
+
+    vector<Table> tables;
+    auto res = parse_precond_into_join_program(actiondata, state, tables);
+
+    if (!res) return Table::EMPTY_TABLE();
+
     assert(!tables.empty());
-    if (tables.size() != precond.size()) {
-        // This means that the projection over the constants completely eliminated one table,
-        // we can return no instantiation.
-        return Table();
-    }
+    assert(tables.size() == actiondata.relevant_precondition_atoms.size());
+
     Table &working_table = tables[0];
     for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
@@ -127,9 +116,74 @@ void GenericJoinSuccessor::select_tuples(const DBState &s,
     }
 }
 
-vector<Table>
-GenericJoinSuccessor::parse_precond_into_join_program(const vector<Atom> &precond,
-                                                      const DBState &state)
+std::vector<PrecompiledActionData>
+GenericJoinSuccessor::precompile_action_data(const std::vector<ActionSchema>& actions) {
+    std::vector<PrecompiledActionData> result;
+    result.reserve(actions.size());
+    for (const auto &a:actions) {
+        result.push_back(precompile_action_data(a));
+    }
+    return result;
+}
+
+PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionSchema& action) {
+    PrecompiledActionData data;
+
+    data.is_ground = action.get_parameters().empty();
+    if (data.is_ground) return data; // We won't need anything from this action
+
+
+    for (const Atom &p : action.get_precondition()) {
+        bool is_ineq = (p.name == "=");
+        if (p.negated and !is_ineq) {
+            throw std::runtime_error("Actions with negated preconditions not supported yet");
+        }
+
+        // Nullary atoms are handled differently, they don't result in DB tables
+        if (!p.arguments.empty() and !is_ineq) {
+            data.relevant_precondition_atoms.push_back(p);
+        }
+    }
+
+    // TODO (GFM): Not sure why this assert is here and why should we fail for it :-)
+    assert(!data.relevant_precondition_atoms.empty());
+
+    // Create N empty tables
+    data.precompiled_db.resize(data.relevant_precondition_atoms.size());
+
+    for (std::size_t i = 0; i < data.relevant_precondition_atoms.size(); ++i) {
+        const Atom &atom = data.relevant_precondition_atoms[i];
+
+        if (!is_static(atom.predicate_symbol)) {
+            // If the atom is fluent, we just flag it as such and we're done: we'll have to deal
+            // with it during search time
+            data.fluent_tables.push_back(i);
+            continue;
+        }
+
+        // Otherwise the atom is static, so we precompile the table corresponding to it
+        vector<GroundAtom> tuples;
+        vector<int> constants, indices;
+
+        get_indices_and_constants_in_preconditions(indices, constants, atom);
+
+        select_tuples(static_information, atom, tuples, constants);
+
+        if (tuples.empty()) {
+            data.statically_inapplicable = true;
+            return data;
+        }
+
+        data.precompiled_db[i] = Table(move(tuples), move(indices));
+    }
+
+    return data;
+}
+
+
+
+bool GenericJoinSuccessor::parse_precond_into_join_program(
+    const PrecompiledActionData &adata, const DBState &state, std::vector<Table>& tables)
 {
     /*
      * Parse the state and the atom preconditions into a set of tables
@@ -143,28 +197,31 @@ GenericJoinSuccessor::parse_precond_into_join_program(const vector<Atom> &precon
      *    2. The table comes directly from the current state.
      *
      */
-    vector<Table> parsed_tables;
-    parsed_tables.reserve(precond.size());
-    for (const Atom &a : precond) {
-        vector<int> constants;
-        vector<int> indices;
-        get_indices_and_constants_in_preconditions(indices, constants, a);
+    if (adata.statically_inapplicable) return false;
+
+    tables = adata.precompiled_db;  // This performs the copy that we'll return
+    for (unsigned i:adata.fluent_tables) {
+        // Let's fill in those (currently empty) tables that correspond to
+        // fluent symbols in the precondition
+        const Atom &atom = adata.relevant_precondition_atoms[i];
+        assert(!is_static(atom.predicate_symbol));
+
         vector<GroundAtom> tuples;
-        if (is_static(a.predicate_symbol)) {
-            // If this predicate has information in the static information table,
-            // then it must be a static predicate
-            select_tuples(static_information, a, tuples, constants);
-        }
-        else {
-            // If this predicate does not have information in the static information table,
-            // then it must be a fluent
-            select_tuples(state, a, tuples, constants);
-        }
-        if (!tuples.empty())
-            parsed_tables.emplace_back(move(tuples), move(indices));
+        vector<int> constants, indices;
+
+        // TODO the call next line should be performed at preprocessing as well. We should keep in
+        //      adata the vector of constants and indices *for each precondition atom*
+        get_indices_and_constants_in_preconditions(indices, constants, atom);
+        select_tuples(state, atom, tuples, constants);
+
+        if (tuples.empty()) return false;
+
+        tables[i] = Table(move(tuples), move(indices));
     }
-    return parsed_tables;
+
+    return true;
 }
+
 
 /*
  * Create hypergraph of precondition

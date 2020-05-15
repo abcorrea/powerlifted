@@ -2,9 +2,12 @@
 #define SEARCH_GENERIC_JOIN_SUCCESSOR_H
 
 #include "successor_generator.h"
+#include "../structures.h"
 
 #include <map>
 #include <set>
+
+class PrecompiledActionData;
 
 /**
  * This class is not a successor generator per se. It just contain most of the common functions
@@ -20,20 +23,15 @@
  *
  * @see database/join.cc
  */
-
 class GenericJoinSuccessor : public SuccessorGenerator {
 
 public:
-    explicit GenericJoinSuccessor(const Task &task) : SuccessorGenerator(task) {}
-
-    std::vector<std::vector<int>>
-        obj_per_type; // position I is a list of object indices of type I
+    explicit GenericJoinSuccessor(const Task &task);
 
     Table instantiate(const ActionSchema &action, const DBState &state) override;
 
     /**
-    * Parse the state and the atom preconditions into a set of tables
-    * to perform the join-program more easily.
+    * Create the set of tables corresponding to the precondition of the given action.
     *
     * We first obtain all indices in the precondition that are constants.
     * Then, we create the table applying the projection over the arguments
@@ -42,14 +40,14 @@ public:
     *    1. The table comes from the static information; or
     *    2. The table comes directly from the current state.
     *
-    * @param precond: list of atoms in the preconditions
+    * @param adata: A set of relevant data corresponding to the action in question
     * @param state: state being evaluated
-    * @param staticInformation: static predicates of the task
-    * @param action_index: index of the action being instantiated
-    * @return Table containing the tuples satisfying the query established by the precondition
+    * @param tables: the set of tables, output parameter.
+    * @return false if some table is empty and hence the action inapplicable, true otherwise.
     */
-    std::vector<Table> parse_precond_into_join_program(const std::vector<Atom> &precond,
-                                                       const DBState &state) override;
+    virtual bool parse_precond_into_join_program(const PrecompiledActionData &adata,
+                                                       const DBState &state,
+                                                       std::vector<Table>& tables);
 
 protected:
     static void get_indices_and_constants_in_preconditions(std::vector<int> &indices,
@@ -71,6 +69,38 @@ protected:
         std::map<int, int> &node_index,
         std::map<int, int> &node_counter,
         std::map<int, int> &edge_to_precond);
+
+    std::vector<PrecompiledActionData> precompile_action_data(
+        const std::vector<ActionSchema>& actions);
+
+    PrecompiledActionData precompile_action_data(const ActionSchema& action);
+
+    //! Some data relevant to each action schema, indexed by schema index
+    std::vector<PrecompiledActionData> action_data;
+};
+
+class PrecompiledActionData {
+public:
+    PrecompiledActionData() :
+        is_ground(false), statically_inapplicable(false),
+        relevant_precondition_atoms(), fluent_tables(),
+        precompiled_db()
+    {}
+
+    //! Whether the action has no parameters
+    bool is_ground;
+
+    //! Whether the schema is statically inapplicable
+    bool statically_inapplicable;
+
+    std::vector<Atom> relevant_precondition_atoms;
+
+    //! A list of the indexes in `relevant_precondition_atoms` that correspond to fluent atoms,
+    //! and hence their tables need to be created for each state.
+    std::vector<unsigned> fluent_tables;
+
+    //! A set of tables with all static info precompiled for faster access at runtime
+    std::vector<Table> precompiled_db;
 };
 
 #endif //SEARCH_GENERIC_JOIN_SUCCESSOR_H

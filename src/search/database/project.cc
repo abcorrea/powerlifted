@@ -4,7 +4,6 @@
 
 #include "../hash_structures.h"
 
-#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -23,21 +22,19 @@ void project(Table &t, const std::unordered_set<int> &over) {
             if (x == t.tuple_index[i])
                 matches.push_back(i);
 
-    unordered_map<vector<int>, vector<int>, TupleHash> hash_map;
+    unordered_set<vector<int>, TupleHash> keys;
+    vector<vector<int>> new_tuples;
 
     for (const vector<int> &tuple : t.tuples) {
         vector<int> key(matches.size());
         for (size_t i = 0; i < matches.size(); i++) {
-                key[i] = tuple[matches[i]];
-            }
-        if (hash_map.count(key) == 0)
-            hash_map[key] = tuple;
+            key[i] = tuple[matches[i]];
+        }
+        if (keys.count(key) == 0) {
+            keys.insert(key);
+            new_tuples.push_back(tuple);
+        }
     }
 
-    vector<vector<int>> new_tuples;
-    new_tuples.reserve(hash_map.size());
-    for (const auto &entry : hash_map) {
-        new_tuples.push_back(entry.second);
-    }
     t.tuples = new_tuples;
 }

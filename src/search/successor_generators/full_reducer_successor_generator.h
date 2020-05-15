@@ -16,8 +16,6 @@ public:
 private:
     std::vector<std::vector<std::pair<int, int>>> full_reducer_order;
     std::vector<std::vector<int>> full_join_order;
-    std::vector<bool> acyclic_vec;
-
 };
 
 

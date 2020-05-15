@@ -59,19 +59,26 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
 
         DBState state = packer.unpack(space.get_state(sid));
-        vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
-        statistics.inc_generated(applicable_actions.size());
+        // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
+        // performance, we could implement some form of std iterator
+        for (std::size_t aidx = 0, sz = task.actions.size(); aidx < sz; ++aidx) {
+            const auto& action = task.actions[aidx];
+            vector<LiftedOperatorId> applicable_actions;
+            generator.get_applicable_actions(action, state, applicable_actions);
+            statistics.inc_generated(applicable_actions.size());
 
-        for (const LiftedOperatorId &a : applicable_actions) {
-            const DBState &s = generator.generate_successors(a, task.actions[a.get_index()], state);
-            auto& child_node = space.insert_or_get_previous_node(packer.pack(s), a, node.state_id);
-            if (child_node.status == SearchNode::Status::NEW) {
-                child_node.open(node.g+1);
+            for (const LiftedOperatorId &op_id : applicable_actions) {
+                assert((std::size_t) op_id.get_index() == aidx);
+                const DBState &s = generator.generate_successors(op_id, action, state);
+                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+                if (child_node.status == SearchNode::Status::NEW) {
+                    child_node.open(node.g+1);
 
-                if (check_goal(task, generator, timer_start, s, child_node)) return utils::ExitCode::SUCCESS;
+                    if (check_goal(task, generator, timer_start, s, child_node)) return utils::ExitCode::SUCCESS;
 
-                queue.emplace(child_node.state_id);
+                    queue.emplace(child_node.state_id);
+                }
             }
         }
     }
