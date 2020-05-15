@@ -43,11 +43,11 @@ public:
         number_of_children.resize(i, 0);
     }
 
-    std::vector<int> get_copy_number_children() const {
+    const std::vector<int> &get_number_children() const {
         return number_of_children;
     }
 
-    const std::vector<std::pair<int, int>> &get_join_tree() const {
+    const std::vector<std::pair<int, int>> &get_order() const {
         return join_tree_order;
     }
 

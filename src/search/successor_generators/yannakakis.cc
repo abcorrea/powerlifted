@@ -216,9 +216,9 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     }
 
     const JoinTree &jt = join_trees[action.get_index()];
-    vector<int> copy_number_of_child = jt.get_copy_number_children();
+    vector<int> copy_number_of_child = jt.get_number_children();
 
-    for (const auto &j : jt.get_join_tree()) {
+    for (const auto &j : jt.get_order()) {
         unordered_set<int> project_over;
         for (auto x : tables[j.second].tuple_index) {
             project_over.insert(x);
