@@ -28,7 +28,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
 
     const auto& actiondata = action_data[action.get_index()];
 
-    vector<Table> tables;
+    vector<Table> tables(0);
     auto res = parse_precond_into_join_program(actiondata, state, tables);
 
     if (!res) return Table::EMPTY_TABLE();

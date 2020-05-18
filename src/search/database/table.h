@@ -33,7 +33,7 @@ public:
 /// @brief Order tables from lowest to highest arity.
 struct OrderTable {
     bool operator()(const Table &t1, const Table &t2) const {
-        return t1.tuple_index.size() <= t2.tuple_index.size();
+        return t1.tuple_index.size() < t2.tuple_index.size();
     }
 };
 
