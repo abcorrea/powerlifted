@@ -36,23 +36,13 @@ void extract_plan(
     const SparseStatePacker &packer,
     const Task &task)
 {
-    vector<LiftedOperatorId> actions_in_the_plan;
-    int total_plan_cost = 0;
+    vector<LiftedOperatorId> plan;
     while (cheapest_parent[visited.at(state)].first != -1) {
-        actions_in_the_plan.push_back(cheapest_parent[visited.at(state)].second);
+        plan.push_back(cheapest_parent[visited.at(state)].second);
         state = index_to_state[cheapest_parent[visited.at(state)].first];
     }
-    reverse(actions_in_the_plan.begin(), actions_in_the_plan.end());
-    ofstream plan_file("sas_plan");
-    for (const LiftedOperatorId &a : actions_in_the_plan) {
-        total_plan_cost += 1;
-        plan_file << '(' << task.actions[a.get_index()].get_name() << " ";
-        for (const int obj : a.get_instantiation()) {
-            plan_file << task.objects[obj].getName() << " ";
-        }
-        plan_file << ")\n";
-    }
-    cout << "Total plan cost: " << total_plan_cost << endl;
+    reverse(plan.begin(), plan.end());
+    print_plan(plan, task);
 }
 
 
