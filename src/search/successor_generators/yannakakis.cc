@@ -164,9 +164,13 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
 
 void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchema &action) {
     for (const Atom &eff : action.get_effects()) {
-        for (Argument arg : eff.arguments) {
+        for (const Argument &arg : eff.arguments) {
             if (!arg.constant)
                 distinguished_variables[action.get_index()].insert(arg.index);
+        }
+        for (const auto &i : action.get_inequalities()) {
+            distinguished_variables[action.get_index()].insert(i.first);
+            distinguished_variables[action.get_index()].insert(i.second);
         }
     }
 }
@@ -234,8 +238,8 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         // some inequality. They should also be done only after all children were joined.
         filter_inequalities(action, working_table);
         copy_number_of_child[j.second]--;
-        if (copy_number_of_child[j.second] == 0)
-            project(working_table, project_over);
+        //if (copy_number_of_child[j.second] == 0)
+        project(working_table, project_over);
         if (working_table.tuples.empty()) {
             return working_table;
         }
