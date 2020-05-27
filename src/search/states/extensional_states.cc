@@ -51,7 +51,7 @@ ExtensionalStatePacker::ExtensionalStatePacker(const Task &task) :
             objects_per_arg.push_back(objects_per_type[type]);
         }
 
-        for (auto it = utils::cartesian_iterator(objects_per_arg); !it.ended(); ++it) {
+        for (auto it = utils::cartesian_iterator<int>(objects_per_arg); !it.ended(); ++it) {
             const std::vector<int>& args = *it;
             ati_map.emplace(args, index_to_args.size());
             index_to_args.emplace_back(pid, args);

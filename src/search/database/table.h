@@ -21,7 +21,7 @@ public:
         tuple_index(std::move(tuple_index))
     {}
 
-    bool index_is_variable(size_t i) const {
+    bool index_is_variable(std::size_t i) const {
         return tuple_index[i] >= 0;
     }
 
