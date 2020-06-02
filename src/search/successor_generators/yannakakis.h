@@ -29,22 +29,12 @@ class YannakakisSuccessorGenerator : public GenericJoinSuccessor {
 
 class JoinTree {
     std::vector<std::pair<int, int>> join_tree_order;
-    std::vector<int> number_of_children;
 
 public:
     JoinTree() = default;
 
     void add_node(int i, int j) {
         join_tree_order.emplace_back(i, j);
-        number_of_children[j]++;
-    }
-
-    void set_number_of_nodes(size_t i) {
-        number_of_children.resize(i, 0);
-    }
-
-    const std::vector<int> &get_number_children() const {
-        return number_of_children;
     }
 
     const std::vector<std::pair<int, int>> &get_order() const {
