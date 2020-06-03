@@ -67,7 +67,6 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
         bool has_ear = true;
         stack<pair<int, int>> full_reducer_back;
         vector<bool> removed(hyperedges.size(), false);
-        jt.set_number_of_nodes(action.get_precondition().size());
         while (has_ear) {
             has_ear = false;
             int ear = -1;
@@ -164,9 +163,13 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
 
 void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchema &action) {
     for (const Atom &eff : action.get_effects()) {
-        for (Argument arg : eff.arguments) {
+        for (const Argument &arg : eff.arguments) {
             if (!arg.constant)
                 distinguished_variables[action.get_index()].insert(arg.index);
+        }
+        for (const auto &i : action.get_inequalities()) {
+            distinguished_variables[action.get_index()].insert(i.first);
+            distinguished_variables[action.get_index()].insert(i.second);
         }
     }
 }
@@ -216,7 +219,6 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     }
 
     const JoinTree &jt = join_trees[action.get_index()];
-    vector<int> copy_number_of_child = jt.get_number_children();
 
     for (const auto &j : jt.get_order()) {
         unordered_set<int> project_over;
@@ -231,11 +233,9 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         Table &working_table = tables[j.second];
         hash_join(working_table, tables[j.first]);
         // Project must be after removal of inequality constraints, otherwise we might keep only the tuple violating
-        // some inequality. They should also be done only after all children were joined.
+        // some inequality. Variables in inequalities are also considered distinguished.
         filter_inequalities(action, working_table);
-        copy_number_of_child[j.second]--;
-        if (copy_number_of_child[j.second] == 0)
-            project(working_table, project_over);
+        project(working_table, project_over);
         if (working_table.tuples.empty()) {
             return working_table;
         }
