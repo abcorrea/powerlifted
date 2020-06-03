@@ -11,7 +11,7 @@ The `powerlifted.py` script solves a PDDL task provided as input. It also builds
 the planner if the `--build` parameter is passed. The script has the following
 parameters:
 
-```powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e HEURISTIC -g GENERATOR [--build] [--state STATE REPR.]```
+```powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e HEURISTIC -g GENERATOR [--build] [--state STATE REPR.] [--seed RANDOM SEED]```
 
 Use the `build.py` script to build the planner first.
 
@@ -51,6 +51,7 @@ Use the `build.py` script to build the planner first.
  - CMake 3.9+
  - Python 3.5+
  - [VAL](https://github.com/KCL-Planning/VAL) (added as `validate` to the `PATH`)
+ - Boost
 
 ## Limitations
  - **Axioms**: not supported
