@@ -35,13 +35,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     statistics.report_g_value_progress(0);
     queue.emplace(root_node.state_id, 0, this->heuristic_layer);
 
-    if (task.is_goal(task.initial_state)) {
-        print_goal_found(generator, timer_start);
-        auto plan = space.extract_plan(root_node);
-        cout << "Initial state is a goal" << endl;
-        print_plan(plan, task);
-        return utils::ExitCode::SUCCESS;
-    }
+    if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
     while (not queue.empty()) {
         GBFSNode gbfs_n = queue.top();
@@ -71,13 +65,8 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
 
         DBState state = packer.unpack(space.get_state(sid));
+        if (check_goal(task, generator, timer_start, state, node, space)) return utils::ExitCode::SUCCESS;
 
-        if (task.is_goal(state)) {
-            print_goal_found(generator, timer_start);
-            auto plan = space.extract_plan(node);
-            print_plan(plan, task);
-            return utils::ExitCode::SUCCESS;
-        }
         vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
         this->generations += applicable_actions.size();

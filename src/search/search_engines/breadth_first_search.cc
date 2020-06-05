@@ -7,28 +7,13 @@
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
 #include "../task.h"
+#include "search.h"
 
 #include <iostream>
 #include <queue>
 #include <vector>
 
 using namespace std;
-
-template <class PackedStateT>
-bool BreadthFirstSearch<PackedStateT>::check_goal(
-    const Task &task,
-    const SuccessorGenerator &generator,
-    clock_t timer_start,
-    const DBState &state,
-    const SearchNode &node) const
-{
-    if (!task.is_goal(state)) return false;
-
-    print_goal_found(generator, timer_start);
-    auto plan = space.extract_plan(node);
-    print_plan(plan, task);
-    return true;
-}
 
 template <class PackedStateT>
 utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
@@ -46,7 +31,7 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
     statistics.report_f_value_progress(root_node.f);
     queue.emplace(root_node.state_id);
 
-    if (check_goal(task, generator, timer_start, task.initial_state, root_node)) return utils::ExitCode::SUCCESS;
+    if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
     while (not queue.empty()) {
         StateID sid = queue.front();
@@ -78,7 +63,7 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
                 if (child_node.status == SearchNode::Status::NEW) {
                     child_node.open(node.f+1);
 
-                    if (check_goal(task, generator, timer_start, s, child_node)) return utils::ExitCode::SUCCESS;
+                    if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
 
                     queue.emplace(child_node.state_id);
                 }
