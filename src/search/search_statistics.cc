@@ -26,13 +26,13 @@ SearchStatistics::SearchStatistics(utils::Verbosity verbosity)
     lastjump_evaluated_states = 0;
     lastjump_generated_states = 0;
 
-    lastjump_f_value = -1;
+    lastjump_value = -1;
 }
 
 void SearchStatistics::report_f_value_progress(int f) {
-    if (f > lastjump_f_value) {
-        lastjump_f_value = f;
-        print_f_line();
+    if (f > lastjump_value) {
+        lastjump_value = f;
+        print_progress_line('f');
         lastjump_expanded_states = expanded_states;
         lastjump_reopened_states = reopened_states;
         lastjump_evaluated_states = evaluated_states;
@@ -40,9 +40,20 @@ void SearchStatistics::report_f_value_progress(int f) {
     }
 }
 
-void SearchStatistics::print_f_line() const {
+void SearchStatistics::report_g_value_progress(int g) {
+    if (g > lastjump_value) {
+        lastjump_value = g;
+        print_progress_line('g');
+        lastjump_expanded_states = expanded_states;
+        lastjump_reopened_states = reopened_states;
+        lastjump_evaluated_states = evaluated_states;
+        lastjump_generated_states = generated_states;
+    }
+}
+
+void SearchStatistics::print_progress_line(char metric) const {
     if (verbosity >= utils::Verbosity::NORMAL) {
-        cout << "f = " << lastjump_f_value
+        cout << metric << " = " << lastjump_value
              << " [";
         print_basic_statistics();
         cout << "]" << endl;
@@ -76,7 +87,7 @@ void SearchStatistics::print_detailed_statistics() const {
     cout << "Generated " << generated_states << " state(s)." << endl;
     cout << "Dead ends: " << dead_end_states << " state(s)." << endl;
 
-    if (lastjump_f_value >= 0) {
+    if (lastjump_value >= 0) {
         cout << "Expanded until last jump: "
              << lastjump_expanded_states << " state(s)." << endl;
         cout << "Reopened until last jump: "

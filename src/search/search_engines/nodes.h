@@ -26,6 +26,7 @@ public:
 
     bool operator==(const StateID &other) const { return value == other.value; }
     bool operator!=(const StateID &other) const { return !(*this == other); }
+    bool operator<(const StateID &other) const { return value < other.value; }
 };
 
 
@@ -38,20 +39,33 @@ public:
           op(LiftedOperatorId::no_operator),
           parent_state_id(StateID::no_state),
           status(Status::NEW),
-          g(0)
+          f(0),
+          g(0),
+          h(0)
     {}
 
-    SearchNode(StateID state_id, LiftedOperatorId op, StateID parent_state_id, int g)
+    SearchNode(StateID state_id, LiftedOperatorId op, StateID parent_state_id, int f)
         : state_id(state_id),
           op(std::move(op)),
           parent_state_id(parent_state_id),
           status(Status::NEW),
-          g(g)
+          f(f)
     {}
 
-    void open(int g_) {
+    void open(int f_) {
+        status = SearchNode::Status::OPEN;
+        f = f_;
+    }
+
+    void open(int g_, int h_) {
         status = SearchNode::Status::OPEN;
         g = g_;
+        h = h_;
+        f = g_ + h_;
+    }
+
+    void update_f(int f_) {
+        f = f_;
     }
 
     void close() {
@@ -63,5 +77,8 @@ public:
     LiftedOperatorId op;
     StateID parent_state_id;
     unsigned int status : 2;
-    int g : 30;
+    int f : 30;
+    int g;
+    int h;
 };
+
