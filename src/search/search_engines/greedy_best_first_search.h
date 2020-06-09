@@ -39,9 +39,8 @@ public:
     bool operator==(const GBFSNode &other) const { return h == other.h and g == other.g; }
     bool operator!=(const GBFSNode &other) const { return !(*this == other); }
     bool operator<(const GBFSNode &other) const {
-        if (h < other.h) return true;
-        if ((h == other.h) and (g >= other.g)) return true;
-        return false;
+        if (h!=other.h) return h > other.h;
+        else return g > other.g;
     }
 
 
