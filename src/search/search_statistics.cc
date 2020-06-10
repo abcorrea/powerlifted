@@ -40,17 +40,6 @@ void SearchStatistics::report_f_value_progress(int f) {
     }
 }
 
-void SearchStatistics::report_g_value_progress(int g) {
-    if (g > lastjump_value) {
-        lastjump_value = g;
-        print_progress_line('g');
-        lastjump_expanded_states = expanded_states;
-        lastjump_reopened_states = reopened_states;
-        lastjump_evaluated_states = evaluated_states;
-        lastjump_generated_states = generated_states;
-    }
-}
-
 void SearchStatistics::print_progress_line(char metric) const {
     if (verbosity >= utils::Verbosity::NORMAL) {
         cout << metric << " = " << lastjump_value

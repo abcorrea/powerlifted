@@ -32,7 +32,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     this->heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
     root_node.open(0, this->heuristic_layer);
     cout << "Initial heuristic value " << this->heuristic_layer << endl;
-    statistics.report_g_value_progress(0);
+    statistics.report_f_value_progress(this->heuristic_layer);
     queue.emplace(root_node.state_id, 0, this->heuristic_layer);
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
@@ -49,7 +49,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         int g = node.g;
         assert(g <= gbfs_n.g);
         queue.pop();
-        statistics.report_g_value_progress(g);
+        statistics.report_f_value_progress(h); // In GBFS f = h.
         statistics.inc_expanded();
 
         if (this->g_layer < g) {
