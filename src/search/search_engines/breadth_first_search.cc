@@ -1,10 +1,14 @@
 
 #include "breadth_first_search.h"
+
+#include "utils.h"
+
+#include "../task.h"
+
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
-#include "../task.h"
-#include "utils.h"
+
 #include <iostream>
 #include <queue>
 #include <vector>

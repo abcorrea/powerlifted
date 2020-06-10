@@ -6,6 +6,8 @@
 
 #include <map>
 #include <set>
+#include <unordered_set>
+#include <vector>
 
 class PrecompiledActionData;
 
@@ -25,6 +27,25 @@ class PrecompiledActionData;
  */
 class GenericJoinSuccessor : public SuccessorGenerator {
 
+
+    bool is_trivially_inapplicable(const DBState &state, const ActionSchema &action) const;
+
+    void apply_nullary_effects(const ActionSchema &action,
+                               std::vector<bool> &new_nullary_atoms) const;
+
+    void apply_ground_action_effects(const ActionSchema &action,
+                                     std::vector<Relation> &new_relation) const;
+
+    void apply_lifted_action_effects(const ActionSchema &action,
+                                     const std::vector<int> &tuple,
+                                     std::vector<Relation> &new_relation);
+
+    bool is_ground_action_applicable(const ActionSchema &action,
+                                     const DBState &state);
+
+    void compute_map_indices_to_table_positions(const Table &instantiations,
+                                                std::vector<int> &free_var_indices,
+                                                std::vector<int> &map_indices_to_position) const;
 public:
     explicit GenericJoinSuccessor(const Task &task);
 
@@ -48,6 +69,23 @@ public:
     virtual bool parse_precond_into_join_program(const PrecompiledActionData &adata,
                                                        const DBState &state,
                                                        std::vector<Table>& tables);
+
+    DBState generate_successors(const LiftedOperatorId &op,
+                                const ActionSchema& action,
+                                const DBState &state) override;
+
+    std::vector<LiftedOperatorId> get_applicable_actions(
+        const std::vector<ActionSchema> &actions,
+        const DBState &state) override;
+
+    void get_applicable_actions(const ActionSchema &action,
+                                const DBState &state,
+                                std::vector<LiftedOperatorId>& applicable) override;
+
+    const GroundAtom &tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
+
+    const std::unordered_set<GroundAtom, TupleHash>
+    &get_tuples_from_static_relation(size_t i) const;
 
 protected:
     static void get_indices_and_constants_in_preconditions(std::vector<int> &indices,
@@ -77,6 +115,11 @@ protected:
 
     //! Some data relevant to each action schema, indexed by schema index
     std::vector<PrecompiledActionData> action_data;
+
+    void order_tuple_by_free_variable_order(const std::vector<int> &free_var_indices,
+                                            const std::vector<int> &map_indices_to_position,
+                                            const std::vector<int> &tuple_with_const,
+                                            std::vector<int> &ordered_tuple) const;
 };
 
 class PrecompiledActionData {
