@@ -39,11 +39,11 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
     while (not queue.empty()) {
         const GBFSNode gbfs_n = queue.top();
+        queue.pop();
         StateID sid = gbfs_n.get_id();
         SearchNode &node = space.get_node(sid);
         int h = node.h;
         int g = node.g;
-        queue.pop();
         if (node.status == SearchNode::Status::CLOSED) {
             continue;
         }
