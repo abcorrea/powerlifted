@@ -26,29 +26,29 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     SparseStatePacker state_packer(task);
     StatePackerT packer(task);
 
-    priority_queue<GBFSNode, vector<GBFSNode>> queue;
+    priority_queue<GBFSNode> queue;
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
-    this->heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
-    root_node.open(0, this->heuristic_layer);
-    cout << "Initial heuristic value " << this->heuristic_layer << endl;
-    statistics.report_f_value_progress(this->heuristic_layer);
-    queue.emplace(root_node.state_id, 0, this->heuristic_layer);
+    heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
+    root_node.open(0, heuristic_layer);
+    cout << "Initial heuristic value " << heuristic_layer << endl;
+    statistics.report_f_value_progress(heuristic_layer);
+    queue.emplace(root_node.state_id, 0, heuristic_layer);
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
     while (not queue.empty()) {
-        GBFSNode gbfs_n = queue.top();
+        const GBFSNode gbfs_n = queue.top();
         StateID sid = gbfs_n.get_id();
         SearchNode node = space.get_node(sid);
+        int h = node.h;
+        int g = node.g;
+        queue.pop();
         if (node.status == SearchNode::Status::CLOSED) {
             continue;
         }
         node.close();
-        int h = node.h;
-        int g = node.g;
         assert(g <= gbfs_n.g);
-        queue.pop();
         statistics.report_f_value_progress(h); // In GBFS f = h.
         statistics.inc_expanded();
 

@@ -32,7 +32,7 @@ public:
     int g;
     int h;
 
-    StateID get_id() {
+    StateID get_id() const {
         return sid;
     }
 
