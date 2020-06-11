@@ -36,7 +36,7 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
     while (not queue.empty()) {
         StateID sid = queue.front();
         queue.pop();
-        SearchNode node = space.get_node(sid);
+        SearchNode &node = space.get_node(sid);
         if (node.status == SearchNode::Status::CLOSED) {
             continue;
         }

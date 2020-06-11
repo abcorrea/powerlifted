@@ -96,7 +96,8 @@ public:
         reverse(plan.begin(), plan.end());
         return plan;
     }
-    SearchNode get_node(StateID id) {
+
+    SearchNode &get_node(StateID id) {
         assert(id.value >= 0 && (unsigned) id.value < node_data.size());
         return node_data[id.value];
     }

@@ -40,7 +40,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     while (not queue.empty()) {
         const GBFSNode gbfs_n = queue.top();
         StateID sid = gbfs_n.get_id();
-        SearchNode node = space.get_node(sid);
+        SearchNode &node = space.get_node(sid);
         int h = node.h;
         int g = node.g;
         queue.pop();
@@ -58,8 +58,8 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         if (h < this->heuristic_layer) {
             this->heuristic_layer = h;
             cout << "New heuristic value expanded: h=" << h
-                 << " [this->state_counter: " << this->state_counter
-                 << ", this->generations: " << this->generations
+                 << " [state_counter: " << state_counter
+                 << ", generations: " << generations
                  << ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
         }
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
@@ -69,7 +69,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
         vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
-        this->generations += applicable_actions.size();
+        generations += applicable_actions.size();
         statistics.inc_generated(applicable_actions.size());
 
         for (const LiftedOperatorId &op_id : applicable_actions) {
@@ -88,6 +88,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             else {
                 if (dist < child_node.g) {
                     child_node.open(dist, new_h); // Reopening
+                    statistics.inc_reopened();
                     queue.emplace(child_node.state_id, dist, new_h);
                 }
             }
