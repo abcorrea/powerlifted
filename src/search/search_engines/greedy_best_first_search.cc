@@ -1,13 +1,16 @@
 #include "greedy_best_first_search.h"
 
+#include "search.h"
+#include "utils.h"
+
 #include "../action.h"
+#include "../task.h"
+
 #include "../heuristics/heuristic.h"
+#include "../open_lists/greedy_open_list.h"
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
-#include "search.h"
-#include "../task.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <iostream>
@@ -26,21 +29,19 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     SparseStatePacker state_packer(task);
     StatePackerT packer(task);
 
-    priority_queue<GBFSNode> queue;
+    GreedyOpenList queue;
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
     heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
     root_node.open(0, heuristic_layer);
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
-    queue.emplace(root_node.state_id, 0, heuristic_layer);
+    queue.do_insertion(root_node.state_id, heuristic_layer);
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
     while (not queue.empty()) {
-        const GBFSNode gbfs_n = queue.top();
-        queue.pop();
-        StateID sid = gbfs_n.get_id();
+        StateID sid = queue.remove_min();
         SearchNode &node = space.get_node(sid);
         int h = node.h;
         int g = node.g;
@@ -48,13 +49,9 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             continue;
         }
         node.close();
-        assert(g <= gbfs_n.g);
         statistics.report_f_value_progress(h); // In GBFS f = h.
         statistics.inc_expanded();
 
-        if (this->g_layer < g) {
-            this->g_layer = g;
-        }
         if (h < this->heuristic_layer) {
             this->heuristic_layer = h;
             cout << "New heuristic value expanded: h=" << h
@@ -82,14 +79,14 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             if (child_node.status == SearchNode::Status::NEW) {
                 // Inserted for the first time in the map
                 child_node.open(dist, new_h);
-                queue.emplace(child_node.state_id, dist, new_h);
+                queue.do_insertion(child_node.state_id, new_h);
                 this->state_counter++;
             }
             else {
                 if (dist < child_node.g) {
                     child_node.open(dist, new_h); // Reopening
                     statistics.inc_reopened();
-                    queue.emplace(child_node.state_id, dist, new_h);
+                    queue.do_insertion(child_node.state_id, new_h);
                 }
             }
         }
