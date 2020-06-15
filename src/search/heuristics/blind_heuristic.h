@@ -3,6 +3,8 @@
 
 #include "heuristic.h"
 
+#include "../task.h"
+
 /**
  * @brief Evaluates all states with h=1. Does not perform goal check.
  *
@@ -12,6 +14,7 @@
 class BlindHeuristic : public Heuristic {
 public:
     int compute_heuristic(const DBState &s, const Task &task) override {
+        if (task.is_goal(s)) return 0;
         return 1;
     }
 };
