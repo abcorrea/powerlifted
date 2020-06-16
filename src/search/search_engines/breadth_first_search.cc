@@ -58,7 +58,7 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
             for (const LiftedOperatorId &op_id : applicable_actions) {
                 assert((std::size_t) op_id.get_index() == aidx);
-                const DBState &s = generator.generate_successors(op_id, action, state);
+                const DBState &s = generator.generate_successor(op_id, action, state);
                 auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
                 if (child_node.status == SearchNode::Status::NEW) {
                     child_node.open(node.f+1);

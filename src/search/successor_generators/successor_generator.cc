@@ -94,7 +94,7 @@ void SuccessorGenerator::get_applicable_actions(
     }
 }
 
-DBState SuccessorGenerator::generate_successors(
+DBState SuccessorGenerator::generate_successor(
     const LiftedOperatorId &op,
     const ActionSchema& action,
     const DBState &state) {

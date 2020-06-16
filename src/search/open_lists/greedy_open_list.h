@@ -6,16 +6,25 @@
 #include <deque>
 #include <map>
 
+struct CompareGBFSEntries {
+    bool operator()(const std::pair<int, int> &lhs, const std::pair<int, int> &rhs) const {
+        if (lhs.first != rhs.first) {
+            return lhs.first < rhs.first;
+        }
+        return lhs.second < rhs.second;
+    }
+};
+
 class GreedyOpenList {
     typedef std::deque<StateID> Bucket;
 
-    std::map<int, Bucket> buckets;
+    std::map<std::pair<int, int>, Bucket, CompareGBFSEntries> buckets;
     int size;
 
 public:
     GreedyOpenList() : size(0) {}
 
-    void do_insertion(const StateID &entry, int key) {
+    void do_insertion(const StateID &entry, std::pair<int, int> key) {
         buckets[key].push_back(entry);
         ++size;
     }
@@ -37,8 +46,6 @@ public:
     bool empty() {
         return size == 0;
     }
-
-
 
 };
 

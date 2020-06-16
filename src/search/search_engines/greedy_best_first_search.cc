@@ -26,7 +26,6 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 {
     cout << "Starting greedy best first search" << endl;
     clock_t timer_start = clock();
-    SparseStatePacker state_packer(task);
     StatePackerT packer(task);
 
     GreedyOpenList queue;
@@ -36,7 +35,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     root_node.open(0, heuristic_layer);
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
-    queue.do_insertion(root_node.state_id, heuristic_layer);
+    queue.do_insertion(root_node.state_id, make_pair(heuristic_layer, 0));
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
@@ -55,8 +54,9 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         if (h < this->heuristic_layer) {
             this->heuristic_layer = h;
             cout << "New heuristic value expanded: h=" << h
-                 << " [state_counter: " << state_counter
-                 << ", generations: " << generations
+                 << " [expansions: " << statistics.get_expanded()
+                 << ", evaluations: " << statistics.get_evaluations()
+                 << ", generations: " << statistics.get_generated()
                  << ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
         }
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
@@ -66,12 +66,10 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
         vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
-        generations += applicable_actions.size();
         statistics.inc_generated(applicable_actions.size());
 
         for (const LiftedOperatorId &op_id : applicable_actions) {
-            const DBState &s = generator.generate_successors(op_id, task.actions[op_id.get_index()], state);
-            const SparsePackedState packed = state_packer.pack(s);
+            const DBState &s = generator.generate_successor(op_id, task.actions[op_id.get_index()], state);
             int dist = g + task.actions[op_id.get_index()].get_cost();
             int new_h = heuristic.compute_heuristic(s, task);
             statistics.inc_evaluations();
@@ -79,14 +77,13 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             if (child_node.status == SearchNode::Status::NEW) {
                 // Inserted for the first time in the map
                 child_node.open(dist, new_h);
-                queue.do_insertion(child_node.state_id, new_h);
-                this->state_counter++;
+                queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
             }
             else {
                 if (dist < child_node.g) {
                     child_node.open(dist, new_h); // Reopening
                     statistics.inc_reopened();
-                    queue.do_insertion(child_node.state_id, new_h);
+                    queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
                 }
             }
         }

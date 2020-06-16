@@ -67,9 +67,9 @@ public:
         const DBState &state,
         std::vector<LiftedOperatorId>& applicable);
 
-    DBState generate_successors(const LiftedOperatorId &op,
-                                const ActionSchema& action,
-                                const DBState &state);
+    DBState generate_successor(const LiftedOperatorId &op,
+                               const ActionSchema& action,
+                               const DBState &state);
 
     virtual Table instantiate(const ActionSchema &action, const DBState &state) = 0;
 
