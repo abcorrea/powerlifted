@@ -15,16 +15,20 @@ using namespace std;
 SuccessorGenerator::SuccessorGenerator(const Task &task)  :
     static_information(task.get_static_info())
 {
-    obj_per_type.resize(task.type_names.size());
-    for (const Object &obj : task.objects) {
-        for (int type : obj.getTypes()) {
-            obj_per_type[type].push_back(obj.getIndex());
-        }
-    }
     is_predicate_static.reserve(static_information.get_relations().size());
     for (const auto &r : static_information.get_relations()) {
         is_predicate_static.push_back(!r.tuples.empty());
     }
+}
+
+std::vector<LiftedOperatorId> SuccessorGenerator::get_applicable_actions(const std::vector<
+    ActionSchema> &actions, const DBState &state) {
+        vector<LiftedOperatorId> applicable_operators;
+        // Duplicate code from generic join implementation
+        for (const ActionSchema &action : actions) {
+            get_applicable_actions(action, state, applicable_operators);
+        }
+        return applicable_operators;
 }
 
 

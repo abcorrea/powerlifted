@@ -41,8 +41,6 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     Table &working_table = tables[0];
     for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
-        if (working_table.tuples.size() > largest_intermediate_relation)
-            largest_intermediate_relation = working_table.tuples.size();
         // Filter out equalities
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
@@ -415,17 +413,6 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
  * @return vector of pairs <State, Action> where state is the successor state and
  * action is the ground action generating it from the current state
  */
-vector<LiftedOperatorId>
-GenericJoinSuccessor::get_applicable_actions(const vector<ActionSchema> &actions,
-                                             const DBState &state) {
-    vector<LiftedOperatorId> applicable_operators;
-    // Duplicate code from generic join implementation
-    for (const ActionSchema &action : actions) {
-        get_applicable_actions(action, state, applicable_operators);
-    }
-    return applicable_operators;
-}
-
 void GenericJoinSuccessor::get_applicable_actions(
     const ActionSchema &action, const DBState &state, vector<LiftedOperatorId>& applicable)
 {

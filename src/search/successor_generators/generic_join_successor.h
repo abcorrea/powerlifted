@@ -46,6 +46,9 @@ class GenericJoinSuccessor : public SuccessorGenerator {
     void compute_map_indices_to_table_positions(const Table &instantiations,
                                                 std::vector<int> &free_var_indices,
                                                 std::vector<int> &map_indices_to_position) const;
+
+    GroundAtom ground_atom;
+
 public:
     explicit GenericJoinSuccessor(const Task &task);
 
@@ -74,9 +77,6 @@ public:
                                 const ActionSchema& action,
                                 const DBState &state) override;
 
-    std::vector<LiftedOperatorId> get_applicable_actions(
-        const std::vector<ActionSchema> &actions,
-        const DBState &state) override;
 
     void get_applicable_actions(const ActionSchema &action,
                                 const DBState &state,

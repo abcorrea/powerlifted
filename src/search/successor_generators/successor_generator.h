@@ -30,7 +30,6 @@ typedef DBState StaticInformation;
 class SuccessorGenerator {
 
     std::vector<bool> is_predicate_static;
-    std::vector<std::vector<int>> obj_per_type;
 
 public:
     explicit SuccessorGenerator(const Task &task);
@@ -45,10 +44,9 @@ public:
                                 const ActionSchema& action,
                                 const DBState &state) = 0;
 
-    virtual std::vector<LiftedOperatorId> get_applicable_actions(
+    std::vector<LiftedOperatorId> get_applicable_actions(
         const std::vector<ActionSchema> &actions,
-        const DBState &state) = 0;
-
+        const DBState &state);
 
     virtual Table instantiate(const ActionSchema &action, const DBState &state) = 0;
 
@@ -56,10 +54,7 @@ public:
         return is_predicate_static[i];
     }
 
-    GroundAtom ground_atom;
-
 protected:
-    size_t largest_intermediate_relation = 0;
     const StaticInformation& static_information;
 };
 
