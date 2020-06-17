@@ -110,7 +110,7 @@ if __name__ == '__main__':
         OPTIMAL_PLAN_COSTS = {'domains/blocks/probBLOCKS-4-0.pddl': 6,
                               'domains/gripper/prob01.pddl': 11,
                               'domains/movie/prob30.pddl': 7}
-        SEARCH_CONFIGS = ['naive']
+        SEARCH_CONFIGS = ['naive', 'gbfs']
         HEURISTIC_CONFIGS = ['blind']
         GENERATOR_CONFIGS = ['full_reducer', 'yannakakis']
         STATE_REPR_CONFIGS = ['sparse', 'extensional']

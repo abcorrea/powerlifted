@@ -38,8 +38,8 @@ public:
      * Generate the state that results from applying the given action to the given state.
      */
     virtual DBState generate_successor(const LiftedOperatorId &op,
-                                       const ActionSchema& action,
-                                       const DBState &state) = 0;
+                               const ActionSchema& action,
+                               const DBState &state) = 0;
 };
 
 #endif //SEARCH_SUCCESSOR_GENERATOR_H

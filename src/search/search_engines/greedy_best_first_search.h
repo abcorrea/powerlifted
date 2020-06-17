@@ -3,20 +3,20 @@
 
 
 #include "search.h"
+#include "search_space.h"
 
 template <class PackedStateT>
 class GreedyBestFirstSearch : public SearchBase {
-  public:
+protected:
+    SearchSpace<PackedStateT> space;
+
+    int heuristic_layer{};
+public:
+    using StatePackerT = typename PackedStateT::StatePackerT;
+
     utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
 
     void print_statistics() const override;
-
-protected:
-    size_t state_counter{};
-
-    int generations{};
-    int g_layer{};
-    int heuristic_layer{};
 };
 
 
