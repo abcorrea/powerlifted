@@ -4,12 +4,9 @@
 import argparse
 import os
 import subprocess
-import sys
 import timeit
 
-from distutils.dir_util import copy_tree
 from itertools import product
-from shutil import copyfile
 
 """
 This test component just checks to see if the plans found
@@ -20,12 +17,14 @@ The expected run time of each run is less than 30s.
 
 """
 
+BASEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 
 # Commented instances have costs which are currently ignored
 OPTIMAL_PLAN_COSTS = {'domains/airport/p05-airport2-p1.pddl': 21,
                       'domains/blocks/probBLOCKS-4-0.pddl': 6,
                       'domains/gripper/prob01.pddl': 11,
-                      'domains/movie/prob30.pddl':  7,
+                      'domains/movie/prob30.pddl': 7,
                       'domains/openstacks/p01.pddl': 17,
                       'domains/organic-synthesis/p05.pddl': 2}
 SEARCH_CONFIGS = ['naive', 'gbfs']
@@ -49,12 +48,12 @@ class TestRun:
                                            self.state_representation)
 
     def __str__(self):
-        return ("{} with {}".format(self.instance, self.get_config()))
+        return "{} with {}".format(self.instance, self.get_config())
 
     def run(self):
-        print ("Testing {} with {}: ".format(self.instance, self.get_config()), end='', flush=True)
-        output = subprocess.check_output([os.path.join('..', 'powerlifted.py'),
-                                          '-i', os.path.join(os.getcwd(), self.instance),
+        print("Testing {} with {}: ".format(self.instance, self.get_config()), end='', flush=True)
+        output = subprocess.check_output([os.path.join(BASEDIR, 'powerlifted.py'),
+                                          '-i', os.path.join(BASEDIR, 'dev', self.instance),
                                           '-s', self.search,
                                           '-e', self.heuristic,
                                           '-g', self.generator,
@@ -110,7 +109,7 @@ if __name__ == '__main__':
     if args.minimal:
         OPTIMAL_PLAN_COSTS = {'domains/blocks/probBLOCKS-4-0.pddl': 6,
                               'domains/gripper/prob01.pddl': 11,
-                              'domains/movie/prob30.pddl':  7}
+                              'domains/movie/prob30.pddl': 7}
         SEARCH_CONFIGS = ['naive']
         HEURISTIC_CONFIGS = ['blind']
         GENERATOR_CONFIGS = ['full_reducer', 'yannakakis']
@@ -125,9 +124,9 @@ if __name__ == '__main__':
             output = test.run()
             passed = test.evaluate(output, cost)
             if passed:
-                passes +=1
+                passes += 1
             else:
-                failures +=1
+                failures += 1
             test.remove_plan_file()
 
     print_summary(passes, failures, start)
