@@ -6,7 +6,6 @@
 #include <iostream>
 #include <utility>
 
-// class SearchSpace;
 
 class StateID {
     friend std::ostream &operator<<(std::ostream &os, StateID id);
@@ -34,14 +33,8 @@ class SearchNode {
 public:
     enum Status { NEW = 0, OPEN = 1, CLOSED = 2, DEAD_END = 3 };
 
-    explicit SearchNode(StateID state_id)
-        : state_id(state_id),
-          op(LiftedOperatorId::no_operator),
-          parent_state_id(StateID::no_state),
-          status(Status::NEW),
-          f(0),
-          g(0),
-          h(0)
+    explicit SearchNode(StateID state_id) :
+        SearchNode(state_id, LiftedOperatorId::no_operator, StateID::no_state, 0)
     {}
 
     SearchNode(StateID state_id, LiftedOperatorId op, StateID parent_state_id, int f)
@@ -49,7 +42,9 @@ public:
           op(std::move(op)),
           parent_state_id(parent_state_id),
           status(Status::NEW),
-          f(f)
+          f(f),
+          g(0),
+          h(0)
     {}
 
     void open(int f_) {

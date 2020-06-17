@@ -1,8 +1,6 @@
 #ifndef SEARCH_OPEN_LISTS_GREEDY_OPEN_LIST_H_
 #define SEARCH_OPEN_LISTS_GREEDY_OPEN_LIST_H_
 
-#include "../search_engines/nodes.h"
-
 #include <deque>
 #include <map>
 
@@ -24,7 +22,7 @@ class GreedyOpenList {
 public:
     GreedyOpenList() : size(0) {}
 
-    void do_insertion(const StateID &entry, std::pair<int, int> key) {
+    void do_insertion(const StateID &entry, const std::pair<int, int>& key) {
         buckets[key].push_back(entry);
         ++size;
     }

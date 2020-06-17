@@ -1,6 +1,7 @@
 #ifndef SEARCH_BREADTH_FIRST_SEARCH_H
 #define SEARCH_BREADTH_FIRST_SEARCH_H
 
+
 #include "search.h"
 #include "search_space.h"
 
@@ -17,7 +18,6 @@ public:
     utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
 
     void print_statistics() const override;
-
 };
 
 

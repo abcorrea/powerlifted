@@ -48,8 +48,8 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         statistics.report_f_value_progress(h); // In GBFS f = h.
         statistics.inc_expanded();
 
-        if (h < this->heuristic_layer) {
-            this->heuristic_layer = h;
+        if (h < heuristic_layer) {
+            heuristic_layer = h;
             cout << "New heuristic value expanded: h=" << h
                  << " [expansions: " << statistics.get_expanded()
                  << ", evaluations: " << statistics.get_evaluations()
