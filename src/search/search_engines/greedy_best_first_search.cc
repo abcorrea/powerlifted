@@ -1,13 +1,15 @@
 #include "greedy_best_first_search.h"
 
+#include "search.h"
+#include "utils.h"
+
 #include "../action.h"
+#include "../task.h"
+
 #include "../heuristics/heuristic.h"
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
-#include "search.h"
-#include "../task.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <iostream>
@@ -85,33 +87,36 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                 cheapest_parent, state_packer.pack(state), visited,index_to_state, state_packer, task);
             return utils::ExitCode::SUCCESS;
         }
-        vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
 
-        this->generations += applicable_actions.size();
-        statistics.inc_generated(applicable_actions.size());
+        // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
+        // performance, we could implement some form of std iterator
+        for (const auto& action:task.actions) {
+            auto applicable = generator.get_applicable_actions(action, state);
+            statistics.inc_generated(applicable.size());
 
-        for (const LiftedOperatorId &a : applicable_actions) {
-            const DBState &s = generator.generate_successors(a, task.actions[a.get_index()], state);
-            const SparsePackedState packed = state_packer.pack(s);
-            int dist = g + task.actions[a.get_index()].get_cost();
-            int new_h = heuristic.compute_heuristic(s, task);
-            statistics.inc_evaluations();
+            for (const LiftedOperatorId &op_id:applicable) {
+                const DBState &s = generator.generate_successor(op_id, action, state);
+                const SparsePackedState packed = state_packer.pack(s);
+                int dist = g + task.actions[op_id.get_index()].get_cost();
+                int new_h = heuristic.compute_heuristic(s, task);
+                statistics.inc_evaluations();
 
-            auto try_to_insert = visited.insert(make_pair(packed, this->state_counter));
-            if (try_to_insert.second) {
-                // Inserted for the first time in the map
-                cheapest_parent.push_back(make_pair(next, a));
-                q.emplace(dist, new_h, this->state_counter);
-                shortest_distance.push_back(dist);
-                index_to_state.push_back(packed);
-                this->state_counter++;
-            }
-            else {
-                int index = try_to_insert.first->second;
-                if (dist < shortest_distance[index]) {
-                    cheapest_parent[index] = make_pair(next, a);
-                    q.emplace(dist, new_h, index);
-                    shortest_distance[index] = dist;
+                auto try_to_insert = visited.insert(make_pair(packed, this->state_counter));
+                if (try_to_insert.second) {
+                    // Inserted for the first time in the map
+                    cheapest_parent.push_back(make_pair(next, op_id));
+                    q.emplace(dist, new_h, this->state_counter);
+                    shortest_distance.push_back(dist);
+                    index_to_state.push_back(packed);
+                    this->state_counter++;
+                }
+                else {
+                    int index = try_to_insert.first->second;
+                    if (dist < shortest_distance[index]) {
+                        cheapest_parent[index] = make_pair(next, op_id);
+                        q.emplace(dist, new_h, index);
+                        shortest_distance[index] = dist;
+                    }
                 }
             }
         }

@@ -6,8 +6,12 @@
 
 #include <map>
 #include <set>
+#include <unordered_set>
+#include <vector>
 
 class PrecompiledActionData;
+class Task;
+class Table;
 
 /**
  * This class is not a successor generator per se. It just contain most of the common functions
@@ -24,11 +28,10 @@ class PrecompiledActionData;
  * @see database/join.cc
  */
 class GenericJoinSuccessor : public SuccessorGenerator {
-
 public:
     explicit GenericJoinSuccessor(const Task &task);
 
-    Table instantiate(const ActionSchema &action, const DBState &state) override;
+    virtual Table instantiate(const ActionSchema &action, const DBState &state);
 
     /**
     * Create the set of tables corresponding to the precondition of the given action.
@@ -49,7 +52,30 @@ public:
                                                        const DBState &state,
                                                        std::vector<Table>& tables);
 
+    DBState generate_successor(const LiftedOperatorId &op,
+                               const ActionSchema& action,
+                               const DBState &state) override;
+
+
+    std::vector<LiftedOperatorId> get_applicable_actions(
+            const ActionSchema &action, const DBState &state) override;
+
+    const GroundAtom tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
+
+    const std::unordered_set<GroundAtom, TupleHash>
+    &get_tuples_from_static_relation(size_t i) const;
+
+
 protected:
+    const StaticInformation& static_information;
+
+    std::vector<bool> is_predicate_static;
+
+    //! Some data relevant to each action schema, indexed by schema index
+    std::vector<PrecompiledActionData> action_data;
+
+    bool is_static(size_t i) const { return is_predicate_static[i]; }
+
     static void get_indices_and_constants_in_preconditions(std::vector<int> &indices,
                                                            std::vector<int> &constants,
                                                            const Atom &a);
@@ -59,8 +85,8 @@ protected:
                               std::vector<GroundAtom> &tuples,
                               const std::vector<int> &constants);
 
-    void filter_inequalities(const ActionSchema &action,
-                             Table &working_table) const;
+    static void filter_inequalities(const ActionSchema &action,
+                             Table &working_table) ;
     static void create_hypergraph(
         const ActionSchema &action,
         std::vector<int> &hypernodes,
@@ -75,8 +101,29 @@ protected:
 
     PrecompiledActionData precompile_action_data(const ActionSchema& action);
 
-    //! Some data relevant to each action schema, indexed by schema index
-    std::vector<PrecompiledActionData> action_data;
+    static void order_tuple_by_free_variable_order(const std::vector<int> &free_var_indices,
+                                            const std::vector<int> &map_indices_to_position,
+                                            const std::vector<int> &tuple_with_const,
+                                            std::vector<int> &ordered_tuple) ;
+
+    static bool is_trivially_inapplicable(const DBState &state, const ActionSchema &action) ;
+
+    static void apply_nullary_effects(const ActionSchema &action,
+                                      std::vector<bool> &new_nullary_atoms) ;
+
+    static void apply_ground_action_effects(const ActionSchema &action,
+                                            std::vector<Relation> &new_relation) ;
+
+    void apply_lifted_action_effects(const ActionSchema &action,
+                                     const std::vector<int> &tuple,
+                                     std::vector<Relation> &new_relation);
+
+    bool is_ground_action_applicable(const ActionSchema &action,
+                                     const DBState &state) const;
+
+    static void compute_map_indices_to_table_positions(const Table &instantiations,
+                                                       std::vector<int> &free_var_indices,
+                                                       std::vector<int> &map_indices_to_position) ;
 };
 
 class PrecompiledActionData {
