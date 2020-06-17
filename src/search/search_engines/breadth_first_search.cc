@@ -52,7 +52,7 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
             statistics.inc_generated(applicable.size());
 
             for (const LiftedOperatorId &op_id:applicable) {
-                const DBState &s = generator.generate_successor(op_id, action, state);
+                DBState s = generator.generate_successor(op_id, action, state);
                 auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
                 if (child_node.status == SearchNode::Status::NEW) {
                     child_node.open(node.f+1);

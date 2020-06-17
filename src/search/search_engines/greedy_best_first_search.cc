@@ -68,7 +68,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             statistics.inc_generated(applicable.size());
 
             for (const LiftedOperatorId& op_id:applicable) {
-                const DBState &s = generator.generate_successor(op_id, action, state);
+                DBState s = generator.generate_successor(op_id, action, state);
 
                 int dist = g + action.get_cost();
                 int new_h = heuristic.compute_heuristic(s, task);
