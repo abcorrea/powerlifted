@@ -1,13 +1,10 @@
 
 #include "breadth_first_search.h"
-
-#include "utils.h"
-
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
 #include "../task.h"
-#include "search.h"
+#include "utils.h"
 
 #include <iostream>
 #include <queue>
@@ -50,14 +47,11 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
         // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
         // performance, we could implement some form of std iterator
-        for (std::size_t aidx = 0, sz = task.actions.size(); aidx < sz; ++aidx) {
-            const auto& action = task.actions[aidx];
-            vector<LiftedOperatorId> applicable_actions;
-            generator.get_applicable_actions(action, state, applicable_actions);
-            statistics.inc_generated(applicable_actions.size());
+        for (const auto& action:task.actions) {
+            auto applicable = generator.get_applicable_actions(action, state);
+            statistics.inc_generated(applicable.size());
 
-            for (const LiftedOperatorId &op_id : applicable_actions) {
-                assert((std::size_t) op_id.get_index() == aidx);
+            for (const LiftedOperatorId &op_id:applicable) {
                 const DBState &s = generator.generate_successor(op_id, action, state);
                 auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
                 if (child_node.status == SearchNode::Status::NEW) {

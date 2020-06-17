@@ -44,7 +44,7 @@ add_executable(search
         search_engines/utils
         search_engines/search_space
         action
-        successor_generators/successor_generator.cc successor_generators/successor_generator.h
+        successor_generators/successor_generator.h
         database/table
         database/join
         database/utils

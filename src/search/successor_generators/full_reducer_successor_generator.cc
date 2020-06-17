@@ -197,8 +197,6 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     Table &working_table = tables[fjr[0]];
     for (size_t i = 1; i < fjr.size(); ++i) {
         hash_join(working_table, tables[fjr[i]]);
-        if (working_table.tuples.size() > largest_intermediate_relation)
-            largest_intermediate_relation = working_table.tuples.size();
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
             return working_table;

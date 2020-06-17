@@ -1,11 +1,8 @@
 #include "greedy_best_first_search.h"
-
 #include "search.h"
 #include "utils.h"
-
 #include "../action.h"
 #include "../task.h"
-
 #include "../heuristics/heuristic.h"
 #include "../open_lists/greedy_open_list.h"
 #include "../states/extensional_states.h"
@@ -64,26 +61,31 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         DBState state = packer.unpack(space.get_state(sid));
         if (check_goal(task, generator, timer_start, state, node, space)) return utils::ExitCode::SUCCESS;
 
-        vector<LiftedOperatorId> applicable_actions = generator.get_applicable_actions(task.actions, state);
+        // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
+        // performance, we could implement some form of std iterator
+        for (const auto& action:task.actions) {
+            auto applicable = generator.get_applicable_actions(action, state);
+            statistics.inc_generated(applicable.size());
 
-        statistics.inc_generated(applicable_actions.size());
+            for (const LiftedOperatorId& op_id:applicable) {
+                const DBState &s = generator.generate_successor(op_id, action, state);
 
-        for (const LiftedOperatorId &op_id : applicable_actions) {
-            const DBState &s = generator.generate_successor(op_id, task.actions[op_id.get_index()], state);
-            int dist = g + task.actions[op_id.get_index()].get_cost();
-            int new_h = heuristic.compute_heuristic(s, task);
-            statistics.inc_evaluations();
-            auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-            if (child_node.status == SearchNode::Status::NEW) {
-                // Inserted for the first time in the map
-                child_node.open(dist, new_h);
-                queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
-            }
-            else {
-                if (dist < child_node.g) {
-                    child_node.open(dist, new_h); // Reopening
-                    statistics.inc_reopened();
+                int dist = g + action.get_cost();
+                int new_h = heuristic.compute_heuristic(s, task);
+                statistics.inc_evaluations();
+
+                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+                if (child_node.status == SearchNode::Status::NEW) {
+                    // Inserted for the first time in the map
+                    child_node.open(dist, new_h);
                     queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
+                }
+                else {
+                    if (dist < child_node.g) {
+                        child_node.open(dist, new_h); // Reopening
+                        statistics.inc_reopened();
+                        queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
+                    }
                 }
             }
         }
