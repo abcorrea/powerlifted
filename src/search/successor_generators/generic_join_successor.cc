@@ -16,8 +16,13 @@
 using namespace std;
 
 GenericJoinSuccessor::GenericJoinSuccessor(const Task &task)
-    : SuccessorGenerator(task), action_data(precompile_action_data(task.actions))
+    : static_information(task.get_static_info()), is_predicate_static(), action_data()
 {
+    is_predicate_static.reserve(static_information.get_relations().size());
+    for (const auto &r : static_information.get_relations()) {
+        is_predicate_static.push_back(!r.tuples.empty());
+    }
+    action_data = precompile_action_data(task.actions);
 }
 
 Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
@@ -52,7 +57,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
 }
 
 void GenericJoinSuccessor::filter_inequalities(const ActionSchema &action,
-                                               Table &working_table) const
+                                               Table &working_table)
 {
     const auto& tup_idx = working_table.tuple_index;
 
@@ -280,7 +285,7 @@ void GenericJoinSuccessor::create_hypergraph(const ActionSchema &action,
     }
 }
 
-DBState GenericJoinSuccessor::generate_successors(
+DBState GenericJoinSuccessor::generate_successor(
     const LiftedOperatorId &op,
     const ActionSchema& action,
     const DBState &state) {
@@ -302,14 +307,14 @@ DBState GenericJoinSuccessor::generate_successors(
 void GenericJoinSuccessor::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,
                                                             const vector<int> &map_indices_to_position,
                                                             const vector<int> &tuple_with_const,
-                                                            vector<int> &ordered_tuple) const {
+                                                            vector<int> &ordered_tuple) {
     for (size_t i = 0; i < free_var_indices.size(); ++i) {
         ordered_tuple[free_var_indices[i]] = tuple_with_const[map_indices_to_position[i]];
     }
 }
 void GenericJoinSuccessor::compute_map_indices_to_table_positions(const Table &instantiations,
                                                                 vector<int> &free_var_indices,
-                                                                vector<int> &map_indices_to_position) const {
+                                                                vector<int> &map_indices_to_position) {
     for (size_t j = 0; j < instantiations.tuple_index.size(); ++j) {
         if (instantiations.index_is_variable(j)) {
             free_var_indices.push_back(instantiations.tuple_index[j]);
@@ -317,7 +322,7 @@ void GenericJoinSuccessor::compute_map_indices_to_table_positions(const Table &i
         }
     }
 }
-bool GenericJoinSuccessor::is_trivially_inapplicable(const DBState &state, const ActionSchema &action) const {
+bool GenericJoinSuccessor::is_trivially_inapplicable(const DBState &state, const ActionSchema &action) {
     const auto& positive_precond = action.get_positive_nullary_precond();
     const auto& negative_precond = action.get_negative_nullary_precond();
     const auto& nullary_atoms = state.get_nullary_atoms();
@@ -330,7 +335,7 @@ bool GenericJoinSuccessor::is_trivially_inapplicable(const DBState &state, const
     return false;
 }
 void GenericJoinSuccessor::apply_nullary_effects(const ActionSchema &action,
-                                               vector<bool> &new_nullary_atoms) const
+                                               vector<bool> &new_nullary_atoms)
 {
     /*
      * Loop over positive and negative nullary effects and apply them accordingly
@@ -346,7 +351,7 @@ void GenericJoinSuccessor::apply_nullary_effects(const ActionSchema &action,
     }
 }
 void GenericJoinSuccessor::apply_ground_action_effects(const ActionSchema &action,
-                                                     vector<Relation> &new_relation) const
+                                                     vector<Relation> &new_relation)
 {
     for (const Atom &eff : action.get_effects()) {
         GroundAtom ga;
@@ -371,7 +376,7 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
                                                      vector<Relation> &new_relation)
 {
     for (const Atom &eff : action.get_effects()) {
-        const GroundAtom &ga = GenericJoinSuccessor::tuple_to_atom(tuple, eff);
+        GroundAtom ga = GenericJoinSuccessor::tuple_to_atom(tuple, eff);
         assert(eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
         if (eff.negated) {
             // Remove from relation
@@ -389,11 +394,8 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
 }
 
 /**
- * Generate successors states for a given state
- *
- * @details For each action schema, we first check if the nullary preconditions
- * are satisfied in the current state. If they are, we instantiate them using
- * the successor generator passed as command line parameter. Then we check if
+ * @implementation We first check if the nullary preconditions
+ * are satisfied in the current state. Then we check if
  * there is any instantiation of the action schema in the given state. If there
  * is none, then two cases are possible:
  *    1. The action schema is not applicable. In this case, we just proceed to
@@ -404,33 +406,27 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
  *    the join in the successor generator was never performed.
  * If there are instantiations, then we simply apply the action effects, since
  * we know the actions are applicable.
- *
- * @attention A lot of duplication in this code. :-)
- *
- * @param actions: list of actions
- * @param state: state being evaluated
- * @param staticInformation: static information of the task
- * @return vector of pairs <State, Action> where state is the successor state and
- * action is the ground action generating it from the current state
  */
-void GenericJoinSuccessor::get_applicable_actions(
-    const ActionSchema &action, const DBState &state, vector<LiftedOperatorId>& applicable)
+std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
+        const ActionSchema &action, const DBState &state)
 {
+    std::vector<LiftedOperatorId> applicable;
     if (is_trivially_inapplicable(state, action)) {
-        return;
+        return applicable;
     }
 
     if (action.is_ground()) {
         if (is_ground_action_applicable(action, state)) {
             applicable.emplace_back(action.get_index(), vector<int>());
         }
-        return;
+        return applicable;
     }
 
     Table instantiations = instantiate(action, state);
     if (instantiations.tuples.empty()) { // No applicable action from this schema
-        return;
+        return applicable;
     }
+
     vector<int> free_var_indices;
     vector<int> map_indices_to_position;
     compute_map_indices_to_table_positions(
@@ -442,7 +438,10 @@ void GenericJoinSuccessor::get_applicable_actions(
             free_var_indices, map_indices_to_position, tuple_with_const, ordered_tuple);
         applicable.emplace_back(action.get_index(), move(ordered_tuple));
     }
+    return applicable;
 }
+
+
 /**
  *    This action generates the ground atom produced by an atomic effect given an instantiation of
  *    its parameters.
@@ -451,16 +450,15 @@ void GenericJoinSuccessor::get_applicable_actions(
  * argument is a constant or not. If it is, then we simply pass the constant value; otherwise we use
  *    the instantiation that we found.
  */
-const GroundAtom &GenericJoinSuccessor::tuple_to_atom(const vector<int> &tuple, const Atom &eff)
+const GroundAtom GenericJoinSuccessor::tuple_to_atom(const vector<int> &tuple, const Atom &eff)
 {
-
-    ground_atom.clear();
+    GroundAtom ground_atom;
     ground_atom.reserve(eff.arguments.size());
-    for (size_t i = 0; i < eff.arguments.size(); i++) {
-        if (!eff.arguments[i].constant)
-            ground_atom.push_back(tuple[eff.arguments[i].index]);
+    for (auto argument : eff.arguments) {
+        if (!argument.constant)
+            ground_atom.push_back(tuple[argument.index]);
         else
-            ground_atom.push_back(eff.arguments[i].index);
+            ground_atom.push_back(argument.index);
     }
 
     // Sanity check: check that all positions of the tuple were initialized
@@ -478,7 +476,7 @@ const GroundAtom &GenericJoinSuccessor::tuple_to_atom(const vector<int> &tuple, 
  * 'action' is a ground action here.
  */
 bool GenericJoinSuccessor::is_ground_action_applicable(const ActionSchema &action,
-                                                       const DBState &state)
+                                                       const DBState &state) const
 {
     for (const Atom &precond : action.get_precondition()) {
         int index = precond.predicate_symbol;
