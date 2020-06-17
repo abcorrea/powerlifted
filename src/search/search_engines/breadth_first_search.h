@@ -5,8 +5,6 @@
 #include "search.h"
 #include "search_space.h"
 
-class DBState;
-
 template <class PackedStateT>
 class BreadthFirstSearch : public SearchBase {
 protected:
