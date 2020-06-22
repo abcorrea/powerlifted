@@ -35,13 +35,10 @@ OrderedJoinSuccessorGenerator<OrderT>::OrderedJoinSuccessorGenerator(const Task 
         to_sort.clear();
         int k = 0;
         for (const auto & i : a.precompiled_db) {
-            /*const Atom &atom = a.relevant_precondition_atoms[i];
-            int n_free_vars = 0;
-            for (const auto &c : atom.arguments)
-                if (!c.constant) ++n_free_vars;*/
             to_sort.emplace_back(i.tuple_index.size(), k++);
         }
         std::sort(to_sort.begin(), to_sort.end(), OrderT());
+        precondition_to_order[a_idx].reserve(to_sort.size());
         for (auto p : to_sort) {
             int idx = p.second;
             precondition_to_order[a_idx].push_back(idx);
