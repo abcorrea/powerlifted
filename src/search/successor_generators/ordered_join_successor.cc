@@ -42,11 +42,9 @@ OrderedJoinSuccessorGenerator<OrderT>::OrderedJoinSuccessorGenerator(const Task 
             to_sort.emplace_back(i.tuple_index.size(), k++);
         }
         std::sort(to_sort.begin(), to_sort.end(), OrderT());
-
-        int _counter = 0;
         for (auto p : to_sort) {
             int idx = p.second;
-            precondition_to_order[a_idx][_counter++] = idx;
+            precondition_to_order[a_idx].push_back(idx);
         }
         ++a_idx;
     }
@@ -56,7 +54,7 @@ template<typename OrderT>
 Table OrderedJoinSuccessorGenerator<OrderT>::instantiate(const ActionSchema &action,
                                                          const DBState &state) {
 
-    map<int, int> order = precondition_to_order[action.get_index()];
+    vector<int> order = precondition_to_order[action.get_index()];
 
     if (action.is_ground()) {
         throw std::runtime_error("Shouldn't be calling instantiate() on a ground action");

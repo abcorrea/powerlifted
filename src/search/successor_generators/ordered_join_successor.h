@@ -13,7 +13,7 @@
  */
 template <typename OrderT>
 class OrderedJoinSuccessorGenerator : public GenericJoinSuccessor {
-    std::vector<std::map<int, int>> precondition_to_order;
+    std::vector<std::vector<int>> precondition_to_order;
 
 public:
     explicit OrderedJoinSuccessorGenerator(const Task &task);
