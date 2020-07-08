@@ -13,18 +13,6 @@
 using namespace std;
 
 template <typename OrderT>
-bool OrderedJoinSuccessorGenerator<OrderT>::parse_precond_into_join_program(
-    const PrecompiledActionData &adata, const DBState &state, std::vector<Table>& tables)
-{
-    // TODO This is highly inefficient. See issue #6:
-    //      https://github.com/abcorrea/powerlifted/issues/6
-    bool res = GenericJoinSuccessor::parse_precond_into_join_program(adata, state, tables);
-    if (!res) return false;
-
-    return true;
-}
-
-template <typename OrderT>
 OrderedJoinSuccessorGenerator<OrderT>::OrderedJoinSuccessorGenerator(const Task &task)
     : GenericJoinSuccessor(task) {
     vector<pair<int,int>> to_sort;
@@ -45,6 +33,14 @@ OrderedJoinSuccessorGenerator<OrderT>::OrderedJoinSuccessorGenerator(const Task 
         }
         ++a_idx;
     }
+}
+
+template <typename OrderT>
+bool OrderedJoinSuccessorGenerator<OrderT>::parse_precond_into_join_program(
+    const PrecompiledActionData &adata, const DBState &state, std::vector<Table>& tables)
+{
+    return GenericJoinSuccessor::parse_precond_into_join_program(adata, state, tables);
+
 }
 
 template<typename OrderT>
@@ -78,8 +74,6 @@ Table OrderedJoinSuccessorGenerator<OrderT>::instantiate(const ActionSchema &act
     }
 
     return working_table;
-
-    return GenericJoinSuccessor::instantiate(action, state);
 }
 
 // explicit template instantiations
