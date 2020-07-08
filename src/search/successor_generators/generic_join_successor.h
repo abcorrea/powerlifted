@@ -142,7 +142,7 @@ public:
 
     std::vector<Atom> relevant_precondition_atoms;
 
-    //! A list of the indexes in `relevant_precondition_atoms` that correspond to fluent atoms,
+    //! A list of the indices in `relevant_precondition_atoms` that correspond to fluent atoms,
     //! and hence their tables need to be created for each state.
     std::vector<unsigned> fluent_tables;
 
