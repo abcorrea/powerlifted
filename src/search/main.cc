@@ -58,10 +58,15 @@ int main(int argc, char *argv[]) {
         exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
     }
 
-    auto exitcode = search->search(task, *sgen, *heuristic);
-    search->print_statistics();
-    cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
+    try {
+        auto exitcode = search->search(task, *sgen, *heuristic);
+        search->print_statistics();
+        utils::report_exit_code_reentrant(exitcode);
+        return static_cast<int>(exitcode);
+    }
+    catch (const bad_alloc& ex) {
+        search->print_statistics();
+        exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
+    }
 
-    utils::report_exit_code_reentrant(exitcode);
-    return static_cast<int>(exitcode);
 }
