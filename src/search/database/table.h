@@ -30,26 +30,5 @@ public:
     static const Table& EMPTY_TABLE();
 };
 
-/// @brief Order tables from lowest to highest arity.
-struct OrderTable {
-    bool operator()(const Table &t1, const Table &t2) const {
-        return t1.tuple_index.size() < t2.tuple_index.size();
-    }
-};
-
-/// @brief Order tables from highest to lowerst arity.
-struct InverseOrderTable {
-    bool operator()(const Table &t1, const Table &t2) const {
-        return t1.tuple_index.size() > t2.tuple_index.size();
-    }
-};
-
-/// @brief Order tables from lowest to highest cardinality.
-struct OrderByTableSize {
-    bool operator()(const Table &t1, const Table &t2) const {
-        return t1.tuples.size() < t2.tuples.size();
-    }
-};
-
 
 #endif //SEARCH_TABLE_H
