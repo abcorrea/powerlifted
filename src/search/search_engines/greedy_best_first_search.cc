@@ -99,7 +99,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 template <class PackedStateT>
 void GreedyBestFirstSearch<PackedStateT>::print_statistics() const {
     statistics.print_detailed_statistics();
-//    space.print_statistics();
+    space.print_statistics();
 }
 
 // explicit template instantiations

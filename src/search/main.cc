@@ -61,13 +61,11 @@ int main(int argc, char *argv[]) {
     try {
         auto exitcode = search->search(task, *sgen, *heuristic);
         search->print_statistics();
-        cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
         utils::report_exit_code_reentrant(exitcode);
         return static_cast<int>(exitcode);
     }
     catch (const bad_alloc& ex) {
         search->print_statistics();
-        cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
         exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
     }
 

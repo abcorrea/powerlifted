@@ -3,6 +3,7 @@
 #include "utils/logging.h"
 #include "utils/timer.h"
 #include "utils/system.h"
+#include "utils/system_unix.h"
 
 #include <iostream>
 
@@ -86,4 +87,8 @@ void SearchStatistics::print_detailed_statistics() const {
         cout << "Generated until last jump: "
              << lastjump_generated_states << " state(s)." << endl;
     }
+
+#if OPERATING_SYSTEM == LINUX
+    cout << "Peak memory usage: " << utils::get_peak_memory_in_kb() << " kB\n";
+#endif
 }
