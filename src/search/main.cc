@@ -66,8 +66,8 @@ int main(int argc, char *argv[]) {
         return static_cast<int>(exitcode);
     }
     catch (const bad_alloc& ex) {
-        cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
         search->print_statistics();
+        cout << "Peak memory usage: " << get_peak_memory_in_kb() << " kB\n";
         exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
     }
 
