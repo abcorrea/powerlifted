@@ -7,6 +7,7 @@ class Task;
 class Heuristic {
 public:
     virtual ~Heuristic() = default;
+
     /**
      * @brief Virtual implementation of a heuristic function
      * @param s: State being evaluated
