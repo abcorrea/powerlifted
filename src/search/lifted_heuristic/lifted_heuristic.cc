@@ -12,7 +12,6 @@ using namespace std;
 LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in)
     : logic_program(lifted_heuristic::parse_logic_program(in)),
     grounder(logic_program) {
-    // TODO Add weight to each rule
     cout << "Initializing lifted heuristic..." << endl;
 }
 
