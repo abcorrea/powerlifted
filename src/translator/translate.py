@@ -42,6 +42,10 @@ def test_if_experiment(test):
         sys.exit(0)
 
 
+def perform_sanity_checks(task):
+    for pred in task.predicates:
+        assert not pred.name.startswith("action_"), "Predicate name cannot start with \'action_\'."
+
 
 def main():
     timer = timers.Timer()
@@ -51,6 +55,8 @@ def main():
     print('Processing task', task.task_name)
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
+
+    perform_sanity_checks(task)
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)

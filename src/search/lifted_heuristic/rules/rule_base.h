@@ -57,6 +57,7 @@ class RuleBase {
 protected:
     Atom effect;
     std::vector<Atom> conditions;
+    int weight;
     int index;
     bool ground_effect;
     static int next_index;
@@ -64,11 +65,11 @@ protected:
     MapVariablePosition variable_position;
 
 public:
-    RuleBase(Atom eff, std::vector<Atom> c) :
+    RuleBase(int weight, Atom eff, std::vector<Atom> c) :
         effect(std::move(eff)),
         conditions(std::move(c)),
+        weight(weight),
         index(next_index++) {
-
         variable_position.create_map(effect);
         ground_effect = true;
         for (const auto &e : effect.get_arguments()) {

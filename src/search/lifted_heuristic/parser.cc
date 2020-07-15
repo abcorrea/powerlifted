@@ -21,6 +21,7 @@ int number_of_objects = 0;
 
 LogicProgram parse_logic_program(ifstream &in) {
     cout << "Parsing file..." << endl;
+    cout << "Assuming that no predicate name starts with \"action_\"" << endl;
 
     unordered_map<string, int> map_object_to_index;
     unordered_map<string, int> map_atom_to_index;
@@ -41,13 +42,15 @@ LogicProgram parse_logic_program(ifstream &in) {
         if (line.find(":-")!=string::npos) {
             // Rule
             int number_of_vars_current_rule = 0; // Variables have negative counter
-
+            int weight = 0;
             string head = line.substr(0, line.find(':'));
             string body = line.substr(line.find(':')); // Still contains ':-'
 
             string rule_type = head.substr(0, head.find(' '));
             string head_atom_name_and_args = head.substr(head.find(' '));
             string head_predicate = get_atom_name(head_atom_name_and_args);
+            if (head_predicate.rfind("action_") == 0)
+                weight = 1;
             vector<string>
                 head_arguments =
                 extract_arguments_from_atom(head_atom_name_and_args);
@@ -96,13 +99,13 @@ LogicProgram parse_logic_program(ifstream &in) {
 
             if (boost::iequals(rule_type, "project")) {
                 // Project rule
-                rules.emplace_back(make_unique<ProjectRule>(head_atom, condition_atoms));
+                rules.emplace_back(make_unique<ProjectRule>(weight, head_atom, condition_atoms));
             } else if (boost::iequals(rule_type, "join")) {
                 // Join rule
-                rules.emplace_back(make_unique<JoinRule>(head_atom, condition_atoms));
+                rules.emplace_back(make_unique<JoinRule>(weight, head_atom, condition_atoms));
             } else if (boost::iequals(rule_type, "product")) {
                 // Product rule
-                rules.emplace_back(make_unique<ProductRule>(head_atom, condition_atoms));
+                rules.emplace_back(make_unique<ProductRule>(weight, head_atom, condition_atoms));
             }
 
             number_of_rules++;

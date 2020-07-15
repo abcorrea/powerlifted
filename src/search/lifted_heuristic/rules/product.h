@@ -34,8 +34,8 @@ public:
 class ProductRule : public RuleBase {
     std::vector<ReachedFacts> reached_facts_per_condition;
 public:
-    ProductRule(Atom eff, std::vector<Atom> c)
-        : RuleBase(std::move(eff), std::move(c)),
+    ProductRule(int weight, Atom eff, std::vector<Atom> c)
+        : RuleBase(weight, std::move(eff), std::move(c)),
           reached_facts_per_condition(conditions.size()) {
     }
 

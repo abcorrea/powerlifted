@@ -12,12 +12,12 @@ using namespace std;
 LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in)
     : logic_program(lifted_heuristic::parse_logic_program(in)),
     grounder(logic_program) {
+    // TODO Add weight to each rule
     cout << "Initializing lifted heuristic..." << endl;
 }
 
 int LiftedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     // TODO Compute EDB from state
-    // TODO Add weight to each rule
     // TODO Make new copy of base LP at each iteration (or find another solution)
     // TODO Pass EDB to ground function
     // TODO Use queue based approach in grounder
