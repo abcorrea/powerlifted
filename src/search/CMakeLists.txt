@@ -90,6 +90,9 @@ add_executable(search
         lifted_heuristic/object.cc lifted_heuristic/object.h
         lifted_heuristic/rules/rule_base.cc lifted_heuristic/rules/rule_base.h
         lifted_heuristic/parser.cc lifted_heuristic/parser.h
-        lifted_heuristic/rules/join.h lifted_heuristic/rules/product.h lifted_heuristic/rules/project.h)
+        lifted_heuristic/rules/join.h lifted_heuristic/rules/product.h lifted_heuristic/rules/project.h
+        lifted_heuristic/rule_matcher.cc lifted_heuristic/rule_matcher.h
+        lifted_heuristic/grounders/grounder.h
+        lifted_heuristic/grounders/weighted_grounder.cc lifted_heuristic/grounders/weighted_grounder.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})
