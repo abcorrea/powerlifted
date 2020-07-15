@@ -17,8 +17,10 @@ LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in)
 
 int LiftedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     // TODO Compute EDB from state
+    // TODO Add weight to each rule
     // TODO Make new copy of base LP at each iteration (or find another solution)
     // TODO Pass EDB to ground function
+    // TODO Use queue based approach in grounder
     if (task.is_goal(s)) return 0;
     return 1;
 }
