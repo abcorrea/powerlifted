@@ -9,7 +9,7 @@
 
 namespace lifted_heuristic {
 
-LogicProgram parse_datalog_program(std::ifstream &in);
+LogicProgram parse_logic_program(std::ifstream &in);
 
 bool is_warning_message(const std::string &line);
 

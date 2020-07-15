@@ -19,7 +19,7 @@ int number_of_facts = 0;
 int number_of_rules = 0;
 int number_of_objects = 0;
 
-LogicProgram parse_datalog_program(ifstream &in) {
+LogicProgram parse_logic_program(ifstream &in) {
     cout << "Parsing file..." << endl;
 
     unordered_map<string, int> map_object_to_index;
