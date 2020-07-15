@@ -12,6 +12,8 @@ from pathlib import Path
 from build import build, PROJECT_ROOT
 
 
+EXTRA_OPTIONS = []
+
 def parse_options():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--domain', dest='domain', action='store',
@@ -27,7 +29,7 @@ def parse_options():
                         default=None, help='Search algorithm', choices=("naive", "gbfs"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
-                        default=None, choices=("blind", "goalcount"),
+                        default=None, choices=("blind", "goalcount", "lifted"),
                         help='Heuristic to guide the search (ignore in case of blind search)',
                         required=True)
     parser.add_argument('-g', '--generator', dest='generator', action='store',
@@ -41,6 +43,9 @@ def parse_options():
     parser.add_argument('--translator-output-file', dest='translator_file',
                         default='output.lifted',
                         help='Output file of the translator')
+    parser.add_argument('--datalog-file', dest='datalog_file',
+                        default='model.lp',
+                        help='Datalog model for the lifted heuristic.')
 
     args = parser.parse_args()
     if args.domain is None:
@@ -101,9 +106,16 @@ def main():
 
     os.chdir(PROJECT_ROOT)
 
+    # If it is the lifted heuristic, we need to obtain the Datalog model
+    if options.heuristic == 'lifted':
+        EXTRA_OPTIONS.append('--build-datalog-model')
+
     # Invoke the Python preprocessor
     subprocess.call([os.path.join(build_dir, 'translator', 'translate.py'),
-                     options.domain, options.instance, '--output-file', options.translator_file])
+                     options.domain, options.instance, '--output-file', options.translator_file] +
+                    EXTRA_OPTIONS)
+
+
 
     # Invoke the C++ search component
     cmd = [os.path.join(build_dir, 'search', 'search'),
