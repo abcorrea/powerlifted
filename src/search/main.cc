@@ -8,7 +8,6 @@
 #include "search_engines/search_factory.h"
 #include "successor_generators/successor_generator.h"
 #include "successor_generators/successor_generator_factory.h"
-#include "utils/system.h"
 
 #include <iostream>
 #include <memory>
@@ -24,12 +23,6 @@ int main(int argc, char *argv[]) {
     ifstream task_file(opt.get_filename());
     if (!task_file) {
         cerr << "Error opening the task file: " << opt.get_filename() << endl;
-        exit(-1);
-    }
-
-    ifstream datalog_file(opt.get_datalog_file());
-    if (!datalog_file and (opt.get_evaluator() == "lifted")) {
-        cerr << "Error opening the Datalog model file: " << opt.get_datalog_file() << endl;
         exit(-1);
     }
 
@@ -53,7 +46,7 @@ int main(int argc, char *argv[]) {
 
     // Let's create a couple unique_ptr's that deal with mem allocation themselves
     std::unique_ptr<SearchBase> search(SearchFactory::create(opt.get_search_engine(), opt.get_state_representation()));
-    std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt.get_evaluator(), task));
+    std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt, task));
     std::unique_ptr<SuccessorGenerator> sgen(SuccessorGeneratorFactory::create(opt.get_successor_generator(),
                                                                                opt.get_seed(),
                                                                                task));
