@@ -85,6 +85,11 @@ add_executable(search
         lifted_heuristic/arguments.h
         lifted_heuristic/atom.cc lifted_heuristic/atom.h
         lifted_heuristic/fact.cc lifted_heuristic/fact.h
-        lifted_heuristic/term.h)
+        lifted_heuristic/term.h
+        lifted_heuristic/logic_program.cc lifted_heuristic/logic_program.h
+        lifted_heuristic/object.cc lifted_heuristic/object.h
+        lifted_heuristic/rules/rule_base.cc lifted_heuristic/rules/rule_base.h
+        lifted_heuristic/parser.cc lifted_heuristic/parser.h
+        lifted_heuristic/rules/join.h lifted_heuristic/rules/product.h lifted_heuristic/rules/project.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})
