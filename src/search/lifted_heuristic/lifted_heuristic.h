@@ -1,7 +1,7 @@
 #ifndef SEARCH_HEURISTICS_LIFTED_HEURISTIC_H_
 #define SEARCH_HEURISTICS_LIFTED_HEURISTIC_H_
 
-#include "heuristic.h"
+#include "../heuristics/heuristic.h"
 
 #include "../task.h"
 

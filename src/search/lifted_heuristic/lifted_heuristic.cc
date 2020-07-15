@@ -6,4 +6,7 @@ using namespace std;
 
 LiftedHeuristic::LiftedHeuristic(const Task &task) {
     cout << "Initializing lifted heuristic..." << endl;
+
+
+
 }
