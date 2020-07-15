@@ -10,6 +10,7 @@ src/search/latex
 src/search/html
 builds/
 output.lifted
+model.lp
 sas_plan
 reports/
 local-tests/
