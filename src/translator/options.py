@@ -19,6 +19,12 @@ def parse_args():
              "ground atom corresponds to a bit of the state, instead of a "
              "sparse representation.")
     argparser.add_argument(
+        "--build-datalog-model", action="store_true",
+        help="flag if the translator should output Datalog model of the task.")
+    argparser.add_argument(
+        "--datalog-file", default='model.lp',
+        help="flag if the translator should output Datalog model of the task.")
+    argparser.add_argument(
         "--test-experiment", action="store_true",
         help="flag if the run is an experiment or not")
     argparser.add_argument(

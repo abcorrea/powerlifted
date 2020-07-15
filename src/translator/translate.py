@@ -23,6 +23,7 @@ import normalize
 import options
 import pddl_parser
 import pddl
+import pddl_to_prolog
 import reachability
 import static_predicates
 import timers
@@ -50,16 +51,26 @@ def main():
     print('Processing task', task.task_name)
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
-    assert isinstance(task.goal, pddl.Conjunction) or \
-           isinstance(task.goal, pddl.Atom) or \
-           isinstance(task.goal, pddl.NegatedAtom), \
-        "Goal is not conjunctive."
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
 
     with timers.timing("Checking static predicates"):
         static_pred = static_predicates.check(task)
+
+    if options.build_datalog_model:
+        print("Building Datalog model...")
+        prog = pddl_to_prolog.translate(task)
+        prog.rename_free_variables()
+        prog.remove_duplicated_rules()
+        with open(options.datalog_file, 'w') as f:
+            prog.dump_static(static_pred, f)
+            prog.dump_idb(f)
+
+    assert isinstance(task.goal, pddl.Conjunction) or \
+           isinstance(task.goal, pddl.Atom) or \
+           isinstance(task.goal, pddl.NegatedAtom), \
+        "Goal is not conjunctive."
 
     if options.ground_state_representation:
         with timers.timing("Generating complete initial state"):
