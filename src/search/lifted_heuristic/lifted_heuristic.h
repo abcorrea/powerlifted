@@ -15,7 +15,6 @@ class LiftedHeuristic : public Heuristic {
 
 public:
     LiftedHeuristic(const Task &task, std::ifstream &in);
-    ~LiftedHeuristic() = default;
 
     int compute_heuristic(const DBState &s, const Task &task) final;
 };
