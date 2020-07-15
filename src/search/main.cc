@@ -21,14 +21,20 @@ int main(int argc, char *argv[]) {
 
     Options opt(argc, argv);
 
-    ifstream in(opt.get_filename());
-    if (!in) {
-        cerr << "Error opening the task file." << endl;
+    ifstream task_file(opt.get_filename());
+    if (!task_file) {
+        cerr << "Error opening the task file: " << opt.get_filename() << endl;
+        exit(-1);
+    }
+
+    ifstream datalog_file(opt.get_datalog_file());
+    if (!datalog_file and (opt.get_evaluator() == "lifted")) {
+        cerr << "Error opening the Datalog model file: " << opt.get_datalog_file() << endl;
         exit(-1);
     }
 
     cout << "Reading task description file." << endl;
-    cin.rdbuf(in.rdbuf());
+    cin.rdbuf(task_file.rdbuf());
 
     // Parse file
     string domain_name, task_name;
@@ -36,7 +42,7 @@ int main(int argc, char *argv[]) {
     Task task(domain_name, task_name);
     cout << task.get_domain_name() << " " << task.get_task_name() << endl;
 
-    bool parsed = parse(task, in);
+    bool parsed = parse(task, task_file);
     if (!parsed) {
         cerr << "Parser failed." << endl;
         exit(-1);

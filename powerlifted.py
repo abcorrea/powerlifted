@@ -12,8 +12,6 @@ from pathlib import Path
 from build import build, PROJECT_ROOT
 
 
-EXTRA_OPTIONS = []
-
 def parse_options():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--domain', dest='domain', action='store',
@@ -93,6 +91,9 @@ def validate(domain_name, instance_name, planfile):
 
 
 def main():
+    CPP_EXTRA_OPTIONS = []
+    PYTHON_EXTRA_OPTIONS = []
+
     options = parse_options()
 
     build_dir = os.path.join(PROJECT_ROOT, 'builds', 'debug' if options.debug else 'release')
@@ -108,12 +109,13 @@ def main():
 
     # If it is the lifted heuristic, we need to obtain the Datalog model
     if options.heuristic == 'lifted':
-        EXTRA_OPTIONS.append('--build-datalog-model')
+       PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
+       CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
 
     # Invoke the Python preprocessor
     subprocess.call([os.path.join(build_dir, 'translator', 'translate.py'),
-                     options.domain, options.instance, '--output-file', options.translator_file] +
-                    EXTRA_OPTIONS)
+                     options.domain, options.instance, '--output-file', options.translator_file] + \
+                    PYTHON_EXTRA_OPTIONS)
 
 
 
@@ -124,7 +126,8 @@ def main():
            '-e', options.heuristic,
            '-g', options.generator,
            '-r', options.state,
-           '--seed', str(options.seed)]
+           '--seed', str(options.seed)] + \
+           CPP_EXTRA_OPTIONS
 
     print(f'Executing "{" ".join(cmd)}"')
     code = subprocess.call(cmd)
