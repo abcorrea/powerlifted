@@ -5,6 +5,8 @@
 
 #include <vector>
 
+namespace lifted_heuristic {
+
 class Arguments {
     std::vector<Term> arguments;
 
@@ -12,7 +14,7 @@ public:
     Arguments() = default;
 
     explicit
-    Arguments(const std::vector<std::pair<int, int>>& args) {
+    Arguments(const std::vector<std::pair<int, int>> &args) {
         for (const auto &p : args) {
             arguments.emplace_back(p.first, p.second);
         }
@@ -49,18 +51,16 @@ public:
         return arguments[i].is_object();
     }
 
-
     bool operator==(const Arguments &b) const {
         if (size()!=b.size())
             return false;
         for (size_t i = 0; i < size(); i++)
-            if (arguments[i] != b[i])
+            if (arguments[i]!=b[i])
                 return false;
         return true;
     }
 
 };
-
 
 class HashArguments {
 public:
@@ -69,5 +69,7 @@ public:
         return seed;
     }
 };
+
+}
 
 #endif //GROUNDER_ARGUMENTS_H

@@ -2,7 +2,6 @@
 #define GROUNDER__FACT_H_
 
 #include "atom.h"
-#include "object.h"
 
 #include <iostream>
 #include <string>
@@ -10,6 +9,8 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
+
+namespace  lifted_heuristic {
 
 /*
  *
@@ -43,7 +44,7 @@ public:
         if (a.get_arguments().size()!=b.get_arguments().size())
             return false;
         for (size_t i = 0; i < a.get_arguments().size(); i++)
-            if (a.argument(i) != b.argument(i))
+            if (a.argument(i)!=b.argument(i))
                 return false;
         return true;
     }
@@ -57,15 +58,18 @@ public:
     }
 };
 
+}
+
+
 /*
  * Hash of Facts
  *
  * TODO maybe change it for hash of atoms?
  */
 template<>
-struct std::hash<Fact> {
+struct std::hash<lifted_heuristic::Fact> {
     // See comment of operator==
-    std::size_t operator()(const Fact &f) const {
+    std::size_t operator()(const lifted_heuristic::Fact &f) const {
         std::size_t seed = boost::hash_range(f.get_arguments().begin(), f.get_arguments().end());
         boost::hash_combine(seed, f.get_predicate_index());
         return seed;

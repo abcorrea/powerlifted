@@ -3,9 +3,9 @@
 
 #include <boost/functional/hash.hpp>
 
+namespace  lifted_heuristic {
 
-
-enum TERM_TYPES {OBJECT, VARIABLE};
+enum TERM_TYPES { OBJECT, VARIABLE };
 
 class Term {
     int index : 31;
@@ -21,7 +21,7 @@ public:
     }
 
     bool is_object() const {
-        return (type == OBJECT);
+        return (type==OBJECT);
     }
 
     void set_term_to_object(int j) {
@@ -37,14 +37,15 @@ public:
     }
 
     friend bool operator==(const Term &lhs, const Term &rhs) {
-        return ((lhs.get_index() == rhs.get_index()) and (lhs.is_object() == rhs.is_object()));
+        return ((lhs.get_index()==rhs.get_index()) and (lhs.is_object()==rhs.is_object()));
     }
 
     friend bool operator!=(const Term &lhs, const Term &rhs) {
-        return (!(lhs == rhs));
+        return (!(lhs==rhs));
     }
 
 };
 
+}
 
 #endif //GROUNDER_TERM_H

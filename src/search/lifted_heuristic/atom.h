@@ -2,7 +2,6 @@
 #define GROUNDER_ATOM_H
 
 #include "arguments.h"
-#include "object.h"
 #include "term.h"
 
 #include <cassert>
@@ -12,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+namespace  lifted_heuristic {
 
 class Atom {
     Arguments arguments;
@@ -26,10 +26,6 @@ public:
         index(next_index++) {}
 
     Atom() = default;
-
-    void print_atom(
-        const std::vector<Object> &obj,
-        const std::unordered_map<int, std::string> &map_index_to_atom) const;
 
     const Arguments &get_arguments() const {
         return arguments;
@@ -49,5 +45,7 @@ public:
     }
 
 };
+
+}
 
 #endif //GROUNDER_ATOM_H

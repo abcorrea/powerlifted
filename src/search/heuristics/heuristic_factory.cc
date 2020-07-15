@@ -2,7 +2,8 @@
 
 #include "blind_heuristic.h"
 #include "goalcount.h"
-#include "lifted_heuristic.h"
+
+#include "../lifted_heuristic/lifted_heuristic.h"
 
 #include <iostream>
 
