@@ -143,8 +143,14 @@ LogicProgram parse_logic_program(ifstream &in) {
     for (Fact &f : lp_facts)
         f.set_fact_index();
 
-    return LogicProgram(move(lp_facts), move(lp_objects), move(rules), move(map_index_to_atom));;
+    return LogicProgram(move(lp_facts),
+        move(lp_objects),
+        move(rules),
+        move(map_index_to_atom),
+        move(map_atom_to_index),
+        move(map_object_to_index));
 }
+
 bool is_warning_message(const string &line) {
     if (line.find("Warning:")!=string::npos) {
         return true;

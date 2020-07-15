@@ -35,4 +35,9 @@ const std::string &LogicProgram::get_atom_by_index(int index) const {
     return map_index_to_atom.at(index);
 }
 
+int LogicProgram::get_atom_by_name(const std::string &name) const {
+    assert(map_atom_to_index.find(name) != map_atom_to_index.end());
+    return map_atom_to_index.at(name);
+}
+
 }

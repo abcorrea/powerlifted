@@ -56,6 +56,15 @@ public:
     int get_fact_index() const {
         return fact_index;
     }
+
+    static int get_next_fact_index() {
+        return next_fact_index;
+    }
+
+    static void reset_global_fact_index(int j) {
+        next_fact_index = j;
+    }
+
 };
 
 }
