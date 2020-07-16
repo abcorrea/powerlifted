@@ -1,10 +1,13 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import copy
+import sys
 
 import pddl
 
-class ConditionProxy(object):
+from collections import defaultdict
+
+class ConditionProxy:
     def clone_owner(self):
         clone = copy.copy(self)
         clone.owner = copy.copy(clone.owner)
@@ -103,6 +106,25 @@ class GoalConditionProxy(ConditionProxy):
         self.condition.uniquify_variables(type_map)
         return type_map
 
+
+class TypesGraph(object):
+    """
+    Create a graph representing the hierarchy of types and supertypes.  Every
+    type points to its supertype.
+    """
+    def __init__(self, types):
+        # type is list of types and edges is a dictionary where
+        # each type points to its supertype.
+        self.types = types
+        self.edges = self.create_graph(self.types)
+
+    def create_graph(self, types):
+        g = defaultdict(str)
+        for t in types:
+            g[t.name] = t.basetype_name
+        return g
+
+
 def get_action_predicate(action):
     name = action
     variables = [par.name for par in action.parameters]
@@ -125,6 +147,39 @@ def all_conditions(task):
     for axiom in task.axioms:
         yield AxiomConditionProxy(axiom)
     yield GoalConditionProxy(task)
+
+
+# [0] Remove actions that can never instantiated.
+#
+#  Remove actions where a parameter has a given type T but there is
+#  no object with such type in the object list.
+def remove_trivially_inapplicable_actions(task):
+    graph = TypesGraph(task.types)
+    object_types_in_task = set()
+    for obj in task.objects:
+        type_name = obj.type_name
+        object_types_in_task.add(type_name)
+        while type_name != 'object':
+            # While there is a supertype, append this to the list of types
+            # appearing in any object of the task
+            object_types_in_task.add(type_name)
+            type_name = graph.edges[type_name]
+
+    new_actions = set()
+    number_removals = 0
+    for action in task.actions:
+        keep_action = True
+        for param in action.parameters:
+            if param.type_name not in object_types_in_task:
+                keep_action = False
+        if keep_action:
+            new_actions.add(action)
+        else:
+            number_removals += 1
+
+    #print("Removed %d trivially inapplicable actions" % number_removals, file=sys.stderr)
+    task.actions = new_actions
+
 
 # [1] Remove universal quantifications from conditions.
 #
@@ -325,6 +380,7 @@ def substitute_complicated_goal(task):
 # that the task makes sense.
 
 def normalize(task):
+    remove_trivially_inapplicable_actions(task)
     remove_universal_quantifiers(task)
     substitute_complicated_goal(task)
     build_DNF(task)

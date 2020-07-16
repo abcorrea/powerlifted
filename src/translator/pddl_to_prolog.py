@@ -27,9 +27,15 @@ class PrologProgram:
             print(fact, file=file)
         for rule in self.rules:
             print(getattr(rule, "type", "none"), rule, file=file)
-    def dump_static(self, static_pred, file=None):
+    def dump_static(self, task, file=None):
+        fluents = set()
+        for a in task.actions:
+            for e in a.effects:
+                l = e.literal
+                pred = l.predicate
+                fluents.add(pred)
         for fact in self.facts:
-            if fact.atom.predicate in static_pred:
+            if fact.atom.predicate not in fluents:
                 print(fact, file=file)
     def dump_idb(self, file=None):
         for rule in self.rules:

@@ -58,20 +58,22 @@ def main():
 
     perform_sanity_checks(task)
 
-    with timers.timing("Compiling types into unary predicates"):
-        g = compile_types.compile_types(task)
-
-    with timers.timing("Checking static predicates"):
-        static_pred = static_predicates.check(task)
-
     if options.build_datalog_model:
         print("Building Datalog model...")
         prog = pddl_to_prolog.translate(task)
         prog.rename_free_variables()
         prog.remove_duplicated_rules()
         with open(options.datalog_file, 'w') as f:
-            prog.dump_static(static_pred, f)
+            #prog.dump(f)
+            prog.dump_static(task, f)
             prog.dump_idb(f)
+
+    with timers.timing("Compiling types into unary predicates"):
+        g = compile_types.compile_types(task)
+
+    with timers.timing("Checking static predicates"):
+        static_pred = static_predicates.check(task)
+
 
     assert isinstance(task.goal, pddl.Conjunction) or \
            isinstance(task.goal, pddl.Atom) or \
