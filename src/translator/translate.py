@@ -25,6 +25,7 @@ import pddl_parser
 import pddl
 import pddl_to_prolog
 import reachability
+import remove_predicates
 import static_predicates
 import timers
 
@@ -74,7 +75,6 @@ def main():
     with timers.timing("Checking static predicates"):
         static_pred = static_predicates.check(task)
 
-
     assert isinstance(task.goal, pddl.Conjunction) or \
            isinstance(task.goal, pddl.Atom) or \
            isinstance(task.goal, pddl.NegatedAtom), \
@@ -104,6 +104,7 @@ def main():
     sys.stdout = output
 
     remove_functions_from_initial_state(task)
+    remove_predicates.remove_unused_predicate_symbols(task)
 
     if is_trivially_unsolvable(task, static_pred):
         output_trivially_unsolvable_task()
