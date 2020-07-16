@@ -26,13 +26,22 @@ class Fact : public Atom {
     // index in the vector and we do not need to keep a mapping between facts
     // and indices.
     int fact_index;
+    int cost;
 public:
     Fact(Arguments arguments, int predicate_index) :
         Atom(std::move(arguments), predicate_index) {
         // Every fact starts with a fact of -1 and then we set it to a proper value
         // if the fact was not previously reached.
         fact_index = -1;
+        cost = 0;
     }
+
+    Fact(Arguments arguments, int predicate_index, int cost) :
+        Atom(std::move(arguments), predicate_index), cost(cost) {
+        // See comment in constructor above
+        fact_index = -1;
+    }
+
 
     /*
      * The function below compares if two facts are equal. We do not care about
@@ -63,6 +72,10 @@ public:
 
     static void reset_global_fact_index(int j) {
         next_fact_index = j;
+    }
+
+    int get_cost() const {
+        return cost;
     }
 
 };
