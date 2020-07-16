@@ -2,6 +2,7 @@
 #define GROUNDER_ATOM_H
 
 #include "arguments.h"
+#include "object.h"
 #include "term.h"
 
 #include <cassert>
@@ -43,6 +44,26 @@ public:
         assert(i < arguments.size());
         return arguments[i];
     }
+
+    void print_atom(const std::vector<Object> &obj,
+                          const std::unordered_map<int, std::string> &map_index_to_atom) const {
+        std::cout << map_index_to_atom.at(predicate_index) << '(';
+        size_t cont = 0;
+        for (const Term &t : arguments) {
+            if (t.is_object()) {
+                // a >= 0 --> object. Print its name
+                std::cout << obj[t.get_index()].get_name();
+            } else {
+                // a < 0 --> free variable. Print the free variable of the rule.
+                std::cout << '?' << char('A' + t.get_index());
+            }
+            cont++;
+            if (cont!=arguments.size())
+                std::cout << ", ";
+        }
+        std::cout << ')' << std::endl;
+    }
+
 
 };
 
