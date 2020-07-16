@@ -5,16 +5,27 @@
 
 namespace lifted_heuristic {
 
+struct ProductDequeEntry {
+    ProductDequeEntry(Arguments arguments, int i, int c)
+    : arguments(arguments), index(i), cost(c) {}
+
+    Arguments arguments;
+    int index;
+    int cost;
+};
+
 class ReachedFacts {
     // We do not use a vector of Facts because the Fact class is more complex than
     // what we need here for this use case.
     std::vector<Arguments> facts;
+    std::vector<int> costs;
 
 public:
     ReachedFacts() = default;
 
-    void push_back(const Arguments &args) {
+    void push_back(const Arguments &args, int i) {
         facts.push_back(args);
+        costs.push_back(i);
     }
 
     bool empty() const {
@@ -29,6 +40,14 @@ public:
         return facts.end();
     }
 
+    int get_cost(int i) const {
+        return costs[i];
+    }
+
+    std::vector<int> get_costs() const {
+        return costs;
+    }
+
 };
 
 class ProductRule : public RuleBase {
@@ -39,12 +58,17 @@ public:
           reached_facts_per_condition(conditions.size()) {
     }
 
-    virtual int get_type() const override {
+    int get_type() const override {
         return PRODUCT;
     }
 
-    void add_reached_fact_to_condition(const Arguments &args, int position) {
-        reached_facts_per_condition[position].push_back(args);
+    void clean_up() override  {
+        reached_facts_per_condition.clear();
+        reached_facts_per_condition.resize(conditions.size());
+    }
+
+    void add_reached_fact_to_condition(const Arguments &args, int position, int cost) {
+        reached_facts_per_condition[position].push_back(args, cost);
     }
 
     ReachedFacts &get_reached_facts_of_condition(int i) {
@@ -54,6 +78,11 @@ public:
     const std::vector<ReachedFacts> &get_reached_facts_all_conditions() const {
         return reached_facts_per_condition;
     }
+
+    int get_cost_reached_fact_in_position(int position_counter, int reached_fact_index) const {
+        return reached_facts_per_condition[position_counter].get_cost(reached_fact_index);
+    }
+
 };
 
 }

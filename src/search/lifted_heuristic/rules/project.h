@@ -9,6 +9,9 @@ class ProjectRule : public RuleBase {
 public:
     using RuleBase::RuleBase;
 
+    void clean_up() override {
+        return;
+    }
     int get_type() const override {
         return PROJECT;
     }

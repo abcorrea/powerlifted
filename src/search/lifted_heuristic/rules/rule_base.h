@@ -83,6 +83,8 @@ public:
 
     virtual ~RuleBase() = default;
 
+    virtual void clean_up() = 0;
+
     bool head_is_ground() const {
         return ground_effect;
     }
@@ -104,6 +106,10 @@ public:
 
     int get_index() const {
         return index;
+    }
+
+    int get_weight() const {
+        return weight;
     }
 
     virtual int get_type() const {

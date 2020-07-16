@@ -130,6 +130,10 @@ public:
           position_of_joining_vars(conditions) {
     }
 
+    void clean_up() override {
+        hash_table_indices = JoinHashTable();
+    }
+
     int get_type() const override {
         return JOIN;
     }
