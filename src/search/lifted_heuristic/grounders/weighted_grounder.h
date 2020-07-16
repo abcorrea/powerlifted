@@ -8,6 +8,7 @@
 #include <iostream>
 #include <optional>
 #include <unordered_set>
+#include <vector>
 
 namespace lifted_heuristic {
 
@@ -46,7 +47,7 @@ public:
 
     ~WeightedGrounder() = default;
 
-    int ground(LogicProgram &lp) override;
+    int ground(LogicProgram &lp, int goal_predicate) override;
 
 };
 

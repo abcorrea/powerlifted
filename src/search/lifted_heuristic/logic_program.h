@@ -40,6 +40,7 @@ public:
           map_atom_to_index(std::move(a_to_i)),
           map_object_to_index(std::move(o_to_i)){}
 
+
     void insert_fact(Fact &f);
 
     const std::vector<Fact> &get_facts() const;
@@ -62,12 +63,15 @@ public:
 
     int get_atom_by_name(const std::string &name) const;
 
+    int get_object_by_name(const std::string &name) const;
+
     size_t get_number_of_facts();
 
     void clean_rule(int r) {
         rules[r].reset();
     }
 
+    void reset_facts(size_t i);
 };
 
 }

@@ -11,7 +11,7 @@ public:
 
     virtual ~Grounder() = default;
 
-    virtual int ground(LogicProgram &lp) = 0;
+    virtual int ground(LogicProgram &lp, int goal_predicate) = 0;
 };
 
 }

@@ -50,8 +50,9 @@ class LiftedHeuristic : public Heuristic {
     MapPlanningTaskToLP indices_map;
 
     int base_fact_index;
+    int target_predicate;
 
-    std::vector<lifted_heuristic::Fact> transform_state_into_edb(
+    void transform_state_into_edb(
         const DBState &s,
         const std::unordered_set<int> &nullaries);
 

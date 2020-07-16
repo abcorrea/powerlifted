@@ -7,25 +7,29 @@
 #include "../rules/project.h"
 
 #include <deque>
+#include <limits>
+#include <queue>
 #include <vector>
 
 using namespace std;
 
 namespace lifted_heuristic {
 
-int WeightedGrounder::ground(LogicProgram &lp) {
+int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
 
     unordered_set<Fact> reached_facts;
-    vector<int> q;
+    priority_queue<pair<int, int>> q;
 
     for (const Fact &f : lp.get_facts()) {
-        q.push_back(f.get_fact_index());
+        q.emplace(0, f.get_fact_index());
         reached_facts.insert(f);
     }
-
+    int max_cost = 0;
     while (!q.empty()) {
-        int i = q.back();
-        q.pop_back();
+        int cost = q.top().first;
+        int i = q.top().second;
+        max_cost = std::max(max_cost, cost);
+        q.pop();
         Fact current_fact = lp.get_fact_by_index(i);
         int predicate_index = current_fact.get_predicate_index();
         for (const auto
@@ -33,13 +37,12 @@ int WeightedGrounder::ground(LogicProgram &lp) {
             int rule_index = m.get_rule();
             int position_in_the_body = m.get_position();
             RuleBase &rule = lp.get_rule_by_index(rule_index);
-
             if (rule.get_type()==PROJECT) {
                 // Projection rule - single condition in the body
                 assert(position_in_the_body==0);
                 optional<Fact> new_fact = project(rule, current_fact);
                 if (new_fact and is_new(*new_fact, reached_facts, lp)) {
-                    q.push_back(new_fact->get_fact_index());
+                    q.emplace(new_fact->get_cost(), new_fact->get_fact_index());
                 }
             } else if (rule.get_type()==JOIN) {
                 // Join rule - two conditions in the body
@@ -48,7 +51,7 @@ int WeightedGrounder::ground(LogicProgram &lp) {
                                           current_fact,
                                           position_in_the_body))
                     if (is_new(new_fact, reached_facts, lp)) {
-                        q.push_back(new_fact.get_fact_index());
+                        q.emplace(new_fact.get_cost(), new_fact.get_fact_index());
                     }
             } else if (rule.get_type()==PRODUCT) {
                 // Product rule - more than one condition without shared free vars
@@ -56,13 +59,15 @@ int WeightedGrounder::ground(LogicProgram &lp) {
                                              current_fact,
                                              position_in_the_body))
                     if (is_new(new_fact, reached_facts, lp)) {
-                        q.push_back(new_fact.get_fact_index());
+                        if (new_fact.get_predicate_index() == goal_predicate) {
+                            return new_fact.get_cost();
+                        }
+                        q.emplace(new_fact.get_cost(), new_fact.get_fact_index());
                     }
             }
         }
     }
-
-    return 0;
+    return std::numeric_limits<char>::max();
 }
 
 bool WeightedGrounder::is_new(Fact &new_fact,
@@ -114,7 +119,9 @@ optional<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact
         }
     }
 
-    return Fact(move(new_arguments), rule.get_effect().get_predicate_index());
+    return Fact(move(new_arguments),
+        rule.get_effect().get_predicate_index(),
+        rule_.get_weight() + fact.get_cost());
 }
 
 /*
@@ -178,7 +185,8 @@ vector<Fact> WeightedGrounder::join(RuleBase &rule_,
             position_counter++;
         }
         facts.emplace_back(move(new_arguments),
-                           rule.get_effect().get_predicate_index());
+                           rule.get_effect().get_predicate_index(),
+                           fact.get_cost() + f.get_cost() + rule.get_weight());
     }
     return facts;
 }
@@ -212,17 +220,23 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     }
 
     // Check that *all* other positions of the effect have at least one tuple
-    rule.add_reached_fact_to_condition(fact.get_arguments(), position);
+    rule.add_reached_fact_to_condition(fact.get_arguments(), position, fact.get_cost() + rule.get_weight());
+    int total_cost = 0;
     for (const ReachedFacts &v : rule.get_reached_facts_all_conditions()) {
         if (v.empty())
             return new_facts;
+        int min_cost = std::numeric_limits<int>::max();
+        for (int cost : v.get_costs())
+            min_cost = std::min(min_cost, cost);
+        total_cost += min_cost;
     }
 
     // If there is one reachable ground atom for every condition and the head
     // is nullary or has no free variable, then simply trigger it.
     if (rule.head_is_ground()) {
         new_facts.emplace_back(rule.get_effect_arguments(),
-                               rule.get_effect().get_predicate_index());
+                               rule.get_effect().get_predicate_index(),
+                               total_cost);
         return new_facts;
     }
 
@@ -246,20 +260,24 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     // Third: in this case, we just loop over the other conditions and its already
     // reached facts and instantiate all possibilities (i.e., cartesian product).
     // We do this using a queue
-    deque<pair<Arguments, int>> q;
-    q.emplace_back(new_arguments_persistent, 0);
+    deque<ProductDequeEntry> q;
+    //deque<pair<Arguments, int>> q;
+    q.emplace_back(new_arguments_persistent, 0, fact.get_cost() + rule.get_weight());
     while (!q.empty()) {
-        Arguments current_args = q.front().first;
-        int counter = q.front().second;
+        Arguments current_args = q.front().arguments;
+        int counter = q.front().index;
+        int cost = q.front().cost;
         q.pop_front();
         if (counter >= int(rule.get_conditions().size())) {
             new_facts.emplace_back(current_args,
-                                   rule.get_effect().get_predicate_index());
+                                   rule.get_effect().get_predicate_index(),
+                                   cost);
         } else if (counter==position) {
             // If it is the condition that we are currently reaching, we do not need
             // to consider the other tuples with this predicate
-            q.emplace_back(current_args, counter + 1);
+            q.emplace_back(current_args, counter + 1, cost);
         } else {
+            int cost_counter = 0;
             for (const auto &assignment : rule.get_reached_facts_of_condition(counter)) {
                 Arguments new_arguments = current_args; // start as a copy
                 size_t value_counter = 0;
@@ -272,7 +290,8 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
                     }
                     ++value_counter;
                 }
-                q.emplace_back(new_arguments, counter + 1);
+                q.emplace_back(new_arguments, counter + 1,
+                    cost + rule.get_cost_reached_fact_in_position(counter, cost_counter++));
             }
         }
     }

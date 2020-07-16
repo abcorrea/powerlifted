@@ -40,4 +40,13 @@ int LogicProgram::get_atom_by_name(const std::string &name) const {
     return map_atom_to_index.at(name);
 }
 
+void LogicProgram::reset_facts(size_t i) {
+    assert(facts.size() >= i);
+    facts.erase(facts.begin()+i, facts.end());
+}
+
+int LogicProgram::get_object_by_name(const std::string &name) const {
+    return map_object_to_index.at(name);
+}
+
 }
