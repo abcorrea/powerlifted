@@ -31,6 +31,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         max_cost = std::max(max_cost, cost);
         q.pop();
         Fact current_fact = lp.get_fact_by_index(i);
+        //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
         int predicate_index = current_fact.get_predicate_index();
         for (const auto
                 &m : rule_matcher.get_matched_rules(predicate_index)) {
@@ -42,6 +43,9 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                 assert(position_in_the_body==0);
                 optional<Fact> new_fact = project(rule, current_fact);
                 if (new_fact and is_new(*new_fact, reached_facts, lp)) {
+                    if (new_fact->get_predicate_index() == goal_predicate) {
+                        return new_fact->get_cost();
+                    }
                     q.emplace(new_fact->get_cost(), new_fact->get_fact_index());
                 }
             } else if (rule.get_type()==JOIN) {
@@ -51,6 +55,9 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                                           current_fact,
                                           position_in_the_body))
                     if (is_new(new_fact, reached_facts, lp)) {
+                        if (new_fact.get_predicate_index() == goal_predicate) {
+                            return new_fact.get_cost();
+                        }
                         q.emplace(new_fact.get_cost(), new_fact.get_fact_index());
                     }
             } else if (rule.get_type()==PRODUCT) {
@@ -295,7 +302,6 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
             }
         }
     }
-
     return new_facts;
 }
 

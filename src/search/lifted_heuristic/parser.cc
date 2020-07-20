@@ -49,8 +49,6 @@ LogicProgram parse_logic_program(ifstream &in) {
             string rule_type = head.substr(0, head.find(' '));
             string head_atom_name_and_args = head.substr(head.find(' '));
             string head_predicate = get_atom_name(head_atom_name_and_args);
-            if (head_predicate.rfind("action_") == 0)
-                weight = 1;
             vector<string>
                 head_arguments =
                 extract_arguments_from_atom(head_atom_name_and_args);
@@ -99,6 +97,9 @@ LogicProgram parse_logic_program(ifstream &in) {
 
             if (boost::iequals(rule_type, "project")) {
                 // Project rule
+                string project_condition_name = map_index_to_atom[condition_atoms[0].get_predicate_index()];
+                if (project_condition_name.rfind("action_") == 0)
+                    weight = 1;
                 rules.emplace_back(make_unique<ProjectRule>(weight, head_atom, condition_atoms));
             } else if (boost::iequals(rule_type, "join")) {
                 // Join rule
