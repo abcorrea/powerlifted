@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
         return static_cast<int>(exitcode);
     }
     catch (const bad_alloc& ex) {
-        search->print_statistics();
+        //search->print_statistics();
         exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
     }
 
