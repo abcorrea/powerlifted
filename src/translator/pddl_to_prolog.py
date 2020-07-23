@@ -118,7 +118,7 @@ class PrologProgram:
         '''
         def is_free_var(var, num):
             if var[0] != '?':
-                new_effect.append(e)
+                new_effect.append(var)
                 return False, 0
             if var not in parameter_to_generic_free_var.keys():
                 parameter_to_generic_free_var[var] = "?" + chr(num + ord('A'))

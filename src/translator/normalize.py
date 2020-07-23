@@ -20,7 +20,7 @@ class PreconditionProxy(ConditionProxy):
     def set(self, new_condition):
         self.owner.precondition = self.condition = new_condition
     def register_owner(self, task):
-        task.actions.append(self.owner)
+        task.actions.add(self.owner)
     def delete_owner(self, task):
         task.actions.remove(self.owner)
     def build_rules(self, rules):
