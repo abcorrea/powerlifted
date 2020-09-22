@@ -16,9 +16,8 @@ using namespace std;
 namespace lifted_heuristic {
 
 int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
-
     unordered_set<Fact> reached_facts;
-    priority_queue<pair<int, int>> q;
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int,int>>> q;
 
     for (const Fact &f : lp.get_facts()) {
         q.emplace(0, f.get_fact_index());
@@ -31,6 +30,9 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         max_cost = std::max(max_cost, cost);
         q.pop();
         Fact current_fact = lp.get_fact_by_index(i);
+        if (current_fact.get_predicate_index() == goal_predicate) {
+            return current_fact.get_cost();
+        }
         //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
         int predicate_index = current_fact.get_predicate_index();
         for (const auto
@@ -43,9 +45,6 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                 assert(position_in_the_body==0);
                 optional<Fact> new_fact = project(rule, current_fact);
                 if (new_fact and is_new(*new_fact, reached_facts, lp)) {
-                    if (new_fact->get_predicate_index() == goal_predicate) {
-                        return new_fact->get_cost();
-                    }
                     q.emplace(new_fact->get_cost(), new_fact->get_fact_index());
                 }
             } else if (rule.get_type()==JOIN) {
@@ -55,9 +54,6 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                                           current_fact,
                                           position_in_the_body))
                     if (is_new(new_fact, reached_facts, lp)) {
-                        if (new_fact.get_predicate_index() == goal_predicate) {
-                            return new_fact.get_cost();
-                        }
                         q.emplace(new_fact.get_cost(), new_fact.get_fact_index());
                     }
             } else if (rule.get_type()==PRODUCT) {
@@ -66,15 +62,12 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                                              current_fact,
                                              position_in_the_body))
                     if (is_new(new_fact, reached_facts, lp)) {
-                        if (new_fact.get_predicate_index() == goal_predicate) {
-                            return new_fact.get_cost();
-                        }
                         q.emplace(new_fact.get_cost(), new_fact.get_fact_index());
                     }
             }
         }
     }
-    return std::numeric_limits<char>::max();
+    return std::numeric_limits<int>::max();
 }
 
 bool WeightedGrounder::is_new(Fact &new_fact,
