@@ -30,6 +30,10 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
     heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
     root_node.open(0, heuristic_layer);
+    if (heuristic_layer == numeric_limits<int>::max()) {
+        cerr << "Initial state is unsolvable!" << endl;
+        exit(1);
+    }
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
     queue.do_insertion(root_node.state_id, make_pair(heuristic_layer, 0));
