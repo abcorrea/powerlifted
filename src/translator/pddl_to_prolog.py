@@ -110,6 +110,48 @@ class PrologProgram:
             for rule_no in must_delete_rules[::-1]:
                 del self.rules[rule_no]
 
+    def remove_action_predicates(self):
+        '''
+        Remove the action predicates and restructure the Datalog program.
+        For example,
+
+        join action_a(?x, ?b) :- p(?x, ?b), r(?x).
+        project eff_1(?x) :- action_a(?x, ?b).
+        project eff_2(?b) :- action_a(?x, ?b).
+
+        becomes
+
+        join eff_1(?x) :- p(?x, ?b), r(?x).
+        join eff_2(?x) :- p(?x, ?b), r(?x).
+
+        This *needs* to be made before the renaming.
+        '''
+
+        non_action_rules = []
+        action_rules = dict()
+        for r in self.rules:
+            # Capture action rules and do not add them to the new set of rules
+            rule_name = str(r.effect)
+            if rule_name.startswith("action_"):
+                action_rules[rule_name] = r
+            else:
+                non_action_rules.append(r)
+
+        final_rules = []
+        for r in non_action_rules:
+            if len(r.conditions) == 1:
+                condition_name = str(r.conditions[0])
+                if condition_name in action_rules.keys():
+                    new_action_rule = copy.deepcopy(action_rules[condition_name])
+                    new_action_rule.effect = r.effect
+                    final_rules.append(new_action_rule)
+                else:
+                    final_rules.append(r)
+            else:
+                final_rules.append(r)
+        self.rules = final_rules
+
+
     def rename_free_variables(self):
         '''
         Use canonical names for free variables. The names are based on the
@@ -269,13 +311,12 @@ def translate(task):
 
 
 
-
-
 if __name__ == "__main__":
     import pddl_parser
     task = pddl_parser.open()
     normalize.normalize(task)
     prog = translate(task)
+    prog.remove_action_predicates()
     prog.rename_free_variables()
     prog.remove_duplicated_rules()
     prog.dump()
