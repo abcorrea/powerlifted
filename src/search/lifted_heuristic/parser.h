@@ -26,6 +26,8 @@ Arguments transform_args_into_indices(
 
 std::vector<std::string> get_rule_conditions(std::string &body);
 
+int process_weight(std::string weight_function);
+
 }
 
 #endif //GROUNDER__PARSER_H_

@@ -144,8 +144,12 @@ class PrologProgram:
                 if condition_name in action_rules.keys():
                     new_action_rule = copy.deepcopy(action_rules[condition_name])
                     new_action_rule.effect = r.effect
+                    # TODO If we use lifted costs, this should be done before
+                    new_action_rule.weight = 1
                     final_rules.append(new_action_rule)
                 else:
+                    # TODO If we use lifted costs, this should be done before
+                    r.weight = 0
                     final_rules.append(r)
             else:
                 final_rules.append(r)
@@ -251,6 +255,7 @@ class Rule:
     def __init__(self, conditions, effect):
         self.conditions = conditions
         self.effect = effect
+        self.weight = 0
     def add_condition(self, condition):
         self.conditions.append(condition)
     def get_variables(self):
@@ -280,7 +285,7 @@ class Rule:
 
     def __str__(self):
         cond_str = ", ".join(map(str, self.conditions))
-        return "%s :- %s." % (self.effect, cond_str)
+        return "%s :- %s [%s]." % (self.effect, cond_str, self.weight)
 
 
 def translate_typed_object(prog, obj, type_dict):

@@ -44,7 +44,10 @@ LogicProgram parse_logic_program(ifstream &in) {
             int number_of_vars_current_rule = 0; // Variables have negative counter
             int weight = 0;
             string head = line.substr(0, line.find(':'));
-            string body = line.substr(line.find(':')); // Still contains ':-'
+            string body = line.substr(line.find(':'), line.find('[')); // Still contains ':-'
+            string weight_function = line.substr(line.find('['), line.find(']'));
+
+            weight = process_weight(weight_function);
 
             string rule_type = head.substr(0, head.find(' '));
             string head_atom_name_and_args = head.substr(head.find(' '));
@@ -73,7 +76,7 @@ LogicProgram parse_logic_program(ifstream &in) {
             vector<string> condition_atoms_strings = get_rule_conditions(body);
             vector<Atom> condition_atoms;
             condition_atoms.reserve(condition_atoms_strings.size());
-            for (auto s : condition_atoms_strings) {
+            for (const auto& s : condition_atoms_strings) {
                 string atom_name = get_atom_name(s);
                 auto atom_pair =
                     map_atom_to_index.try_emplace(atom_name, number_of_atoms);
@@ -97,9 +100,6 @@ LogicProgram parse_logic_program(ifstream &in) {
 
             if (boost::iequals(rule_type, "project")) {
                 // Project rule
-                string project_condition_name = map_index_to_atom[condition_atoms[0].get_predicate_index()];
-                if (project_condition_name.rfind("action_") == 0)
-                    weight = 1;
                 rules.emplace_back(make_unique<ProjectRule>(weight, head_atom, condition_atoms));
             } else if (boost::iequals(rule_type, "join")) {
                 // Join rule
@@ -247,6 +247,15 @@ vector<string> get_rule_conditions(string &body) {
     condition_atoms.pop_back(); // Last one is always a dangling '.'
 
     return condition_atoms;
+}
+
+int process_weight(string weight_function) {
+    // TODO Implement parsing for lifted cost function, e.g. (road-length ?l1 ?l2)
+
+    // case for constant cost
+    weight_function.erase(0, 1);
+    weight_function.erase(weight_function.size() - 1);
+    return stoi(weight_function);
 }
 
 }
