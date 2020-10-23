@@ -275,7 +275,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     // We do this using a queue
     deque<ProductDequeEntry> q;
     //deque<pair<Arguments, int>> q;
-    q.emplace_back(new_arguments_persistent, 0, fact.get_cost() + rule.get_weight());
+    q.emplace_back(new_arguments_persistent, 0, fact.get_cost());
     while (!q.empty()) {
         Arguments current_args = q.front().arguments;
         int counter = q.front().index;
@@ -284,7 +284,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
         if (counter >= int(rule.get_conditions().size())) {
             new_facts.emplace_back(current_args,
                                    rule.get_effect().get_predicate_index(),
-                                   cost);
+                                   cost + rule.get_weight());
         } else if (counter==position) {
             // If it is the condition that we are currently reaching, we do not need
             // to consider the other tuples with this predicate
@@ -304,7 +304,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
                     ++value_counter;
                 }
                 q.emplace_back(new_arguments, counter + 1,
-                    cost + rule.get_cost_reached_fact_in_position(counter, cost_counter++));
+                    std::max(cost,rule.get_cost_reached_fact_in_position(counter, cost_counter++)));
             }
         }
     }
