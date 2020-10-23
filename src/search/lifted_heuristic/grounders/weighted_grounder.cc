@@ -44,42 +44,56 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                 // Projection rule - single condition in the body
                 assert(position_in_the_body==0);
                 optional<Fact> new_fact = project(rule, current_fact);
-                if (new_fact and is_new(*new_fact, reached_facts, lp)) {
-                    q.emplace(new_fact->get_cost(), new_fact->get_fact_index());
+                if (new_fact) {
+                    int id = is_cheapest_path_to_achieve_fact(*new_fact, reached_facts, lp);
+                    if (id != HAS_CHEAPER_PATH) {
+                    q.emplace(new_fact->get_cost(), id);
+                    }
                 }
             } else if (rule.get_type()==JOIN) {
                 // Join rule - two conditions in the body
                 assert(position_in_the_body <= 1);
                 for (Fact new_fact : join(rule,
                                           current_fact,
-                                          position_in_the_body))
-                    if (is_new(new_fact, reached_facts, lp)) {
-                        q.emplace(new_fact.get_cost(), new_fact.get_fact_index());
+                                          position_in_the_body)) {
+                    int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
+                    if (id!=HAS_CHEAPER_PATH) {
+                        q.emplace(new_fact.get_cost(), id);
                     }
+                }
             } else if (rule.get_type()==PRODUCT) {
                 // Product rule - more than one condition without shared free vars
                 for (Fact new_fact : product(rule,
                                              current_fact,
-                                             position_in_the_body))
-                    if (is_new(new_fact, reached_facts, lp)) {
-                        q.emplace(new_fact.get_cost(), new_fact.get_fact_index());
+                                             position_in_the_body)) {
+                    int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
+                    if (id != HAS_CHEAPER_PATH) {
+                        q.emplace(new_fact.get_cost(), id);
                     }
+                }
             }
         }
     }
     return std::numeric_limits<int>::max();
 }
 
-bool WeightedGrounder::is_new(Fact &new_fact,
-                              unordered_set<Fact> &reached_facts,
-                              LogicProgram &lp) {
+int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
+                                                       unordered_set<Fact> &reached_facts,
+                                                       LogicProgram &lp) {
     auto insert_result = reached_facts.insert(new_fact);
+    Fact f = *insert_result.first;
     if (insert_result.second) {
-        new_fact.set_fact_index();
-        lp.insert_fact(new_fact);
-        return true;
+        f.set_fact_index();
+        lp.insert_fact(f);
+        return f.get_fact_index();
     }
-    return false;
+    else {
+        if (new_fact.get_cost() < f.get_cost()) {
+            f.set_cost(new_fact.get_cost());
+            return f.get_predicate_index();
+        }
+    }
+    return HAS_CHEAPER_PATH;
 }
 
 /*
@@ -113,8 +127,7 @@ optional<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact
             int pos = rule.get_head_position_of_arg(a);
             if (pos!=-1) {
                 // Variable should NOT be projected away by this rule
-                new_arguments.set_term_to_object(pos,
-                                                 fact.argument(i).get_index());
+                new_arguments.set_term_to_object(pos, fact.argument(i).get_index());
             }
         }
     }

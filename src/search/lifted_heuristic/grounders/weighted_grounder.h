@@ -12,10 +12,12 @@
 
 namespace lifted_heuristic {
 
+const int HAS_CHEAPER_PATH = -2;
+
 class WeightedGrounder : public Grounder {
-    bool is_new(Fact &new_fact,
-                std::unordered_set<Fact> &reached_facts,
-                LogicProgram &lp);
+    int is_cheapest_path_to_achieve_fact(Fact &new_fact,
+                                         std::unordered_set<Fact> &reached_facts,
+                                         LogicProgram &lp);
 
 protected:
     RuleMatcher rule_matcher;

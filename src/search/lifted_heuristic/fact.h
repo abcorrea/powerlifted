@@ -78,6 +78,10 @@ public:
         return cost;
     }
 
+    void set_cost(int new_cost) {
+        cost = new_cost;
+    }
+
 };
 
 }
