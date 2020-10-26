@@ -162,12 +162,14 @@ class PrologProgram:
         order in
         which the variables first show up and not on the PDDL file.
         '''
+
+
         def is_free_var(var, num):
             if var[0] != '?':
                 #new_effect.append(var)
                 return False, 0
             if var not in parameter_to_generic_free_var.keys():
-                parameter_to_generic_free_var[var] = "?" + chr(num + ord('A'))
+                parameter_to_generic_free_var[var] = "?var" + str(num)
                 return True, 1
             else:
                 return True, 0
