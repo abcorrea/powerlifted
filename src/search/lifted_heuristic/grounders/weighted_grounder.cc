@@ -30,10 +30,10 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         max_cost = std::max(max_cost, cost);
         q.pop();
         Fact current_fact = lp.get_fact_by_index(i);
+        //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
         if (current_fact.get_predicate_index() == goal_predicate) {
             return current_fact.get_cost();
         }
-        //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
         int predicate_index = current_fact.get_predicate_index();
         for (const auto
                 &m : rule_matcher.get_matched_rules(predicate_index)) {
@@ -233,7 +233,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     }
 
     // Check that *all* other positions of the effect have at least one tuple
-    rule.add_reached_fact_to_condition(fact.get_arguments(), position, fact.get_cost() + rule.get_weight());
+    rule.add_reached_fact_to_condition(fact.get_arguments(), position, fact.get_cost());
     int total_cost = 0;
     for (const ReachedFacts &v : rule.get_reached_facts_all_conditions()) {
         if (v.empty())
@@ -304,7 +304,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
                     ++value_counter;
                 }
                 q.emplace_back(new_arguments, counter + 1,
-                    std::max(cost,rule.get_cost_reached_fact_in_position(counter, cost_counter++)));
+                    cost +rule.get_cost_reached_fact_in_position(counter, cost_counter++));
             }
         }
     }
