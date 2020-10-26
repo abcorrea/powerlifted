@@ -25,6 +25,7 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
     root_node.open(0);
+    cout << "Initial heuristic value 0" << endl;
     statistics.report_f_value_progress(root_node.f);
     queue.emplace(root_node.state_id);
 
