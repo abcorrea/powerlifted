@@ -17,8 +17,8 @@ class PrologProgram:
             for count in itertools.count():
                 yield "p$%d" % count
         self.new_name = predicate_name_generator()
-    def add_fact(self, atom):
-        self.facts.append(Fact(atom))
+    def add_fact(self, atom, weight=0):
+        self.facts.append(Fact(atom, weight))
         self.objects |= set(atom.args)
     def add_rule(self, rule):
         self.rules.append(rule)
@@ -103,7 +103,7 @@ class PrologProgram:
         for i, rule in enumerate(self.rules):
             if not rule.conditions:
                 assert not get_variables([rule.effect])
-                self.add_fact(pddl.Atom(rule.effect.predicate, rule.effect.args))
+                self.add_fact(pddl.Atom(rule.effect.predicate, rule.effect.args), rule.weight)
                 must_delete_rules.append(i)
         if must_delete_rules:
             print("Trivial rules: Converted to facts.")
@@ -248,16 +248,17 @@ def get_variables(symbolic_atoms):
     return variables
 
 class Fact:
-    def __init__(self, atom):
+    def __init__(self, atom, weight=0):
         self.atom = atom
+        self.weight = weight
     def __str__(self):
-        return "%s." % self.atom
+        return "%s [%s]." % (self.atom, str(self.weight))
 
 class Rule:
-    def __init__(self, conditions, effect):
+    def __init__(self, conditions, effect, weight=0):
         self.conditions = conditions
         self.effect = effect
-        self.weight = 0
+        self.weight = weight
     def add_condition(self, condition):
         self.conditions.append(condition)
     def get_variables(self):
@@ -309,7 +310,7 @@ def translate(task):
     prog = PrologProgram()
     translate_facts(prog, task)
     for conditions, effect in normalize.build_exploration_rules(task):
-        prog.add_rule(Rule(conditions, effect))
+        prog.add_rule(Rule(conditions, effect, 1))
     # Using block=True because normalization can output some messages
     # in rare cases.
     prog.normalize()
