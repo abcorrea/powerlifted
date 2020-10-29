@@ -112,6 +112,10 @@ LogicProgram parse_logic_program(ifstream &in) {
             number_of_rules++;
         } else {
             // Fact
+            string weight_function = line.substr(line.find('['), line.find(']'));
+
+            int weight = process_weight(weight_function);
+
             string predicate = get_atom_name(line);
             auto pred_pair =
                 map_atom_to_index.try_emplace(predicate, number_of_atoms);
@@ -135,7 +139,7 @@ LogicProgram parse_logic_program(ifstream &in) {
             }
 
             lp_facts.emplace_back(arguments_indices,
-                                  map_atom_to_index[predicate]);
+                                  map_atom_to_index[predicate], weight);
             number_of_facts++;
         }
     }
@@ -182,8 +186,8 @@ string get_atom_name(const string &str) {
 vector<string> extract_arguments_from_atom(const string &atom) {
     unsigned args_start = atom.find('(');
     unsigned args_end = atom.find(')');
-    string arguments_in_str = boost::trim_copy(atom.substr(args_start, args_end));
-    if ((args_start==args_end - 1) or (atom.back()=='(')) {
+    string arguments_in_str = boost::trim_copy(atom.substr(args_start, args_end - args_start));
+    if (args_start==args_end - 1) {
         // Nullary atoms
         return vector<string>(0);
     }
