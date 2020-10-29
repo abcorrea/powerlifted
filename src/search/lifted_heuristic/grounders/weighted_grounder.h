@@ -5,6 +5,8 @@
 
 #include "../rule_matcher.h"
 
+#include "../../algorithms/priority_queues.h"
+
 #include <iostream>
 #include <optional>
 #include <unordered_set>
@@ -18,6 +20,8 @@ class WeightedGrounder : public Grounder {
     int is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                          std::unordered_set<Fact> &reached_facts,
                                          LogicProgram &lp);
+
+    priority_queues::AdaptiveQueue<int> q;
 
 protected:
     RuleMatcher rule_matcher;

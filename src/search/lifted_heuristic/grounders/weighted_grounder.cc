@@ -17,18 +17,18 @@ namespace lifted_heuristic {
 
 int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
     unordered_set<Fact> reached_facts;
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int,int>>> q;
+    q.clear();
 
     for (const Fact &f : lp.get_facts()) {
-        q.emplace(0, f.get_fact_index());
+        q.push(f.get_cost(), f.get_fact_index());
         reached_facts.insert(f);
     }
     int max_cost = 0;
     while (!q.empty()) {
-        int cost = q.top().first;
-        int i = q.top().second;
+        pair<int, int> queue_top = q.pop();
+        int cost = queue_top.first;
+        int i = queue_top.second;
         max_cost = std::max(max_cost, cost);
-        q.pop();
         Fact current_fact = lp.get_fact_by_index(i);
         //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
         if (current_fact.get_predicate_index() == goal_predicate) {
@@ -47,7 +47,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                 if (new_fact) {
                     int id = is_cheapest_path_to_achieve_fact(*new_fact, reached_facts, lp);
                     if (id != HAS_CHEAPER_PATH) {
-                    q.emplace(new_fact->get_cost(), id);
+                    q.push(new_fact->get_cost(), id);
                     }
                 }
             } else if (rule.get_type()==JOIN) {
@@ -58,7 +58,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                                           position_in_the_body)) {
                     int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
                     if (id!=HAS_CHEAPER_PATH) {
-                        q.emplace(new_fact.get_cost(), id);
+                        q.push(new_fact.get_cost(), id);
                     }
                 }
             } else if (rule.get_type()==PRODUCT) {
@@ -68,7 +68,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                                              position_in_the_body)) {
                     int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
                     if (id != HAS_CHEAPER_PATH) {
-                        q.emplace(new_fact.get_cost(), id);
+                        q.push(new_fact.get_cost(), id);
                     }
                 }
             }
