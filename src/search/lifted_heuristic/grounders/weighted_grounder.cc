@@ -22,16 +22,19 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         q.push(f.get_cost(), f.get_fact_index());
         reached_facts.insert(f);
     }
-    int max_cost = 0;
     while (!q.empty()) {
         pair<int, int> queue_top = q.pop();
         int cost = queue_top.first;
         int i = queue_top.second;
-        max_cost = std::max(max_cost, cost);
         Fact current_fact = lp.get_fact_by_index(i);
         //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
+        //cout << " " << current_fact.get_cost() << endl;
         if (current_fact.get_predicate_index() == goal_predicate) {
+            //exit(1);
             return current_fact.get_cost();
+        }
+        if (current_fact.get_cost() < cost) {
+            continue;
         }
         int predicate_index = current_fact.get_predicate_index();
         for (const auto
@@ -46,7 +49,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                 if (new_fact) {
                     int id = is_cheapest_path_to_achieve_fact(*new_fact, reached_facts, lp);
                     if (id != HAS_CHEAPER_PATH) {
-                    q.push(new_fact->get_cost(), id);
+                        q.push(new_fact->get_cost(), id);
                     }
                 }
             } else if (rule.get_type()==JOIN) {
@@ -248,7 +251,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     if (rule.head_is_ground()) {
         new_facts.emplace_back(rule.get_effect_arguments(),
                                rule.get_effect().get_predicate_index(),
-                               total_cost);
+                               total_cost + rule.get_weight());
         return new_facts;
     }
 
