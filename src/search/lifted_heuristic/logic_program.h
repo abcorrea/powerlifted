@@ -71,6 +71,8 @@ public:
         rules[r].reset();
     }
 
+    void update_fact_cost(int fact, int cost);
+
     void reset_facts(size_t i);
 };
 

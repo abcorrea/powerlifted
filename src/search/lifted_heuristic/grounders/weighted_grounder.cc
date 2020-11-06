@@ -98,6 +98,7 @@ int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
             new_fact.update_fact_index(f->get_fact_index());
             reached_facts.erase(f);
             reached_facts.insert(new_fact);
+            lp.update_fact_cost(new_fact.get_fact_index(), new_fact.get_cost());
             return new_fact.get_fact_index();
         }
     }

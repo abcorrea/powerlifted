@@ -49,4 +49,8 @@ int LogicProgram::get_object_by_name(const std::string &name) const {
     return map_object_to_index.at(name);
 }
 
+void LogicProgram::update_fact_cost(int fact, int cost) {
+    facts[fact].set_cost(cost);
+}
+
 }
