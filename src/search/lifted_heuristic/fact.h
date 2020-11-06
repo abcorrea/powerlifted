@@ -62,6 +62,10 @@ public:
         fact_index = next_fact_index++;
     }
 
+    void update_fact_index(int i) {
+        fact_index = i;
+    }
+
     int get_fact_index() const {
         return fact_index;
     }
@@ -81,7 +85,6 @@ public:
     void set_cost(int new_cost) {
         cost = new_cost;
     }
-
 };
 
 }

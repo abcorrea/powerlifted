@@ -82,17 +82,23 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
 int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                                        unordered_set<Fact> &reached_facts,
                                                        LogicProgram &lp) {
-    auto insert_result = reached_facts.insert(new_fact);
-    Fact f = *insert_result.first;
-    if (insert_result.second) {
-        f.set_fact_index();
-        lp.insert_fact(f);
-        return f.get_fact_index();
+    // TODO This is garbage.  'f' is a local copy of the fact and we want to modify
+    // its cost and fact-index in the reached_facts set *and* in the LP
+    // We cannot modify it easily because the hash would change. What is the best way?
+    int has_fact = reached_facts.count(new_fact);
+    if (has_fact == 0) {
+        new_fact.set_fact_index();
+        reached_facts.insert(new_fact);
+        lp.insert_fact(new_fact);
+        return new_fact.get_fact_index();
     }
     else {
-        if (new_fact.get_cost() < f.get_cost()) {
-            f.set_cost(new_fact.get_cost());
-            return f.get_predicate_index();
+        auto f = reached_facts.find(new_fact);
+        if (new_fact.get_cost() < f->get_cost()) {
+            new_fact.update_fact_index(f->get_fact_index());
+            reached_facts.erase(f);
+            reached_facts.insert(new_fact);
+            return new_fact.get_fact_index();
         }
     }
     return HAS_CHEAPER_PATH;
