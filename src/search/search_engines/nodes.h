@@ -63,6 +63,11 @@ public:
         f = f_;
     }
 
+    void update_h(int h_) {
+        h = h_;
+        f = g + h;
+    }
+
     void close() {
         assert(status == SearchNode::Status::OPEN);
         status = SearchNode::Status::CLOSED;

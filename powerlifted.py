@@ -24,7 +24,7 @@ def parse_options():
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Run planner in debug mode.')
     parser.add_argument('-s', '--search', dest='search', action='store',
-                        default=None, help='Search algorithm', choices=("naive", "gbfs"),
+                        default=None, help='Search algorithm', choices=("naive", "gbfs", "lazy"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
                         default=None, choices=("blind", "goalcount", "add", "hmax"),
