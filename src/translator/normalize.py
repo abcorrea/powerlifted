@@ -149,7 +149,7 @@ def all_conditions(task):
     yield GoalConditionProxy(task)
 
 
-# [0] Remove actions that can never instantiated.
+# [0a] Remove actions that can never instantiated.
 #
 #  Remove actions where a parameter has a given type T but there is
 #  no object with such type in the object list.
@@ -179,6 +179,18 @@ def remove_trivially_inapplicable_actions(task):
 
     #print("Removed %d trivially inapplicable actions" % number_removals, file=sys.stderr)
     task.actions = new_actions
+
+# [0b] Remove duplicated atoms from preconditions
+def remove_duplicated_preconditions(task):
+    for action in task.actions:
+        precond = set()
+        if not isinstance(action.precondition, pddl.Conjunction):
+            continue
+        for p in action.precondition.parts:
+            precond.add(p)
+        action.precondition.parts = tuple(precond)
+    return
+
 
 
 # [1] Remove universal quantifications from conditions.
@@ -381,6 +393,7 @@ def substitute_complicated_goal(task):
 
 def normalize(task):
     remove_trivially_inapplicable_actions(task)
+    remove_duplicated_preconditions(task)
     remove_universal_quantifiers(task)
     substitute_complicated_goal(task)
     build_DNF(task)
