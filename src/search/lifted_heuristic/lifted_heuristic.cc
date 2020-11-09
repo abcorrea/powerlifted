@@ -10,9 +10,10 @@
 
 using namespace std;
 
-LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in)
+LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in, int heuristic_type)
     : logic_program(lifted_heuristic::parse_logic_program(in)),
-    grounder(logic_program) {
+    grounder(logic_program, heuristic_type)
+    {
     int pred_idx = 0;
     for (const auto &predicate : task.predicates) {
         indices_map.add_predicate_mapping(pred_idx++, logic_program.get_atom_by_name(predicate.getName()));
@@ -27,7 +28,10 @@ LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in)
         if (pp.second == "@goal-reachable")
             target_predicate = pp.first;
 
-    cout << "Initializing lifted heuristic..." << endl;
+    if (heuristic_type == lifted_heuristic::H_ADD)
+        cout << "Initializing additive heuristic..." << endl;
+    if (heuristic_type == lifted_heuristic::H_MAX)
+        cout << "Initializing h-max heuristic..." << endl;
     cout << "Total number of static atoms in the EDB: " << logic_program.get_facts().size() << endl;
     cout << "Total number of rules: " << logic_program.get_rules().size() << endl;
 }

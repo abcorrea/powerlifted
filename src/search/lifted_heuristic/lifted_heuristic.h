@@ -57,7 +57,7 @@ class LiftedHeuristic : public Heuristic {
         const std::unordered_set<int> &nullaries);
 
 public:
-    LiftedHeuristic(const Task &task, std::ifstream &in);
+    LiftedHeuristic(const Task &task, std::ifstream &in, int heuristic_type);
 
     int compute_heuristic(const DBState &s, const Task &task) final;
 };

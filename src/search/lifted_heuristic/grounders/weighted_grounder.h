@@ -16,7 +16,11 @@ namespace lifted_heuristic {
 
 const int HAS_CHEAPER_PATH = -2;
 
+enum {H_ADD, H_MAX};
+
 class WeightedGrounder : public Grounder {
+    int heuristic_type;
+
     int is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                          std::unordered_set<Fact> &reached_facts,
                                          LogicProgram &lp);
@@ -47,8 +51,9 @@ protected:
 public:
     WeightedGrounder() {};
 
-    WeightedGrounder(const LogicProgram &lp) {
+    WeightedGrounder(const LogicProgram &lp, int h) {
         create_rule_matcher(lp);
+        heuristic_type = h;
     }
 
     ~WeightedGrounder() = default;

@@ -14,7 +14,7 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
 {
     const std::string& method = opt.get_evaluator();
     std::ifstream datalog_file(opt.get_datalog_file());
-    if (!datalog_file and (opt.get_evaluator() == "lifted")) {
+    if (!datalog_file and (opt.get_evaluator() == "add")) {
         std::cerr << "Error opening the Datalog model file: " << opt.get_datalog_file() << std::endl;
         exit(-1);
     }
@@ -25,8 +25,8 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
     else if (boost::iequals(method, "goalcount")) {
         return new Goalcount();
     }
-    else if (boost::iequals(method, "lifted")) {
-        return new LiftedHeuristic(task, datalog_file);
+    else if (boost::iequals(method, "add")) {
+        return new LiftedHeuristic(task, datalog_file, lifted_heuristic::H_ADD);
     }
     else {
         std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;

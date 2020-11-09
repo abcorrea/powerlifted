@@ -27,7 +27,7 @@ def parse_options():
                         default=None, help='Search algorithm', choices=("naive", "gbfs"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
-                        default=None, choices=("blind", "goalcount", "lifted"),
+                        default=None, choices=("blind", "goalcount", "add"),
                         help='Heuristic to guide the search (ignore in case of blind search)',
                         required=True)
     parser.add_argument('-g', '--generator', dest='generator', action='store',
@@ -108,7 +108,7 @@ def main():
     os.chdir(PROJECT_ROOT)
 
     # If it is the lifted heuristic, we need to obtain the Datalog model
-    if options.heuristic == 'lifted':
+    if options.heuristic == 'add' or options.heuristic == 'hmax':
        PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
        CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
 
