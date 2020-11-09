@@ -82,9 +82,6 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
 int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                                        unordered_set<Fact> &reached_facts,
                                                        LogicProgram &lp) {
-    // TODO This is garbage.  'f' is a local copy of the fact and we want to modify
-    // its cost and fact-index in the reached_facts set *and* in the LP
-    // We cannot modify it easily because the hash would change. What is the best way?
     int has_fact = reached_facts.count(new_fact);
     if (has_fact == 0) {
         new_fact.set_fact_index();
@@ -208,7 +205,7 @@ vector<Fact> WeightedGrounder::join(RuleBase &rule_,
         }
         facts.emplace_back(move(new_arguments),
                            rule.get_effect().get_predicate_index(),
-                           fact.get_cost() + f.get_cost() + rule.get_weight());
+                           aggregation_function(fact.get_cost(), f.get_cost()) + rule.get_weight());
     }
     return facts;
 }
@@ -250,7 +247,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
         int min_cost = std::numeric_limits<int>::max();
         for (int cost : v.get_costs())
             min_cost = std::min(min_cost, cost);
-        total_cost += min_cost;
+        total_cost = aggregation_function(total_cost, min_cost);
     }
 
     // If there is one reachable ground atom for every condition and the head
@@ -313,7 +310,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
                     ++value_counter;
                 }
                 q.emplace_back(new_arguments, counter + 1,
-                    cost +rule.get_cost_reached_fact_in_position(counter, cost_counter++));
+                    aggregation_function(cost,rule.get_cost_reached_fact_in_position(counter, cost_counter++)));
             }
         }
     }

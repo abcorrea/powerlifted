@@ -19,15 +19,16 @@ const int HAS_CHEAPER_PATH = -2;
 enum {H_ADD, H_MAX};
 
 class WeightedGrounder : public Grounder {
-    int heuristic_type;
-
     int is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                          std::unordered_set<Fact> &reached_facts,
                                          LogicProgram &lp);
 
     priority_queues::AdaptiveQueue<int> q;
 
+
 protected:
+    int heuristic_type;
+
     RuleMatcher rule_matcher;
 
     void create_rule_matcher(const LogicProgram &lp) {
@@ -42,16 +43,23 @@ protected:
         }
     }
 
-    static std::optional<Fact> project(const RuleBase &rule, const Fact &fact);
-    static std::vector<Fact> join(RuleBase &rule, const Fact &fact, int position);
-    static std::vector<Fact> product(RuleBase &rule,
-                                     const Fact &fact,
-                                     int position);
+    std::optional<Fact> project(const RuleBase &rule, const Fact &fact);
+    std::vector<Fact> join(RuleBase &rule, const Fact &fact, int position);
+    std::vector<Fact> product(RuleBase &rule,
+                              const Fact &fact,
+                              int position);
+
+    int aggregation_function(int i, int j)  {
+        if (heuristic_type == H_ADD)
+            return i + j;
+        else
+            return std::max(i,j);
+    }
 
 public:
     WeightedGrounder() {};
 
-    WeightedGrounder(const LogicProgram &lp, int h) {
+    WeightedGrounder(const LogicProgram &lp, int h)  {
         create_rule_matcher(lp);
         heuristic_type = h;
     }
