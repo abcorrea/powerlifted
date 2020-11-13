@@ -310,9 +310,13 @@ def translate(task):
     prog = PrologProgram()
     translate_facts(prog, task)
     for conditions, effect in normalize.build_exploration_rules(task):
-        prog.add_rule(Rule(conditions, effect, 1))
+        weight = 1
+        if effect.predicate == "@goal-reachable":
+            weight = 0
+        prog.add_rule(Rule(conditions, effect, weight))
     # Using block=True because normalization can output some messages
     # in rare cases.
+    prog.remove_action_predicates()
     prog.normalize()
     prog.split_rules()
     return prog
@@ -324,7 +328,6 @@ if __name__ == "__main__":
     task = pddl_parser.open()
     normalize.normalize(task)
     prog = translate(task)
-    prog.remove_action_predicates()
-    prog.rename_free_variables()
-    prog.remove_duplicated_rules()
+    #prog.rename_free_variables()
+    #prog.remove_duplicated_rules()
     prog.dump()

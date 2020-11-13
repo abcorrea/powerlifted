@@ -29,6 +29,9 @@ def project_rule(rule, conditions, name_generator):
     return projected_rule
 
 def split_rule(rule, name_generator):
+    # Capture original rule weight
+    weight = rule.weight
+
     important_conditions, trivial_conditions = [], []
     for cond in rule.conditions:
         for arg in cond.args:
@@ -59,6 +62,11 @@ def split_rule(rule, name_generator):
     else:
         combining_rule.type = "project"
     result.append(combining_rule)
+
+    # Last rule is always the "root" rule. It weight should be updated
+    # TODO Make this more reliable
+    result[-1].weight = weight
+
     return result
 
 def split_into_binary_rules(rule, name_generator):
