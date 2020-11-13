@@ -73,4 +73,8 @@ def split_into_binary_rules(rule, name_generator):
     if len(rule.conditions) <= 1:
         rule.type = "project"
         return [rule]
-    return greedy_join.greedy_join(rule, name_generator)
+    rules =  greedy_join.greedy_join(rule, name_generator)
+    # Last rule is always the "root" rule. It weight should be updated
+    # TODO Make this more reliable
+    rules[-1].weight = rule.weight
+    return rules

@@ -27,19 +27,6 @@ class PrologProgram:
             print(fact, file=file)
         for rule in self.rules:
             print(getattr(rule, "type", "none"), rule, file=file)
-    def dump_static(self, task, file=None):
-        fluents = set()
-        for a in task.actions:
-            for e in a.effects:
-                l = e.literal
-                pred = l.predicate
-                fluents.add(pred)
-        for fact in self.facts:
-            if fact.atom.predicate not in fluents:
-                print(fact, file=file)
-    def dump_idb(self, file=None):
-        for rule in self.rules:
-            print(getattr(rule, "type", "none"), rule, file=file)
     def normalize(self):
         # Normalized prolog programs have the following properties:
         # 1. Each variable that occurs in the effect of a rule also occurs in its
@@ -240,6 +227,19 @@ class PrologProgram:
             self.rules = final_rules
         #print("Total number of duplicated rules removed: %d" % total_rules_removed, file=sys.stderr)
 
+    def remove_fluent_atoms_from_edb(self, task):
+        fluents = set()
+        new_facts = []
+        for a in task.actions:
+            for e in a.effects:
+                l = e.literal
+                pred = l.predicate
+                fluents.add(pred)
+        for fact in self.facts:
+            if fact.atom.predicate not in fluents:
+                new_facts.append(fact)
+        self.facts = new_facts
+
 
 def get_variables(symbolic_atoms):
     variables = set()
@@ -316,6 +316,7 @@ def translate(task):
         prog.add_rule(Rule(conditions, effect, weight))
     # Using block=True because normalization can output some messages
     # in rare cases.
+    prog.remove_fluent_atoms_from_edb(task)
     prog.remove_action_predicates()
     prog.normalize()
     prog.split_rules()

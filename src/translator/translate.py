@@ -67,8 +67,7 @@ def main():
         #prog.remove_duplicated_rules()
         with open(options.datalog_file, 'w') as f:
             #prog.dump(f)
-            prog.dump_static(task, f)
-            prog.dump_idb(f)
+            prog.dump(f)
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
