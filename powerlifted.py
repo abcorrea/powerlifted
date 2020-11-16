@@ -44,6 +44,8 @@ def parse_options():
     parser.add_argument('--datalog-file', dest='datalog_file',
                         default='model.lp',
                         help='Datalog model for the lifted heuristic.')
+    parser.add_argument("--keep-action-predicates", action="store_true",
+                        help="flag if the Datalog model should keep action predicates")
 
     args = parser.parse_args()
     if args.domain is None:
@@ -110,6 +112,8 @@ def main():
     # If it is the lifted heuristic, we need to obtain the Datalog model
     if options.heuristic == 'add' or options.heuristic == 'hmax':
        PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
+       if options.keep_action_predicates:
+           PYTHON_EXTRA_OPTIONS.append('--keep-action-predicates')
        CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
 
     # Invoke the Python preprocessor

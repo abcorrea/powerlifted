@@ -25,6 +25,9 @@ def parse_args():
         "--datalog-file", default='model.lp',
         help="flag if the translator should output Datalog model of the task.")
     argparser.add_argument(
+        "--keep-action-predicates", action="store_true",
+        help="flag if the Datalog model should keep action predicates")
+    argparser.add_argument(
         "--test-experiment", action="store_true",
         help="flag if the run is an experiment or not")
     argparser.add_argument(

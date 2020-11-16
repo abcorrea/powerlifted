@@ -305,7 +305,7 @@ def translate_facts(prog, task):
         if isinstance(fact, pddl.Atom):
             prog.add_fact(fact)
 
-def translate(task):
+def translate(task, keep_action_predicates):
     # Note: The function requires that the task has been normalized.
     prog = PrologProgram()
     translate_facts(prog, task)
@@ -317,9 +317,17 @@ def translate(task):
     # Using block=True because normalization can output some messages
     # in rare cases.
     prog.remove_fluent_atoms_from_edb(task)
-    prog.remove_action_predicates()
+    if not keep_action_predicates:
+        prog.remove_action_predicates()
     prog.normalize()
     prog.split_rules()
+    if keep_action_predicates:
+        # Correct weights
+        for rule in prog.rules:
+            if 'action' not in str(rule.effect.predicate):
+                rule.weight = 0
+            else:
+                rule.weight = 1
     return prog
 
 
