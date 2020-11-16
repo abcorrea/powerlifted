@@ -63,7 +63,8 @@ def main():
         print("Building Datalog model...")
         prog = pddl_to_prolog.translate(task, options.keep_action_predicates)
         prog.rename_free_variables()
-        #prog.remove_duplicated_rules()
+        if not options.keep_duplicated_rules:
+            prog.remove_duplicated_rules()
         with open(options.datalog_file, 'w') as f:
             #prog.dump(f)
             prog.dump(f)

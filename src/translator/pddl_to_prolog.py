@@ -196,11 +196,11 @@ class PrologProgram:
         for rule in rules:
             if "p$" in str(rule.effect):
                 '''Auxiliary variable'''
-                if str(rule.conditions) in remaining_equivalent_rules.keys():
-                    equivalence[str(rule.effect.predicate)] = remaining_equivalent_rules[str(rule.conditions)]
+                if (str(rule.conditions), str(rule.effect.args)) in remaining_equivalent_rules.keys():
+                    equivalence[str(rule.effect.predicate)] = remaining_equivalent_rules[(str(rule.conditions), str(rule.effect.args))]
                     has_duplication = True
                     continue
-                remaining_equivalent_rules[str(rule.conditions)] = rule.effect.predicate
+                remaining_equivalent_rules[(str(rule.conditions), str(rule.effect.args))] = rule.effect.predicate
             new_rules.append(rule)
         return has_duplication, new_rules, equivalence
 
@@ -221,6 +221,7 @@ class PrologProgram:
                         new_cond = c
                         new_cond.predicate = equivalence[pred_symb]
                         number_removed += 1
+                        #print("Replace %s by %s" % (pred_symb, equivalence[pred_symb]))
                         rule.conditions[i] = new_cond
                 final_rules.append(rule)
             total_rules_removed += number_removed

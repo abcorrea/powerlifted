@@ -46,6 +46,8 @@ def parse_options():
                         help='Datalog model for the lifted heuristic.')
     parser.add_argument("--keep-action-predicates", action="store_true",
                         help="flag if the Datalog model should keep action predicates")
+    parser.add_argument("--keep-duplicated-rules", action="store_true",
+                        help="flag if the Datalog model should keep duplicated auxiliary rules")
 
     args = parser.parse_args()
     if args.domain is None:
@@ -114,6 +116,8 @@ def main():
        PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
        if options.keep_action_predicates:
            PYTHON_EXTRA_OPTIONS.append('--keep-action-predicates')
+       if options.keep_duplicated_rules:
+           PYTHON_EXTRA_OPTIONS.append('--keep-duplicated-rules')
        CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
 
     # Invoke the Python preprocessor
