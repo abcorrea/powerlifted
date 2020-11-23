@@ -251,12 +251,16 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
         if (v.empty())
             return new_facts;
         int min_cost = std::numeric_limits<int>::max();
+        int min_index = 0;
         int index = 0;
         for (int cost : v.get_costs()) {
-            min_cost = std::min(min_cost, cost);
+            if (min_cost > cost) {
+                min_cost = cost;
+                min_index = index;
+            }
             index++;
         }
-        nullary_head_achievers.push_back(v.get_fact_index(index));
+        nullary_head_achievers.push_back(v.get_fact_index(min_index));
         total_cost = aggregation_function(total_cost, min_cost);
     }
 
@@ -264,7 +268,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     // is nullary or has no free variable, then simply trigger it.
     if (rule.head_is_ground()) {
         new_facts.emplace_back(rule.get_effect_arguments(),
-                               rule.get_effect().get_predicate_index(),
+            rule.get_effect().get_predicate_index(),
                                total_cost + rule.get_weight(),
                                nullary_head_achievers);
         return new_facts;
@@ -322,7 +326,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
                     }
                     ++value_counter;
                 }
-                achievers.push_back(rule.get_fact_index_reached_fact_in_position(counter, vector_counter++));
+                achievers.push_back(rule.get_fact_index_reached_fact_in_position(counter, vector_counter));
                 q.emplace_back(new_arguments, counter + 1,
                     aggregation_function(cost,
                         rule.get_cost_reached_fact_in_position(counter, vector_counter++)),
