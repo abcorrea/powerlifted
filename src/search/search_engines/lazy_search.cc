@@ -28,6 +28,7 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
     clock_t timer_start = clock();
     StatePackerT packer(task);
 
+    GreedyOpenList preferred_queue;
     GreedyOpenList queue;
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
@@ -43,8 +44,8 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
-    while (not queue.empty()) {
-        StateID sid = queue.remove_min();
+    while ((not queue.empty()) or (not preferred_queue.empty())) {
+        StateID sid = get_top_node(preferred_queue, queue); //queue.remove_min();
         SearchNode &node = space.get_node(sid);
         DBState state = packer.unpack(space.get_state(sid));
         int h = heuristic.compute_heuristic(state, task);
@@ -81,27 +82,33 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
-                if (keep_relaxed_useless_operators or
-                    is_useful_operator(s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
-                    int dist = g + action.get_cost();
-                    statistics.inc_evaluations();
-                    auto &child_node =
-                        space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                    if (child_node.status==SearchNode::Status::NEW) {
-                        // Inserted for the first time in the map
-                        child_node.open(dist, h);
+                int dist = g + action.get_cost();
+                statistics.inc_evaluations();
+                auto &child_node =
+                    space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+                if (child_node.status==SearchNode::Status::NEW) {
+                    // Inserted for the first time in the map
+                    child_node.open(dist, h);
+                    if (keep_relaxed_useless_operators or
+                        is_useful_operator(s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
+                        preferred_queue.do_insertion(child_node.state_id, make_pair(h, dist));
+                    }
+                    else {
                         queue.do_insertion(child_node.state_id, make_pair(h, dist));
-                    } else {
-                        if (dist < child_node.g) {
-                            child_node.open(dist, h); // Reopening
-                            statistics.inc_reopened();
+                    }
+                } else {
+                    if (dist < child_node.g) {
+                        child_node.open(dist, h); // Reopening
+                        statistics.inc_reopened();
+                        if (keep_relaxed_useless_operators or
+                            is_useful_operator(s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
+                            preferred_queue.do_insertion(child_node.state_id, make_pair(h, dist));
+                        }
+                        else {
                             queue.do_insertion(child_node.state_id, make_pair(h, dist));
                         }
                     }
                 }
-                /*else {
-                    task.dump_state(s);
-                }*/
             }
         }
     }
