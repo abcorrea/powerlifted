@@ -17,6 +17,9 @@ public:
     utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
 
     void print_statistics() const override;
+    bool is_useful_operator(const DBState &state,
+                            const std::map<int, std::vector<GroundAtom>> &useful_atoms,
+                            const std::vector<bool> &useful_nullary_atoms);
 };
 
 

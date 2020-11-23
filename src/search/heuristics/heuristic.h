@@ -13,6 +13,8 @@ class Task;
 class Heuristic {
 protected:
     std::map<int, std::vector<GroundAtom>> useful_atoms;
+
+protected:
     std::vector<bool> useful_nullary_atoms;
 
 public:
@@ -25,6 +27,14 @@ public:
      * @return Heuristic value
      */
     virtual int compute_heuristic(const DBState &s, const Task &task) = 0;
+
+    const std::map<int, std::vector<GroundAtom>> &get_useful_atoms() const {
+        return useful_atoms;
+    }
+
+    const std::vector<bool> &get_useful_nullary_atoms() const {
+        return useful_nullary_atoms;
+    }
 
     void _print_useful_atoms(const Task &task) {
         for (size_t j = 0; j < useful_nullary_atoms.size(); ++j) {
@@ -41,6 +51,7 @@ public:
                 std::cout << "), ";
             }
         }
+        std::cout << std::endl;
     }
 };
 

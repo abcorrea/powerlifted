@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <queue>
 #include <vector>
 
@@ -80,22 +81,26 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
-
-                int dist = g + action.get_cost();
-                statistics.inc_evaluations();
-                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                if (child_node.status == SearchNode::Status::NEW) {
-                    // Inserted for the first time in the map
-                    child_node.open(dist, h);
-                    queue.do_insertion(child_node.state_id, make_pair(h, dist));
-                }
-                else {
-                    if (dist < child_node.g) {
-                        child_node.open(dist, h); // Reopening
-                        statistics.inc_reopened();
+                if (is_useful_operator(s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
+                    int dist = g + action.get_cost();
+                    statistics.inc_evaluations();
+                    auto &child_node =
+                        space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+                    if (child_node.status==SearchNode::Status::NEW) {
+                        // Inserted for the first time in the map
+                        child_node.open(dist, h);
                         queue.do_insertion(child_node.state_id, make_pair(h, dist));
+                    } else {
+                        if (dist < child_node.g) {
+                            child_node.open(dist, h); // Reopening
+                            statistics.inc_reopened();
+                            queue.do_insertion(child_node.state_id, make_pair(h, dist));
+                        }
                     }
                 }
+                /*else {
+                    task.dump_state(s);
+                }*/
             }
         }
     }
@@ -109,6 +114,26 @@ template <class PackedStateT>
 void LazySearch<PackedStateT>::print_statistics() const {
     statistics.print_detailed_statistics();
     space.print_statistics();
+}
+
+template<class PackedStateT>
+bool LazySearch<PackedStateT>::is_useful_operator(const DBState &state,
+                                                  const std::map<int, std::vector<GroundAtom>> &useful_atoms,
+                                                  const std::vector<bool> &useful_nullary_atoms) {
+    for (size_t j = 0; j < useful_nullary_atoms.size(); ++j) {
+        if (useful_nullary_atoms[j] and state.get_nullary_atoms()[j]) {
+            return true;
+        }
+    }
+    for (auto &entry : useful_atoms) {
+        size_t relation = entry.first;
+        for (auto &tuple : entry.second) {
+            if (state.get_tuples_of_relation(relation).count(tuple) > 0)
+                return true;
+        }
+    }
+    //cerr << "not useful" << endl;
+    return false;
 }
 
 // explicit template instantiations
