@@ -12,6 +12,9 @@
 
 namespace  lifted_heuristic {
 
+
+typedef std::vector<int> Achievers;
+
 /*
  *
  * The class fact represents a ground atom that is true in the LP.
@@ -27,6 +30,7 @@ class Fact : public Atom {
     // and indices.
     int fact_index;
     int cost;
+    Achievers achievers;
 public:
     Fact(Arguments arguments, int predicate_index) :
         Atom(std::move(arguments), predicate_index) {
@@ -41,6 +45,13 @@ public:
         // See comment in constructor above
         fact_index = -1;
     }
+
+    Fact(Arguments arguments, int predicate_index, int cost, Achievers achievers) :
+        Atom(std::move(arguments), predicate_index), cost(cost), achievers(achievers) {
+        // See comment in constructor above
+        fact_index = -1;
+    }
+
 
 
     /*
@@ -82,6 +93,13 @@ public:
         return cost;
     }
 
+    const Achievers &get_achievers() const {
+        return achievers;
+    }
+
+    void update_achievers(Achievers a) {
+        achievers = a;
+    }
     void set_cost(int new_cost) {
         cost = new_cost;
     }
