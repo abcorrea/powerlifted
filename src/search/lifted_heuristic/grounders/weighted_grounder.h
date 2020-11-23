@@ -25,6 +25,8 @@ class WeightedGrounder : public Grounder {
 
     priority_queues::AdaptiveQueue<int> q;
 
+    std::unordered_set<int> facts_in_edb;
+    Achievers best_achievers;
 
 protected:
     int heuristic_type;
@@ -68,6 +70,7 @@ public:
 
     int ground(LogicProgram &lp, int goal_predicate) override;
 
+    void extract_best_achievers(const Fact &fact, const LogicProgram &lp);
 };
 
 }
