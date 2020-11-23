@@ -138,9 +138,12 @@ optional<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact
         }
     }
 
+    Achievers projection_achiever = {fact.get_fact_index()};
+
     return Fact(move(new_arguments),
         rule.get_effect().get_predicate_index(),
-        rule_.get_weight() + fact.get_cost());
+        rule_.get_weight() + fact.get_cost(),
+        projection_achiever);
 }
 
 /*
