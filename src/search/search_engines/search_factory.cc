@@ -25,8 +25,12 @@ SearchFactory::create(const std::string& method, const std::string& state_type) 
         else return new GreedyBestFirstSearch<SparsePackedState>();
     }
     else if (boost::iequals(method, "lazy")) {
-        if (using_ext_state) return new LazySearch<ExtensionalPackedState>();
-        else return new LazySearch<SparsePackedState>();
+        if (using_ext_state) return new LazySearch<ExtensionalPackedState>(true);
+        else return new LazySearch<SparsePackedState>(true);
+    }
+    else if (boost::iequals(method, "lazy-po")) {
+        if (using_ext_state) return new LazySearch<ExtensionalPackedState>(false);
+        else return new LazySearch<SparsePackedState>(false);
     }
     else {
         std::cerr << "Invalid search method \"" << method << "\"" << std::endl;

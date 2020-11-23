@@ -81,7 +81,8 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
-                if (is_useful_operator(s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
+                if (keep_relaxed_useless_operators or
+                    is_useful_operator(s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
                     int dist = g + action.get_cost();
                     statistics.inc_evaluations();
                     auto &child_node =

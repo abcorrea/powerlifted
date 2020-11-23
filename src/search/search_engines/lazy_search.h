@@ -11,7 +11,10 @@ protected:
     SearchSpace<PackedStateT> space;
 
     int heuristic_layer{};
+    bool keep_relaxed_useless_operators;
 public:
+    explicit LazySearch(bool b) : keep_relaxed_useless_operators(b) {}
+
     using StatePackerT = typename PackedStateT::StatePackerT;
 
     utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
