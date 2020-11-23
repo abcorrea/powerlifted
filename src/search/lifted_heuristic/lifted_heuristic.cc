@@ -42,6 +42,8 @@ int LiftedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     if (task.is_goal(s)) return 0;
     int h =  grounder.ground(logic_program, target_predicate);
 
+    get_useful_facts(task);
+
     lifted_heuristic::Fact::reset_global_fact_index(base_fact_index);
     logic_program.reset_facts(base_fact_index);
     for (const auto &r : logic_program.get_rules())
@@ -76,4 +78,8 @@ void LiftedHeuristic::transform_state_into_edb(const DBState &s,
         fact.set_fact_index();
         logic_program.insert_fact(fact);
     }
+}
+
+void LiftedHeuristic::get_useful_facts(const Task &task) {
+    return;
 }
