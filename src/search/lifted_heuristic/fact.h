@@ -47,7 +47,7 @@ public:
     }
 
     Fact(Arguments arguments, int predicate_index, int cost, Achievers achievers) :
-        Atom(std::move(arguments), predicate_index), cost(cost), achievers(achievers) {
+        Atom(std::move(arguments), predicate_index), cost(cost), achievers(std::move(achievers)) {
         // See comment in constructor above
         fact_index = -1;
     }

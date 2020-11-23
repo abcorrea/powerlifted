@@ -206,9 +206,11 @@ vector<Fact> WeightedGrounder::join(RuleBase &rule_,
             }
             position_counter++;
         }
+        Achievers join_achievers = {fact.get_fact_index(), f.get_fact_index()};
         facts.emplace_back(move(new_arguments),
                            rule.get_effect().get_predicate_index(),
-                           aggregation_function(fact.get_cost(), f.get_cost()) + rule.get_weight());
+                           aggregation_function(fact.get_cost(), f.get_cost()) + rule.get_weight(),
+                           join_achievers);
     }
     return facts;
 }
@@ -242,14 +244,19 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     }
 
     // Check that *all* other positions of the effect have at least one tuple
-    rule.add_reached_fact_to_condition(fact.get_arguments(), position, fact.get_cost());
+    rule.add_reached_fact_to_condition(fact, position, fact.get_cost());
     int total_cost = 0;
+    Achievers nullary_head_achievers;
     for (const ReachedFacts &v : rule.get_reached_facts_all_conditions()) {
         if (v.empty())
             return new_facts;
         int min_cost = std::numeric_limits<int>::max();
-        for (int cost : v.get_costs())
+        int index = 0;
+        for (int cost : v.get_costs()) {
             min_cost = std::min(min_cost, cost);
+            index++;
+        }
+        nullary_head_achievers.push_back(v.get_fact_index(index));
         total_cost = aggregation_function(total_cost, min_cost);
     }
 
@@ -258,7 +265,8 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     if (rule.head_is_ground()) {
         new_facts.emplace_back(rule.get_effect_arguments(),
                                rule.get_effect().get_predicate_index(),
-                               total_cost + rule.get_weight());
+                               total_cost + rule.get_weight(),
+                               nullary_head_achievers);
         return new_facts;
     }
 
@@ -289,17 +297,19 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
         Arguments current_args = q.front().arguments;
         int counter = q.front().index;
         int cost = q.front().cost;
+        Achievers achievers = q.front().achievers;
         q.pop_front();
         if (counter >= int(rule.get_conditions().size())) {
             new_facts.emplace_back(current_args,
                                    rule.get_effect().get_predicate_index(),
-                                   cost + rule.get_weight());
+                                   cost + rule.get_weight(),
+                                   achievers);
         } else if (counter==position) {
             // If it is the condition that we are currently reaching, we do not need
             // to consider the other tuples with this predicate
-            q.emplace_back(current_args, counter + 1, cost);
+            q.emplace_back(current_args, counter + 1, cost, achievers);
         } else {
-            int cost_counter = 0;
+            int vector_counter = 0;
             for (const auto &assignment : rule.get_reached_facts_of_condition(counter)) {
                 Arguments new_arguments = current_args; // start as a copy
                 size_t value_counter = 0;
@@ -312,8 +322,11 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
                     }
                     ++value_counter;
                 }
+                achievers.push_back(rule.get_fact_index_reached_fact_in_position(counter, vector_counter++));
                 q.emplace_back(new_arguments, counter + 1,
-                    aggregation_function(cost,rule.get_cost_reached_fact_in_position(counter, cost_counter++)));
+                    aggregation_function(cost,
+                        rule.get_cost_reached_fact_in_position(counter, vector_counter++)),
+                        achievers);
             }
         }
     }

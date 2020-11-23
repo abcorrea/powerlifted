@@ -9,22 +9,28 @@ struct ProductDequeEntry {
     ProductDequeEntry(Arguments arguments, int i, int c)
     : arguments(arguments), index(i), cost(c) {}
 
+    ProductDequeEntry(Arguments arguments, int i, int c, Achievers a)
+        : arguments(arguments), index(i), cost(c), achievers(a) {}
+
     Arguments arguments;
     int index;
     int cost;
+    Achievers achievers;
 };
 
 class ReachedFacts {
     // We do not use a vector of Facts because the Fact class is more complex than
     // what we need here for this use case.
     std::vector<Arguments> facts;
+    std::vector<int> fact_indices;
     std::vector<int> costs;
 
 public:
     ReachedFacts() = default;
 
-    void push_back(const Arguments &args, int i) {
-        facts.push_back(args);
+    void push_back(const Fact &fact, int i) {
+        facts.push_back(fact.get_arguments());
+        fact_indices.push_back(fact.get_fact_index());
         costs.push_back(i);
     }
 
@@ -48,6 +54,10 @@ public:
         return costs;
     }
 
+    int get_fact_index(int fact) const {
+        return fact_indices[fact];
+    }
+
 };
 
 class ProductRule : public RuleBase {
@@ -67,8 +77,8 @@ public:
         reached_facts_per_condition.resize(conditions.size());
     }
 
-    void add_reached_fact_to_condition(const Arguments &args, int position, int cost) {
-        reached_facts_per_condition[position].push_back(args, cost);
+    void add_reached_fact_to_condition(const Fact &fact, int position, int cost) {
+        reached_facts_per_condition[position].push_back(fact, cost);
     }
 
     ReachedFacts &get_reached_facts_of_condition(int i) {
@@ -83,7 +93,11 @@ public:
         return reached_facts_per_condition[position_counter].get_cost(reached_fact_index);
     }
 
-};
+    int get_fact_index_reached_fact_in_position(int position_counter, int reached_fact_index) const {
+        return reached_facts_per_condition[position_counter].get_fact_index(reached_fact_index);
+    }
+
+    };
 
 }
 
