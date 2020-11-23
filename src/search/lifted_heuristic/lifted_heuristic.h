@@ -60,6 +60,10 @@ public:
         assert (inverse_predicate_symbol_map.find(i) != inverse_predicate_symbol_map.end());
         return inverse_predicate_symbol_map.at(i);
     }
+
+    bool is_auxiliary_predicate(int i) const {
+        return (inverse_predicate_symbol_map.find(i) == inverse_predicate_symbol_map.end());
+    }
 };
 
 
@@ -80,7 +84,7 @@ public:
     LiftedHeuristic(const Task &task, std::ifstream &in, int heuristic_type);
 
     int compute_heuristic(const DBState &s, const Task &task) final;
-    void get_useful_facts(const Task &task);
+    void get_useful_facts(const Task &task, const lifted_heuristic::LogicProgram &lp);
 };
 
 #endif //SEARCH_HEURISTICS_LIFTED_HEURISTIC_H_

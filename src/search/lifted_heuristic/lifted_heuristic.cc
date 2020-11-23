@@ -16,6 +16,7 @@ LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in, int heuris
     {
     int pred_idx = 0;
     for (const auto &predicate : task.predicates) {
+        useful_atoms[pred_idx] = std::vector<GroundAtom>();
         indices_map.add_predicate_mapping(pred_idx++, logic_program.get_atom_by_name(predicate.getName()));
     }
     for (const auto &object : task.objects) {
@@ -42,7 +43,7 @@ int LiftedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     if (task.is_goal(s)) return 0;
     int h =  grounder.ground(logic_program, target_predicate);
 
-    get_useful_facts(task);
+    get_useful_facts(task, logic_program);
 
     lifted_heuristic::Fact::reset_global_fact_index(base_fact_index);
     logic_program.reset_facts(base_fact_index);
@@ -80,6 +81,23 @@ void LiftedHeuristic::transform_state_into_edb(const DBState &s,
     }
 }
 
-void LiftedHeuristic::get_useful_facts(const Task &task) {
-    return;
+void LiftedHeuristic::get_useful_facts(const Task &task, const lifted_heuristic::LogicProgram &lp) {
+    // Clean previous useful actions
+    for (auto &x : useful_atoms) {
+        x.second.clear();
+    }
+
+    // TODO What about nullary atoms?
+
+    for (int achiever : grounder.get_best_achievers()) {
+        lifted_heuristic::Fact fact = lp.get_fact_by_index(achiever);
+        if (indices_map.is_auxiliary_predicate(fact.get_predicate_index()))
+            continue;
+        int task_predicate_index = indices_map.get_inverse_predicate(fact.get_predicate_index());
+        GroundAtom ga;
+        for (const auto  &arg : fact.get_arguments()) {
+            ga.push_back(indices_map.get_inverse_object(arg.get_index()));
+        }
+        useful_atoms[task_predicate_index].push_back(ga);
+    }
 }

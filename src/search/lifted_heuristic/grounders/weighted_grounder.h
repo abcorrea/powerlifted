@@ -70,7 +70,13 @@ public:
 
     int ground(LogicProgram &lp, int goal_predicate) override;
 
-    void extract_best_achievers(const Fact &fact, const LogicProgram &lp);
+    void compute_best_achievers(const Fact &fact, const LogicProgram &lp);
+
+    const Achievers &get_best_achievers() const {
+        return best_achievers;
+    }
+
+
 };
 
 }

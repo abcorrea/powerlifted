@@ -1,10 +1,17 @@
 #ifndef SEARCH_HEURISTIC_H
 #define SEARCH_HEURISTIC_H
 
+#include "../structures.h"
+
+#include <map>
+
 class DBState;
 class Task;
 
 class Heuristic {
+protected:
+    std::map<int, std::vector<GroundAtom>> useful_atoms;
+
 public:
     virtual ~Heuristic() = default;
 

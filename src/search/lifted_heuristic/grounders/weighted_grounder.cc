@@ -32,7 +32,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
         //cout << " " << current_fact.get_cost() << endl;
         if (current_fact.get_predicate_index() == goal_predicate) {
-            extract_best_achievers(current_fact, lp);
+            compute_best_achievers(current_fact, lp);
             /*for (auto &a : best_achievers) {
                 const Fact &f = lp.get_fact_by_index(a);
                 f.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
@@ -345,7 +345,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     return new_facts;
 }
 
-void WeightedGrounder::extract_best_achievers(const Fact &fact, const LogicProgram &lp) {
+void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgram &lp) {
     unordered_set<int> marked_achievers;
     queue<int> achievers_queue;
     achievers_queue.emplace(fact.get_fact_index());
