@@ -1,8 +1,6 @@
 #include "lifted_heuristic.h"
 
 #include "arguments.h"
-#include "atom.h"
-#include "fact.h"
 #include "parser.h"
 #include "term.h"
 
@@ -14,6 +12,7 @@ LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in, int heuris
     : logic_program(lifted_heuristic::parse_logic_program(in)),
     grounder(logic_program, heuristic_type)
     {
+    useful_nullary_atoms.resize(task.initial_state.get_nullary_atoms().size());
     int pred_idx = 0;
     for (const auto &predicate : task.predicates) {
         useful_atoms[pred_idx] = std::vector<GroundAtom>();
@@ -87,7 +86,8 @@ void LiftedHeuristic::get_useful_facts(const Task &task, const lifted_heuristic:
         x.second.clear();
     }
 
-    // TODO What about nullary atoms?
+    for (auto && useful_nullary_atom : useful_nullary_atoms)
+        useful_nullary_atom = false;
 
     for (int achiever : grounder.get_best_achievers()) {
         lifted_heuristic::Fact fact = lp.get_fact_by_index(achiever);
@@ -95,6 +95,9 @@ void LiftedHeuristic::get_useful_facts(const Task &task, const lifted_heuristic:
             continue;
         int task_predicate_index = indices_map.get_inverse_predicate(fact.get_predicate_index());
         GroundAtom ga;
+        if (task.nullary_predicates.count(task_predicate_index) > 0) {
+            useful_nullary_atoms[task_predicate_index] = true;
+        }
         for (const auto  &arg : fact.get_arguments()) {
             ga.push_back(indices_map.get_inverse_object(arg.get_index()));
         }
