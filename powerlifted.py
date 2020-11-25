@@ -48,6 +48,8 @@ def parse_options():
                         help="flag if the Datalog model should keep action predicates")
     parser.add_argument("--keep-duplicated-rules", action="store_true",
                         help="flag if the Datalog model should keep duplicated auxiliary rules")
+    parser.add_argument("--add-inequalities", action="store_true",
+                        help="flag if the Datalog model should add inequalities to rules")
 
     args = parser.parse_args()
     if args.domain is None:
@@ -118,6 +120,8 @@ def main():
            PYTHON_EXTRA_OPTIONS.append('--keep-action-predicates')
        if options.keep_duplicated_rules:
            PYTHON_EXTRA_OPTIONS.append('--keep-duplicated-rules')
+       if options.add_inequalities:
+           PYTHON_EXTRA_OPTIONS.append('--add-inequalities')
        CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
 
     # Invoke the Python preprocessor

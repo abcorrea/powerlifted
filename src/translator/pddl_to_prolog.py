@@ -306,11 +306,22 @@ def translate_facts(prog, task):
         if isinstance(fact, pddl.Atom):
             prog.add_fact(fact)
 
-def translate(task, keep_action_predicates):
+def add_inequalities(prog,task):
+    for obj1 in task.objects:
+        for obj2 in task.objects:
+            if obj1 == obj2:
+                continue
+            a = pddl.Atom(normalize.NOT_EQUAL_PREDICATE, [obj1.name, obj2.name])
+            prog.add_fact(a, 0)
+
+
+def translate(task, keep_action_predicates=False, add_inequalities_flag=False):
     # Note: The function requires that the task has been normalized.
     prog = PrologProgram()
     translate_facts(prog, task)
-    for conditions, effect in normalize.build_exploration_rules(task):
+    if add_inequalities_flag:
+        add_inequalities(prog, task)
+    for conditions, effect in normalize.build_exploration_rules(task, add_inequalities_flag):
         weight = 1
         if effect.predicate == "@goal-reachable":
             weight = 0

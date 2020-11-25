@@ -7,6 +7,8 @@ import pddl
 
 from collections import defaultdict
 
+NOT_EQUAL_PREDICATE = "@not-equal"
+
 class ConditionProxy:
     def clone_owner(self):
         clone = copy.copy(self)
@@ -23,10 +25,10 @@ class PreconditionProxy(ConditionProxy):
         task.actions.add(self.owner)
     def delete_owner(self, task):
         task.actions.remove(self.owner)
-    def build_rules(self, rules):
+    def build_rules(self, rules, add_inequalities):
         action = self.owner
         rule_head = get_action_predicate(action)
-        rule_body = condition_to_rule_body(action.parameters, self.condition)
+        rule_body = condition_to_rule_body(action.parameters, self.condition, add_inequalities)
         rules.append((rule_body, rule_head))
     def get_type_map(self):
         return self.owner.type_map
@@ -42,12 +44,12 @@ class EffectConditionProxy(ConditionProxy):
         self.action.effects.append(self.owner)
     def delete_owner(self, task):
         self.action.effects.remove(self.owner)
-    def build_rules(self, rules):
+    def build_rules(self, rules,add_inequalities):
         effect = self.owner
         rule_head = effect.literal
         if not rule_head.negated:
             rule_body = [get_action_predicate(self.action)]
-            rule_body += condition_to_rule_body([], self.condition)
+            rule_body += condition_to_rule_body([], self.condition, add_inequalities)
             rules.append((rule_body, rule_head))
     def get_type_map(self):
         return self.action.type_map
@@ -62,10 +64,10 @@ class AxiomConditionProxy(ConditionProxy):
         task.axioms.append(self.owner)
     def delete_owner(self, task):
         task.axioms.remove(self.owner)
-    def build_rules(self, rules):
+    def build_rules(self, rules,add_inequalities):
         axiom = self.owner
         app_rule_head = get_axiom_predicate(axiom)
-        app_rule_body = condition_to_rule_body(axiom.parameters, self.condition)
+        app_rule_body = condition_to_rule_body(axiom.parameters, self.condition, add_inequalities)
         rules.append((app_rule_body, app_rule_head))
         params = axiom.parameters[:axiom.num_external_parameters]
         eff_rule_head = pddl.Atom(axiom.name, [par.name for par in params])
@@ -90,9 +92,9 @@ class GoalConditionProxy(ConditionProxy):
         # goals are now implemented with axioms
         # (see substitute_complicated_goal)
         assert False, "Disjunctive goals not (yet) implemented."
-    def build_rules(self, rules):
+    def build_rules(self, rules, add_inequalities):
         rule_head = pddl.Atom("@goal-reachable", [])
-        rule_body = condition_to_rule_body([], self.condition)
+        rule_body = condition_to_rule_body([], self.condition, add_inequalities)
         rules.append((rule_body, rule_head))
     def get_type_map(self):
         # HACK!
@@ -429,13 +431,14 @@ def verify_axiom_predicates(task):
 
 
 # [6] Build rules for exploration component.
-def build_exploration_rules(task):
+def build_exploration_rules(task, add_inequalities):
     result = []
     for proxy in all_conditions(task):
-        proxy.build_rules(result)
+        proxy.build_rules(result, add_inequalities)
     return result
 
-def condition_to_rule_body(parameters, condition):
+
+def condition_to_rule_body(parameters, condition, add_inequalities):
     result = []
     for par in parameters:
         result.append(par.get_atom())
@@ -457,6 +460,11 @@ def condition_to_rule_body(parameters, condition):
             assert isinstance(part, pddl.Literal), "Condition not normalized: %r" % part
             if not part.negated:
                 result.append(part)
+            else:
+                if add_inequalities and part.predicate == '=':
+                    new_part = copy.deepcopy(part)
+                    new_part.predicate = NOT_EQUAL_PREDICATE
+                    result.append(new_part)
     return result
 
 if __name__ == "__main__":

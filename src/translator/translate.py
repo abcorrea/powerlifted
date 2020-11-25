@@ -61,7 +61,7 @@ def main():
 
     if options.build_datalog_model:
         print("Building Datalog model...")
-        prog = pddl_to_prolog.translate(task, options.keep_action_predicates)
+        prog = pddl_to_prolog.translate(task, options.keep_action_predicates, options.add_inequalities)
         prog.rename_free_variables()
         if not options.keep_duplicated_rules:
             prog.remove_duplicated_rules()
