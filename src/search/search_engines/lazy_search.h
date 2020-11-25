@@ -12,9 +12,13 @@ protected:
     SearchSpace<PackedStateT> space;
 
     int heuristic_layer{};
-    bool keep_relaxed_useless_operators;
+    bool all_operators_preferred;
+    bool prune_relaxed_useless_operators;
 public:
-    explicit LazySearch(bool b) : keep_relaxed_useless_operators(b) {}
+    explicit LazySearch(bool dual_queue, bool prune) :
+        all_operators_preferred(dual_queue),
+        prune_relaxed_useless_operators(prune)
+    {}
 
     using StatePackerT = typename PackedStateT::StatePackerT;
 

@@ -34,6 +34,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         cerr << "Initial state is unsolvable!" << endl;
         exit(1);
     }
+    statistics.inc_evaluations();
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
     queue.do_insertion(root_node.state_id, make_pair(heuristic_layer, 0));
@@ -79,6 +80,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                 statistics.inc_evaluations();
                 if (new_h == std::numeric_limits<int>::max()) {
                     statistics.inc_dead_ends();
+                    statistics.inc_pruned_states();
                     continue;
                 }
 
@@ -86,6 +88,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                 if (child_node.status == SearchNode::Status::NEW) {
                     // Inserted for the first time in the map
                     child_node.open(dist, new_h);
+                    statistics.inc_evaluated_states();
                     queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
                 }
                 else {

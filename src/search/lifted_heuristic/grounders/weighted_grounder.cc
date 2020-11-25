@@ -319,6 +319,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
         } else if (counter==position) {
             // If it is the condition that we are currently reaching, we do not need
             // to consider the other tuples with this predicate
+            achievers.push_back(fact.get_fact_index());
             q.emplace_back(current_args, counter + 1, cost, achievers);
         } else {
             int vector_counter = 0;
@@ -358,7 +359,7 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgr
         if (!is_marked.second) {
             continue;
         }
-        const Fact &f = lp.get_facts()[index];
+        const Fact &f = lp.get_fact_by_index(index);
         for (int achiever : f.get_achievers()) {
             if (facts_in_edb.count(achiever) == 0) {
                 // We ignore fluents and static information that are true in the evaluated state
@@ -367,6 +368,12 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgr
             }
         }
     }
+
+    /*cout << "\t\tAchievers: ";
+    for (auto &entry : best_achievers) {
+        lp.get_fact_by_index(entry).print_atom(lp.get_objects(), lp.get_map_index_to_atom());
+    }
+    cout << endl;*/
 }
 
 }

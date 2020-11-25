@@ -23,6 +23,7 @@ class SearchStatistics {
     int generated_states; // no states created in total (plus those removed since already in close list)
     int reopened_states;  // no of *closed* states which we reopened
     int dead_end_states;
+    int pruned_states;
 
     int generated_ops;    // no of operators that were returned as applicable
 
@@ -47,6 +48,7 @@ public:
     void inc_generated_ops(int inc = 1) {generated_ops += inc;}
     void inc_evaluations(int inc = 1) {evaluations += inc;}
     void inc_dead_ends(int inc = 1) {dead_end_states += inc;}
+    void inc_pruned_states(int inc = 1) {pruned_states += inc;}
 
     // Methods that access statistics.
     int get_expanded() const {return expanded_states;}
@@ -55,6 +57,7 @@ public:
     int get_generated() const {return generated_states;}
     int get_reopened() const {return reopened_states;}
     int get_generated_ops() const {return generated_ops;}
+    int get_pruned_states() const {return pruned_states;}
 
     /*
       Call the following method with the f value of every expanded
