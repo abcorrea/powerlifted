@@ -96,8 +96,11 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
                 if (child_node.status==SearchNode::Status::NEW) {
                     // Inserted for the first time in the map
                     child_node.open(dist, h);
+                    if (check_goal(task, generator, timer_start, state, node, space))
+                        return utils::ExitCode::SUCCESS;
+
                     if (all_operators_preferred or
-                        is_useful_operator(s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
+                        is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
                         /*cout << "\t# NOT Pruned: ";
                         task.dump_state(s);*/
                         preferred_queue.do_insertion(child_node.state_id, make_pair(h, dist));
@@ -117,7 +120,7 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
                         child_node.open(dist, h); // Reopening
                         statistics.inc_reopened();
                         if (all_operators_preferred or
-                            is_useful_operator(s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
+                            is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
                             preferred_queue.do_insertion(child_node.state_id, make_pair(h, dist));
                             // TODO If doing boosted open list, add to both preferred and normal queue
                         }
@@ -146,9 +149,11 @@ void LazySearch<PackedStateT>::print_statistics() const {
 }
 
 template<class PackedStateT>
-bool LazySearch<PackedStateT>::is_useful_operator(const DBState &state,
-                                                  const std::map<int, std::vector<GroundAtom>> &useful_atoms,
-                                                  const std::vector<bool> &useful_nullary_atoms) {
+bool LazySearch<PackedStateT>::is_useful_operator(
+    const Task &task,
+    const DBState &state,
+    const std::map<int, std::vector<GroundAtom>> &useful_atoms,
+    const std::vector<bool> &useful_nullary_atoms) {
     for (size_t j = 0; j < useful_nullary_atoms.size(); ++j) {
         if (useful_nullary_atoms[j] and state.get_nullary_atoms()[j]) {
             return true;
@@ -156,6 +161,8 @@ bool LazySearch<PackedStateT>::is_useful_operator(const DBState &state,
     }
     for (auto &entry : useful_atoms) {
         size_t relation = entry.first;
+        if (task.predicates[relation].isStaticPredicate())
+            continue;
         for (auto &tuple : entry.second) {
             if (state.get_tuples_of_relation(relation).count(tuple) > 0)
                 return true;

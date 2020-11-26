@@ -361,11 +361,11 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgr
         }
         const Fact &f = lp.get_fact_by_index(index);
         for (int achiever : f.get_achievers()) {
-            if (facts_in_edb.count(achiever) == 0) {
+            //if (facts_in_edb.count(achiever) == 0) {
                 // We ignore fluents and static information that are true in the evaluated state
                 best_achievers.push_back(achiever);
                 achievers_queue.push(achiever);
-            }
+            //}
         }
     }
 

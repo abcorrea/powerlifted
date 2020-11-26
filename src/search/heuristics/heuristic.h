@@ -37,10 +37,6 @@ public:
     }
 
     void _print_useful_atoms(const Task &task) {
-        for (size_t j = 0; j < useful_nullary_atoms.size(); ++j) {
-            if (useful_nullary_atoms[j])
-                std::cout << task.predicates[j].getName() << ", ";
-        }
         for (auto &entry : useful_atoms) {
             std::string relation_name = task.predicates[entry.first].getName();
             for (auto &tuple : entry.second) {
