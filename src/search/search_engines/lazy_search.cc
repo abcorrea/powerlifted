@@ -28,8 +28,8 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
     clock_t timer_start = clock();
     StatePackerT packer(task);
 
-    GreedyOpenList preferred_queue;
-    GreedyOpenList queue;
+    GreedyOpenList preferred_open_list;
+    GreedyOpenList regular_open_list;
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
     heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
@@ -41,12 +41,12 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
     statistics.inc_evaluations();
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
-    queue.do_insertion(root_node.state_id, make_pair(heuristic_layer, 0));
+    regular_open_list.do_insertion(root_node.state_id, make_pair(heuristic_layer, 0));
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
-    while ((not queue.empty()) or (not preferred_queue.empty())) {
-        StateID sid = get_top_node(preferred_queue, queue); //queue.remove_min();
+    while ((not regular_open_list.empty()) or (not preferred_open_list.empty())) {
+        StateID sid = get_top_node(preferred_open_list, regular_open_list); //regular_open_list.remove_min();
         SearchNode &node = space.get_node(sid);
         DBState state = packer.unpack(space.get_state(sid));
         int h = heuristic.compute_heuristic(state, task);
@@ -58,12 +58,12 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
         heuristic._print_useful_atoms(task);*/
         int g = node.g;
         node.update_h(h);
+        if (node.status == SearchNode::Status::CLOSED) {
+            continue;
+        }
         if (h == std::numeric_limits<int>::max()) {
             statistics.inc_dead_ends();
             statistics.inc_pruned_states();
-            continue;
-        }
-        if (node.status == SearchNode::Status::CLOSED) {
             continue;
         }
         node.close();
@@ -72,6 +72,7 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 
         if (h < heuristic_layer) {
             heuristic_layer = h;
+            boost_priority_preferred();
             cout << "New heuristic value expanded: h=" << h
                  << " [expansions: " << statistics.get_expanded()
                  << ", evaluations: " << statistics.get_evaluations()
@@ -98,38 +99,29 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
                     child_node.open(dist, h);
                     if (check_goal(task, generator, timer_start, state, node, space))
                         return utils::ExitCode::SUCCESS;
-
-                    if (all_operators_preferred or
-                        is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
-                        /*cout << "\t# NOT Pruned: ";
-                        task.dump_state(s);*/
-                        preferred_queue.do_insertion(child_node.state_id, make_pair(h, dist));
-                        // TODO If doing boosted open list, add to both preferred and normal queue
-                    }
-                    else {
+                    if (all_operators_preferred) {
+                        preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
+                    } else if (is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
+                        preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
                         if (prune_relaxed_useless_operators) {
-                            /*cout << "\t# Pruned: ";
-                            task.dump_state(s);*/
                             statistics.inc_pruned_states();
                             continue;
                         }
-                        queue.do_insertion(child_node.state_id, make_pair(h, dist));
+                        regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
                     }
                 } else {
                     if (dist < child_node.g) {
                         child_node.open(dist, h); // Reopening
                         statistics.inc_reopened();
-                        if (all_operators_preferred or
-                            is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
-                            preferred_queue.do_insertion(child_node.state_id, make_pair(h, dist));
-                            // TODO If doing boosted open list, add to both preferred and normal queue
-                        }
-                        else {
+                        if (all_operators_preferred) {
+                            preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
+                        } else if (is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
+                            preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
                             if (prune_relaxed_useless_operators) {
                                 statistics.inc_pruned_states();
                                 continue;
                             }
-                            queue.do_insertion(child_node.state_id, make_pair(h, dist));
+                            regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
                         }
                     }
                 }

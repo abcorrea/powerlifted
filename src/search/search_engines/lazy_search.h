@@ -8,6 +8,14 @@
 
 template <class PackedStateT>
 class LazySearch : public SearchBase {
+
+    int priority_preferred;
+    int priority_regular;
+
+    void boost_priority_preferred(int inc = 1000) {
+        priority_preferred += inc;
+    }
+
 protected:
     SearchSpace<PackedStateT> space;
 
@@ -18,7 +26,10 @@ public:
     explicit LazySearch(bool dual_queue, bool prune) :
         all_operators_preferred(dual_queue),
         prune_relaxed_useless_operators(prune)
-    {}
+    {
+        priority_preferred = 0;
+        priority_regular = 0;
+    }
 
     using StatePackerT = typename PackedStateT::StatePackerT;
 
@@ -31,8 +42,13 @@ public:
                             const std::vector<bool> &useful_nullary_atoms);
 
     StateID get_top_node(GreedyOpenList &preferred, GreedyOpenList &other) {
-        if (not preferred.empty()) return preferred.remove_min();
-        else return other.remove_min();
+        if (priority_preferred >= priority_regular) {
+            if (not preferred.empty()) return preferred.remove_min();
+            else return other.remove_min();
+        } else {
+            if (not other.empty()) return other.remove_min();
+            else return preferred.remove_min();
+        }
     }
 };
 
