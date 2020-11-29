@@ -99,33 +99,25 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
                     space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
                 //cout << "\t--> Successor: ";
                 //task.dump_state(s);
+                bool is_preferred = is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms());
                 if (child_node.status==SearchNode::Status::NEW) {
                     // Inserted for the first time in the map
                     child_node.open(dist, h);
                     if (check_goal(task, generator, timer_start, state, node, space))
                         return utils::ExitCode::SUCCESS;
-                    if (all_operators_preferred) {
+
+                    if (all_operators_preferred or is_preferred) {
                         preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
-                    } else if (is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
-                        preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
-                        if (prune_relaxed_useless_operators) {
-                            statistics.inc_pruned_states();
-                            continue;
-                        }
+                    } else if (not is_preferred and not prune_relaxed_useless_operators) {
                         regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
                     }
                 } else {
                     if (dist < child_node.g) {
                         child_node.open(dist, h); // Reopening
                         statistics.inc_reopened();
-                        if (all_operators_preferred) {
+                        if (all_operators_preferred or is_preferred) {
                             preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
-                        } else if (is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms())) {
-                            preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
-                            if (prune_relaxed_useless_operators) {
-                                statistics.inc_pruned_states();
-                                continue;
-                            }
+                        } else if (not is_preferred and not prune_relaxed_useless_operators) {
                             regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
                         }
                     }
