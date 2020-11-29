@@ -18,6 +18,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
     unordered_set<Fact> reached_facts;
     q.clear();
     best_achievers.clear();
+    facts_in_edb.clear();
 
     for (const Fact &f : lp.get_facts()) {
         q.push(f.get_cost(), f.get_fact_index());
@@ -361,11 +362,22 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgr
         }
         const Fact &f = lp.get_fact_by_index(index);
         for (int achiever : f.get_achievers()) {
-            //if (facts_in_edb.count(achiever) == 0) {
+            const Fact &achiever_fact = lp.get_fact_by_index(achiever);
+            //achiever_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
+            //cout << " " << achiever_fact.get_fact_index() << " " << achiever_fact.get_cost() << endl;
+            if (facts_in_edb.count(achiever) == 0) {
                 // We ignore fluents and static information that are true in the evaluated state
                 best_achievers.push_back(achiever);
                 achievers_queue.push(achiever);
-            //}
+            } else {
+                if (achiever_fact.get_cost() > 0) {
+                    // If a fact in the EDB has cost > 0, it means it is a fact
+                    // achieved by a rule with an empty body.
+                    // TODO Problematic with zero-cost domains
+                    best_achievers.push_back(achiever);
+                    achievers_queue.push(achiever);
+                }
+            }
         }
     }
 
