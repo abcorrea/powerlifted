@@ -22,7 +22,6 @@ class SuccessorGenerator;
 class Heuristic;
 class Task;
 
-
 class SearchBase {
 public:
     SearchBase() = default;
@@ -52,6 +51,30 @@ public:
 protected:
 
     SearchStatistics statistics;
+
+
+    bool is_useful_operator(
+        const Task &task,
+        const DBState &state,
+        const std::map<int, std::vector<GroundAtom>> &useful_atoms,
+        const std::vector<bool> &useful_nullary_atoms) {
+        for (size_t j = 0; j < useful_nullary_atoms.size(); ++j) {
+            if (useful_nullary_atoms[j] and state.get_nullary_atoms()[j]) {
+                return true;
+            }
+        }
+        for (auto &entry : useful_atoms) {
+            size_t relation = entry.first;
+            if (task.predicates[relation].isStaticPredicate())
+                continue;
+            for (auto &tuple : entry.second) {
+                if (state.get_tuples_of_relation(relation).count(tuple) > 0)
+                    return true;
+            }
+        }
+        //cerr << "not useful" << endl;
+        return false;
+    }
 
 };
 

@@ -1,6 +1,5 @@
 #include "lazy_search.h"
 
-#include "greedy_best_first_search.h"
 #include "search.h"
 #include "utils.h"
 #include "../action.h"
@@ -137,29 +136,6 @@ void LazySearch<PackedStateT>::print_statistics() const {
     space.print_statistics();
 }
 
-template<class PackedStateT>
-bool LazySearch<PackedStateT>::is_useful_operator(
-    const Task &task,
-    const DBState &state,
-    const std::map<int, std::vector<GroundAtom>> &useful_atoms,
-    const std::vector<bool> &useful_nullary_atoms) {
-    for (size_t j = 0; j < useful_nullary_atoms.size(); ++j) {
-        if (useful_nullary_atoms[j] and state.get_nullary_atoms()[j]) {
-            return true;
-        }
-    }
-    for (auto &entry : useful_atoms) {
-        size_t relation = entry.first;
-        if (task.predicates[relation].isStaticPredicate())
-            continue;
-        for (auto &tuple : entry.second) {
-            if (state.get_tuples_of_relation(relation).count(tuple) > 0)
-                return true;
-        }
-    }
-    //cerr << "not useful" << endl;
-    return false;
-}
 
 // explicit template instantiations
 template class LazySearch<SparsePackedState>;
