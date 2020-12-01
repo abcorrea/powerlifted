@@ -1,13 +1,16 @@
 #include "greedy_best_first_search.h"
 #include "search.h"
 #include "utils.h"
+
 #include "../action.h"
 #include "../task.h"
+
 #include "../heuristics/heuristic.h"
 #include "../open_lists/greedy_open_list.h"
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
+#include "../utils/timer.h"
 
 #include <algorithm>
 #include <iostream>
@@ -28,7 +31,10 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     GreedyOpenList queue;
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
+    utils::Timer t;
     heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
+    t.stop();
+    cout << "Time to evaluate initial state: " << t() << endl;
     root_node.open(0, heuristic_layer);
     if (heuristic_layer == numeric_limits<int>::max()) {
         cerr << "Initial state is unsolvable!" << endl;
