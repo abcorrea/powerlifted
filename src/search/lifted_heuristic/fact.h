@@ -91,7 +91,7 @@ public:
     }
 
     void update_achievers(Achievers a) {
-        achievers = a;
+        achievers = std::move(a);
     }
     void set_cost(int new_cost) {
         cost = new_cost;
