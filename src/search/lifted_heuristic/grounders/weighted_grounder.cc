@@ -224,11 +224,12 @@ void WeightedGrounder::product(
         RuleBase &rule_, const Fact &fact, int position, std::vector<Fact>& newfacts) {
     ProductRule &rule = static_cast<ProductRule &>(rule_);
 
+    const auto& args = rule.get_condition_arguments(position);
 
     // Verify that if there is a ground object in the condition of this atom,
     // then it matches the fact being expanded
     int c = 0;
-    for (const auto& term : rule.get_condition_arguments(position)) {
+    for (const auto& term:args) {
         if (term.is_object() and term.get_index()!=fact.argument(c).get_index()) {
             return;
         }
@@ -272,7 +273,7 @@ void WeightedGrounder::product(
     Arguments new_arguments_persistent = rule.get_effect_arguments();
 
     int position_counter = 0;
-    for (auto &arg : rule.get_condition_arguments(position)) {
+    for (const auto& arg:args) {
         if (arg.is_object()) continue;
         int pos = rule.get_head_position_of_arg(arg);
         if (pos!=-1) {
@@ -289,27 +290,24 @@ void WeightedGrounder::product(
     //deque<pair<Arguments, int>> q;
     q.emplace_back(new_arguments_persistent, 0, fact.get_cost());
     while (!q.empty()) {
-        Arguments current_args = q.front().arguments;
-        int counter = q.front().index;
-        int cost = q.front().cost;
-        Achievers achievers = q.front().achievers;
-        q.pop_front();
-        if (counter >= int(rule.get_conditions().size())) {
-            newfacts.emplace_back(current_args,
-                                   rule.get_effect().get_predicate_index(),
-                                   cost + rule.get_weight(),
-                                   achievers);
-        } else if (counter==position) {
+        auto& next = q.front();
+
+        if (next.index >= int(rule.get_conditions().size())) {
+            newfacts.emplace_back(next.arguments,
+                                  rule.get_effect().get_predicate_index(),
+                                  next.cost + rule.get_weight(),
+                                  next.achievers);
+        } else if (next.index==position) {
             // If it is the condition that we are currently reaching, we do not need
             // to consider the other tuples with this predicate
-            achievers.push_back(fact.get_fact_index());
-            q.emplace_back(current_args, counter + 1, cost, achievers);
+            next.achievers.push_back(fact.get_fact_index());
+            q.emplace_back(next.arguments, next.index + 1, next.cost, next.achievers);
         } else {
             int vector_counter = 0;
-            for (const auto &assignment : rule.get_reached_facts_of_condition(counter)) {
-                Arguments new_arguments = current_args; // start as a copy
+            for (const auto &assignment : rule.get_reached_facts_of_condition(next.index)) {
+                Arguments new_arguments = next.arguments; // start as a copy
                 size_t value_counter = 0;
-                for (const Term &term : rule.get_condition_arguments(counter)) {
+                for (const Term &term : rule.get_condition_arguments(next.index)) {
                     assert (value_counter < assignment.size());
                     int pos = rule.get_head_position_of_arg(term);
                     if (pos!=-1) {
@@ -318,13 +316,14 @@ void WeightedGrounder::product(
                     }
                     ++value_counter;
                 }
-                achievers.push_back(rule.get_fact_index_reached_fact_in_position(counter, vector_counter));
-                q.emplace_back(new_arguments, counter + 1,
-                    aggregation_function(cost,
-                        rule.get_cost_reached_fact_in_position(counter, vector_counter++)),
-                        achievers);
+                next.achievers.push_back(rule.get_fact_index_reached_fact_in_position(next.index, vector_counter));
+                q.emplace_back(new_arguments, next.index + 1,
+                    aggregation_function(next.cost,
+                        rule.get_cost_reached_fact_in_position(next.index, vector_counter++)),
+                        next.achievers);
             }
         }
+        q.pop_front();
     }
 }
 
