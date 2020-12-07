@@ -12,6 +12,9 @@ struct ProductDequeEntry {
     ProductDequeEntry(const Arguments& arguments, int i, int c, const Achievers& a)
         : arguments(arguments), index(i), cost(c), achievers(a) {}
 
+    ProductDequeEntry(Arguments&& arguments, int i, int c, Achievers&& a)
+            : arguments(std::move(arguments)), index(i), cost(c), achievers(std::move(a)) {}
+
     Arguments arguments;
     int index;
     int cost;

@@ -321,10 +321,11 @@ void WeightedGrounder::product(
                 }
                 Achievers new_achievers = next.achievers;
                 new_achievers.push_back(rule.get_fact_index_reached_fact_in_position(next.index, vector_counter));
-                q.emplace_back(new_arguments, next.index + 1,
-                               aggregation_function(next.cost,
-                                                    rule.get_cost_reached_fact_in_position(next.index, vector_counter++)),
-                               new_achievers);
+                q.emplace_back(
+                        std::move(new_arguments),
+                        next.index + 1,
+                        aggregation_function(next.cost, rule.get_cost_reached_fact_in_position(next.index, vector_counter++)),
+                        std::move(new_achievers));
             }
         }
         q.pop_front();
