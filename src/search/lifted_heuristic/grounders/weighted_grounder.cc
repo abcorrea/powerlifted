@@ -29,7 +29,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         pair<int, int> queue_top = q.pop();
         int cost = queue_top.first;
         int top_fact_index = queue_top.second;
-        Fact current_fact = lp.get_fact_by_index(top_fact_index);
+        const Fact current_fact = lp.get_fact_by_index(top_fact_index);
         //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
         //cout << " " << current_fact.get_cost() << endl;
         if (current_fact.get_predicate_index() == goal_predicate) {
@@ -91,18 +91,18 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
 int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                                        unordered_set<Fact> &reached_facts,
                                                        LogicProgram &lp) {
-    int has_fact = reached_facts.count(new_fact);
-    if (has_fact == 0) {
+    const auto& it = reached_facts.find(new_fact);
+
+    if (it == reached_facts.end()) {  // The fact wasn't reached yet
         new_fact.set_fact_index();
         reached_facts.insert(new_fact);
         lp.insert_fact(new_fact);
         return new_fact.get_fact_index();
     }
     else {
-        auto f = reached_facts.find(new_fact);
-        if (new_fact.get_cost() < f->get_cost()) {
-            new_fact.update_fact_index(f->get_fact_index());
-            reached_facts.erase(f);
+        if (new_fact.get_cost() < it->get_cost()) {
+            new_fact.update_fact_index(it->get_fact_index());
+            reached_facts.erase(it);
             reached_facts.insert(new_fact);
             lp.update_fact_cost(new_fact.get_fact_index(), new_fact.get_cost());
             return new_fact.get_fact_index();
