@@ -12,6 +12,7 @@ class Task;
 
 class Heuristic {
 protected:
+    // TODO This could be a simpler std::vector<std::vector<GroundAtom>>
     std::map<int, std::vector<GroundAtom>> useful_atoms;
 
 protected:
