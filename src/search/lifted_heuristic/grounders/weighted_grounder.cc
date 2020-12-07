@@ -336,11 +336,12 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
                     }
                     ++value_counter;
                 }
-                achievers.push_back(rule.get_fact_index_reached_fact_in_position(counter, vector_counter));
+                Achievers new_achievers = achievers;
+                new_achievers.push_back(rule.get_fact_index_reached_fact_in_position(counter, vector_counter));
                 q.emplace_back(new_arguments, counter + 1,
                     aggregation_function(cost,
                         rule.get_cost_reached_fact_in_position(counter, vector_counter++)),
-                        achievers);
+                        new_achievers);
             }
         }
     }
