@@ -8,7 +8,6 @@
 #include "../../algorithms/priority_queues.h"
 
 #include <iostream>
-#include <optional>
 #include <unordered_set>
 #include <vector>
 
@@ -45,7 +44,7 @@ protected:
         }
     }
 
-    std::optional<Fact> project(const RuleBase &rule, const Fact &fact);
+    std::vector<Fact> project(const RuleBase &rule, const Fact &fact);
     std::vector<Fact> join(RuleBase &rule, const Fact &fact, int position);
     std::vector<Fact> product(RuleBase &rule,
                               const Fact &fact,

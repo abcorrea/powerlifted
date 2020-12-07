@@ -51,36 +51,27 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
             int rule_index = m.get_rule();
             int position_in_the_body = m.get_position();
             RuleBase &rule = lp.get_rule_by_index(rule_index);
+
+            assert(rule.get_type()==PROJECT || rule.get_type() == JOIN || rule.get_type() == PRODUCT);
+            std::vector<Fact> new_facts;
+
             if (rule.get_type()==PROJECT) {
                 // Projection rule - single condition in the body
                 assert(position_in_the_body==0);
-                optional<Fact> new_fact = project(rule, current_fact);
-                if (new_fact) {
-                    int id = is_cheapest_path_to_achieve_fact(*new_fact, reached_facts, lp);
-                    if (id != HAS_CHEAPER_PATH) {
-                        q.push(new_fact->get_cost(), id);
-                    }
-                }
+                new_facts = project(rule, current_fact);
             } else if (rule.get_type()==JOIN) {
                 // Join rule - two conditions in the body
                 assert(position_in_the_body <= 1);
-                for (Fact& new_fact : join(rule,
-                                          current_fact,
-                                          position_in_the_body)) {
-                    int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
-                    if (id!=HAS_CHEAPER_PATH) {
-                        q.push(new_fact.get_cost(), id);
-                    }
-                }
-            } else if (rule.get_type()==PRODUCT) {
+                new_facts = join(rule, current_fact, position_in_the_body);
+            } else {
                 // Product rule - more than one condition without shared free vars
-                for (Fact& new_fact : product(rule,
-                                             current_fact,
-                                             position_in_the_body)) {
-                    int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
-                    if (id != HAS_CHEAPER_PATH) {
-                        q.push(new_fact.get_cost(), id);
-                    }
+                new_facts = product(rule, current_fact, position_in_the_body);
+            }
+
+            for (Fact& new_fact:new_facts) {
+                int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
+                if (id!=HAS_CHEAPER_PATH) {
+                    q.push(new_fact.get_cost(), id);
                 }
             }
         }
@@ -122,7 +113,7 @@ int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
  *
  */
 
-optional<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact) {
+vector<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact) {
     const ProjectRule &rule = static_cast<const ProjectRule &>(rule_);
 
     // New arguments start as a copy of the head atom and we just replace the
@@ -149,10 +140,11 @@ optional<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact
 
     Achievers projection_achiever = {fact.get_fact_index()};
 
-    return Fact(move(new_arguments),
+    // Return a vector with one single fact
+    return {Fact(move(new_arguments),
         rule.get_effect().get_predicate_index(),
         rule_.get_weight() + fact.get_cost(),
-        projection_achiever);
+        projection_achiever)};
 }
 
 /*
