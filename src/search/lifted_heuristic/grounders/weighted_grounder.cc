@@ -236,8 +236,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     // Verify that if there is a ground object in the condition of this atom,
     // then it matches the fact being expanded
     int c = 0;
-    const Arguments cond_args = rule.get_condition_arguments(position);
-    for (auto term : cond_args) {
+    for (const auto& term : rule.get_condition_arguments(position)) {
         if (term.is_object() and term.get_index()!=fact.argument(c).get_index()) {
             return new_facts;
         }
