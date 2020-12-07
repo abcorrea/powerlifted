@@ -53,10 +53,10 @@ public:
     void insert(const Fact &f, const JoinHashKey &key, int position) {
         assert (valid_position(position));
         if (position==0) {
-            hash_table_1.emplace(key, JoinHashEntry());
+//            hash_table_1.emplace(key, JoinHashEntry()); // redundant
             hash_table_1[key].insert(f);
         } else {
-            hash_table_2.emplace(key, JoinHashEntry());
+//            hash_table_2.emplace(key, JoinHashEntry()); // redundant
             hash_table_2[key].insert(f);
         }
     }
@@ -81,7 +81,7 @@ class JoiningVariables {
     size_t number_of_joining_vars;
 
 public:
-    JoiningVariables(const std::vector<Atom> &conditions) {
+    explicit JoiningVariables(const std::vector<Atom> &conditions) {
         if (conditions.size()!=2) {
             number_of_joining_vars = 0;
             return;

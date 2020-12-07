@@ -79,8 +79,6 @@ public:
         }
     };
 
-    RuleBase() = default;
-
     virtual ~RuleBase() = default;
 
     virtual void clean_up() = 0;

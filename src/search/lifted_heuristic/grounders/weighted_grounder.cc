@@ -16,6 +16,7 @@ namespace lifted_heuristic {
 
 int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
     unordered_set<Fact> reached_facts;
+    std::vector<Fact> newfacts;
     q.clear();
     best_achievers.clear();
     facts_in_edb.clear();
@@ -53,8 +54,8 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
             RuleBase &rule = lp.get_rule_by_index(rule_index);
 
             assert(rule.get_type()==PROJECT || rule.get_type() == JOIN || rule.get_type() == PRODUCT);
-            std::vector<Fact> newfacts;
 
+            newfacts.clear();
             if (rule.get_type()==PROJECT) {
                 // Projection rule - single condition in the body
                 assert(position_in_the_body==0);
@@ -68,7 +69,9 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                 product(rule, current_fact, position_in_the_body, newfacts);
             }
 
-            for (Fact& new_fact:newfacts) {
+            // Note: using for loop for performance reasons, this is a heavily used loop
+            for (unsigned i=0, sz=newfacts.size(); i < sz; ++i) {
+                auto& new_fact = newfacts[i];
                 int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
                 if (id!=HAS_CHEAPER_PATH) {
                     q.push(new_fact.get_cost(), id);
