@@ -64,7 +64,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
             } else if (rule.get_type()==JOIN) {
                 // Join rule - two conditions in the body
                 assert(position_in_the_body <= 1);
-                for (Fact new_fact : join(rule,
+                for (Fact& new_fact : join(rule,
                                           current_fact,
                                           position_in_the_body)) {
                     int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
@@ -74,7 +74,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
                 }
             } else if (rule.get_type()==PRODUCT) {
                 // Product rule - more than one condition without shared free vars
-                for (Fact new_fact : product(rule,
+                for (Fact& new_fact : product(rule,
                                              current_fact,
                                              position_in_the_body)) {
                     int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
