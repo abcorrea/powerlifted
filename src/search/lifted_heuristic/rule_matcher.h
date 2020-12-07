@@ -60,8 +60,8 @@ class RuleMatcher {
 public:
     RuleMatcher() = default;
 
-    RuleMatcher(std::unordered_map<int, Matches> rule_matcher) :
-        rule_matcher(std::move(rule_matcher)) {}
+//    explicit RuleMatcher(std::unordered_map<int, Matches> rule_matcher) :
+//        rule_matcher(std::move(rule_matcher)) {}
 
     void insert(int predicate_index, int rule_index, int position) {
         if (!atom_has_matched_rules(predicate_index)) {

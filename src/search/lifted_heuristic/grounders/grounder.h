@@ -1,9 +1,10 @@
 #ifndef GROUNDER_GROUNDERS_GROUNDER_H_
 #define GROUNDER_GROUNDERS_GROUNDER_H_
 
-#include "../logic_program.h"
 
 namespace lifted_heuristic {
+
+class LogicProgram;
 
 class Grounder {
 public:

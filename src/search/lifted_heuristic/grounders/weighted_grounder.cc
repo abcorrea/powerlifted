@@ -380,4 +380,16 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgr
     cout << endl;*/
 }
 
+void WeightedGrounder::create_rule_matcher(const LogicProgram &lp) {
+    // Loop over rule conditions
+    for (const auto &rule : lp.get_rules()) {
+        int cont = 0;
+        for (const auto &condition : rule->get_conditions()) {
+            rule_matcher.insert(condition.get_predicate_index(),
+                                rule->get_index(),
+                                cont++);
+        }
+    }
+}
+
 }
