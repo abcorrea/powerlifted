@@ -319,11 +319,12 @@ void WeightedGrounder::product(
                     }
                     ++value_counter;
                 }
-                next.achievers.push_back(rule.get_fact_index_reached_fact_in_position(next.index, vector_counter));
+                Achievers new_achievers = next.achievers;
+                new_achievers.push_back(rule.get_fact_index_reached_fact_in_position(next.index, vector_counter));
                 q.emplace_back(new_arguments, next.index + 1,
-                    aggregation_function(next.cost,
-                        rule.get_cost_reached_fact_in_position(next.index, vector_counter++)),
-                        next.achievers);
+                               aggregation_function(next.cost,
+                                                    rule.get_cost_reached_fact_in_position(next.index, vector_counter++)),
+                               new_achievers);
             }
         }
         q.pop_front();
