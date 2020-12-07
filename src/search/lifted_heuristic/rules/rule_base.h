@@ -51,7 +51,7 @@ public:
  * the body.
  *
  */
-enum RuleType { NONE, JOIN, PRODUCT, PROJECT };
+enum RuleType { JOIN, PRODUCT, PROJECT };
 
 class RuleBase {
 protected:
@@ -112,9 +112,7 @@ public:
         return weight;
     }
 
-    virtual int get_type() const {
-        return NONE;
-    }
+    virtual int get_type() const = 0;
 
     const Arguments &get_condition_arguments(int i) const {
         return conditions[i].get_arguments();
