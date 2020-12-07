@@ -53,22 +53,22 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
             RuleBase &rule = lp.get_rule_by_index(rule_index);
 
             assert(rule.get_type()==PROJECT || rule.get_type() == JOIN || rule.get_type() == PRODUCT);
-            std::vector<Fact> new_facts;
+            std::vector<Fact> newfacts;
 
             if (rule.get_type()==PROJECT) {
                 // Projection rule - single condition in the body
                 assert(position_in_the_body==0);
-                new_facts = project(rule, current_fact);
+                project(rule, current_fact, newfacts);
             } else if (rule.get_type()==JOIN) {
                 // Join rule - two conditions in the body
                 assert(position_in_the_body <= 1);
-                new_facts = join(rule, current_fact, position_in_the_body);
+                join(rule, current_fact, position_in_the_body, newfacts);
             } else {
                 // Product rule - more than one condition without shared free vars
-                new_facts = product(rule, current_fact, position_in_the_body);
+                product(rule, current_fact, position_in_the_body, newfacts);
             }
 
-            for (Fact& new_fact:new_facts) {
+            for (Fact& new_fact:newfacts) {
                 int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, lp);
                 if (id!=HAS_CHEAPER_PATH) {
                     q.push(new_fact.get_cost(), id);
@@ -113,7 +113,7 @@ int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
  *
  */
 
-vector<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact) {
+void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vector<Fact>& newfacts) {
     const ProjectRule &rule = static_cast<const ProjectRule &>(rule_);
 
     // New arguments start as a copy of the head atom and we just replace the
@@ -127,7 +127,7 @@ vector<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact) 
             // Constant instead of free var
             if (fact.argument(i)!=a) {
                 // constants do not match!
-                return {};
+                return;
             }
         } else {
             int pos = rule.get_head_position_of_arg(a);
@@ -138,13 +138,11 @@ vector<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact) 
         }
     }
 
-    Achievers projection_achiever = {fact.get_fact_index()};
-
     // Return a vector with one single fact
-    return {Fact(move(new_arguments),
-        rule.get_effect().get_predicate_index(),
-        rule_.get_weight() + fact.get_cost(),
-        projection_achiever)};
+    newfacts.emplace_back(move(new_arguments),
+                          rule.get_effect().get_predicate_index(),
+                          rule_.get_weight() + fact.get_cost(),
+                          Achievers{fact.get_fact_index()});
 }
 
 /*
@@ -166,12 +164,9 @@ vector<Fact> WeightedGrounder::project(const RuleBase &rule_, const Fact &fact) 
  * The function returns a list of actions.
  *
  */
-vector<Fact> WeightedGrounder::join(RuleBase &rule_,
-                                    const Fact &fact,
-                                    int position) {
+void WeightedGrounder::join(
+        RuleBase &rule_, const Fact &fact, int position, std::vector<Fact>& newfacts) {
     JoinRule &rule = static_cast<JoinRule &>(rule_);
-
-    vector<Fact> facts;
 
     JoinHashKey key;
     key.reserve(rule.get_number_joining_vars());
@@ -207,13 +202,12 @@ vector<Fact> WeightedGrounder::join(RuleBase &rule_,
             }
             position_counter++;
         }
-        Achievers join_achievers = {fact.get_fact_index(), f.get_fact_index()};
-        facts.emplace_back(move(new_arguments),
+
+        newfacts.emplace_back(move(new_arguments),
                            rule.get_effect().get_predicate_index(),
                            aggregation_function(fact.get_cost(), f.get_cost()) + rule.get_weight(),
-                           join_achievers);
+                           Achievers{fact.get_fact_index(), f.get_fact_index()});
     }
-    return facts;
 }
 
 /*
@@ -226,19 +220,17 @@ vector<Fact> WeightedGrounder::join(RuleBase &rule_,
  * (2) every free variable in the body is also in the head
  *
  */
-vector<Fact> WeightedGrounder::product(RuleBase &rule_,
-                                       const Fact &fact,
-                                       int position) {
+void WeightedGrounder::product(
+        RuleBase &rule_, const Fact &fact, int position, std::vector<Fact>& newfacts) {
     ProductRule &rule = static_cast<ProductRule &>(rule_);
 
-    vector<Fact> new_facts;
 
     // Verify that if there is a ground object in the condition of this atom,
     // then it matches the fact being expanded
     int c = 0;
     for (const auto& term : rule.get_condition_arguments(position)) {
         if (term.is_object() and term.get_index()!=fact.argument(c).get_index()) {
-            return new_facts;
+            return;
         }
         ++c;
     }
@@ -248,8 +240,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     int total_cost = 0;
     Achievers nullary_head_achievers;
     for (const ReachedFacts &v : rule.get_reached_facts_all_conditions()) {
-        if (v.empty())
-            return new_facts;
+        if (v.empty()) return;
         int min_cost = std::numeric_limits<int>::max();
         int min_index = 0;
         int index = 0;
@@ -267,11 +258,11 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
     // If there is one reachable ground atom for every condition and the head
     // is nullary or has no free variable, then simply trigger it.
     if (rule.head_is_ground()) {
-        new_facts.emplace_back(rule.get_effect_arguments(),
-            rule.get_effect().get_predicate_index(),
-                               total_cost + rule.get_weight(),
-                               nullary_head_achievers);
-        return new_facts;
+        newfacts.emplace_back(rule.get_effect_arguments(),
+                              rule.get_effect().get_predicate_index(),
+                              total_cost + rule.get_weight(),
+                              nullary_head_achievers);
+        return;
     }
 
     // Second: start creating a base for the new effect atom based on the fact
@@ -304,7 +295,7 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
         Achievers achievers = q.front().achievers;
         q.pop_front();
         if (counter >= int(rule.get_conditions().size())) {
-            new_facts.emplace_back(current_args,
+            newfacts.emplace_back(current_args,
                                    rule.get_effect().get_predicate_index(),
                                    cost + rule.get_weight(),
                                    achievers);
@@ -335,7 +326,6 @@ vector<Fact> WeightedGrounder::product(RuleBase &rule_,
             }
         }
     }
-    return new_facts;
 }
 
 void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgram &lp) {

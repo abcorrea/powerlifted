@@ -37,11 +37,9 @@ protected:
 
     void create_rule_matcher(const LogicProgram &lp);
 
-    std::vector<Fact> project(const RuleBase &rule, const Fact &fact);
-    std::vector<Fact> join(RuleBase &rule, const Fact &fact, int position);
-    std::vector<Fact> product(RuleBase &rule,
-                              const Fact &fact,
-                              int position);
+    void project(const RuleBase &rule, const Fact &fact, std::vector<Fact>& newfacts);
+    void join(RuleBase &rule, const Fact &fact, int position, std::vector<Fact>& newfacts);
+    void product(RuleBase &rule, const Fact &fact, int position, std::vector<Fact>& newfacts);
 
     int aggregation_function(int i, int j) const {
         return (heuristic_type == H_ADD) ? i + j : std::max(i, j);
