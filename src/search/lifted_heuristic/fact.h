@@ -59,14 +59,7 @@ public:
      * fact_index because they are not set in the point of comparison.
      */
     friend bool operator==(const Fact &a, const Fact &b) {
-        if (a.get_predicate_index()!=b.get_predicate_index())
-            return false;
-        if (a.get_arguments().size()!=b.get_arguments().size())
-            return false;
-        for (size_t i = 0; i < a.get_arguments().size(); i++)
-            if (a.argument(i)!=b.argument(i))
-                return false;
-        return true;
+        return a.get_predicate_index() == b.get_predicate_index() && a.get_arguments() == b.get_arguments();
     }
 
     void set_fact_index() {
