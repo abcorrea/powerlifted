@@ -6,10 +6,10 @@
 namespace lifted_heuristic {
 
 struct ProductDequeEntry {
-    ProductDequeEntry(Arguments arguments, int i, int c)
+    ProductDequeEntry(const Arguments& arguments, int i, int c)
     : arguments(arguments), index(i), cost(c) {}
 
-    ProductDequeEntry(Arguments arguments, int i, int c, Achievers a)
+    ProductDequeEntry(const Arguments& arguments, int i, int c, const Achievers& a)
         : arguments(arguments), index(i), cost(c), achievers(a) {}
 
     Arguments arguments;
