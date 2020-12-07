@@ -6,7 +6,7 @@ using namespace std;
 
 namespace lifted_heuristic {
 
-void LogicProgram::insert_fact(Fact &f) {
+void LogicProgram::insert_fact(const Fact &f) {
     facts.push_back(f);
 }
 

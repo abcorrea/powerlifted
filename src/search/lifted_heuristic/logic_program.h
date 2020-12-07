@@ -41,7 +41,7 @@ public:
           map_object_to_index(std::move(o_to_i)){}
 
 
-    void insert_fact(Fact &f);
+    void insert_fact(const Fact &f);
 
     const std::vector<Fact> &get_facts() const;
 
