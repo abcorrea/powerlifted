@@ -58,6 +58,7 @@ void LiftedHeuristic::transform_state_into_edb(const DBState &s,
     for (const auto &r : s.get_relations()) {
         for (const auto &tuple : r.tuples) {
             vector<pair<int, int>> args;
+            args.reserve(tuple.size());
             for (auto obj : tuple) {
                 args.emplace_back(indices_map.get_object(obj), lifted_heuristic::OBJECT);
             }
@@ -90,7 +91,7 @@ void LiftedHeuristic::get_useful_facts(const Task &task, const lifted_heuristic:
         useful_nullary_atom = false;
 
     for (int achiever : grounder.get_best_achievers()) {
-        lifted_heuristic::Fact fact = lp.get_fact_by_index(achiever);
+        const lifted_heuristic::Fact& fact = lp.get_fact_by_index(achiever);
         if (indices_map.is_auxiliary_predicate(fact.get_predicate_index()))
             continue;
         int task_predicate_index = indices_map.get_inverse_predicate(fact.get_predicate_index());
