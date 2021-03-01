@@ -17,6 +17,7 @@ struct AtomicGoal;
  */
 class Goalcount : public Heuristic {
 public:
+
     int compute_heuristic(const DBState & s, const Task& task) final;
 
 private:

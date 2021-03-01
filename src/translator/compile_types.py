@@ -115,7 +115,7 @@ def adjust_initial_state(task, graph):
 
 
 def _get_type_predicate_name(t):
-    return 'type_' + t
+    return 'type@' + t
 
 
 def remove_trivially_inapplicable_actions(task, graph):

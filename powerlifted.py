@@ -24,10 +24,10 @@ def parse_options():
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Run planner in debug mode.')
     parser.add_argument('-s', '--search', dest='search', action='store',
-                        default=None, help='Search algorithm', choices=("naive", "gbfs"),
+                        default=None, help='Search algorithm', choices=("naive", "gbfs", "lazy", "lazy-po", "lazy-prune"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
-                        default=None, choices=("blind", "goalcount"),
+                        default=None, choices=("blind", "goalcount", "add", "hmax"),
                         help='Heuristic to guide the search (ignore in case of blind search)',
                         required=True)
     parser.add_argument('-g', '--generator', dest='generator', action='store',
@@ -41,6 +41,15 @@ def parse_options():
     parser.add_argument('--translator-output-file', dest='translator_file',
                         default='output.lifted',
                         help='Output file of the translator')
+    parser.add_argument('--datalog-file', dest='datalog_file',
+                        default='model.lp',
+                        help='Datalog model for the lifted heuristic.')
+    parser.add_argument("--keep-action-predicates", action="store_true",
+                        help="flag if the Datalog model should keep action predicates")
+    parser.add_argument("--keep-duplicated-rules", action="store_true",
+                        help="flag if the Datalog model should keep duplicated auxiliary rules")
+    parser.add_argument("--add-inequalities", action="store_true",
+                        help="flag if the Datalog model should add inequalities to rules")
 
     args = parser.parse_args()
     if args.domain is None:
@@ -88,6 +97,9 @@ def validate(domain_name, instance_name, planfile):
 
 
 def main():
+    CPP_EXTRA_OPTIONS = []
+    PYTHON_EXTRA_OPTIONS = []
+
     options = parse_options()
 
     build_dir = os.path.join(PROJECT_ROOT, 'builds', 'debug' if options.debug else 'release')
@@ -101,9 +113,23 @@ def main():
 
     os.chdir(PROJECT_ROOT)
 
+    # If it is the lifted heuristic, we need to obtain the Datalog model
+    if options.heuristic == 'add' or options.heuristic == 'hmax':
+       PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
+       if options.keep_action_predicates:
+           PYTHON_EXTRA_OPTIONS.append('--keep-action-predicates')
+       if options.keep_duplicated_rules:
+           PYTHON_EXTRA_OPTIONS.append('--keep-duplicated-rules')
+       if options.add_inequalities:
+           PYTHON_EXTRA_OPTIONS.append('--add-inequalities')
+       CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
+
     # Invoke the Python preprocessor
     subprocess.call([os.path.join(build_dir, 'translator', 'translate.py'),
-                     options.domain, options.instance, '--output-file', options.translator_file])
+                     options.domain, options.instance, '--output-file', options.translator_file] + \
+                    PYTHON_EXTRA_OPTIONS)
+
+
 
     # Invoke the C++ search component
     cmd = [os.path.join(build_dir, 'search', 'search'),
@@ -112,7 +138,8 @@ def main():
            '-e', options.heuristic,
            '-g', options.generator,
            '-r', options.state,
-           '--seed', str(options.seed)]
+           '--seed', str(options.seed)] + \
+           CPP_EXTRA_OPTIONS
 
     print(f'Executing "{" ".join(cmd)}"')
     code = subprocess.call(cmd)

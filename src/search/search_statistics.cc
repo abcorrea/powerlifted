@@ -21,6 +21,7 @@ SearchStatistics::SearchStatistics(utils::Verbosity verbosity)
     generated_states = 0;
     dead_end_states = 0;
     generated_ops = 0;
+    pruned_states = 0;
 
     lastjump_expanded_states = 0;
     lastjump_reopened_states = 0;
@@ -73,9 +74,10 @@ void SearchStatistics::print_detailed_statistics() const {
     cout << "Expanded " << expanded_states << " state(s)." << endl;
     cout << "Reopened " << reopened_states << " state(s)." << endl;
     cout << "Evaluated " << evaluated_states << " state(s)." << endl;
-    cout << "Evaluations: " << evaluations << endl;
+    cout << "Evaluations: " << evaluations << " state(s)." << endl;
     cout << "Generated " << generated_states << " state(s)." << endl;
     cout << "Dead ends: " << dead_end_states << " state(s)." << endl;
+    cout << "Pruned: " << pruned_states << " state(s)." << endl;
 
     if (lastjump_value >= 0) {
         cout << "Expanded until last jump: "

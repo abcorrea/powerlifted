@@ -23,7 +23,9 @@ import normalize
 import options
 import pddl_parser
 import pddl
+import pddl_to_prolog
 import reachability
+import remove_predicates
 import static_predicates
 import timers
 
@@ -41,6 +43,10 @@ def test_if_experiment(test):
         sys.exit(0)
 
 
+def perform_sanity_checks(task):
+    for pred in task.predicates:
+        assert not pred.name.startswith("action_"), "Predicate name cannot start with \'action_\'."
+
 
 def main():
     timer = timers.Timer()
@@ -50,16 +56,29 @@ def main():
     print('Processing task', task.task_name)
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
-    assert isinstance(task.goal, pddl.Conjunction) or \
-           isinstance(task.goal, pddl.Atom) or \
-           isinstance(task.goal, pddl.NegatedAtom), \
-        "Goal is not conjunctive."
+
+    perform_sanity_checks(task)
+
+    if options.build_datalog_model:
+        print("Building Datalog model...")
+        prog = pddl_to_prolog.translate(task, options.keep_action_predicates, options.add_inequalities)
+        prog.rename_free_variables()
+        if not options.keep_duplicated_rules:
+            prog.remove_duplicated_rules()
+        with open(options.datalog_file, 'w') as f:
+            #prog.dump(f)
+            prog.dump(f)
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
 
     with timers.timing("Checking static predicates"):
         static_pred = static_predicates.check(task)
+
+    assert isinstance(task.goal, pddl.Conjunction) or \
+           isinstance(task.goal, pddl.Atom) or \
+           isinstance(task.goal, pddl.NegatedAtom), \
+        "Goal is not conjunctive."
 
     if options.ground_state_representation:
         with timers.timing("Generating complete initial state"):
@@ -85,6 +104,7 @@ def main():
     sys.stdout = output
 
     remove_functions_from_initial_state(task)
+    remove_predicates.remove_unused_predicate_symbols(task)
 
     if is_trivially_unsolvable(task, static_pred):
         output_trivially_unsolvable_task()

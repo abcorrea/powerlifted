@@ -8,7 +8,6 @@
 #include "search_engines/search_factory.h"
 #include "successor_generators/successor_generator.h"
 #include "successor_generators/successor_generator_factory.h"
-#include "utils/system.h"
 
 #include <iostream>
 #include <memory>
@@ -21,14 +20,14 @@ int main(int argc, char *argv[]) {
 
     Options opt(argc, argv);
 
-    ifstream in(opt.get_filename());
-    if (!in) {
-        cerr << "Error opening the task file." << endl;
+    ifstream task_file(opt.get_filename());
+    if (!task_file) {
+        cerr << "Error opening the task file: " << opt.get_filename() << endl;
         exit(-1);
     }
 
     cout << "Reading task description file." << endl;
-    cin.rdbuf(in.rdbuf());
+    cin.rdbuf(task_file.rdbuf());
 
     // Parse file
     string domain_name, task_name;
@@ -36,7 +35,7 @@ int main(int argc, char *argv[]) {
     Task task(domain_name, task_name);
     cout << task.get_domain_name() << " " << task.get_task_name() << endl;
 
-    bool parsed = parse(task, in);
+    bool parsed = parse(task, task_file);
     if (!parsed) {
         cerr << "Parser failed." << endl;
         exit(-1);
@@ -47,7 +46,7 @@ int main(int argc, char *argv[]) {
 
     // Let's create a couple unique_ptr's that deal with mem allocation themselves
     std::unique_ptr<SearchBase> search(SearchFactory::create(opt.get_search_engine(), opt.get_state_representation()));
-    std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt.get_evaluator(), task));
+    std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt, task));
     std::unique_ptr<SuccessorGenerator> sgen(SuccessorGeneratorFactory::create(opt.get_successor_generator(),
                                                                                opt.get_seed(),
                                                                                task));
@@ -65,7 +64,7 @@ int main(int argc, char *argv[]) {
         return static_cast<int>(exitcode);
     }
     catch (const bad_alloc& ex) {
-        search->print_statistics();
+        //search->print_statistics();
         exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
     }
 

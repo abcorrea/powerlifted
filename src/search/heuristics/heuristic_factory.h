@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "../options.h"
+
 class Task;
 class Heuristic;
 
@@ -11,7 +13,7 @@ class Heuristic;
  */
 class HeuristicFactory {
 public:
-    static Heuristic *create(const std::string& method, const Task &task);
+    static Heuristic *create(const Options &opt, const Task &task);
 };
 
 #endif //SEARCH_HEURISTIC_FACTORY_H

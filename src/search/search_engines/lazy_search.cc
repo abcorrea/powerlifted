@@ -1,40 +1,40 @@
-#include "greedy_best_first_search.h"
+#include "lazy_search.h"
+
 #include "search.h"
 #include "utils.h"
-
 #include "../action.h"
 #include "../task.h"
-
 #include "../heuristics/heuristic.h"
 #include "../open_lists/greedy_open_list.h"
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
-#include "../utils/timer.h"
 
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <queue>
 #include <vector>
 
 using namespace std;
 
 template <class PackedStateT>
-utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
-                                                SuccessorGenerator &generator,
-                                                Heuristic &heuristic)
+utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
+                                                            SuccessorGenerator &generator,
+                                                            Heuristic &heuristic)
 {
     cout << "Starting greedy best first search" << endl;
     clock_t timer_start = clock();
     StatePackerT packer(task);
 
-    GreedyOpenList queue;
+    GreedyOpenList preferred_open_list;
+    GreedyOpenList regular_open_list;
+
+    //cout << "@ Initial state: \n\t";
+    //task.dump_state(task.initial_state);
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
-    utils::Timer t;
     heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
-    t.stop();
-    cout << "Time to evaluate initial state: " << t() << endl;
     root_node.open(0, heuristic_layer);
     if (heuristic_layer == numeric_limits<int>::max()) {
         cerr << "Initial state is unsolvable!" << endl;
@@ -43,16 +43,29 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
     statistics.inc_evaluations();
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
-    queue.do_insertion(root_node.state_id, make_pair(heuristic_layer, 0));
+    regular_open_list.do_insertion(root_node.state_id, make_pair(heuristic_layer, 0));
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
-    while (not queue.empty()) {
-        StateID sid = queue.remove_min();
+    while ((not regular_open_list.empty()) or (not preferred_open_list.empty())) {
+        StateID sid = get_top_node(preferred_open_list, regular_open_list); //regular_open_list.remove_min();
         SearchNode &node = space.get_node(sid);
-        int h = node.h;
+        DBState state = packer.unpack(space.get_state(sid));
+        int h = heuristic.compute_heuristic(state, task);
+        statistics.inc_evaluations();
+        statistics.inc_evaluated_states();
+        /*cout << "# State: ";
+        task.dump_state(state);
+        cout << "\t@ Useful atoms: ";
+        heuristic._print_useful_atoms(task);*/
         int g = node.g;
+        node.update_h(h);
         if (node.status == SearchNode::Status::CLOSED) {
+            continue;
+        }
+        if (h == std::numeric_limits<int>::max()) {
+            statistics.inc_dead_ends();
+            statistics.inc_pruned_states();
             continue;
         }
         node.close();
@@ -61,6 +74,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
         if (h < heuristic_layer) {
             heuristic_layer = h;
+            boost_priority_preferred();
             cout << "New heuristic value expanded: h=" << h
                  << " [expansions: " << statistics.get_expanded()
                  << ", evaluations: " << statistics.get_evaluations()
@@ -69,7 +83,6 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         }
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
 
-        DBState state = packer.unpack(space.get_state(sid));
         if (check_goal(task, generator, timer_start, state, node, space)) return utils::ExitCode::SUCCESS;
 
         // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
@@ -80,28 +93,32 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
-
                 int dist = g + action.get_cost();
-                int new_h = heuristic.compute_heuristic(s, task);
-                statistics.inc_evaluations();
-                if (new_h == std::numeric_limits<int>::max()) {
-                    statistics.inc_dead_ends();
-                    statistics.inc_pruned_states();
-                    continue;
-                }
-
-                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                if (child_node.status == SearchNode::Status::NEW) {
+                auto &child_node =
+                    space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+                //cout << "\t--> Successor: ";
+                //task.dump_state(s);
+                bool is_preferred = is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms());
+                if (child_node.status==SearchNode::Status::NEW) {
                     // Inserted for the first time in the map
-                    child_node.open(dist, new_h);
-                    statistics.inc_evaluated_states();
-                    queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
-                }
-                else {
+                    child_node.open(dist, h);
+                    if (check_goal(task, generator, timer_start, state, node, space))
+                        return utils::ExitCode::SUCCESS;
+
+                    if (all_operators_preferred or is_preferred) {
+                        preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
+                    } else if (not is_preferred and not prune_relaxed_useless_operators) {
+                        regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
+                    }
+                } else {
                     if (dist < child_node.g) {
-                        child_node.open(dist, new_h); // Reopening
+                        child_node.open(dist, h); // Reopening
                         statistics.inc_reopened();
-                        queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
+                        if (all_operators_preferred or is_preferred) {
+                            preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
+                        } else if (not is_preferred and not prune_relaxed_useless_operators) {
+                            regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
+                        }
                     }
                 }
             }
@@ -114,11 +131,12 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 }
 
 template <class PackedStateT>
-void GreedyBestFirstSearch<PackedStateT>::print_statistics() const {
+void LazySearch<PackedStateT>::print_statistics() const {
     statistics.print_detailed_statistics();
     space.print_statistics();
 }
 
+
 // explicit template instantiations
-template class GreedyBestFirstSearch<SparsePackedState>;
-template class GreedyBestFirstSearch<ExtensionalPackedState>;
+template class LazySearch<SparsePackedState>;
+template class LazySearch<ExtensionalPackedState>;
