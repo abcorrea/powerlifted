@@ -11,7 +11,7 @@ The `powerlifted.py` script solves a PDDL task provided as input. It also builds
 the planner if the `--build` parameter is passed. The script has the following
 parameters:
 
-```$ ./powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e HEURISTIC -g GENERATOR [--build] [--state STATE REPR.] [--seed RANDOM SEED]```
+```$ ./powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e HEURISTIC -g GENERATOR [--state STATE REPR.] [ADDITIONAL OPTIONS] [--seed RANDOM SEED] [--build]```
 
 Use the `build.py` script to build the planner first.
 
@@ -47,6 +47,15 @@ non-preferred operators
   where the ith-bit is true if the fact associated to it is true in this
   state. This representation requires the grounding of facts (but not of
   actions) which, right now, is performed in the search component.
+
+### Available `ADDITIONAL OPTIONS`:
+- `[--translator-output-file TRANSLATOR_FILE]`: Output of the intermediate representation to be parsed by the search component will be saved into `TRANSLATOR_FILE`. (Default: `output.lifted`)
+- `[--datalog-file DATALOG_FILE]`: Datalog program used by the h-add heuristic will be saved into `DATALOG_FILE`. (Default: `model.lp`)
+- `[--keep-action-predicates]`: Keeps action predicates in the Datalog program
+- `[--keep-duplicated-rules]`: Keep duplicated Datalog rules in the Datalog program.
+- `[--add-inequalities]`: Compile inequalities into an EDB predicate in the Datalog program and replace `(not (= ?x ?y))` atoms with this new EDB predicate in actions.
+
+
 
 ## Components
  - Translator
