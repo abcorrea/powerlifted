@@ -111,8 +111,6 @@ def main():
     if not os.path.exists(build_dir):
         raise OSError("Planner not built!")
 
-    os.chdir(PROJECT_ROOT)
-
     # If it is the lifted heuristic, we need to obtain the Datalog model
     if options.heuristic == 'add' or options.heuristic == 'hmax':
        PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
@@ -146,7 +144,7 @@ def main():
 
     # If we found a plan, try to validate it
     if code == 0:
-        validate(options.domain, options.instance, os.path.join(PROJECT_ROOT, 'sas_plan'))
+        validate(options.domain, options.instance, 'sas_plan')
 
     return code
 
