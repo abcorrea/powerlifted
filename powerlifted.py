@@ -50,7 +50,8 @@ def parse_options():
                         help="flag if the Datalog model should keep duplicated auxiliary rules")
     parser.add_argument("--add-inequalities", action="store_true",
                         help="flag if the Datalog model should add inequalities to rules")
-
+    parser.add_argument("--validate", action="store_true",
+                        help="flag if VAL should be called to validate the plan found")
     args = parser.parse_args()
     if args.domain is None:
         args.domain = find_domain_filename(args.instance)
@@ -143,7 +144,7 @@ def main():
     code = subprocess.call(cmd)
 
     # If we found a plan, try to validate it
-    if code == 0:
+    if code == 0 and options.validate:
         validate(options.domain, options.instance, 'sas_plan')
 
     return code
