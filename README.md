@@ -54,6 +54,28 @@ non-preferred operators
 - `[--keep-action-predicates]`: Keeps action predicates in the Datalog program
 - `[--keep-duplicated-rules]`: Keep duplicated Datalog rules in the Datalog program.
 - `[--add-inequalities]`: Compile inequalities into an EDB predicate in the Datalog program and replace `(not (= ?x ?y))` atoms with this new EDB predicate in actions.
+- `[--validate]`: Runs VAL after a plan is found to validate it
+
+## Running Powerlifted as a Singularity container
+
+You can also build a Singularity image to run the planner. This might be useful
+in the case where you are not able to compile the planner locally, for
+example. To do so, first remove the `builds/` directory, in case you have any
+built already in your system. Then, you can run the following command to create
+the planner image:
+
+
+``` sudo singularity build powerlifted.sif Singularity```
+
+Be aware that this might take a while. Once the image `powerlifted.sif` is
+created, you can run it with the same parameters as the `powerlifted.py`
+script. The only exception is that, by default, VAL is not installed in the
+container, so it is not possible to use the `--validate` flag with the
+Singularity image. However, you can run VAL with the `sas_plan` file created by
+the planner after the execution. The following command is an usage example on
+how to run the planner with the Singularity image:
+
+```./powerlifted.sif -i /path/to/benchmarks -s lazy-po -e add -g yannakakis --datalog-file model.lp --translator-output-file output.lifted```
 
 
 

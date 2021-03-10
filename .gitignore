@@ -12,6 +12,8 @@ builds/
 output.lifted
 model.lp
 sas_plan
+powerlifted.img
+powerlifted.sif
 reports/
 local-tests/
 *.out
