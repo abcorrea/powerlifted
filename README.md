@@ -61,7 +61,7 @@ non-preferred operators
 You can also build a Singularity image to run the planner. This might be useful
 in the case where you are not able to compile the planner locally, for
 example. To do so, first remove the `builds/` directory, in case you have any
-built already in your system. Then, you can run the following command to create
+builds already in your system. Then, you can run the following command to create
 the planner image:
 
 
@@ -72,10 +72,10 @@ created, you can run it with the same parameters as the `powerlifted.py`
 script. The only exception is that, by default, VAL is not installed in the
 container, so it is not possible to use the `--validate` flag with the
 Singularity image. However, you can run VAL with the `sas_plan` file created by
-the planner after the execution. The following command is an usage example on
+the planner after the execution. The following command is a usage example on
 how to run the planner with the Singularity image:
 
-```./powerlifted.sif -i /path/to/benchmarks -s lazy-po -e add -g yannakakis --datalog-file model.lp --translator-output-file output.lifted```
+```./powerlifted.sif -i /path/to/instance.pddl -s lazy-po -e add -g yannakakis --datalog-file model.lp --translator-output-file output.lifted```
 
 
 
