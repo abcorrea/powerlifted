@@ -27,7 +27,7 @@ OPTIMAL_PLAN_COSTS = {'domains/airport/p05-airport2-p1.pddl': 21,
                       'domains/movie/prob30.pddl': 7,
                       'domains/openstacks/p01.pddl': 17,
                       'domains/organic-synthesis/p05.pddl': 2}
-SEARCH_CONFIGS = ['naive', 'gbfs']
+SEARCH_CONFIGS = ['bfs', 'gbfs']
 HEURISTIC_CONFIGS = ['blind']
 GENERATOR_CONFIGS = ['full_reducer', 'join', 'yannakakis']
 STATE_REPR_CONFIGS = ['sparse', 'extensional']
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         OPTIMAL_PLAN_COSTS = {'domains/blocks/probBLOCKS-4-0.pddl': 6,
                               'domains/gripper/prob01.pddl': 11,
                               'domains/movie/prob30.pddl': 7}
-        SEARCH_CONFIGS = ['naive', 'gbfs']
+        SEARCH_CONFIGS = ['bfs', 'gbfs']
         HEURISTIC_CONFIGS = ['blind']
         GENERATOR_CONFIGS = ['full_reducer', 'yannakakis']
         STATE_REPR_CONFIGS = ['sparse', 'extensional']
