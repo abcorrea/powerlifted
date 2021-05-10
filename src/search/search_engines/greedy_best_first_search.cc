@@ -84,7 +84,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
                 int dist = g + action.get_cost();
                 int new_h = heuristic.compute_heuristic(s, task);
                 statistics.inc_evaluations();
-                if (new_h == std::numeric_limits<int>::max()) {
+                if (new_h == UNSOLVABLE_STATE) {
                     statistics.inc_dead_ends();
                     statistics.inc_pruned_states();
                     continue;

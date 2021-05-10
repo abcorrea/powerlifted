@@ -48,6 +48,9 @@ int LiftedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     logic_program.reset_facts(base_fact_index);
     for (const auto &r : logic_program.get_rules())
         r->clean_up();
+
+    if (h == std::numeric_limits<int>::max())
+        return UNSOLVABLE_STATE;
     return h;
 }
 

@@ -2,8 +2,10 @@
 
 #include "search.h"
 #include "utils.h"
+
 #include "../action.h"
 #include "../task.h"
+
 #include "../heuristics/heuristic.h"
 #include "../open_lists/greedy_open_list.h"
 #include "../states/extensional_states.h"
@@ -36,7 +38,7 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state), LiftedOperatorId::no_operator, StateID::no_state);
     heuristic_layer = heuristic.compute_heuristic(task.initial_state, task);
     root_node.open(0, heuristic_layer);
-    if (heuristic_layer == numeric_limits<int>::max()) {
+    if (heuristic_layer == UNSOLVABLE_STATE) {
         cerr << "Initial state is unsolvable!" << endl;
         exit(1);
     }
@@ -51,24 +53,20 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
         StateID sid = get_top_node(preferred_open_list, regular_open_list); //regular_open_list.remove_min();
         SearchNode &node = space.get_node(sid);
         DBState state = packer.unpack(space.get_state(sid));
-        int h = heuristic.compute_heuristic(state, task);
-        statistics.inc_evaluations();
-        statistics.inc_evaluated_states();
-        /*cout << "# State: ";
-        task.dump_state(state);
-        cout << "\t@ Useful atoms: ";
-        heuristic._print_useful_atoms(task);*/
-        int g = node.g;
-        node.update_h(h);
         if (node.status == SearchNode::Status::CLOSED) {
             continue;
         }
-        if (h == std::numeric_limits<int>::max()) {
+        node.close();
+        int h = heuristic.compute_heuristic(state, task);
+        statistics.inc_evaluations();
+        statistics.inc_evaluated_states();
+        if (h == UNSOLVABLE_STATE) {
             statistics.inc_dead_ends();
             statistics.inc_pruned_states();
             continue;
         }
-        node.close();
+        int g = node.g;
+        node.update_h(h);
         statistics.report_f_value_progress(h); // In GBFS f = h.
         statistics.inc_expanded();
 
@@ -96,8 +94,6 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
                 int dist = g + action.get_cost();
                 auto &child_node =
                     space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                //cout << "\t--> Successor: ";
-                //task.dump_state(s);
                 bool is_preferred = is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms());
                 if (child_node.status==SearchNode::Status::NEW) {
                     // Inserted for the first time in the map

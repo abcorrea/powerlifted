@@ -7,6 +7,8 @@
 #include <iostream>
 #include <map>
 
+const int UNSOLVABLE_STATE = std::numeric_limits<int>::max();
+
 class DBState;
 class Task;
 
