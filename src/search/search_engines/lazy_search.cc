@@ -63,6 +63,7 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
         if (h == UNSOLVABLE_STATE) {
             statistics.inc_dead_ends();
             statistics.inc_pruned_states();
+            node.mark_as_unsolvable();
             continue;
         }
         int g = node.g;

@@ -1,7 +1,10 @@
-
-#pragma once
+#ifndef NODES_H
+#define NODES_H
 
 #include "../action.h"
+
+#include "../heuristics/heuristic.h"
+
 #include <cassert>
 #include <iostream>
 #include <utility>
@@ -68,6 +71,11 @@ public:
         f = g + h;
     }
 
+    void mark_as_unsolvable() {
+        h = UNSOLVABLE_STATE;
+        f = h;
+    }
+
     void close() {
         assert(status == SearchNode::Status::OPEN);
         status = SearchNode::Status::CLOSED;
@@ -82,3 +90,4 @@ public:
     int h;
 };
 
+#endif /*NODE_H*/
