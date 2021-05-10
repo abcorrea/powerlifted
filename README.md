@@ -56,7 +56,8 @@ non-preferred operators
 - `[--keep-action-predicates]`: Keeps action predicates in the Datalog program
 - `[--keep-duplicated-rules]`: Keep duplicated Datalog rules in the Datalog program.
 - `[--add-inequalities]`: Compile inequalities into an EDB predicate in the Datalog program and replace `(not (= ?x ?y))` atoms with this new EDB predicate in actions.
-- `[--validate]`: Runs VAL after a plan is found to validate it
+- `[--validate]`: Runs VAL after a plan is found to validate it. This requires
+  [VAL](https://github.com/KCL-Planning/VAL) to be added as `validate` to the `PATH`.
 
 ## Running Powerlifted as a Singularity container
 
@@ -89,7 +90,6 @@ how to run the planner with the Singularity image:
  - A C++17-compliant compiler
  - CMake 3.9+
  - Python 3.5+
- - [VAL](https://github.com/KCL-Planning/VAL) (added as `validate` to the `PATH`)
  - Boost
 
 ## Limitations
