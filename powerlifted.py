@@ -24,7 +24,7 @@ def parse_options():
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Run planner in debug mode.')
     parser.add_argument('-s', '--search', dest='search', action='store',
-                        default=None, help='Search algorithm', choices=("naive", "gbfs", "lazy", "lazy-po", "lazy-prune"),
+                        default=None, help='Search algorithm', choices=("naive", "bfs", "gbfs", "lazy", "lazy-po", "lazy-prune"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
                         default=None, choices=("blind", "goalcount", "add", "hmax"),
@@ -57,6 +57,16 @@ def parse_options():
         args.domain = find_domain_filename(args.instance)
         if args.domain is None:
             raise RuntimeError(f'Could not find domain filename matching instance file "{args.instance}"')
+
+    # The next check was added as part of issue-25, when we decided to replace
+    # the search algorithm "naive" with "bfs". The "naive" keyword is still
+    # accepted in this script for now. In the future, we plan to stop accepting
+    # the keyword and also remove the next lines.
+    if args.search == 'naive':
+        sys.stderr.write(
+            'WARNING: The keyword \"naive\" for search engines has been replaced by \"bfs\". '
+            '(The script still supports \"naive\" for now, but it will be dropped in the future.)')
+        args.search = 'bfs'
 
     return args
 
