@@ -57,7 +57,8 @@ class TestRun:
                                           '-s', self.search,
                                           '-e', self.heuristic,
                                           '-g', self.generator,
-                                          '--state', self.state_representation])
+                                          '--state', self.state_representation,
+                                          '--validate'])
         return output
 
     def evaluate(self, output, optimal_cost):
