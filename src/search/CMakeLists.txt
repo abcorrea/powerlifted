@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS_RELEASE
 
 # Debug and Profile
 set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -O0 -pg")
+        "${CMAKE_CXX_FLAGS_DEBUG} -Og -pg")
 
 
 add_executable(search
