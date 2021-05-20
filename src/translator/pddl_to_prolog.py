@@ -132,7 +132,7 @@ class PrologProgram:
                     new_action_rule = copy.deepcopy(action_rules[condition_name])
                     new_action_rule.effect = r.effect
                     # TODO If we use lifted costs, this should be done before
-                    new_action_rule.weight = 1
+                    new_action_rule.weight = action_rules[condition_name].weight
                     final_rules.append(new_action_rule)
                 else:
                     # TODO If we use lifted costs, this should be done before
@@ -315,14 +315,25 @@ def add_inequalities(prog,task):
             prog.add_fact(a, 0)
 
 
+def get_action_cost(action):
+    if action is None:
+        # Rule precondition is an effect condition, axiom, or goal
+        return 0
+    cost = action.cost
+    if action.cost is None:
+        cost = 0
+    if isinstance(action.cost, pddl.Increase):
+        cost = action.cost.expression.value
+    return cost
+
 def translate(task, keep_action_predicates=False, add_inequalities_flag=False):
     # Note: The function requires that the task has been normalized.
     prog = PrologProgram()
     translate_facts(prog, task)
     if add_inequalities_flag:
         add_inequalities(prog, task)
-    for conditions, effect in normalize.build_exploration_rules(task, add_inequalities_flag):
-        weight = 1
+    for conditions, effect, action in normalize.build_exploration_rules(task, add_inequalities_flag):
+        weight = get_action_cost(action)
         if effect.predicate == "@goal-reachable":
             weight = 0
         prog.add_rule(Rule(conditions, effect, weight))
@@ -333,13 +344,6 @@ def translate(task, keep_action_predicates=False, add_inequalities_flag=False):
         prog.remove_action_predicates()
     prog.normalize()
     prog.split_rules()
-    if keep_action_predicates:
-        # Correct weights
-        for rule in prog.rules:
-            if 'action' not in str(rule.effect.predicate):
-                rule.weight = 0
-            else:
-                rule.weight = 1
     return prog
 
 

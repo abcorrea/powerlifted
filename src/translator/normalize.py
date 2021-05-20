@@ -29,7 +29,7 @@ class PreconditionProxy(ConditionProxy):
         action = self.owner
         rule_head = get_action_predicate(action)
         rule_body = condition_to_rule_body(action.parameters, self.condition, add_inequalities)
-        rules.append((rule_body, rule_head))
+        rules.append((rule_body, rule_head, action))
     def get_type_map(self):
         return self.owner.type_map
 
@@ -50,7 +50,7 @@ class EffectConditionProxy(ConditionProxy):
         if not rule_head.negated:
             rule_body = [get_action_predicate(self.action)]
             rule_body += condition_to_rule_body([], self.condition, add_inequalities)
-            rules.append((rule_body, rule_head))
+            rules.append((rule_body, rule_head, None))
     def get_type_map(self):
         return self.action.type_map
 
@@ -72,7 +72,7 @@ class AxiomConditionProxy(ConditionProxy):
         params = axiom.parameters[:axiom.num_external_parameters]
         eff_rule_head = pddl.Atom(axiom.name, [par.name for par in params])
         eff_rule_body = [app_rule_head]
-        rules.append((eff_rule_body, eff_rule_head))
+        rules.append((eff_rule_body, eff_rule_head, None))
     def get_type_map(self):
         return self.owner.type_map
 
@@ -95,7 +95,7 @@ class GoalConditionProxy(ConditionProxy):
     def build_rules(self, rules, add_inequalities):
         rule_head = pddl.Atom("@goal-reachable", [])
         rule_body = condition_to_rule_body([], self.condition, add_inequalities)
-        rules.append((rule_body, rule_head))
+        rules.append((rule_body, rule_head, None))
     def get_type_map(self):
         # HACK!
         # Method uniquify_variables HAS already been called (which is good).
