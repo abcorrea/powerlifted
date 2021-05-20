@@ -323,7 +323,10 @@ def get_action_cost(action):
     if action.cost is None:
         cost = 0
     if isinstance(action.cost, pddl.Increase):
-        cost = action.cost.expression.value
+        if isinstance(action.cost.expression, pddl.NumericConstant):
+            cost = action.cost.expression.value
+        else:
+            cost = 1
     return cost
 
 def translate(task, keep_action_predicates=False, add_inequalities_flag=False):
