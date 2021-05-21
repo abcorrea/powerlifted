@@ -404,8 +404,21 @@ def normalize(task):
     eliminate_existential_quantifiers_from_axioms(task)
     eliminate_existential_quantifiers_from_preconditions(task)
     eliminate_existential_quantifiers_from_conditional_effects(task)
-
+    normalize_action_costs(task)
     verify_axiom_predicates(task)
+
+def normalize_action_costs(task):
+    # If all actions have "None" as cost, then we map it to a unit cost domain.
+    # We do not rely on checking if the domain has a function "total-cost" or not, as we plan to
+    # allow more functions in the future.
+    unit_cost = True
+    for action in task.actions:
+        if action.cost is not None:
+            unit_cost = False
+            break
+    if unit_cost:
+        for action in task.actions:
+            action.cost = 1
 
 def verify_axiom_predicates(task):
     # Verify that derived predicates are not used in :init or
