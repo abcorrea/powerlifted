@@ -23,7 +23,8 @@ set(CMAKE_CXX_FLAGS_RELEASE
 
 # Debug and Profile
 set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -Og -pg")
+        "${CMAKE_CXX_FLAGS_DEBUG} -Og -pg \
+        -fsanitize=undefined -fno-omit-frame-pointer")
 
 
 add_executable(search
