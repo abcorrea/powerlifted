@@ -50,6 +50,8 @@ def parse_options():
                         help="flag if the Datalog model should keep duplicated auxiliary rules")
     parser.add_argument("--add-inequalities", action="store_true",
                         help="flag if the Datalog model should add inequalities to rules")
+    parser.add_argument("--unit-cost", action="store_true",
+                           help="flag if the actions should be treated as unit-cost actions")
     parser.add_argument("--validate", action="store_true",
                         help="flag if VAL should be called to validate the plan found")
     args = parser.parse_args()
@@ -132,6 +134,12 @@ def main():
        if options.add_inequalities:
            PYTHON_EXTRA_OPTIONS.append('--add-inequalities')
        CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
+
+
+    # Checks if unit-cost flag is true
+    if options.unit_cost:
+        PYTHON_EXTRA_OPTIONS += ["--unit-cost"]
+
 
     # Invoke the Python preprocessor
     subprocess.call([os.path.join(build_dir, 'translator', 'translate.py'),
