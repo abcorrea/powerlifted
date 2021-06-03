@@ -29,7 +29,7 @@ class PreconditionProxy(ConditionProxy):
         action = self.owner
         rule_head = get_action_predicate(action)
         rule_body = condition_to_rule_body(action.parameters, self.condition, add_inequalities)
-        rules.append((rule_body, rule_head))
+        rules.append((rule_body, rule_head, action))
     def get_type_map(self):
         return self.owner.type_map
 
@@ -50,7 +50,7 @@ class EffectConditionProxy(ConditionProxy):
         if not rule_head.negated:
             rule_body = [get_action_predicate(self.action)]
             rule_body += condition_to_rule_body([], self.condition, add_inequalities)
-            rules.append((rule_body, rule_head))
+            rules.append((rule_body, rule_head, None))
     def get_type_map(self):
         return self.action.type_map
 
@@ -72,7 +72,7 @@ class AxiomConditionProxy(ConditionProxy):
         params = axiom.parameters[:axiom.num_external_parameters]
         eff_rule_head = pddl.Atom(axiom.name, [par.name for par in params])
         eff_rule_body = [app_rule_head]
-        rules.append((eff_rule_body, eff_rule_head))
+        rules.append((eff_rule_body, eff_rule_head, None))
     def get_type_map(self):
         return self.owner.type_map
 
@@ -95,7 +95,7 @@ class GoalConditionProxy(ConditionProxy):
     def build_rules(self, rules, add_inequalities):
         rule_head = pddl.Atom("@goal-reachable", [])
         rule_body = condition_to_rule_body([], self.condition, add_inequalities)
-        rules.append((rule_body, rule_head))
+        rules.append((rule_body, rule_head, None))
     def get_type_map(self):
         # HACK!
         # Method uniquify_variables HAS already been called (which is good).
@@ -404,8 +404,21 @@ def normalize(task):
     eliminate_existential_quantifiers_from_axioms(task)
     eliminate_existential_quantifiers_from_preconditions(task)
     eliminate_existential_quantifiers_from_conditional_effects(task)
-
+    normalize_action_costs(task)
     verify_axiom_predicates(task)
+
+def normalize_action_costs(task):
+    # If all actions have "None" as cost, then we map it to a unit cost domain.
+    # We do not rely on checking if the domain has a function "total-cost" or not, as we plan to
+    # allow more functions in the future.
+    unit_cost = True
+    for action in task.actions:
+        if action.cost is not None:
+            unit_cost = False
+            break
+    if unit_cost:
+        for action in task.actions:
+            action.cost = 1
 
 def verify_axiom_predicates(task):
     # Verify that derived predicates are not used in :init or
