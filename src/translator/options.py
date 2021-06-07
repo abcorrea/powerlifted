@@ -34,6 +34,9 @@ def parse_args():
         "--add-inequalities", action="store_true",
         help="flag if the Datalog model should add inequalities to rules")
     argparser.add_argument(
+        "--unit-cost", action="store_true",
+        help="flag if the actions should be treated as unit-cost actions")
+    argparser.add_argument(
         "--test-experiment", action="store_true",
         help="flag if the run is an experiment or not")
     argparser.add_argument(

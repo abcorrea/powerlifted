@@ -57,6 +57,9 @@ def main():
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
 
+    if options.unit_cost:
+        transform_into_unit_cost(task)
+
     perform_sanity_checks(task)
 
     if options.build_datalog_model:
@@ -132,6 +135,11 @@ def main():
 
     test_if_experiment(options.test_experiment)
     return
+
+
+def transform_into_unit_cost(task):
+    for action in task.actions:
+        action.cost = 1
 
 
 def print_action_schemas(task, object_index, predicate_index, type_index):
