@@ -76,6 +76,8 @@ class LiftedHeuristic : public Heuristic {
     int base_fact_index;
     int target_predicate;
 
+    int type;
+
     void transform_state_into_edb(
         const DBState &s,
         const std::unordered_set<int> &nullaries);

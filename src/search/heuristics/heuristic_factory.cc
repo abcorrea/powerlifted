@@ -27,7 +27,7 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
         return new LiftedHeuristic(task, opt.get_datalog_file(), lifted_heuristic::H_MAX);
     }
     else if (boost::iequals(method, "ff")) {
-        return new LiftedHeuristic(task, opt.get_datalog_file(), lifted_heuristic::H_ADD);
+        return new LiftedHeuristic(task, opt.get_datalog_file(), lifted_heuristic::FF);
     }
     else {
         std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;

@@ -10,7 +10,8 @@ using namespace std;
 
 LiftedHeuristic::LiftedHeuristic(const Task &task, const std::string &datalog_file, int heuristic_type)
     : logic_program(lifted_heuristic::parse_logic_program(datalog_file)),
-    grounder(logic_program, heuristic_type)
+    grounder(logic_program, heuristic_type),
+    type(heuristic_type)
     {
 
     useful_nullary_atoms.resize(task.initial_state.get_nullary_atoms().size());
@@ -29,10 +30,13 @@ LiftedHeuristic::LiftedHeuristic(const Task &task, const std::string &datalog_fi
         if (pp.second == "@goal-reachable")
             target_predicate = pp.first;
 
-    if (heuristic_type == lifted_heuristic::H_ADD)
+
+    if (type == lifted_heuristic::H_ADD)
         cout << "Initializing additive heuristic..." << endl;
-    if (heuristic_type == lifted_heuristic::H_MAX)
+    if (type == lifted_heuristic::H_MAX)
         cout << "Initializing h-max heuristic..." << endl;
+    if (type == lifted_heuristic::FF)
+        cout << "Initializing the FF heuristic..." << endl;
     cout << "Total number of static atoms in the EDB: " << logic_program.get_facts().size() << endl;
     cout << "Total number of rules: " << logic_program.get_rules().size() << endl;
 }

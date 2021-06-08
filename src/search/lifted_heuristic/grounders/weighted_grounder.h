@@ -18,7 +18,7 @@ class RuleBase;
 
 const int HAS_CHEAPER_PATH = -2;
 
-enum {H_ADD, H_MAX};
+enum {H_ADD, H_MAX, FF};
 
 class WeightedGrounder : public Grounder {
     static int is_cheapest_path_to_achieve_fact(Fact &new_fact,
@@ -42,7 +42,7 @@ protected:
     void product(RuleBase &rule, const Fact &fact, int position, std::vector<Fact>& newfacts);
 
     int aggregation_function(int i, int j) const {
-        return (heuristic_type == H_ADD) ? i + j : std::max(i, j);
+        return (heuristic_type == H_MAX) ? std::max(i, j) : i + j;
     }
 
 public:
