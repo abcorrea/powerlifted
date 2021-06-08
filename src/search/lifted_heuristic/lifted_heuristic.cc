@@ -8,10 +8,11 @@
 
 using namespace std;
 
-LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in, int heuristic_type)
-    : logic_program(lifted_heuristic::parse_logic_program(in)),
+LiftedHeuristic::LiftedHeuristic(const Task &task, const std::string &datalog_file, int heuristic_type)
+    : logic_program(lifted_heuristic::parse_logic_program(datalog_file)),
     grounder(logic_program, heuristic_type)
     {
+
     useful_nullary_atoms.resize(task.initial_state.get_nullary_atoms().size());
     int pred_idx = 0;
     for (const auto &predicate : task.predicates) {

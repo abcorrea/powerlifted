@@ -4,6 +4,7 @@
 #include "rules/product.h"
 #include "rules/project.h"
 
+#include <fstream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -19,8 +20,14 @@ int number_of_facts = 0;
 int number_of_rules = 0;
 int number_of_objects = 0;
 
-LogicProgram parse_logic_program(ifstream &in) {
+LogicProgram parse_logic_program(const std::string &datalog_file) {
     cout << "Parsing file..." << endl;
+
+    std::ifstream in(datalog_file);
+    if (!in) {
+      std::cerr << "Error opening the Datalog model file: " << datalog_file << std::endl;
+      exit(-1);
+    }
 
     unordered_map<string, int> map_object_to_index;
     unordered_map<string, int> map_atom_to_index;
