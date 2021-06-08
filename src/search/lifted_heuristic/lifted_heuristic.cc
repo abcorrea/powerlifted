@@ -45,9 +45,10 @@ int LiftedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     transform_state_into_edb(s, task.nullary_predicates);
 
     if (task.is_goal(s)) return 0;
-    int h =  grounder.ground(logic_program, target_predicate);
+    int h = grounder.ground(logic_program, target_predicate);
 
-    get_useful_facts(task, logic_program);
+    if (type == lifted_heuristic::FF)
+        h = grounder.get_ff_value();
 
     lifted_heuristic::Fact::reset_global_fact_index(base_fact_index);
     logic_program.reset_facts(base_fact_index);

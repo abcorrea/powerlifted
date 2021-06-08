@@ -12,8 +12,38 @@
 
 namespace  lifted_heuristic {
 
+class Achievers {
+    std::vector<int> achievers;
+    int rule_cost;
 
-typedef std::vector<int> Achievers;
+public:
+    Achievers(std::vector<int>& a, int c) : achievers(a), rule_cost(c) {};
+
+    Achievers(const std::vector<int> a, int c) : achievers(std::move(a)), rule_cost(c) {};
+
+    Achievers() : achievers(), rule_cost(0) {}
+
+    std::vector<int>::const_iterator begin() const {
+        return achievers.begin();
+    }
+
+    std::vector<int>::const_iterator end() const {
+        return achievers.end();
+    }
+
+    void set_rule_cost(int c) {
+        rule_cost = c;
+    }
+
+    void push_back(int i) {
+        achievers.push_back(i);
+    }
+
+    int get_achiever_rule_cost() const {
+        return rule_cost;
+    }
+
+};
 
 /*
  *
@@ -88,6 +118,10 @@ public:
 
     const Achievers &get_achievers() const {
         return achievers;
+    }
+
+    int get_achiever_rule_cost() const {
+        return achievers.get_achiever_rule_cost();
     }
 
     void update_achievers(Achievers a) {

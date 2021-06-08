@@ -35,13 +35,11 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         //cout << " " << current_fact.get_cost() << endl;
         if (current_fact.get_predicate_index() == goal_predicate) {
             compute_best_achievers(current_fact, lp);
-            /*for (auto &a : best_achievers) {
-                const Fact &f = lp.get_fact_by_index(a);
-                f.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
-                cout << endl;
-            }*/
-            //exit(1);
-            return current_fact.get_cost();
+            if (heuristic_type == lifted_heuristic::FF)
+                return ff_value;
+            else {
+                return current_fact.get_cost();
+            }
         }
         if (current_fact.get_cost() < cost) {
             continue;
@@ -145,7 +143,7 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vec
     newfacts.emplace_back(move(new_arguments),
                           rule.get_effect().get_predicate_index(),
                           rule_.get_weight() + fact.get_cost(),
-                          Achievers{fact.get_fact_index()});
+                          Achievers(vector<int>({fact.get_fact_index()}), rule.get_weight()));
 }
 
 /*
@@ -209,7 +207,8 @@ void WeightedGrounder::join(
         newfacts.emplace_back(move(new_arguments),
                            rule.get_effect().get_predicate_index(),
                            aggregation_function(fact.get_cost(), f.get_cost()) + rule.get_weight(),
-                           Achievers{fact.get_fact_index(), f.get_fact_index()});
+                           Achievers(vector<int>({fact.get_fact_index(), f.get_fact_index()}),
+                               rule.get_weight()));
     }
 }
 
@@ -243,6 +242,7 @@ void WeightedGrounder::product(
     rule.add_reached_fact_to_condition(fact, position, fact.get_cost());
     int total_cost = 0;
     Achievers nullary_head_achievers;
+    nullary_head_achievers.set_rule_cost(rule.get_weight());
     for (const ReachedFacts &v : rule.get_reached_facts_all_conditions()) {
         if (v.empty()) return;
         int min_cost = std::numeric_limits<int>::max();
@@ -296,6 +296,7 @@ void WeightedGrounder::product(
         auto& next = q.front();
 
         if (next.index >= int(rule.get_conditions().size())) {
+            next.achievers.set_rule_cost(rule.get_weight());
             newfacts.emplace_back(next.arguments,
                                   rule.get_effect().get_predicate_index(),
                                   next.cost + rule.get_weight(),
@@ -337,6 +338,7 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgr
     queue<int> achievers_queue;
     achievers_queue.emplace(fact.get_fact_index());
     best_achievers.push_back(fact.get_fact_index());
+    int ff = 0;
 
     while (!achievers_queue.empty()) {
         int index = achievers_queue.front();
@@ -346,6 +348,7 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgr
             continue;
         }
         const Fact &f = lp.get_fact_by_index(index);
+        ff += f.get_achiever_rule_cost();
         for (int achiever : f.get_achievers()) {
             const Fact &achiever_fact = lp.get_fact_by_index(achiever);
             //achiever_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
@@ -366,11 +369,7 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgr
         }
     }
 
-    /*cout << "\t\tAchievers: ";
-    for (auto &entry : best_achievers) {
-        lp.get_fact_by_index(entry).print_atom(lp.get_objects(), lp.get_map_index_to_atom());
-    }
-    cout << endl;*/
+    ff_value = ff;
 }
 
 void WeightedGrounder::create_rule_matcher(const LogicProgram &lp) {

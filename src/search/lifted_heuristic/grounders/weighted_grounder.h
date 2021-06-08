@@ -28,7 +28,9 @@ class WeightedGrounder : public Grounder {
     priority_queues::AdaptiveQueue<int> q;
 
     std::unordered_set<int> facts_in_edb;
-    Achievers best_achievers;
+    std::vector<int> best_achievers;
+
+    int ff_value;
 
 protected:
     int heuristic_type;
@@ -57,10 +59,13 @@ public:
 
     void compute_best_achievers(const Fact &fact, const LogicProgram &lp);
 
-    const Achievers &get_best_achievers() const {
+    const std::vector<int> &get_best_achievers() const {
         return best_achievers;
     }
 
+    int get_ff_value() {
+        return ff_value;
+    }
 
 };
 
