@@ -47,6 +47,7 @@ int LiftedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     if (task.is_goal(s)) return 0;
     int h = grounder.ground(logic_program, target_predicate);
 
+    get_useful_facts(task, logic_program);
     if (type == lifted_heuristic::FF)
         h = grounder.get_ff_value();
 
