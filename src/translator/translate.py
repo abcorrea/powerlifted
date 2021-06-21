@@ -178,8 +178,13 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
     print("ACTION-SCHEMAS %d" % len(task.actions))
     for action in task.actions:
         parameter_index = {}
-        if action.cost is None or isinstance(action.cost, pddl.Increase):
-            action.cost = 1
+        if action.cost is None:
+            action.cost = 0
+        if isinstance(action.cost, pddl.Increase):
+            if isinstance(action.cost.expression, pddl.NumericConstant):
+                action.cost = action.cost.expression.value
+            else:
+                action.cost = 1
         precond = action.get_action_preconditions
         assert isinstance(action.effects, list)
         print(action.name, action.cost, len(list(action.parameters)),
