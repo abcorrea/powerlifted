@@ -35,7 +35,7 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         //cout << " " << current_fact.get_cost() << endl;
         if (current_fact.get_predicate_index() == goal_predicate) {
             compute_best_achievers(current_fact, lp);
-            if (heuristic_type == lifted_heuristic::FF)
+            if (heuristic_type == lifted_heuristic::RFF)
                 return ff_value;
             else {
                 return current_fact.get_cost();

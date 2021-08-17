@@ -35,8 +35,8 @@ LiftedHeuristic::LiftedHeuristic(const Task &task, const std::string &datalog_fi
         cout << "Initializing additive heuristic..." << endl;
     if (type == lifted_heuristic::H_MAX)
         cout << "Initializing h-max heuristic..." << endl;
-    if (type == lifted_heuristic::FF)
-        cout << "Initializing the FF heuristic..." << endl;
+    if (type == lifted_heuristic::RFF)
+        cout << "Initializing the RFF heuristic..." << endl;
     cout << "Total number of static atoms in the EDB: " << logic_program.get_facts().size() << endl;
     cout << "Total number of rules: " << logic_program.get_rules().size() << endl;
 }
@@ -57,7 +57,7 @@ int LiftedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     if (h == std::numeric_limits<int>::max())
         return UNSOLVABLE_STATE;
 
-    if (type == lifted_heuristic::FF)
+    if (type == lifted_heuristic::RFF)
         h = grounder.get_ff_value();
     return h;
 }

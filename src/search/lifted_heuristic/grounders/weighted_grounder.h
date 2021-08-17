@@ -18,7 +18,7 @@ class RuleBase;
 
 const int HAS_CHEAPER_PATH = -2;
 
-enum {H_ADD, H_MAX, FF};
+enum {H_ADD, H_MAX, RFF};
 
 class WeightedGrounder : public Grounder {
     static int is_cheapest_path_to_achieve_fact(Fact &new_fact,
