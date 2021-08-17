@@ -32,14 +32,18 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
     unordered_map<string, int> map_object_to_index;
     unordered_map<string, int> map_atom_to_index;
     unordered_map<int, string> map_index_to_atom;
+    unordered_map<int, int> map_idx_transl_to_search;
 
     vector<Object> lp_objects;
     vector<Fact> lp_facts;
     vector<unique_ptr<RuleBase>> rules;
 
     string line;
+    getline(in, line);
+    int number_rules_facts = stoi(line);
 
-    while (getline(in, line)) {
+    for (int line_counter = 0; line_counter < number_rules_facts; ++line_counter) {
+        getline(in, line);
         // Check if it is a fact or a rule
         if (is_warning_message(line)) {
             // One of the translator warning message, skip!
@@ -55,8 +59,11 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
 
             weight = process_weight(weight_function);
 
-            string rule_type = head.substr(0, head.find(' '));
-            string head_atom_name_and_args = head.substr(head.find(' '));
+            vector<string> preamble;
+            boost::split(preamble, head, boost::is_any_of(" "));
+            int rule_translator_id = stoi(preamble[0]);
+            string rule_type = preamble[1];
+            string head_atom_name_and_args = preamble[2];
             string head_predicate = get_atom_name(head_atom_name_and_args);
             vector<string>
                 head_arguments =
@@ -115,6 +122,8 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
                 rules.emplace_back(make_unique<ProductRule>(weight, head_atom, condition_atoms));
             }
 
+            map_idx_transl_to_search.insert(make_pair(rule_translator_id, number_of_rules));
+
             number_of_rules++;
         } else {
             // Fact
@@ -148,6 +157,25 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
                                   map_atom_to_index[predicate], weight);
             number_of_facts++;
         }
+    }
+
+    //getline(in, line);
+    int number_original_rules;// = stoi(line);
+    in >> number_original_rules;
+    for (int line_counter = 0; line_counter < number_original_rules; ++line_counter) {
+        int transl_id;
+        in >> transl_id;
+        unique_ptr<RuleBase> &r = rules[map_idx_transl_to_search.at(transl_id)];
+
+        int body_size;
+        in >> body_size;
+        vector<int> perm(body_size);
+        for (int i = 0; i < body_size; ++i) {
+            int x;
+            in >> x;
+            perm[i] = x;
+        }
+        r->set_permutation(perm);
     }
 
     // Loop over the facts setting their fact indices

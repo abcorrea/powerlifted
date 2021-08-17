@@ -24,10 +24,20 @@ class PrologProgram:
     def add_rule(self, rule):
         self.rules.append(rule)
     def dump(self, file=None):
+        print(len(self.facts) + len(self.rules), file=file)
         for fact in self.facts:
             print(fact, file=file)
         for rule in self.rules:
-            print(getattr(rule, "type", "none"), rule, file=file)
+            print(rule.label, getattr(rule, "type", "none"), rule, file=file)
+        print(len(self.original_rules) - 1, file=file) # Number of original rules, -1 for goal rule
+        i = 0
+        for rule in self.rules:
+            if rule.permutation is not None:
+                i = i + 1
+                print("{} {} {}".format(rule.label,
+                                        len(rule.permutation),
+                                        " ".join([str(i) for i in rule.permutation])), file=file)
+        assert i == (len(self.original_rules) - 1)
     def normalize(self):
         # Normalized prolog programs have the following properties:
         # 1. Each variable that occurs in the effect of a rule also occurs in its

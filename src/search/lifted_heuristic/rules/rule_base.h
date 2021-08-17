@@ -57,6 +57,7 @@ class RuleBase {
 protected:
     Atom effect;
     std::vector<Atom> conditions;
+    std::vector<int> permutation;
     int weight;
     int index;
     bool ground_effect;
@@ -68,6 +69,7 @@ public:
     RuleBase(int weight, Atom eff, std::vector<Atom> c) :
         effect(std::move(eff)),
         conditions(std::move(c)),
+        permutation(0),
         weight(weight),
         index(next_index++) {
         variable_position.create_map(effect);
@@ -80,6 +82,13 @@ public:
     };
 
     virtual ~RuleBase() = default;
+
+    void set_permutation(std::vector<int> p) {
+        permutation.clear();
+        for (auto i : p) {
+            permutation.push_back(i);
+        }
+    }
 
     virtual void clean_up() = 0;
 
