@@ -12,6 +12,7 @@ class PrologProgram:
     def __init__(self):
         self.facts = []
         self.rules = []
+        self.original_rules = []
         self.objects = set()
         def predicate_name_generator():
             for count in itertools.count():
@@ -38,6 +39,10 @@ class PrologProgram:
         self.convert_trivial_rules()
     def split_rules(self):
         import split_rules
+
+        # First, save original rules for further preprocessing
+        self.original_rules = copy.deepcopy(self.rules)
+
         # Splits rules whose conditions can be partitioned in such a way that
         # the parts have disjoint variable sets, then split n-ary joins into
         # a number of binary joins, introducing new pseudo-predicates for the
@@ -141,6 +146,42 @@ class PrologProgram:
             else:
                 final_rules.append(r)
         self.rules = final_rules
+
+
+    def reconstruct_actions(self, task):
+        original_rule_matcher = dict()
+        for rule in self.original_rules:
+            original_rule_matcher[rule.effect] = rule
+
+        split_rule_matcher = dict()
+        for i, rule in enumerate(self.rules):
+            split_rule_matcher[rule.effect] = rule
+            rule.label = i
+
+        for rule in self.rules:
+            if rule.effect.predicate.startswith("p$") or rule.effect.predicate == "@goal-reachable":
+                # Skip auxiliary rules
+                rule.permutation = None
+                continue
+            r = copy.deepcopy(rule)
+            q = []
+            final_order = []
+            for c in r.conditions:
+                q.append(c)
+            while len(q) > 0:
+                atom = q.pop(0)
+                if atom.predicate.startswith("p$"):
+                    q.extend(split_rule_matcher[atom].conditions)
+                else:
+                    final_order.append(atom)
+            #print("{} :- {}".format(rule.effect, ",".join([str(a) for a in final_order])))
+            permutation = []
+            for permutated_atom in final_order:
+                for i, original_atom in enumerate(original_rule_matcher[rule.effect].conditions):
+                    if permutated_atom == original_atom:
+                        permutation.append(i)
+            rule.permutation = permutation
+        return
 
 
     def rename_free_variables(self):
@@ -305,6 +346,7 @@ def translate_facts(prog, task):
         assert isinstance(fact, pddl.Atom) or isinstance(fact, pddl.Assign)
         if isinstance(fact, pddl.Atom):
             prog.add_fact(fact)
+
 
 def add_inequalities(prog,task):
     for obj1 in task.objects:
