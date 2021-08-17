@@ -146,8 +146,6 @@ def main():
                      options.domain, options.instance, '--output-file', options.translator_file] + \
                     PYTHON_EXTRA_OPTIONS)
 
-
-
     # Invoke the C++ search component
     cmd = [os.path.join(build_dir, 'search', 'search'),
            '-f', options.translator_file,

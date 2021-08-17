@@ -19,6 +19,7 @@ if not python_version_supported():
 
 import compile_types
 import complete_state
+import hypertrees
 import normalize
 import options
 import pddl_parser
@@ -74,6 +75,10 @@ def main():
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
+
+    # TODO Put flag around this
+    with timers.timing("Generating precondition hypetrees"):
+        hypertrees.get_hypertree_decompositions(task)
 
     with timers.timing("Checking static predicates"):
         static_pred = static_predicates.check(task)

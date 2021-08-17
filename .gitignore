@@ -17,3 +17,5 @@ powerlifted.sif
 reports/
 local-tests/
 *.out
+*.ast
+*.htd
