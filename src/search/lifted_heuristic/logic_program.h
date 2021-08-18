@@ -23,6 +23,7 @@ class LogicProgram {
     std::unordered_map<int, std::string> map_index_to_atom;
     std::unordered_map<std::string, int> map_atom_to_index;
     std::unordered_map<std::string, int> map_object_to_index;
+    std::unordered_set<int> auxiliary_predicates;
 
 public:
     LogicProgram() = default;
@@ -32,13 +33,15 @@ public:
                  std::vector<std::unique_ptr<RuleBase>> &&r,
                  std::unordered_map<int, std::string> &&m,
                  std::unordered_map<std::string, int> &&a_to_i,
-                 std::unordered_map<std::string, int> &&o_to_i)
+                 std::unordered_map<std::string, int> &&o_to_i,
+                 std::unordered_set<int> aux_predicates)
         : facts(std::move(f)),
           objects(std::move(o)),
           rules(std::move(r)),
           map_index_to_atom(std::move(m)),
           map_atom_to_index(std::move(a_to_i)),
-          map_object_to_index(std::move(o_to_i)){}
+          map_object_to_index(std::move(o_to_i)),
+          auxiliary_predicates(std::move(aux_predicates)) {}
 
 
     void insert_fact(const Fact &f);
@@ -55,7 +58,7 @@ public:
         return map_index_to_atom;
     }
 
-    RuleBase &get_rule_by_index(int index);
+    RuleBase & get_rule_by_index(int index) const;
 
     const Fact &get_fact_by_index(int index) const;
 
@@ -74,6 +77,10 @@ public:
     void update_fact_cost(int fact, int cost);
 
     void reset_facts(size_t i);
+
+    bool is_auxiliary_predicate(int idx) const {
+        return auxiliary_predicates.count(idx) > 0;
+    }
 };
 
 }

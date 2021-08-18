@@ -59,6 +59,7 @@ protected:
     std::vector<Atom> conditions;
     std::vector<int> permutation;
     int weight;
+    int schema_id;
     int index;
     bool ground_effect;
     static int next_index;
@@ -66,11 +67,12 @@ protected:
     MapVariablePosition variable_position;
 
 public:
-    RuleBase(int weight, Atom eff, std::vector<Atom> c) :
+    RuleBase(int weight, int schema_id, Atom eff, std::vector<Atom> c) :
         effect(std::move(eff)),
         conditions(std::move(c)),
         permutation(0),
         weight(weight),
+        schema_id(schema_id),
         index(next_index++) {
         variable_position.create_map(effect);
         ground_effect = true;
@@ -117,6 +119,22 @@ public:
 
     int get_weight() const {
         return weight;
+    }
+
+    bool is_permutation_empty() {
+        return permutation.size() == 0;
+    }
+
+    const std::vector<int> &get_permutation() {
+        return permutation;
+    }
+
+    int get_permutation_at_specific_position(int i) {
+        return permutation[i];
+    }
+
+    int get_corresponding_action_schema() {
+        return schema_id;
     }
 
     virtual int get_type() const = 0;

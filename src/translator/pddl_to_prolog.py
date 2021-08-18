@@ -161,7 +161,7 @@ class PrologProgram:
     def reconstruct_actions(self, task):
         original_rule_matcher = dict()
         for rule in self.original_rules:
-            original_rule_matcher[rule.effect] = rule
+            original_rule_matcher[(rule.effect, rule.schema_id)] = rule
 
         split_rule_matcher = dict()
         for i, rule in enumerate(self.rules):
@@ -184,10 +184,9 @@ class PrologProgram:
                     q.extend(split_rule_matcher[atom].conditions)
                 else:
                     final_order.append(atom)
-            #print("{} :- {}".format(rule.effect, ",".join([str(a) for a in final_order])))
             permutation = []
             for permutated_atom in final_order:
-                for i, original_atom in enumerate(original_rule_matcher[rule.effect].conditions):
+                for i, original_atom in enumerate(original_rule_matcher[(rule.effect, rule.schema_id)].conditions):
                     if permutated_atom == original_atom:
                         permutation.append(i)
             rule.permutation = permutation
@@ -307,10 +306,11 @@ class Fact:
         return "%s [%s]." % (self.atom, str(self.weight))
 
 class Rule:
-    def __init__(self, conditions, effect, weight=0):
+    def __init__(self, conditions, effect, weight=0, schema_id=-1):
         self.conditions = conditions
         self.effect = effect
         self.weight = weight
+        self.schema_id = schema_id
     def add_condition(self, condition):
         self.conditions.append(condition)
     def get_variables(self):
@@ -340,7 +340,7 @@ class Rule:
 
     def __str__(self):
         cond_str = ", ".join(map(str, self.conditions))
-        return "%s :- %s [%s]." % (self.effect, cond_str, self.weight)
+        return "%s :- %s [%s, %s]." % (self.effect, cond_str, self.weight, self.schema_id)
 
 
 def translate_typed_object(prog, obj, type_dict):
@@ -381,6 +381,12 @@ def get_action_cost(action):
             cost = 1
     return cost
 
+
+def get_action_id(action):
+    if action is None:
+        return -1
+    return action.id
+
 def translate(task, keep_action_predicates=False, add_inequalities_flag=False):
     # Note: The function requires that the task has been normalized.
     prog = PrologProgram()
@@ -389,9 +395,10 @@ def translate(task, keep_action_predicates=False, add_inequalities_flag=False):
         add_inequalities(prog, task)
     for conditions, effect, action in normalize.build_exploration_rules(task, add_inequalities_flag):
         weight = get_action_cost(action)
+        idx = get_action_id(action)
         if effect.predicate == "@goal-reachable":
             weight = 0
-        prog.add_rule(Rule(conditions, effect, weight))
+        prog.add_rule(Rule(conditions, effect, weight, idx))
     # Using block=True because normalization can output some messages
     # in rare cases.
     prog.remove_fluent_atoms_from_edb(task)

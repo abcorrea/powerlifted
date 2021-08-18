@@ -390,6 +390,12 @@ def substitute_complicated_goal(task):
     new_axiom = task.add_axiom([], goal)
     task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
 
+
+def add_action_ids(task):
+    for idx, action in enumerate(task.actions):
+        action.id = idx
+
+
 # Combine Steps [1], [2], [3], [4], [5] and do some additional verification
 # that the task makes sense.
 
@@ -406,6 +412,7 @@ def normalize(task):
     eliminate_existential_quantifiers_from_conditional_effects(task)
     normalize_action_costs(task)
     verify_axiom_predicates(task)
+    add_action_ids(task)
 
 def normalize_action_costs(task):
     # If all actions have "None" as cost, then we map it to a unit cost domain.

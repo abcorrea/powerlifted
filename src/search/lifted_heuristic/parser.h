@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
+#include <utility>
 
 #include "logic_program.h"
 
@@ -26,7 +27,8 @@ Arguments transform_args_into_indices(
 
 std::vector<std::string> get_rule_conditions(std::string &body);
 
-int process_weight(std::string weight_function);
+int extract_weight(std::string parsed_weight_id);
+int extract_schema_id(std::string parsed_weight_id);
 
 }
 

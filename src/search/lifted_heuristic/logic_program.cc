@@ -18,7 +18,7 @@ const vector<unique_ptr<RuleBase>> &LogicProgram::get_rules() const {
     return rules;
 }
 
-RuleBase &LogicProgram::get_rule_by_index(int index) {
+RuleBase & LogicProgram::get_rule_by_index(int index) const {
     return *rules[index];
 }
 

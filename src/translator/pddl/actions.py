@@ -21,6 +21,7 @@ class Action(object):
         self.precondition = precondition
         self.effects = effects
         self.cost = cost
+        self.id = -1
         self.uniquify_variables()  # TODO: uniquify variables in cost?
 
     def __repr__(self):

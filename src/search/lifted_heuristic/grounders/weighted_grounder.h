@@ -18,7 +18,8 @@ class RuleBase;
 
 const int HAS_CHEAPER_PATH = -2;
 
-enum {H_ADD, H_MAX, RFF};
+enum {H_ADD, H_MAX, FF, RFF};
+
 
 class WeightedGrounder : public Grounder {
     static int is_cheapest_path_to_achieve_fact(Fact &new_fact,
@@ -28,7 +29,7 @@ class WeightedGrounder : public Grounder {
     priority_queues::AdaptiveQueue<int> q;
 
     std::unordered_set<int> facts_in_edb;
-    std::vector<int> best_achievers;
+    std::vector<int> useful_atoms;
 
     int ff_value;
 
@@ -57,10 +58,10 @@ public:
 
     int ground(LogicProgram &lp, int goal_predicate) override;
 
-    void compute_best_achievers(const Fact &fact, const LogicProgram &lp);
+    void compute_best_achievers(const Fact &goal_fact, const LogicProgram &lp);
 
     const std::vector<int> &get_best_achievers() const {
-        return best_achievers;
+        return useful_atoms;
     }
 
     int get_ff_value() {
@@ -69,6 +70,39 @@ public:
 
 };
 
+
+struct RelaxedGroundAction {
+    int schema;
+    int cost;
+    std::vector<int> precondition;
+
+    RelaxedGroundAction(int s, int c, std::vector<int> &p)
+        : schema(s), cost(c), precondition(std::move(p)) {
+    }
+
+    bool operator==(const RelaxedGroundAction &other) const {
+        return (schema == other.schema) and
+               (cost == other.cost) and
+               (precondition == other.precondition);
+    }
+
+    bool operator!= (const RelaxedGroundAction &other) const {
+        return !(*this == other);
+    }
+};
+
+}
+
+namespace std {
+template <>
+struct hash<lifted_heuristic::RelaxedGroundAction>
+{
+    std::size_t operator()(const lifted_heuristic::RelaxedGroundAction& c) const {
+        std::size_t result = boost::hash_range(c.precondition.begin(), c.precondition.end());
+        boost::hash_combine(result, c.schema);
+        return result;
+    }
+};
 }
 
 #endif //GROUNDER_GROUNDERS_FAST_DOWNWARD_GROUNDER_H_

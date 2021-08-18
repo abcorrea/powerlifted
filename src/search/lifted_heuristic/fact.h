@@ -14,14 +14,13 @@ namespace  lifted_heuristic {
 
 class Achievers {
     std::vector<int> achievers;
+    int rule_idx;
     int rule_cost;
 
 public:
-    Achievers(std::vector<int>& a, int c) : achievers(a), rule_cost(c) {};
+    Achievers(const std::vector<int> &&a, int idx, int c) : achievers(std::move(a)), rule_idx(idx), rule_cost(c) {};
 
-    Achievers(const std::vector<int> a, int c) : achievers(std::move(a)), rule_cost(c) {};
-
-    Achievers() : achievers(), rule_cost(0) {}
+    Achievers() : achievers(), rule_idx(-1), rule_cost(0) {}
 
     std::vector<int>::const_iterator begin() const {
         return achievers.begin();
@@ -35,8 +34,16 @@ public:
         rule_cost = c;
     }
 
+    void set_rule_index(int i) {
+        rule_idx = i;
+    }
+
     void push_back(int i) {
         achievers.push_back(i);
+    }
+
+    int get_achiever_rule_index() const {
+        return rule_idx;
     }
 
     int get_achiever_rule_cost() const {
@@ -116,12 +123,16 @@ public:
         return cost;
     }
 
-    const Achievers &get_achievers() const {
+    const Achievers &get_achiever_body() const {
         return achievers;
     }
 
     int get_achiever_rule_cost() const {
         return achievers.get_achiever_rule_cost();
+    }
+
+    int get_achiever_rule_index() const {
+        return achievers.get_achiever_rule_index();
     }
 
     void update_achievers(Achievers a) {

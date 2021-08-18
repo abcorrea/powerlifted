@@ -18,9 +18,9 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
     unordered_set<Fact> reached_facts;
     std::vector<Fact> newfacts;
     q.clear();
-    best_achievers.clear();
+    useful_atoms.clear();
     facts_in_edb.clear();
-
+    //static int y = 0;
     for (const Fact &f : lp.get_facts()) {
         q.push(f.get_cost(), f.get_fact_index());
         facts_in_edb.insert(f.get_fact_index());
@@ -30,12 +30,13 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
         pair<int, int> queue_top = q.pop();
         int cost = queue_top.first;
         int top_fact_index = queue_top.second;
+        //cout << "pop for datalog! " << y++ << " " << top_fact_index << endl;
         const Fact current_fact = lp.get_fact_by_index(top_fact_index);
         //current_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
         //cout << " " << current_fact.get_cost() << endl;
         if (current_fact.get_predicate_index() == goal_predicate) {
             compute_best_achievers(current_fact, lp);
-            if (heuristic_type == lifted_heuristic::RFF)
+            if (heuristic_type == lifted_heuristic::FF or heuristic_type == lifted_heuristic::RFF)
                 return ff_value;
             else {
                 return current_fact.get_cost();
@@ -143,7 +144,8 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vec
     newfacts.emplace_back(move(new_arguments),
                           rule.get_effect().get_predicate_index(),
                           rule_.get_weight() + fact.get_cost(),
-                          Achievers(vector<int>({fact.get_fact_index()}), rule.get_weight()));
+                          Achievers(vector<int>({fact.get_fact_index()}),
+                              rule.get_index(), rule.get_weight()));
 }
 
 /*
@@ -191,24 +193,35 @@ void WeightedGrounder::join(
         position_counter++;
     }
 
+    int rule_index = rule.get_index();
+    int rule_weight = rule.get_weight();
+
     const int inverse_position = rule.get_inverse_position(position);
-    for (const Fact &f : rule.get_facts_matching_key(key, inverse_position)) {
+    for (const Fact &already_achieved_fact : rule.get_facts_matching_key(key, inverse_position)) {
         Arguments new_arguments = new_arguments_persistent;
         position_counter = 0;
         for (auto &arg : rule.get_condition_arguments(inverse_position)) {
             int pos = rule.get_head_position_of_arg(arg);
             if (pos!=-1 and !arg.is_object()) {
                 new_arguments.set_term_to_object(pos,
-                                                 f.argument(position_counter).get_index());
+                                                 already_achieved_fact.argument(position_counter).get_index());
             }
             position_counter++;
         }
 
+        vector<int> achievers_body{fact.get_fact_index(), already_achieved_fact.get_fact_index()};
+        if (position == 1) {
+            // We need to keep the order of the atoms in the achiever as in the rule body,
+            // so we reverse the order if `fact` is the one in the second position (index 1).
+            reverse(achievers_body.begin(), achievers_body.end());
+        }
+
+        Achievers new_fact_achievers(move(achievers_body), rule_index, rule_weight);
+        int cost = aggregation_function(fact.get_cost(), already_achieved_fact.get_cost()) + rule_weight;
+
         newfacts.emplace_back(move(new_arguments),
                            rule.get_effect().get_predicate_index(),
-                           aggregation_function(fact.get_cost(), f.get_cost()) + rule.get_weight(),
-                           Achievers(vector<int>({fact.get_fact_index(), f.get_fact_index()}),
-                               rule.get_weight()));
+                           cost,new_fact_achievers);
     }
 }
 
@@ -242,6 +255,7 @@ void WeightedGrounder::product(
     rule.add_reached_fact_to_condition(fact, position, fact.get_cost());
     int total_cost = 0;
     Achievers nullary_head_achievers;
+    nullary_head_achievers.set_rule_index(rule.get_index());
     nullary_head_achievers.set_rule_cost(rule.get_weight());
     for (const ReachedFacts &v : rule.get_reached_facts_all_conditions()) {
         if (v.empty()) return;
@@ -296,6 +310,7 @@ void WeightedGrounder::product(
         auto& next = q.front();
 
         if (next.index >= int(rule.get_conditions().size())) {
+            next.achievers.set_rule_index(rule.get_index());
             next.achievers.set_rule_cost(rule.get_weight());
             newfacts.emplace_back(next.arguments,
                                   rule.get_effect().get_predicate_index(),
@@ -333,43 +348,102 @@ void WeightedGrounder::product(
     }
 }
 
-void WeightedGrounder::compute_best_achievers(const Fact &fact, const LogicProgram &lp) {
-    unordered_set<int> marked_achievers;
+void WeightedGrounder::compute_best_achievers(const Fact &goal_fact, const LogicProgram &lp) {
+    unordered_set<int> achieved_atoms;
     queue<int> achievers_queue;
-    achievers_queue.emplace(fact.get_fact_index());
-    best_achievers.push_back(fact.get_fact_index());
-    int ff = 0;
-
+    for (int a : goal_fact.get_achiever_body()) {
+        achievers_queue.push(a);
+        useful_atoms.push_back(a);
+    }
+    int rff = 0;
+    //static int x = 0;
+    unordered_set<RelaxedGroundAction> ff_plan;
     while (!achievers_queue.empty()) {
+        //cout << "main queue " << x++ << endl;
         int index = achievers_queue.front();
         achievers_queue.pop();
-        auto is_marked = marked_achievers.insert(index);
-        if (!is_marked.second) {
+        auto is_achieved = achieved_atoms.insert(index);
+        if (!is_achieved.second) {
+            continue;
+        }
+        if (facts_in_edb.count(index) != 0) {
+            useful_atoms.push_back(index);
             continue;
         }
         const Fact &f = lp.get_fact_by_index(index);
-        ff += f.get_achiever_rule_cost();
-        for (int achiever : f.get_achievers()) {
-            const Fact &achiever_fact = lp.get_fact_by_index(achiever);
-            //achiever_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
-            //cout << " " << achiever_fact.get_fact_index() << " " << achiever_fact.get_cost() << endl;
-            if (facts_in_edb.count(achiever) == 0) {
-                // We ignore fluents and static information that are true in the evaluated state
-                best_achievers.push_back(achiever);
-                achievers_queue.push(achiever);
-            } else {
-                if (achiever_fact.get_cost() > 0) {
-                    // If a fact in the EDB has cost > 0, it means it is a fact
-                    // achieved by a rule with an empty body.
-                    // TODO Problematic with zero-cost domains
-                    best_achievers.push_back(achiever);
-                    achievers_queue.push(achiever);
+        rff += f.get_achiever_rule_cost();
+        if (heuristic_type == lifted_heuristic::FF) {
+            int r_idx = f.get_achiever_rule_index();
+            RuleBase &rule = lp.get_rule_by_index(r_idx);
+            // TODO Get action schema idx, somehow
+            vector<int> original_permutation = rule.get_permutation();
+            vector<int> unsplit_body;
+            unsplit_body.reserve(original_permutation.size());
+            queue<int> q;
+            for (int achiever : f.get_achiever_body()) {
+                q.push(achiever);
+            }
+            while (!q.empty()) {
+                int front = q.front();
+                q.pop();
+                const Fact &f2 = lp.get_fact_by_index(front);
+                if (lp.is_auxiliary_predicate(f2.get_predicate_index())) {
+                    // add achievers to queue
+                    for (int achiever : f2.get_achiever_body())
+                        q.push(achiever);
+                } else {
+                    unsplit_body.push_back(front);
+                    useful_atoms.push_back(front);
+                    achievers_queue.push(front);
+                }
+            }
+            // Reorder
+            vector<int> ordered_body(unsplit_body.size());
+            for (size_t k = 0; k < unsplit_body.size(); ++k) {
+                ordered_body[original_permutation[k]] = unsplit_body[k];
+            }
+            ff_plan.insert(RelaxedGroundAction(rule.get_corresponding_action_schema(),
+                rule.get_weight(),
+                ordered_body));
+        } else {
+            for (int achiever : f.get_achiever_body()) {
+                const Fact &achiever_fact = lp.get_fact_by_index(achiever);
+                if (facts_in_edb.count(achiever)==0) { // TODO Move entire "if" before the for-loop?
+                    // We ignore fluents and static information that are true in the evaluated state
+                    useful_atoms.push_back(achiever);
+                    achievers_queue.push(achiever); // TODO We don't need this, right?
+                } else {
+                    if (achiever_fact.get_cost() > 0) {
+                        // If a goal_fact in the EDB has cost > 0, it means it is a goal_fact
+                        // achieved by a rule with an empty body.
+                        // TODO Problematic with zero-cost domains
+                        useful_atoms.push_back(achiever);
+                        achievers_queue.push(achiever);
+                    }
                 }
             }
         }
     }
 
-    ff_value = ff;
+    if (heuristic_type == lifted_heuristic::FF) {
+        int h = 0;
+        for (auto &action : ff_plan) {
+            /*cout << "Action id " << action.schema << " ";
+            for (auto p : action.precondition) {
+                auto fact = lp.get_fact_by_index(p);
+                cout << lp.get_atom_by_index(fact.get_predicate_index()) << "(";
+                for (auto arg : fact.get_arguments()) {
+                    cout << arg.get_index() << ",";
+                }
+                cout << "), ";
+            }
+            cout << endl;*/
+            h += action.cost;
+        }
+        ff_value = h;
+    } else {
+        ff_value = rff;
+    }
 }
 
 void WeightedGrounder::create_rule_matcher(const LogicProgram &lp) {

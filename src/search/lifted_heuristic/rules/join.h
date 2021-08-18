@@ -125,8 +125,8 @@ class JoinRule : public RuleBase {
     JoinHashTable hash_table_indices;
     JoiningVariables position_of_joining_vars;
 public:
-    JoinRule(int weight, Atom eff, std::vector<Atom> c)
-        : RuleBase(weight, std::move(eff), std::move(c)),
+    JoinRule(int weight, int schema_id, Atom eff, std::vector<Atom> c)
+        : RuleBase(weight, schema_id, std::move(eff), std::move(c)),
           position_of_joining_vars(conditions) {
     }
 

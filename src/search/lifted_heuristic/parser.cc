@@ -34,6 +34,8 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
     unordered_map<int, string> map_index_to_atom;
     unordered_map<int, int> map_idx_transl_to_search;
 
+    unordered_set<int> auxiliary_predicates;
+
     vector<Object> lp_objects;
     vector<Fact> lp_facts;
     vector<unique_ptr<RuleBase>> rules;
@@ -53,11 +55,13 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
             // Rule
             int number_of_vars_current_rule = 0; // Variables have negative counter
             int weight = 0;
+            int schema_id = -1;
             string head = line.substr(0, line.find(':'));
             string body = line.substr(line.find(':'), line.find('[')); // Still contains ':-'
-            string weight_function = line.substr(line.find('['), line.find(']'));
+            string weight_and_label = line.substr(line.find('['), line.find(']'));
 
-            weight = process_weight(weight_function);
+            weight = extract_weight(weight_and_label);
+            schema_id = extract_schema_id(weight_and_label);
 
             vector<string> preamble;
             boost::split(preamble, head, boost::is_any_of(" "));
@@ -113,13 +117,16 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
 
             if (boost::iequals(rule_type, "project")) {
                 // Project rule
-                rules.emplace_back(make_unique<ProjectRule>(weight, head_atom, condition_atoms));
+                rules.emplace_back(make_unique<ProjectRule>(weight, schema_id, head_atom, condition_atoms));
             } else if (boost::iequals(rule_type, "join")) {
                 // Join rule
-                rules.emplace_back(make_unique<JoinRule>(weight, head_atom, condition_atoms));
+                rules.emplace_back(make_unique<JoinRule>(weight, schema_id, head_atom, condition_atoms));
             } else if (boost::iequals(rule_type, "product")) {
                 // Product rule
-                rules.emplace_back(make_unique<ProductRule>(weight, head_atom, condition_atoms));
+                rules.emplace_back(make_unique<ProductRule>(weight, schema_id, head_atom, condition_atoms));
+            } else {
+                cerr << "Rule has an unexpected type." << endl;
+                exit(-1);
             }
 
             map_idx_transl_to_search.insert(make_pair(rule_translator_id, number_of_rules));
@@ -129,7 +136,7 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
             // Fact
             string weight_function = line.substr(line.find('['), line.find(']'));
 
-            int weight = process_weight(weight_function);
+            int weight = extract_weight(weight_function);
 
             string predicate = get_atom_name(line);
             auto pred_pair =
@@ -159,8 +166,8 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
         }
     }
 
-    //getline(in, line);
-    int number_original_rules;// = stoi(line);
+
+    int number_original_rules;
     in >> number_original_rules;
     for (int line_counter = 0; line_counter < number_original_rules; ++line_counter) {
         int transl_id;
@@ -178,6 +185,12 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
         r->set_permutation(perm);
     }
 
+    for (auto atom : map_atom_to_index) {
+        if (atom.first.find("p$") == 0) {
+            auxiliary_predicates.insert(atom.second);
+        }
+    }
+
     // Loop over the facts setting their fact indices
     for (Fact &f : lp_facts)
         f.set_fact_index();
@@ -187,7 +200,8 @@ LogicProgram parse_logic_program(const std::string &datalog_file) {
         move(rules),
         move(map_index_to_atom),
         move(map_atom_to_index),
-        move(map_object_to_index));
+        move(map_object_to_index),
+        move(auxiliary_predicates));
 }
 
 bool is_warning_message(const string &line) {
@@ -287,13 +301,25 @@ vector<string> get_rule_conditions(string &body) {
     return condition_atoms;
 }
 
-int process_weight(string weight_function) {
+int extract_weight(string parsed_weight_id) {
     // TODO Implement parsing for lifted cost function, e.g. (road-length ?l1 ?l2)
 
     // case for constant cost
-    weight_function.erase(0, 1);
-    weight_function.erase(weight_function.size() - 1);
-    return stoi(weight_function);
+    vector<string> weight_and_schema_id;
+    parsed_weight_id.erase(0, 1);
+    parsed_weight_id.erase(parsed_weight_id.size() - 1);
+    //boost::erase_all(parsed_weight_id, " ");
+    boost::split(weight_and_schema_id, parsed_weight_id, boost::is_any_of(","));
+    return stoi(weight_and_schema_id[0]);
+}
+
+int extract_schema_id(string parsed_weight_id) {
+     vector<string> weight_and_schema_id;
+    parsed_weight_id.erase(0, 1);
+    parsed_weight_id.erase(parsed_weight_id.size() - 1);
+    //boost::erase_all(parsed_weight_id, ' ');
+    boost::split(weight_and_schema_id, parsed_weight_id, boost::is_any_of(","));
+    return stoi(weight_and_schema_id[1]);
 }
 
 }
