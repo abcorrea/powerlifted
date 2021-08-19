@@ -70,6 +70,13 @@ def parse_options():
             '(The script still supports \"naive\" for now, but it will be dropped in the future.)')
         args.search = 'bfs'
 
+    # FF and heuristics assume that there are no action predicates
+    if args.heuristic in ['ff', 'rff'] and args.keep_action_predicates:
+        sys.stderr.write(
+            'WARNING: The FF and the RFF heuristics assume that action predicates were removed.'
+            'The flag was set to "False" to keep correctness.')
+        args.keep_action_predicates = False
+
     return args
 
 
