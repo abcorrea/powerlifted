@@ -19,11 +19,11 @@ int WeightedGrounder::ground(LogicProgram &lp, int goal_predicate) {
     std::vector<Fact> newfacts;
     q.clear();
     useful_atoms.clear();
-    facts_in_edb.clear();
+    initial_facts.clear();
     //static int y = 0;
     for (const Fact &f : lp.get_facts()) {
         q.push(f.get_cost(), f.get_fact_index());
-        facts_in_edb.insert(f.get_fact_index());
+        initial_facts.insert(f.get_fact_index());
         reached_facts.insert(f);
     }
     while (!q.empty()) {
@@ -139,7 +139,6 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vec
             }
         }
     }
-
     // Return a vector with one single fact
     newfacts.emplace_back(move(new_arguments),
                           rule.get_effect().get_predicate_index(),
@@ -304,7 +303,6 @@ void WeightedGrounder::product(
     // reached facts and instantiate all possibilities (i.e., cartesian product).
     // We do this using a queue
     deque<ProductDequeEntry> q;
-    //deque<pair<Arguments, int>> q;
     q.emplace_back(new_arguments_persistent, 0, fact.get_cost());
     while (!q.empty()) {
         auto& next = q.front();
@@ -351,99 +349,143 @@ void WeightedGrounder::product(
 void WeightedGrounder::compute_best_achievers(const Fact &goal_fact, const LogicProgram &lp) {
     unordered_set<int> achieved_atoms;
     queue<int> achievers_queue;
-    for (int a : goal_fact.get_achiever_body()) {
-        achievers_queue.push(a);
-        useful_atoms.push_back(a);
-    }
-    int rff = 0;
-    //static int x = 0;
-    unordered_set<RelaxedGroundAction> ff_plan;
-    while (!achievers_queue.empty()) {
-        //cout << "main queue " << x++ << endl;
-        int index = achievers_queue.front();
-        achievers_queue.pop();
-        auto is_achieved = achieved_atoms.insert(index);
-        if (!is_achieved.second) {
-            continue;
-        }
-        if (facts_in_edb.count(index) != 0) {
-            useful_atoms.push_back(index);
-            continue;
-        }
-        const Fact &f = lp.get_fact_by_index(index);
-        rff += f.get_achiever_rule_cost();
-        if (heuristic_type == lifted_heuristic::FF) {
-            int r_idx = f.get_achiever_rule_index();
-            RuleBase &rule = lp.get_rule_by_index(r_idx);
-            // TODO Get action schema idx, somehow
-            vector<int> original_permutation = rule.get_permutation();
-            vector<int> unsplit_body;
-            unsplit_body.reserve(original_permutation.size());
-            queue<int> q;
-            for (int achiever : f.get_achiever_body()) {
-                q.push(achiever);
-            }
-            while (!q.empty()) {
-                int front = q.front();
-                q.pop();
-                const Fact &f2 = lp.get_fact_by_index(front);
-                if (lp.is_auxiliary_predicate(f2.get_predicate_index())) {
-                    // add achievers to queue
-                    for (int achiever : f2.get_achiever_body())
-                        q.push(achiever);
-                } else {
-                    unsplit_body.push_back(front);
-                    useful_atoms.push_back(front);
-                    achievers_queue.push(front);
-                }
-            }
-            // Reorder
-            vector<int> ordered_body(unsplit_body.size());
-            for (size_t k = 0; k < unsplit_body.size(); ++k) {
-                ordered_body[original_permutation[k]] = unsplit_body[k];
-            }
-            ff_plan.insert(RelaxedGroundAction(rule.get_corresponding_action_schema(),
-                rule.get_weight(),
-                ordered_body));
-        } else {
-            for (int achiever : f.get_achiever_body()) {
-                const Fact &achiever_fact = lp.get_fact_by_index(achiever);
-                if (facts_in_edb.count(achiever)==0) { // TODO Move entire "if" before the for-loop?
-                    // We ignore fluents and static information that are true in the evaluated state
-                    useful_atoms.push_back(achiever);
-                    achievers_queue.push(achiever); // TODO We don't need this, right?
-                } else {
-                    if (achiever_fact.get_cost() > 0) {
-                        // If a goal_fact in the EDB has cost > 0, it means it is a goal_fact
-                        // achieved by a rule with an empty body.
-                        // TODO Problematic with zero-cost domains
-                        useful_atoms.push_back(achiever);
-                        achievers_queue.push(achiever);
-                    }
-                }
-            }
-        }
-    }
 
-    if (heuristic_type == lifted_heuristic::FF) {
-        int h = 0;
-        for (auto &action : ff_plan) {
-            /*cout << "Action id " << action.schema << " ";
-            for (auto p : action.precondition) {
-                auto fact = lp.get_fact_by_index(p);
-                cout << lp.get_atom_by_index(fact.get_predicate_index()) << "(";
-                for (auto arg : fact.get_arguments()) {
-                    cout << arg.get_index() << ",";
-                }
-                cout << "), ";
-            }
-            cout << endl;*/
-            h += action.cost;
-        }
-        ff_value = h;
-    } else {
+    initialize_achievers_queue(goal_fact, achievers_queue);
+
+    unordered_set<RelaxedGroundAction> ff_plan;
+
+    int rff = explore_achievers_queue(lp, achieved_atoms, achievers_queue, ff_plan);
+
+    if (heuristic_type == lifted_heuristic::FF)
+        ff_value = get_ff_plan_cost(ff_plan);
+    else
         ff_value = rff;
+}
+
+
+int WeightedGrounder::explore_achievers_queue(const LogicProgram &lp,
+                                              unordered_set<int> &achieved_atoms,
+                                              queue<int> &achievers_queue,
+                                              unordered_set<RelaxedGroundAction> &ff_plan) {
+    int rff = 0;
+    while (!achievers_queue.empty()) {
+        int next_achiever_idx = achievers_queue.front();
+        achievers_queue.pop();
+        auto is_achieved_now = achieved_atoms.insert(next_achiever_idx);
+        if (!is_achieved_now.second) {
+            // Previously achieved and already processed. We can skip this iteration.
+            continue;
+        }
+        if (initial_facts.count(next_achiever_idx) > 0) {
+            useful_atoms.push_back(next_achiever_idx);
+            continue;
+        }
+        const Fact &f = lp.get_fact_by_index(next_achiever_idx);
+        rff += f.get_achiever_rule_cost();
+
+        if (heuristic_type== FF) {
+            vector<int> ordered_body;
+            RelaxedGroundAction a = get_action_from_rule_achievers(lp, achievers_queue, f);
+            ff_plan.insert(a);
+        } else {
+            collect_achievers(lp, achievers_queue, f);
+        }
     }
+    return rff;
+}
+
+
+void WeightedGrounder::initialize_achievers_queue(const Fact &goal_fact,
+                                                  queue<int> &achievers_queue) {
+    for (int achiever_idx : goal_fact.get_achiever_body()) {
+        achievers_queue.push(achiever_idx);
+        useful_atoms.push_back(achiever_idx);
+    }
+}
+
+void WeightedGrounder::collect_achievers(const LogicProgram &lp,
+                                         queue<int> &achievers_queue,
+                                         const Fact &fact) {
+    for (int achiever : fact.get_achiever_body()) {
+        const Fact &achiever_fact = lp.get_fact_by_index(achiever);
+        if (initial_facts.count(achiever) == 0) {
+            // We ignore fluents and static information that are true in the evaluated state
+            useful_atoms.push_back(achiever);
+            achievers_queue.push(achiever);
+        } else {
+            if (achiever_fact.get_cost() > 0) {
+                // If a fact in the EDB has cost > 0, it means it is a fact
+                // achieved by a rule with an empty body.
+                // TODO Problematic with zero-cost domains
+                useful_atoms.push_back(achiever);
+                achievers_queue.push(achiever);
+            }
+        }
+    }
+}
+
+int WeightedGrounder::get_ff_plan_cost(const unordered_set<RelaxedGroundAction> &ff_plan) const {
+    int h = 0;
+    for (auto &action : ff_plan) {
+        h += action.cost;
+    }
+    return h;
+}
+
+RelaxedGroundAction WeightedGrounder::get_action_from_rule_achievers(const LogicProgram &lp,
+                                                                     queue<int> &achievers_queue,
+                                                                     const Fact &f) {
+    int r_idx = f.get_achiever_rule_index();
+    RuleBase &rule= lp.get_rule_by_index(r_idx);
+
+    vector<int> original_permutation = rule.get_permutation();
+
+    vector<int> unsplit_body;
+    unsplit_body.reserve(original_permutation.size());
+
+    unsplit_rule(lp, achievers_queue, f, unsplit_body);
+
+    vector<int> ordered_body = reorder_rule_body(original_permutation, unsplit_body);
+
+    return RelaxedGroundAction(rule.get_corresponding_action_schema(),
+                               rule.get_weight(),
+                               ordered_body);
+}
+
+
+void WeightedGrounder::unsplit_rule(const LogicProgram &lp,
+                                    queue<int> &achievers_queue,
+                                    const Fact &f,
+                                    vector<int> &unsplit_body) {
+    queue<int> q;
+
+    for (int achiever : f.get_achiever_body()) {
+        q.push(achiever);
+    }
+    while (!q.empty()) {
+        int next_body_atom = q.front();
+        q.pop();
+        const Fact &f2 = lp.get_fact_by_index(next_body_atom);
+        if (lp.is_auxiliary_predicate(f2.get_predicate_index())) {
+            // add achievers to queue
+            for (int achiever : f2.get_achiever_body())
+                q.push(achiever);
+        } else {
+            unsplit_body.push_back(next_body_atom);
+            useful_atoms.push_back(next_body_atom);
+            achievers_queue.push(next_body_atom);
+        }
+    }
+}
+
+vector<int> WeightedGrounder::reorder_rule_body(const vector<int> &original_permutation,
+                                                const vector<int> &unsplit_body) const {
+    // Reorder
+    vector<int> ordered_body(original_permutation.size());
+    for (size_t k = 0; k < unsplit_body.size(); ++k) {
+        ordered_body[original_permutation[k]] = unsplit_body[k];
+    }
+    return ordered_body;
 }
 
 void WeightedGrounder::create_rule_matcher(const LogicProgram &lp) {

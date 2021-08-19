@@ -11,6 +11,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <vector>
+#include <queue>
 
 namespace lifted_heuristic {
 
@@ -21,6 +22,26 @@ const int HAS_CHEAPER_PATH = -2;
 enum {H_ADD, H_MAX, FF, RFF};
 
 
+struct RelaxedGroundAction {
+    int schema;
+    int cost;
+    std::vector<int> precondition;
+
+    RelaxedGroundAction(int s, int c, std::vector<int> &p)
+        : schema(s), cost(c), precondition(std::move(p)) {
+    }
+
+    bool operator==(const RelaxedGroundAction &other) const {
+        return (schema == other.schema) and
+            (cost == other.cost) and
+            (precondition == other.precondition);
+    }
+
+    bool operator!= (const RelaxedGroundAction &other) const {
+        return !(*this == other);
+    }
+};
+
 class WeightedGrounder : public Grounder {
     static int is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                          std::unordered_set<Fact> &reached_facts,
@@ -28,10 +49,30 @@ class WeightedGrounder : public Grounder {
 
     priority_queues::AdaptiveQueue<int> q;
 
-    std::unordered_set<int> facts_in_edb;
+    std::unordered_set<int> initial_facts;
     std::vector<int> useful_atoms;
 
     int ff_value;
+
+
+    RelaxedGroundAction get_action_from_rule_achievers(const LogicProgram &lp,
+                                                       std::queue<int> &achievers_queue,
+                                                       const Fact &f);
+
+    std::vector<int> reorder_rule_body(const std::vector<int> &original_permutation,
+                                       const std::vector<int> &unsplit_body) const;
+
+    void unsplit_rule(const LogicProgram &lp,
+                      std::queue<int> &achievers_queue,
+                      const Fact &f,
+                      std::vector<int> &unsplit_body);
+    int get_ff_plan_cost(const std::unordered_set<RelaxedGroundAction> &ff_plan) const;
+
+    void collect_achievers(const LogicProgram &lp,
+                           std::queue<int> &achievers_queue,
+                           const Fact &fact);
+
+    void initialize_achievers_queue(const Fact &goal_fact, std::queue<int> &achievers_queue);
 
 protected:
     int heuristic_type;
@@ -67,28 +108,10 @@ public:
     int get_ff_value() {
         return ff_value;
     }
-
-};
-
-
-struct RelaxedGroundAction {
-    int schema;
-    int cost;
-    std::vector<int> precondition;
-
-    RelaxedGroundAction(int s, int c, std::vector<int> &p)
-        : schema(s), cost(c), precondition(std::move(p)) {
-    }
-
-    bool operator==(const RelaxedGroundAction &other) const {
-        return (schema == other.schema) and
-               (cost == other.cost) and
-               (precondition == other.precondition);
-    }
-
-    bool operator!= (const RelaxedGroundAction &other) const {
-        return !(*this == other);
-    }
+    int explore_achievers_queue(const LogicProgram &lp,
+                                std::unordered_set<int> &achieved_atoms,
+                                std::queue<int> &achievers_queue,
+                                std::unordered_set<RelaxedGroundAction> &ff_plan);
 };
 
 }
