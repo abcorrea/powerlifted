@@ -392,8 +392,15 @@ def substitute_complicated_goal(task):
 
 
 def add_action_ids(task):
-    for idx, action in enumerate(task.actions):
+    actions = sort_actions(task)
+    for idx, action in enumerate(actions):
         action.id = idx
+    task.actions = set(actions)
+
+
+def sort_actions(task):
+    # Sort actions to guarantee deterministic ordering
+    return sorted(list(task.actions), key=lambda x: str(x))
 
 
 # Combine Steps [1], [2], [3], [4], [5] and do some additional verification

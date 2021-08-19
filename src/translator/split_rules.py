@@ -69,6 +69,7 @@ def split_rule(rule, name_generator):
     result[-1].weight = weight
     result[-1].schema_id = schema_id
 
+    result.sort(key=lambda x : str(x))
     return result
 
 def split_into_binary_rules(rule, name_generator):
@@ -80,4 +81,5 @@ def split_into_binary_rules(rule, name_generator):
     # TODO Make this more reliable
     rules[-1].weight = rule.weight
     rules[-1].schema_id = rule.schema_id
+    rules.sort(key=lambda x: str(x))
     return rules
