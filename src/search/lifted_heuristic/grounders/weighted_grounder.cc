@@ -376,8 +376,8 @@ int WeightedGrounder::explore_achievers_queue(const LogicProgram &lp,
             // Previously achieved and already processed. We can skip this iteration.
             continue;
         }
+        useful_atoms.push_back(next_achiever_idx);
         if (initial_facts.count(next_achiever_idx) > 0) {
-            useful_atoms.push_back(next_achiever_idx);
             continue;
         }
         const Fact &f = lp.get_fact_by_index(next_achiever_idx);
@@ -410,14 +410,12 @@ void WeightedGrounder::collect_achievers(const LogicProgram &lp,
         const Fact &achiever_fact = lp.get_fact_by_index(achiever);
         if (initial_facts.count(achiever) == 0) {
             // We ignore fluents and static information that are true in the evaluated state
-            useful_atoms.push_back(achiever);
             achievers_queue.push(achiever);
         } else {
             if (achiever_fact.get_cost() > 0) {
                 // If a fact in the EDB has cost > 0, it means it is a fact
                 // achieved by a rule with an empty body.
                 // TODO Problematic with zero-cost domains
-                useful_atoms.push_back(achiever);
                 achievers_queue.push(achiever);
             }
         }
@@ -472,7 +470,6 @@ void WeightedGrounder::unsplit_rule(const LogicProgram &lp,
                 q.push(achiever);
         } else {
             unsplit_body.push_back(next_body_atom);
-            useful_atoms.push_back(next_body_atom);
             achievers_queue.push(next_body_atom);
         }
     }
