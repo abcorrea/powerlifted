@@ -76,20 +76,15 @@ struct Relation {
 };
 
 
-/**
- * @brief Represent a lifted atom by its name, predicate symbol index,
- * list of arguments, and whether it is negated or not.
- *
- * @var name: String representing atom name
- * @var predicate_symbol: predicate symbol index
- * @var arguments: list of Argument objects representing the free variables
- * or constants of the atom
- * @var negated: boolean variable indicating whether the atom is negated
- * or not (in whatever context it occurs)
- *
- * @see Argument (structures.h)
- */
-struct Atom {
+
+class Atom {
+
+    std::string name;
+    int predicate_symbol;
+    std::vector<Argument> arguments;
+    bool negated;
+
+public:
     Atom(std::string &&name, int predicate_symbol,
         std::vector<Argument> &&tuples, bool negated) :
             name(std::move(name)),
@@ -97,10 +92,26 @@ struct Atom {
             arguments(std::move(tuples)),
             negated(negated) {}
 
-    std::string name;
-    int predicate_symbol;
-    std::vector<Argument> arguments;
-    bool negated;
+    const std::string get_name() const {
+        return name;
+    }
+
+    int get_predicate_symbol_idx() const {
+        return predicate_symbol;
+    }
+
+    const std::vector<Argument> get_arguments() const {
+        return arguments;
+    }
+
+    bool is_negated() const {
+        return negated;
+    }
+
+    bool is_ground() const {
+        return arguments.empty();
+    }
+
 };
 
 

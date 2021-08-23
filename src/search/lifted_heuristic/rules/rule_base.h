@@ -38,7 +38,7 @@ public:
 };
 
 /*
- * Rule: Class implementing the rules of the datalog program. Divided into
+ * Rule: Class implementing the rules of the Datalog program. Divided into
  * three distinct types:
  *
  * Join rules: Binary rules where all vars in the head occur in the body

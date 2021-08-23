@@ -28,9 +28,9 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
      *
      * See Ullman's book for an explanation of the algorithm.
      */
-    full_reducer_order.resize(task.actions.size());
-    full_join_order.resize(task.actions.size());
-    for (const ActionSchema &action : task.actions) {
+    full_reducer_order.resize(task.get_number_action_schemas());
+    full_join_order.resize(task.get_number_action_schemas());
+    for (const ActionSchema &action : task.get_action_schemas()) {
         vector<int> hypernodes;
         vector<set<int>> hyperedges;
         vector<int> missing_precond;
@@ -136,7 +136,8 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
                 q.emplace(hyperedges[k].size(), edge_to_precond[k]);
             }
             for (size_t k = 0; k < missing_precond.size(); ++k) {
-                q.emplace(action.get_precondition()[k].arguments.size(), missing_precond[k]);
+                // TODO This is really ugly
+                q.emplace(action.get_precondition()[k].get_arguments().size(), missing_precond[k]);
             }
             while (!q.empty()) {
                 int p = q.top().second;

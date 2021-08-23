@@ -97,7 +97,7 @@ void Task::create_goal_condition(std::vector<AtomicGoal> goals,
 
 void Task::initialize_action_schemas(const std::vector<ActionSchema> &action_list)
 {
-    actions = action_list;
+    action_schemas = action_list;
 }
 
 bool Task::is_goal(const DBState &state) const

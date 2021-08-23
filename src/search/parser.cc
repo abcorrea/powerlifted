@@ -233,6 +233,7 @@ void parse_goal(Task &task, int goal_size)
 
 void parse_initial_state(Task &task, int initial_state_size)
 {
+    //StaticInformation static_info(task.predicates.size());
     for (int i = 0; i < initial_state_size; ++i) {
         string name;
         int index;
@@ -253,6 +254,7 @@ void parse_initial_state(Task &task, int initial_state_size)
                 task.static_info.add_tuple(predicate_index, args);
         }
     }
+    //task.set_static_info(static_info);
 }
 
 void parse_objects(Task &task, int number_objects)

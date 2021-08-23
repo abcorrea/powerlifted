@@ -25,59 +25,76 @@
 
 class Task {
 
+    std::vector<ActionSchema> action_schemas;
+
 public:
-  std::vector<Predicate> predicates;
-  std::vector<Object> objects;
-  DBState initial_state;
-  StaticInformation static_info;
-  GoalCondition goal;
-  std::vector<ActionSchema> actions;
-  std::vector<std::string> type_names;
-  std::unordered_set<int> nullary_predicates;
+    std::vector<Predicate> predicates;
+    std::vector<Object> objects;
+    DBState initial_state;
+    GoalCondition goal;
+    std::vector<std::string> type_names;
+    std::unordered_set<int> nullary_predicates;
+    StaticInformation static_info;
 
-  Task(const std::string &domain_name, const std::string &task_name)
-      : domain_name(domain_name), task_name(task_name) {
-    // Create class only with task and domain names
-  }
+    Task(const std::string &domain_name, const std::string &task_name)
+        : domain_name(domain_name), task_name(task_name) {
+        // Create class only with task and domain names
+    }
 
-  const std::string &get_domain_name() const { return domain_name; }
+    const std::string &get_domain_name() const { return domain_name; }
 
-  const std::string &get_task_name() const { return task_name; }
+    const std::string &get_task_name() const { return task_name; }
 
-  void add_type(const std::string &type_name);
+    void add_type(const std::string &type_name);
 
-  void add_predicate(std::string &name, int index, int arity,
-                           bool static_predicate, std::vector<int> &types);
+    void add_predicate(std::string &name, int index, int arity,
+                       bool static_predicate, std::vector<int> &types);
 
-  void add_object(const std::string &name, int index,
-                  const std::vector<int> &types);
+    void add_object(const std::string &name, int index,
+                    const std::vector<int> &types);
 
-  void create_empty_initial_state(size_t number_predicates);
+    void create_empty_initial_state(size_t number_predicates);
 
-  void create_goal_condition(std::vector<AtomicGoal> goals,
-                             std::unordered_set<int> nullary_goals,
-                             std::unordered_set<int> negative_nullary_goals);
+    void create_goal_condition(std::vector<AtomicGoal> goals,
+                               std::unordered_set<int> nullary_goals,
+                               std::unordered_set<int> negative_nullary_goals);
 
-  void initialize_action_schemas(const std::vector<ActionSchema> &action_list);
+    void initialize_action_schemas(const std::vector<ActionSchema> &action_list);
 
-  void dump_state(DBState s) const;
+    void dump_state(DBState s) const;
 
-  void dump_goal();
+    void dump_goal();
 
-  bool is_goal(const DBState &state) const;
+    bool is_goal(const DBState &state) const;
 
-  bool is_trivially_unsolvable() const;
+    bool is_trivially_unsolvable() const;
 
-  const StaticInformation& get_static_info() const {
-      return static_info;
-  }
+    void set_static_info(StaticInformation &s) {
+        static_info = std::move(s);
+    }
+
+    const StaticInformation& get_static_info() const {
+        return static_info;
+    }
+
+    const std::vector<ActionSchema>& get_action_schemas() const {
+        return action_schemas;
+    }
+
+    const ActionSchema& get_action_schema_by_index(int i) const {
+        return action_schemas[i];
+    }
+
+    size_t get_number_action_schemas() const {
+        return action_schemas.size();
+    }
 
   //! Return a vector R where R[i] contains all objects of type i (or of some subtype).
   std::vector<std::vector<int>> compute_object_index() const;
 
 private:
-  const std::string &domain_name;
-  const std::string &task_name;
+    const std::string &domain_name;
+    const std::string &task_name;
 };
 
 #endif // SEARCH_TASK_H

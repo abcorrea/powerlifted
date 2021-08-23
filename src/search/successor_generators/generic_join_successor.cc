@@ -22,7 +22,7 @@ GenericJoinSuccessor::GenericJoinSuccessor(const Task &task)
     for (const auto &r : static_information.get_relations()) {
         is_predicate_static.push_back(!r.tuples.empty());
     }
-    action_data = precompile_action_data(task.actions);
+    action_data = precompile_action_data(task.get_action_schemas());
 }
 
 Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
@@ -88,7 +88,7 @@ void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int
                                                                       const Atom &a)
 {
     int cont = 0;
-    for (Argument arg : a.arguments) {
+    for (Argument arg : a.get_arguments()) {
         if (!arg.constant)
             indices.push_back(arg.index);
         else {
@@ -108,11 +108,11 @@ void GenericJoinSuccessor::select_tuples(const DBState &s,
                                          std::vector<GroundAtom> &tuples,
                                          const std::vector<int> &constants)
 {
-    for (const GroundAtom &atom : s.get_relations()[a.predicate_symbol].tuples) {
+    for (const GroundAtom &atom : s.get_relations()[a.get_predicate_symbol_idx()].tuples) {
         bool match_constants = true;
         for (int c : constants) {
-            assert(a.arguments[c].constant);
-            if (atom[c] != a.arguments[c].index) {
+            assert(a.get_arguments()[c].constant);
+            if (atom[c] != a.get_arguments()[c].index) {
                 match_constants = false;
                 break;
             }
@@ -139,13 +139,13 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
 
 
     for (const Atom &p : action.get_precondition()) {
-        bool is_ineq = (p.name == "=");
-        if (p.negated and !is_ineq) {
+        bool is_ineq = (p.get_name() == "=");
+        if (p.is_negated() and !is_ineq) {
             throw std::runtime_error("Actions with negated preconditions not supported yet");
         }
 
         // Nullary atoms are handled differently, they don't result in DB tables
-        if (!p.arguments.empty() and !is_ineq) {
+        if (!p.is_ground() and !is_ineq) {
             data.relevant_precondition_atoms.push_back(p);
         }
     }
@@ -159,7 +159,7 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
     for (std::size_t i = 0; i < data.relevant_precondition_atoms.size(); ++i) {
         const Atom &atom = data.relevant_precondition_atoms[i];
 
-        if (!is_static(atom.predicate_symbol)) {
+        if (!is_static(atom.get_predicate_symbol_idx())) {
             // If the atom is fluent, we just flag it as such and we're done: we'll have to deal
             // with it during search time
             data.fluent_tables.push_back(i);
@@ -209,7 +209,7 @@ bool GenericJoinSuccessor::parse_precond_into_join_program(
         // Let's fill in those (currently empty) tables that correspond to
         // fluent symbols in the precondition
         const Atom &atom = adata.relevant_precondition_atoms[i];
-        assert(!is_static(atom.predicate_symbol));
+        assert(!is_static(atom.get_predicate_symbol_idx()));
 
         vector<GroundAtom> tuples;
         vector<int> constants, indices;
@@ -250,12 +250,12 @@ void GenericJoinSuccessor::create_hypergraph(const ActionSchema &action,
 {
     int cont = 0;
     for (const Atom &p : action.get_precondition()) {
-        if (p.negated or p.arguments.empty()) {
+        if (p.is_negated() or p.is_ground()) {
             continue;
         }
         set<int> args;
         bool has_free_variables = false;
-        for (Argument arg : p.arguments) {
+        for (Argument arg : p.get_arguments()) {
             // We parse constants to negative numbers so they're uniquely identified
             if (arg.constant)
                 continue;
@@ -355,19 +355,19 @@ void GenericJoinSuccessor::apply_ground_action_effects(const ActionSchema &actio
 {
     for (const Atom &eff : action.get_effects()) {
         GroundAtom ga;
-        for (const Argument &a : eff.arguments) {
+        for (const Argument &a : eff.get_arguments()) {
             // Create ground atom for each effect given the instantiation
             assert(a.constant);
             ga.push_back(a.index);
         }
-        assert(eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
-        if (eff.negated) {
+        assert(eff.get_predicate_symbol_idx() == new_relation[eff.get_predicate_symbol_idx()].predicate_symbol);
+        if (eff.is_negated()) {
             // If ground effect is negated, remove it from relation
-            new_relation[eff.predicate_symbol].tuples.erase(ga);
+            new_relation[eff.get_predicate_symbol_idx()].tuples.erase(ga);
         }
         else {
             // If ground effect is not in the state, we add it
-            new_relation[eff.predicate_symbol].tuples.insert(ga);
+            new_relation[eff.get_predicate_symbol_idx()].tuples.insert(ga);
         }
     }
 }
@@ -377,17 +377,18 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
 {
     for (const Atom &eff : action.get_effects()) {
         GroundAtom ga = GenericJoinSuccessor::tuple_to_atom(tuple, eff);
-        assert(eff.predicate_symbol == new_relation[eff.predicate_symbol].predicate_symbol);
-        if (eff.negated) {
+        assert(eff.get_predicate_symbol_idx() == new_relation[eff.get_predicate_symbol_idx()].predicate_symbol);
+        if (eff.is_negated()) {
             // Remove from relation
-            new_relation[eff.predicate_symbol].tuples.erase(ga);
+            new_relation[eff.get_predicate_symbol_idx()].tuples.erase(ga);
         }
         else {
-            if (find(new_relation[eff.predicate_symbol].tuples.begin(),
-                     new_relation[eff.predicate_symbol].tuples.end(),
-                     ga) == new_relation[eff.predicate_symbol].tuples.end()) {
+            int predicate_symbol_idx = eff.get_predicate_symbol_idx();
+            if (find(new_relation[predicate_symbol_idx].tuples.begin(),
+                     new_relation[predicate_symbol_idx].tuples.end(),
+                     ga) == new_relation[predicate_symbol_idx].tuples.end()) {
                 // If ground atom is not in the state, we add it
-                new_relation[eff.predicate_symbol].tuples.insert(ga);
+                new_relation[predicate_symbol_idx].tuples.insert(ga);
             }
         }
     }
@@ -453,8 +454,8 @@ std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
 const GroundAtom GenericJoinSuccessor::tuple_to_atom(const vector<int> &tuple, const Atom &eff)
 {
     GroundAtom ground_atom;
-    ground_atom.reserve(eff.arguments.size());
-    for (auto argument : eff.arguments) {
+    ground_atom.reserve(eff.get_arguments().size());
+    for (auto argument : eff.get_arguments()) {
         if (!argument.constant)
             ground_atom.push_back(tuple[argument.index]);
         else
@@ -479,10 +480,10 @@ bool GenericJoinSuccessor::is_ground_action_applicable(const ActionSchema &actio
                                                        const DBState &state) const
 {
     for (const Atom &precond : action.get_precondition()) {
-        int index = precond.predicate_symbol;
+        int index = precond.get_predicate_symbol_idx();
         vector<int> tuple;
-        tuple.reserve(precond.arguments.size());
-        for (const Argument &arg : precond.arguments) {
+        tuple.reserve(precond.get_arguments().size());
+        for (const Argument &arg : precond.get_arguments()) {
             assert(arg.constant);
             tuple.push_back(arg.index);  // Index of a constant is the obj index
         }
@@ -491,7 +492,7 @@ bool GenericJoinSuccessor::is_ground_action_applicable(const ActionSchema &actio
         const auto& static_tuples = get_tuples_from_static_relation(index);
         const auto& it_end_static_tuples = static_tuples.end();
         if (!tuples_in_relation.empty()) {
-            if (precond.negated) {
+            if (precond.is_negated()) {
                 if (tuples_in_relation.find(tuple) != it_end_tuples_in_relation)
                     return false;
             }
@@ -501,7 +502,7 @@ bool GenericJoinSuccessor::is_ground_action_applicable(const ActionSchema &actio
             }
         }
         else if (!static_tuples.empty()) {
-            if (precond.negated) {
+            if (precond.is_negated()) {
                 if (static_tuples.find(tuple) != it_end_static_tuples)
                     return false;
             }

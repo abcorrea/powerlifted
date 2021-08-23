@@ -9,6 +9,9 @@
 #include "successor_generators/successor_generator.h"
 #include "successor_generators/successor_generator_factory.h"
 
+// TODO This should be included in the heuristic, not here. Right now it is here for testing
+#include "datalog/datalog.h"
+
 #include <iostream>
 #include <memory>
 
@@ -50,6 +53,10 @@ int main(int argc, char *argv[]) {
     std::unique_ptr<SuccessorGenerator> sgen(SuccessorGeneratorFactory::create(opt.get_successor_generator(),
                                                                                opt.get_seed(),
                                                                                task));
+
+    // TODO This should be created in the heuristic
+    datalog::Datalog datalog_program = datalog::Datalog(task);
+    datalog_program.dump_rules();
 
     // Start search
     if (task.is_trivially_unsolvable()) {
