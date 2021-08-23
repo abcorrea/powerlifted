@@ -376,10 +376,10 @@ int WeightedGrounder::explore_achievers_queue(const LogicProgram &lp,
             // Previously achieved and already processed. We can skip this iteration.
             continue;
         }
-        useful_atoms.push_back(next_achiever_idx);
         if (initial_facts.count(next_achiever_idx) > 0) {
             continue;
         }
+        useful_atoms.push_back(next_achiever_idx);
         const Fact &f = lp.get_fact_by_index(next_achiever_idx);
         rff += f.get_achiever_rule_cost();
 
@@ -398,8 +398,10 @@ int WeightedGrounder::explore_achievers_queue(const LogicProgram &lp,
 void WeightedGrounder::initialize_achievers_queue(const Fact &goal_fact,
                                                   queue<int> &achievers_queue) {
     for (int achiever_idx : goal_fact.get_achiever_body()) {
-        achievers_queue.push(achiever_idx);
-        useful_atoms.push_back(achiever_idx);
+        if (initial_facts.count(achiever_idx) == 0) {
+            achievers_queue.push(achiever_idx);
+            useful_atoms.push_back(achiever_idx);
+        }
     }
 }
 
