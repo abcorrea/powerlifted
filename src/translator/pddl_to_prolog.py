@@ -405,7 +405,13 @@ def translate(task, keep_action_predicates=False, add_inequalities_flag=False):
     for conditions, effect, action in normalize.build_exploration_rules(task, add_inequalities_flag):
         weight = get_action_cost(action)
         idx = get_action_id(action)
+        # We sort the conditions to make the output deterministic.
+        # They are sorted by reversed alphabetical order. This shows better results than
+        # alphabetical order. Our hypothesis is that this ordering puts type@ predicates
+        # at the beginning of the condition and thus they are split earlier. Since type predicates
+        # are all unary, this works as a semi-join, filtering intermediate relations.
         conditions.sort(key=lambda x: str(x))
+        conditions.reverse()
         if effect.predicate == "@goal-reachable":
             weight = 0
         prog.add_rule(Rule(conditions, effect, weight, idx))
