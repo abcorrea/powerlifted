@@ -8,16 +8,16 @@ using namespace std;
 Datalog::Datalog(const Task &task) : task(task) {
     for (const ActionSchema &schema : task.get_action_schemas()) {
         for (const Atom &eff : schema.get_effects()) {
-            cout << eff.get_name();
-           print_parameters(eff.get_arguments());
+            if (eff.is_negated())
+                continue;
+            print_atom(eff);
             cout << " :- ";
             size_t number_conditions = schema.get_precondition().size();
-            for (const Atom &condition :schema.get_precondition()) {
+            for (const Atom &condition : schema.get_precondition()) {
                 number_conditions--;
                 if (condition.is_negated())
                     continue;
-                cout << condition.get_name();
-                print_parameters(condition.get_arguments());
+                print_atom(condition);
                 if (number_conditions != 0)
                     cout << ", ";
                 else
@@ -27,13 +27,16 @@ Datalog::Datalog(const Task &task) : task(task) {
     }
 }
 
-
 void Datalog::dump_rules() {
     cout << "Rules: " << endl;
 }
 
+void Datalog::print_atom(const Atom &atom) {
+    cout << atom.get_name();
+    print_parameters(atom.get_arguments());
+}
 
-void Datalog::print_parameters(std::vector<Argument> v) {
+void Datalog::print_parameters(const vector<Argument>& v) {
     cout << '(';
     int number_params = v.size();
     for (auto arg : v) {

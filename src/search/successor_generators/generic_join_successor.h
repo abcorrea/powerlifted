@@ -2,6 +2,8 @@
 #define SEARCH_GENERIC_JOIN_SUCCESSOR_H
 
 #include "successor_generator.h"
+
+#include "../atom.h"
 #include "../structures.h"
 
 #include <map>

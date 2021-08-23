@@ -84,44 +84,4 @@ struct Relation {
     std::unordered_set<GroundAtom, TupleHash> tuples;
 };
 
-
-
-class Atom {
-
-    std::string name;
-    int predicate_symbol;
-    std::vector<Argument> arguments;
-    bool negated;
-
-public:
-    Atom(std::string &&name, int predicate_symbol,
-        std::vector<Argument> &&tuples, bool negated) :
-            name(std::move(name)),
-            predicate_symbol(predicate_symbol),
-            arguments(std::move(tuples)),
-            negated(negated) {}
-
-    const std::string get_name() const {
-        return name;
-    }
-
-    int get_predicate_symbol_idx() const {
-        return predicate_symbol;
-    }
-
-    const std::vector<Argument> get_arguments() const {
-        return arguments;
-    }
-
-    bool is_negated() const {
-        return negated;
-    }
-
-    bool is_ground() const {
-        return arguments.empty();
-    }
-
-};
-
-
 #endif //SEARCH_STRUCTURES_H

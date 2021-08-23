@@ -1,6 +1,7 @@
 #ifndef SEARCH_DATALOG_DATALOG_H_
 #define SEARCH_DATALOG_DATALOG_H_
 
+#include "../atom.h"
 #include "../task.h"
 
 /*
@@ -117,12 +118,13 @@ class Datalog {
     // Is this what we want?
     const Task &task;
 
-    void print_parameters(std::vector<Argument> v);
+    void print_parameters(const std::vector<Argument>& v);
 
 public:
     Datalog(const Task &task);
 
     void dump_rules();
+    void print_atom(const Atom &atom);
 };
 
 }
