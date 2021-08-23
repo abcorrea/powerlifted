@@ -19,7 +19,7 @@ LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in, int heuris
         indices_map.add_predicate_mapping(pred_idx++, logic_program.get_atom_by_name(predicate.getName()));
     }
     for (const auto &object : task.objects) {
-        indices_map.add_object_mapping(object.getIndex(), logic_program.get_object_by_name(object.getName()));
+        indices_map.add_object_mapping(object.get_index(), logic_program.get_object_by_name(object.get_name()));
     }
 
     base_fact_index = lifted_heuristic::Fact::get_next_fact_index();

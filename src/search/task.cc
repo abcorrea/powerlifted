@@ -55,7 +55,7 @@ void Task::dump_state(DBState s) const
         for (auto &tuple : tuples) {
             cout << relation_name << "(";
             for (auto obj : tuple) {
-                cout << objects[obj].getName() << ",";
+                cout << objects[obj].get_name() << ",";
             }
             cout << "), ";
         }
@@ -80,7 +80,7 @@ void Task::dump_goal()
         }
         cout << predicates[g.predicate].getName() << " ";
         for (int arg : g.args) {
-            cout << objects[arg].getName() << " ";
+            cout << objects[arg].get_name() << " ";
         }
         cout << endl;
     }
@@ -155,8 +155,8 @@ std::vector<std::vector<int>> Task::compute_object_index() const {
     std::vector<std::vector<int>> objects_per_type(type_names.size());
 
     for (const Object &o:objects) {
-        for (int t : o.getTypes()) {
-            objects_per_type[t].push_back(o.getIndex());
+        for (int t : o.get_types()) {
+            objects_per_type[t].push_back(o.get_index());
         }
     }
 

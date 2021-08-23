@@ -89,10 +89,10 @@ void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int
 {
     int cont = 0;
     for (Argument arg : a.get_arguments()) {
-        if (!arg.constant)
-            indices.push_back(arg.index);
+        if (!arg.is_constant())
+            indices.push_back(arg.get_index());
         else {
-            indices.push_back((arg.index + 1) * -1);
+            indices.push_back((arg.get_index() + 1) * -1);
             constants.push_back(cont);
         }
         cont++;
@@ -111,8 +111,8 @@ void GenericJoinSuccessor::select_tuples(const DBState &s,
     for (const GroundAtom &atom : s.get_relations()[a.get_predicate_symbol_idx()].tuples) {
         bool match_constants = true;
         for (int c : constants) {
-            assert(a.get_arguments()[c].constant);
-            if (atom[c] != a.get_arguments()[c].index) {
+            assert(a.get_arguments()[c].is_constant());
+            if (atom[c] != a.get_arguments()[c].get_index()) {
                 match_constants = false;
                 break;
             }
@@ -257,10 +257,10 @@ void GenericJoinSuccessor::create_hypergraph(const ActionSchema &action,
         bool has_free_variables = false;
         for (Argument arg : p.get_arguments()) {
             // We parse constants to negative numbers so they're uniquely identified
-            if (arg.constant)
+            if (arg.is_constant())
                 continue;
             has_free_variables = true;
-            int node = arg.index;
+            int node = arg.get_index();
 
             args.insert(node);
             if (find(hypernodes.begin(), hypernodes.end(), node) == hypernodes.end()) {
@@ -357,8 +357,8 @@ void GenericJoinSuccessor::apply_ground_action_effects(const ActionSchema &actio
         GroundAtom ga;
         for (const Argument &a : eff.get_arguments()) {
             // Create ground atom for each effect given the instantiation
-            assert(a.constant);
-            ga.push_back(a.index);
+            assert(a.is_constant());
+            ga.push_back(a.get_index());
         }
         assert(eff.get_predicate_symbol_idx() == new_relation[eff.get_predicate_symbol_idx()].predicate_symbol);
         if (eff.is_negated()) {
@@ -456,10 +456,10 @@ const GroundAtom GenericJoinSuccessor::tuple_to_atom(const vector<int> &tuple, c
     GroundAtom ground_atom;
     ground_atom.reserve(eff.get_arguments().size());
     for (auto argument : eff.get_arguments()) {
-        if (!argument.constant)
-            ground_atom.push_back(tuple[argument.index]);
+        if (!argument.is_constant())
+            ground_atom.push_back(tuple[argument.get_index()]);
         else
-            ground_atom.push_back(argument.index);
+            ground_atom.push_back(argument.get_index());
     }
 
     // Sanity check: check that all positions of the tuple were initialized
@@ -484,8 +484,8 @@ bool GenericJoinSuccessor::is_ground_action_applicable(const ActionSchema &actio
         vector<int> tuple;
         tuple.reserve(precond.get_arguments().size());
         for (const Argument &arg : precond.get_arguments()) {
-            assert(arg.constant);
-            tuple.push_back(arg.index);  // Index of a constant is the obj index
+            assert(arg.is_constant());
+            tuple.push_back(arg.get_index());  // Index of a constant is the obj index
         }
         const auto& tuples_in_relation = state.get_tuples_of_relation(index);
         const auto& it_end_tuples_in_relation = tuples_in_relation.end();

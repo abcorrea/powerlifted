@@ -53,6 +53,10 @@ public:
     void add_object(const std::string &name, int index,
                     const std::vector<int> &types);
 
+    const std::string &get_object_name(int index) const {
+        return objects[index].get_name();
+    }
+
     void create_empty_initial_state(size_t number_predicates);
 
     void create_goal_condition(std::vector<AtomicGoal> goals,

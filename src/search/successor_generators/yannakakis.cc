@@ -169,8 +169,8 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
     int action_index = action.get_index();
     for (const Atom &eff : action.get_effects()) {
         for (const Argument &arg : eff.get_arguments()) {
-            if (!arg.constant)
-                distinguished_variables[action_index].insert(arg.index);
+            if (!arg.is_constant())
+                distinguished_variables[action_index].insert(arg.get_index());
         }
         for (const auto &i : action.get_inequalities()) {
             distinguished_variables[action_index].insert(i.first);

@@ -45,7 +45,7 @@ public:
             for (auto &tuple : entry.second) {
                 std::cout << relation_name << "(";
                 for (auto obj : tuple) {
-                    std::cout << task.objects[obj].getName() << ",";
+                    std::cout << task.objects[obj].get_name() << ",";
                 }
                 std::cout << "), ";
             }

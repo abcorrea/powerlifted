@@ -114,6 +114,11 @@ namespace datalog {
 
 class Datalog {
 
+    // Is this what we want?
+    const Task &task;
+
+    void print_parameters(std::vector<Argument> v);
+
 public:
     Datalog(const Task &task);
 

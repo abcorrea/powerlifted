@@ -42,10 +42,19 @@ struct Parameter {
  * @var constant: Indicates whether the argument is a constanst or not (free variable, then).
  *
  */
-struct Argument {
-    Argument(int index, bool constant) : index(index), constant(constant) {}
+class Argument {
     int index;
     bool constant;
+public:
+    Argument(int index, bool constant) : index(index), constant(constant) {}
+
+    int get_index() const {
+        return index;
+    }
+
+    bool is_constant() const {
+        return constant;
+    }
 };
 
 
