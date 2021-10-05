@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS_RELEASE
 
 # Debug and Profile
 set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -Og -pg \
+        "${CMAKE_CXX_FLAGS_DEBUG} -O0 -pg \
         -fsanitize=undefined -fno-omit-frame-pointer")
 
 
@@ -94,6 +94,6 @@ add_executable(search
         lifted_heuristic/rules/join.h lifted_heuristic/rules/product.h lifted_heuristic/rules/project.h
         lifted_heuristic/rule_matcher.cc lifted_heuristic/rule_matcher.h
         lifted_heuristic/grounders/grounder.h
-        lifted_heuristic/grounders/weighted_grounder.cc lifted_heuristic/grounders/weighted_grounder.h search_engines/lazy_search.cc search_engines/lazy_search.h)
+        lifted_heuristic/grounders/weighted_grounder.cc lifted_heuristic/grounders/weighted_grounder.h search_engines/lazy_search.cc search_engines/lazy_search.h search_engines/breadth_first_width_search.cc search_engines/breadth_first_width_search.h novelty/standard_novelty.cc novelty/standard_novelty.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})
