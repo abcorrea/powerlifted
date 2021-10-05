@@ -15,22 +15,33 @@ class AchievedGroundAtoms {
 
     std::unordered_set<std::pair<int, GroundAtom>,
         boost::hash<std::pair<int, std::vector<int>>>> ground_atoms;
+    std::vector<bool> nullary_atoms;
 
 public:
 
     AchievedGroundAtoms() = default;
 
+    AchievedGroundAtoms(const Task &task) {
+        nullary_atoms.resize(task.initial_state.get_nullary_atoms().size(), false);
+    }
+
     bool empty() {
         return ground_atoms.empty();
     }
 
-    void insert(int i, GroundAtom ga) {
+    void insert(int i, const GroundAtom& ga) {
         ground_atoms.emplace(i, ga);
     }
 
-    bool try_to_insert(int i, GroundAtom ga) {
+    bool try_to_insert(int i, const GroundAtom& ga) {
         auto it = ground_atoms.insert(make_pair(i, ga));
         return it.second;
+    }
+
+    bool try_to_insert_nullary_atom(size_t i) {
+        if (nullary_atoms[i]) return false; // Atom was already achieved before
+        nullary_atoms[i] = true;
+        return true;
     }
 
 };
@@ -38,17 +49,18 @@ public:
 class StandardNovelty {
 
     Goalcount gc;
-    std::vector<AchievedGroundAtoms> hashmap;
+    std::vector<AchievedGroundAtoms> achieved_atoms;
 
 
 
 public:
 
+    static const int GOAL = 0;
     static const int NOVEL = 1;
     static const int NOT_NOVEL = 2;
 
     StandardNovelty(const Task &task) {
-        hashmap.resize(task.goal.positive_nullary_goals.size()
+        achieved_atoms.resize(task.goal.positive_nullary_goals.size()
         + task.goal.negative_nullary_goals.size()
         + task.goal.goal.size());
 
@@ -59,59 +71,36 @@ public:
     int compute_novelty(const Task &task, const DBState &state) {
         int number_unsatisfied_goals = gc.compute_heuristic(state, task);
         if (number_unsatisfied_goals == 0) {
-            return NOVEL;
+            return GOAL;
         }
         int idx = number_unsatisfied_goals - 1;
 
-        if (idx > int(hashmap.size())) {
-            std::cerr << "ERROR in computation of novelty value." << std::endl;
-            exit(-1);
-        }
+        auto &achieved_atoms_in_layer = achieved_atoms[idx];
 
-        if (hashmap[idx].empty()) {
-            size_t relation_counter = 0;
-            for (const Relation &relation : state.get_relations()) {
-                for (GroundAtom tuple : relation.tuples) {
-                    GroundAtom t = tuple;
-                    hashmap[idx].insert(relation_counter, t);
-                }
-                ++relation_counter;
-            }
-            for (bool null_atom : state.get_nullary_atoms()) {
-                if (null_atom) {
-                    GroundAtom empty_tuple;
-                    hashmap[idx].insert(relation_counter, empty_tuple);
-                }
-                ++relation_counter;
-            }
-            return NOVEL;
-        }
-
-        int relation_counter = 0;
-        //task.dump_state(state);
+        bool has_novel_atom = false;
         for (const Relation &relation : state.get_relations()) {
-            for (GroundAtom tuple : relation.tuples) {
-                GroundAtom t = tuple;
-                bool is_new = hashmap[idx].try_to_insert(relation_counter,
-                                                         t);
+            int pred_symbol_idx = relation.predicate_symbol;
+            for (const GroundAtom& tuple : relation.tuples) {
+                bool is_new = achieved_atoms_in_layer.try_to_insert(pred_symbol_idx,
+                                                                tuple);
                 if (is_new)
-                    return NOVEL;
+                    has_novel_atom = true;
             }
-            relation_counter++;
         }
-        for (bool null_atom : state.get_nullary_atoms()) {
-                if (null_atom) {
-                    GroundAtom empty_tuple;
-                    bool is_new = hashmap[idx].try_to_insert(relation_counter, empty_tuple);
 
-                    if (is_new)
-                        return NOVEL;
-                }
-                ++relation_counter;
+        const std::vector<bool>& nullary_atoms = state.get_nullary_atoms();
+        for (size_t i = 0; i < nullary_atoms.size(); ++i) {
+            if (nullary_atoms[i]) {
+                bool is_new = achieved_atoms_in_layer.try_to_insert_nullary_atom(i);
+                if (is_new)
+                    has_novel_atom = true;
             }
+        }
 
-
-        return NOT_NOVEL;
+        if (has_novel_atom)
+            return NOVEL;
+        else
+            return NOT_NOVEL;
 
     }
 
