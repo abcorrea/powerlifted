@@ -13,7 +13,7 @@ int StandardNovelty::compute_novelty(const Task &task, const DBState &state) {
     for (const Relation &relation : state.get_relations()) {
         int pred_symbol_idx = relation.predicate_symbol;
         for (const GroundAtom& tuple : relation.tuples) {
-            bool is_new = achieved_atoms_in_layer.try_to_insert(pred_symbol_idx, tuple);
+            bool is_new = achieved_atoms_in_layer.try_to_insert_atom(pred_symbol_idx, tuple);
             if (is_new)
                 has_novel_atom = true;
         }
@@ -22,7 +22,7 @@ int StandardNovelty::compute_novelty(const Task &task, const DBState &state) {
     const std::vector<bool>& nullary_atoms = state.get_nullary_atoms();
     for (size_t i = 0; i < nullary_atoms.size(); ++i) {
         if (nullary_atoms[i]) {
-            bool is_new = achieved_atoms_in_layer.try_to_insert_nullary_atom(i);
+            bool is_new = achieved_atoms_in_layer.try_to_insert_atom(i, GroundAtom());
             if (is_new)
                 has_novel_atom = true;
         }

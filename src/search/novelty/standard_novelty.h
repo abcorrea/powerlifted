@@ -10,32 +10,23 @@
 #include "../states/state.h"
 #include "../structures.h"
 
+typedef std::unordered_set<GroundAtom, boost::hash<std::vector<int>>> NoveltySet;
 
 class AchievedGroundAtoms {
 
-    std::vector<std::unordered_set<GroundAtom, boost::hash<std::vector<int>>>> ground_atoms;
-    //std::unordered_set<std::pair<int, GroundAtom>,
-    //    boost::hash<std::pair<int, std::vector<int>>>> ground_atoms;
-    std::vector<bool> nullary_atoms;
+    std::vector<NoveltySet> ground_atoms_k1;
 
 public:
 
     AchievedGroundAtoms() = default;
 
     AchievedGroundAtoms(const Task &task) :
-    ground_atoms(task.initial_state.get_relations().size()),
-    nullary_atoms(task.initial_state.get_nullary_atoms().size(), false) {
+        ground_atoms_k1(task.initial_state.get_relations().size()) {
     }
 
-    bool try_to_insert(int i, const GroundAtom& ga) {
-        auto it = ground_atoms[i].insert(ga);
+    bool try_to_insert_atom(int i, const GroundAtom& ga) {
+        auto it = ground_atoms_k1[i].insert(ga);
         return it.second;
-    }
-
-    bool try_to_insert_nullary_atom(size_t i) {
-        if (nullary_atoms[i]) return false; // Atom was already achieved before
-        nullary_atoms[i] = true;
-        return true;
     }
 
 };
