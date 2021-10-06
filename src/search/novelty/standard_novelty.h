@@ -13,8 +13,9 @@
 
 class AchievedGroundAtoms {
 
-    std::unordered_set<std::pair<int, GroundAtom>,
-        boost::hash<std::pair<int, std::vector<int>>>> ground_atoms;
+    std::vector<std::unordered_set<GroundAtom, boost::hash<std::vector<int>>>> ground_atoms;
+    //std::unordered_set<std::pair<int, GroundAtom>,
+    //    boost::hash<std::pair<int, std::vector<int>>>> ground_atoms;
     std::vector<bool> nullary_atoms;
 
 public:
@@ -22,12 +23,12 @@ public:
     AchievedGroundAtoms() = default;
 
     AchievedGroundAtoms(const Task &task) :
-        nullary_atoms(task.initial_state.get_nullary_atoms().size(), false) {
-        std::cout << "SIZE: " << nullary_atoms.size() << std::endl;
+    ground_atoms(task.initial_state.get_relations().size()),
+    nullary_atoms(task.initial_state.get_nullary_atoms().size(), false) {
     }
 
     bool try_to_insert(int i, const GroundAtom& ga) {
-        auto it = ground_atoms.insert(make_pair(i, ga));
+        auto it = ground_atoms[i].insert(ga);
         return it.second;
     }
 
