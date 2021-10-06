@@ -21,8 +21,9 @@ public:
 
     AchievedGroundAtoms() = default;
 
-    AchievedGroundAtoms(const Task &task) {
-        nullary_atoms.resize(task.initial_state.get_nullary_atoms().size(), false);
+    AchievedGroundAtoms(const Task &task) :
+        nullary_atoms(task.initial_state.get_nullary_atoms().size(), false) {
+        std::cout << "SIZE: " << nullary_atoms.size() << std::endl;
     }
 
     bool try_to_insert(int i, const GroundAtom& ga) {
@@ -59,7 +60,8 @@ public:
     StandardNovelty(const Task &task) {
         achieved_atoms.resize(task.goal.positive_nullary_goals.size()
         + task.goal.negative_nullary_goals.size()
-        + task.goal.goal.size());
+        + task.goal.goal.size(),
+        AchievedGroundAtoms(task));
 
         compute_novelty(task, task.initial_state);
 
