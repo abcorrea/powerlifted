@@ -69,7 +69,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
                 int dist = g + action.get_cost();
-                int new_h = novelty_evaluator.compute_novelty(task, s);
+                int new_h = novelty_evaluator.compute_novelty_k2(task, s);
                 statistics.inc_evaluations();
                 statistics.inc_evaluated_states();
                 auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
