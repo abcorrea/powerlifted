@@ -12,7 +12,7 @@
 #include "../states/state.h"
 #include "../structures.h"
 
-typedef std::unordered_set<GroundAtom, boost::hash<std::vector<int>>> NoveltySet;
+typedef std::unordered_map<GroundAtom, int, boost::hash<std::vector<int>>> NoveltySet;
 
 class AchievedGroundAtoms {
 
@@ -21,15 +21,18 @@ class AchievedGroundAtoms {
      * Use ArrayPool to store vectors and each entry could have only the index to it.
      */
 
+    int atom_counter;
+
     std::vector<NoveltySet> ground_atoms_k1;
-    std::vector<std::vector<NoveltySet>> ground_atoms_k2;
+    std::vector<std::vector<std::unordered_set<std::pair<int, int>, boost::hash<std::pair<int, int>>>>> ground_atoms_k2;
 
 public:
 
     AchievedGroundAtoms() = default;
 
     AchievedGroundAtoms(const Task &task) :
-        ground_atoms_k1(task.initial_state.get_relations().size()) {
+    atom_counter(0),
+    ground_atoms_k1(task.initial_state.get_relations().size()) {
         // TODO Initialize only if width=2
         ground_atoms_k2.resize(task.initial_state.get_relations().size());
         for (auto &k : ground_atoms_k2) {
@@ -38,32 +41,18 @@ public:
     }
 
     bool try_to_insert_atom_in_k1(int i, const GroundAtom& ga) {
-        auto it = ground_atoms_k1[i].insert(ga);
+        int next = atom_counter + 1;
+        auto it = ground_atoms_k1[i].insert({ga, next});
+        if (it.second) atom_counter++;
         return it.second;
     }
 
     bool try_to_insert_atom_in_k2(int i, int j, const GroundAtom& ga1, const GroundAtom& ga2) {
+        int idx_ga1 = ground_atoms_k1[i][ga1];
+        int idx_ga2 = ground_atoms_k1[j][ga1];
         int max = std::max(i, j);
         int min = std::min(i, j);
-        if (i == j) {
-            // special case
-            assert(ga1.size() == ga2.size());
-            for (size_t k = 0; k < ga1.size(); ++k) {
-                if (ga1[k] > ga2[k]) {
-                    max = i;
-                    min = j;
-                    break;
-                }
-                if (ga1[k] < ga2[k]) {
-                    max = j;
-                    min = i;
-                    break;
-                }
-            }
-        }
-        GroundAtom concat = ga1;
-        concat.insert(concat.end(), ga2.begin(), ga2.end());
-        auto it = ground_atoms_k2[max][min].insert(concat);
+        auto it = ground_atoms_k2[max][min].insert({idx_ga1, idx_ga2});
         return it.second;
     }
 
@@ -93,9 +82,6 @@ public:
         + task.goal.negative_nullary_goals.size()
         + task.goal.goal.size(),
         AchievedGroundAtoms(task));
-
-        compute_novelty_k1(task, task.initial_state);
-
     }
 
     int compute_novelty_k1(const Task &task, const DBState &state);
