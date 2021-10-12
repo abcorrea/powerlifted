@@ -26,6 +26,9 @@ set(CMAKE_CXX_FLAGS_DEBUG
         "${CMAKE_CXX_FLAGS_DEBUG} -O0 -pg \
         -fsanitize=undefined -fno-omit-frame-pointer")
 
+# Process Abseil's CMake build system
+add_subdirectory(abseil-cpp)
+
 
 add_executable(search
         main.cc
@@ -96,4 +99,4 @@ add_executable(search
         lifted_heuristic/grounders/grounder.h
         lifted_heuristic/grounders/weighted_grounder.cc lifted_heuristic/grounders/weighted_grounder.h search_engines/lazy_search.cc search_engines/lazy_search.h search_engines/breadth_first_width_search.cc search_engines/breadth_first_width_search.h novelty/standard_novelty.cc novelty/standard_novelty.h)
 
-target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES} absl::flat_hash_map)

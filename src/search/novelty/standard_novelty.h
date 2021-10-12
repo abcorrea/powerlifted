@@ -2,8 +2,10 @@
 #define SEARCH_NOVELTY_STANDARD_NOVELTY_H_
 
 #include <utility>
-#include <boost/functional/hash.hpp>
 
+#include <absl/container/flat_hash_map.h>
+#include <absl/container/flat_hash_set.h>
+#include <boost/functional/hash.hpp>
 #include <boost/container/small_vector.hpp>
 
 #include "../task.h"
@@ -12,7 +14,7 @@
 #include "../states/state.h"
 #include "../structures.h"
 
-typedef std::unordered_map<GroundAtom, int, boost::hash<std::vector<int>>> NoveltySet;
+typedef absl::flat_hash_map<GroundAtom, int, boost::hash<std::vector<int>>> NoveltySet;
 
 class AchievedGroundAtoms {
 
@@ -24,7 +26,7 @@ class AchievedGroundAtoms {
     int atom_counter;
 
     std::vector<NoveltySet> ground_atoms_k1;
-    std::vector<std::vector<std::unordered_set<std::pair<int, int>, boost::hash<std::pair<int, int>>>>> ground_atoms_k2;
+    std::vector<std::vector<absl::flat_hash_set<std::pair<int, int>, boost::hash<std::pair<int, int>>>>> ground_atoms_k2;
 
 public:
 
