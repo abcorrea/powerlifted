@@ -49,7 +49,7 @@ public:
 
     bool try_to_insert_atom_in_k2(int i, int j, const GroundAtom& ga1, const GroundAtom& ga2) {
         int idx_ga1 = ground_atoms_k1[i][ga1];
-        int idx_ga2 = ground_atoms_k1[j][ga1];
+        int idx_ga2 = ground_atoms_k1[j][ga2];
         int max = std::max(i, j);
         int min = std::min(i, j);
         auto it = ground_atoms_k2[max][min].insert({idx_ga1, idx_ga2});
@@ -75,7 +75,8 @@ class StandardNovelty {
 
 public:
 
-    static const int NOT_NOVEL = 3;
+    static const int GOAL_STATE = 0;
+    static const int NOVELTY_GREATER_THAN_TWO = 3;
 
     StandardNovelty(const Task &task) {
         achieved_atoms.resize(task.goal.positive_nullary_goals.size()

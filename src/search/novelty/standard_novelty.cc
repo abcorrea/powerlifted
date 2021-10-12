@@ -5,7 +5,7 @@ using namespace std;
 int StandardNovelty::compute_novelty_k1(const Task &task, const DBState &state) {
     number_unsatisfied_goals = compute_unsatisfied_goals(task, state);
     if (number_unsatisfied_goals == 0) {
-        return 0;
+        return GOAL_STATE;
     }
     int idx = number_unsatisfied_goals - 1;
 
@@ -33,12 +33,13 @@ int StandardNovelty::compute_novelty_k1(const Task &task, const DBState &state) 
     if (has_novel_atom)
         return 1;
     else
-        return NOT_NOVEL;
+        return NOVELTY_GREATER_THAN_TWO;
 
 }
 
 
 int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) {
+    // Number of unsatisfied goals is computed as a side effect of compute_novelty_k1
     int novelty = compute_novelty_k1(task, state);
     int idx = number_unsatisfied_goals - 1;
 
