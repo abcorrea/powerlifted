@@ -46,11 +46,11 @@ void Task::dump_state(DBState s) const
     const auto& nullary_atoms = s.get_nullary_atoms();
     for (size_t j = 0; j < nullary_atoms.size(); ++j) {
         if (nullary_atoms[j])
-            cout << predicates[j].getName() << ", ";
+            cout << predicates[j].get_name() << ", ";
     }
     const auto& relations = s.get_relations();
     for (size_t i = 0; i < relations.size(); ++i) {
-        string relation_name = predicates[i].getName();
+        string relation_name = predicates[i].get_name();
         unordered_set<GroundAtom, TupleHash> tuples = relations[i].tuples;
         for (auto &tuple : tuples) {
             cout << relation_name << "(";
@@ -69,16 +69,16 @@ void Task::dump_goal()
      * Output goal condition in a readable format.
      */
     for (int g : goal.positive_nullary_goals) {
-        cout << predicates[g].getName() << endl;
+        cout << predicates[g].get_name() << endl;
     }
     for (int g : goal.negative_nullary_goals) {
-        cout << "Not " << predicates[g].getName() << endl;
+        cout << "Not " << predicates[g].get_name() << endl;
     }
     for (const auto &g : goal.goal) {
         if (g.negated) {
             cout << "Not ";
         }
-        cout << predicates[g.predicate].getName() << " ";
+        cout << predicates[g.predicate].get_name() << " ";
         for (int arg : g.args) {
             cout << objects[arg].get_name() << " ";
         }

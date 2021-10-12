@@ -16,7 +16,7 @@ LiftedHeuristic::LiftedHeuristic(const Task &task, std::ifstream &in, int heuris
     int pred_idx = 0;
     for (const auto &predicate : task.predicates) {
         useful_atoms[pred_idx] = std::vector<GroundAtom>();
-        indices_map.add_predicate_mapping(pred_idx++, logic_program.get_atom_by_name(predicate.getName()));
+        indices_map.add_predicate_mapping(pred_idx++, logic_program.get_atom_by_name(predicate.get_name()));
     }
     for (const auto &object : task.objects) {
         indices_map.add_object_mapping(object.get_index(), logic_program.get_object_by_name(object.get_name()));

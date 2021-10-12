@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS_RELEASE
 
 # Debug and Profile
 set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -Og -pg \
+        "${CMAKE_CXX_FLAGS_DEBUG} -O0 -pg \
         -fsanitize=undefined -fno-omit-frame-pointer")
 
 
@@ -35,6 +35,7 @@ add_executable(search
         states/state.cc states/state.h
         parser.cc parser.h
         goal_condition.h
+        atom.h
         action_schema.cc action_schema.h
         structures.h
         search_engines/search_factory
@@ -94,6 +95,15 @@ add_executable(search
         lifted_heuristic/rules/join.h lifted_heuristic/rules/product.h lifted_heuristic/rules/project.h
         lifted_heuristic/rule_matcher.cc lifted_heuristic/rule_matcher.h
         lifted_heuristic/grounders/grounder.h
-        lifted_heuristic/grounders/weighted_grounder.cc lifted_heuristic/grounders/weighted_grounder.h search_engines/lazy_search.cc search_engines/lazy_search.h datalog/datalog.cc datalog/datalog.h atom.h)
+        lifted_heuristic/grounders/weighted_grounder.cc lifted_heuristic/grounders/weighted_grounder.h
+        search_engines/lazy_search.cc search_engines/lazy_search.h
+        datalog/datalog.cc datalog/datalog.h
+        datalog/arguments.h
+        datalog/datalog_atom.cc datalog/datalog_atom.h
+        datalog/datalog_fact.cc datalog/datalog_fact.h
+        datalog/term.h
+        datalog/object.cc datalog/object.h
+        datalog/rules/rule_base.cc datalog/rules/rule_base.cc
+        delete_relaxation_heuristics/delete_relaxation_heuristic.h datalog/rules/generic_rule.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})

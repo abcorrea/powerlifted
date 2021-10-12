@@ -56,7 +56,6 @@ int main(int argc, char *argv[]) {
 
     // TODO This should be created in the heuristic
     datalog::Datalog datalog_program = datalog::Datalog(task);
-    datalog_program.dump_rules();
 
     // Start search
     if (task.is_trivially_unsolvable()) {

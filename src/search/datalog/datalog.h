@@ -1,8 +1,12 @@
 #ifndef SEARCH_DATALOG_DATALOG_H_
 #define SEARCH_DATALOG_DATALOG_H_
 
+#include "rules/rule_base.h"
+
 #include "../atom.h"
 #include "../task.h"
+
+#include <memory>
 
 /*
  * h-add:
@@ -75,6 +79,43 @@ Aux1(A) :- P(A, C)
  return params;}
 
 
+class Annotation;
+class ConcatenationAnnotation extends Annotation;
+class FFAnnotation extends Annotation;
+class RuleBasedFFAnnotation extends Annotation;
+
+class Annotation {
+
+};
+
+// Execution for Rule-based FF annotation
+int execute_program_of_node(const GroundAtom &a, Plan &piff) {
+
+}
+
+ // Execution for FF annotation
+vector<int = objectID> execute_program_of_node(const GroundAtom &a, Plan &piff) {
+  if (is_fact(a)) {
+    return a.get_parameters();
+  }
+  pair<vector<GroundAtom>, Rule> achievers, achieving_rule = atom.get_achiever();
+  vector<vector<int>> objects(achievers.size());
+  for (const GroundAtom &achiever : achievers) {
+     objects[i] = execute_program_of_node(achiever, piff)
+  }
+  vector<pair<int, int>> parameter_indices = achieving_rule.param_indices;
+  vector<int = objectID> parameters(parameter_indices.size());
+  for (pair<int, int> idx_pair : parameter_indices) {
+     int body_atom_idx = idx_pair.first;
+     int body_parameter_position = idx_pair.second
+     parameters[i] = objects[body_atom_idx][body_parameter_position];
+  }
+  if (achieving_rule.action_to_emit != -1) {
+      GroundAction ground_action(achieving_rule.action_to_emit, parameters);
+      piff.insert(ground_action);
+  }
+  return parameters;
+}
 
 
 
@@ -102,8 +143,8 @@ class GroundAtom:
 
 
 class Rule:
-     Atom head;
-     vector<Atom> body;
+     DatalogAtom head;
+     vector<DatalogAtom> body;
      int action_schema_id;
 
 
@@ -115,16 +156,31 @@ namespace datalog {
 
 class Datalog {
 
+    std::vector<std::unique_ptr<RuleBase>> rules;
+
     // Is this what we want?
     const Task &task;
 
-    void print_parameters(const std::vector<Argument>& v);
+    void output_atom(const DatalogAtom &atom);
+    void output_parameters(const Arguments& v);
 
 public:
     Datalog(const Task &task);
 
-    void dump_rules();
-    void print_atom(const Atom &atom);
+    void get_nullary_atoms_from_vector(const std::vector<bool> &nullary_predicates_in_precond,
+                                       std::vector<size_t> &nullary_preconds) const;
+    void create_rules();
+
+    void output_rule(const std::unique_ptr<RuleBase> &rule);
+
+    std::vector<DatalogAtom> get_atoms_in_rule_body(const ActionSchema &schema,
+                                                    const std::vector<size_t> &nullary_preconds) const;
+
+    void generate_rules_with_nullary_heads(const ActionSchema &schema,
+                                           const std::vector<size_t> &nullary_preconds);
+
+    void generate_rules_with_n_ary_heads(const ActionSchema &schema,
+                                         const std::vector<size_t> &nullary_preconds);
 };
 
 }

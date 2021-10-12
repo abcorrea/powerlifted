@@ -41,7 +41,7 @@ public:
 
     void _print_useful_atoms(const Task &task) {
         for (auto &entry : useful_atoms) {
-            std::string relation_name = task.predicates[entry.first].getName();
+            std::string relation_name = task.predicates[entry.first].get_name();
             for (auto &tuple : entry.second) {
                 std::cout << relation_name << "(";
                 for (auto obj : tuple) {

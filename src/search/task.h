@@ -93,6 +93,10 @@ public:
         return action_schemas.size();
     }
 
+    const std::string get_predicate_name(int idx) const {
+        return predicates[idx].get_name();
+    }
+
   //! Return a vector R where R[i] contains all objects of type i (or of some subtype).
   std::vector<std::vector<int>> compute_object_index() const;
 

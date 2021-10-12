@@ -19,7 +19,7 @@ public:
 
   void addArgument(int i) { types.push_back(i); }
 
-  const std::string &getName() const;
+  const std::string &get_name() const;
 
   int getArity() const;
 
