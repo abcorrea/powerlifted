@@ -14,7 +14,7 @@
 #include "../states/state.h"
 #include "../structures.h"
 
-typedef absl::flat_hash_map<GroundAtom, int, boost::hash<std::vector<int>>> NoveltySet;
+typedef absl::flat_hash_map<GroundAtom, int> NoveltySet;
 
 class AchievedGroundAtoms {
 
@@ -26,7 +26,8 @@ class AchievedGroundAtoms {
     int atom_counter;
 
     std::vector<NoveltySet> ground_atoms_k1;
-    std::vector<std::vector<absl::flat_hash_set<std::pair<int, int>, boost::hash<std::pair<int, int>>>>> ground_atoms_k2;
+    std::vector<std::vector<absl::flat_hash_set<std::pair<int, int>>>> ground_atoms_k2;
+
 
 public:
 
