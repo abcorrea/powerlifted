@@ -77,6 +77,7 @@ int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) 
             int pred_symbol_idx1 = i;
             for (const Relation &r2 : state.get_relations()) {
                 int pred_symbol_idx2 = r2.predicate_symbol;
+                if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
                     bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(pred_symbol_idx1,
                                                                                    pred_symbol_idx2,
