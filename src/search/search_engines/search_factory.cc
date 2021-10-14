@@ -34,6 +34,14 @@ SearchFactory::create(const std::string& method, const std::string& state_type) 
         if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2);
         else return new BreadthFirstWidthSearch<SparsePackedState>(2);
     }
+    else if (boost::iequals(method, "iw1")) {
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, true);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(1, true);
+    }
+    else if (boost::iequals(method, "iw2")) {
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, true);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(2, true);
+    }
     else if (boost::iequals(method, "gbfs")) {
         if (using_ext_state) return new GreedyBestFirstSearch<ExtensionalPackedState>();
         else return new GreedyBestFirstSearch<SparsePackedState>();

@@ -76,6 +76,8 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
                     new_h = novelty_evaluator.compute_novelty_k2(task, s);
                 statistics.inc_evaluations();
                 statistics.inc_evaluated_states();
+                if ((prune_states) and (new_h == StandardNovelty::NOVELTY_GREATER_THAN_TWO))
+                    continue;
                 auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
                 if (child_node.status == SearchNode::Status::NEW) {
                     child_node.open(dist, new_h);
@@ -88,6 +90,8 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
 
     print_no_solution_found(timer_start);
 
+    if (prune_states)
+        return utils::ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
     return utils::ExitCode::SEARCH_UNSOLVABLE;
 }
 

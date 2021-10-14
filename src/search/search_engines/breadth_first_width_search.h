@@ -7,13 +7,17 @@
 template <class PackedStateT>
 class BreadthFirstWidthSearch : public SearchBase {
     int width;
+    bool prune_states;
 
 protected:
     SearchSpace<PackedStateT> space;
 
     int heuristic_layer{};
 public:
-    explicit BreadthFirstWidthSearch(int width) : width(width) {}
+    explicit BreadthFirstWidthSearch(int width) : width(width), prune_states(false) {}
+
+    explicit BreadthFirstWidthSearch(int width, bool prune) : width(width), prune_states(prune) {}
+
     using StatePackerT = typename PackedStateT::StatePackerT;
 
     utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
