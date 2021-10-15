@@ -67,10 +67,9 @@ int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) 
                 if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
                     int t2_idx = atom_mapping[pred_symbol_idx2][t2];
-                    bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(pred_symbol_idx1,
-                                                                                   pred_symbol_idx2,
-                                                                                   t1_idx,
-                                                                                   t2_idx);
+                    bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                        compute_position(pred_symbol_idx1, pred_symbol_idx2),
+                        t1_idx, t2_idx);
                     if (is_new and !has_k1_novelty)
                         novelty = 2;
                 }
@@ -88,10 +87,9 @@ int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) 
                 if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
                     int t2_idx = atom_mapping[pred_symbol_idx2][t2];
-                    bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(pred_symbol_idx1,
-                                                                                   pred_symbol_idx2,
-                                                                                   t1_idx,
-                                                                                   t2_idx);
+                    bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                                compute_position(pred_symbol_idx1, pred_symbol_idx2),
+                                t1_idx, t2_idx);
                     if (is_new and !has_k1_novelty)
                         novelty = 2;
                 }
@@ -105,4 +103,11 @@ int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) 
 
 int StandardNovelty::compute_unsatisfied_goals(const Task &task, const DBState &state) {
     return gc.compute_heuristic(state, task);
+}
+
+
+int StandardNovelty::compute_position(int idx_1, int idx_2) {
+    int row_start = (idx_1 * (idx_1+1))/2;
+    int column_shift = idx_2;
+    return row_start + column_shift;
 }

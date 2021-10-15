@@ -25,25 +25,16 @@ class AchievedGroundAtoms {
     int number_relations;
     std::vector<absl::flat_hash_set<int>> ground_atoms_k1;
 
-    // TODO For vector entry I we only need an entry for relations I <= J <= K.
-    //  How can we extract indices directly from it?
     std::vector<absl::flat_hash_set<std::pair<int, int>>> ground_atoms_k2;
-
-
-    size_t compute_index(int i, int j) const {
-        return i*number_relations + j;
-    }
 
 public:
 
     AchievedGroundAtoms() = default;
 
-    AchievedGroundAtoms(const Task &task) :
+    AchievedGroundAtoms(const Task &task, size_t number_combinations) :
     ground_atoms_k1(task.initial_state.get_relations().size()) {
-        number_relations = task.initial_state.get_relations().size();
-
         // TODO Initialize only if width=2
-        ground_atoms_k2.resize(number_relations * number_relations);
+        ground_atoms_k2.resize(number_combinations);
     }
 
     bool try_to_insert_atom_in_k1(int i, int idx) {
@@ -51,8 +42,8 @@ public:
         return it.second;
     }
 
-    bool try_to_insert_atom_in_k2(int i, int j, int idx_ga1, int idx_ga2) {
-        auto it = ground_atoms_k2[compute_index(i, j)].insert({idx_ga1, idx_ga2});
+    bool try_to_insert_atom_in_k2(int idx, int idx_ga1, int idx_ga2) {
+        auto it = ground_atoms_k2[idx].insert({idx_ga1, idx_ga2});
         return it.second;
     }
 
@@ -81,17 +72,20 @@ public:
     static const int NOVELTY_GREATER_THAN_TWO = 3;
 
     StandardNovelty(const Task &task) : atom_counter(0) {
+        size_t n_relations = task.initial_state.get_relations().size();
+        atom_mapping.resize(n_relations);
+        int max_position = compute_position(n_relations-1, n_relations);
         achieved_atoms.resize(task.goal.positive_nullary_goals.size()
-        + task.goal.negative_nullary_goals.size()
-        + task.goal.goal.size(),
-        AchievedGroundAtoms(task));
-        atom_mapping.resize(task.initial_state.get_relations().size());
+                                  + task.goal.negative_nullary_goals.size()
+                                  + task.goal.goal.size(),
+                              AchievedGroundAtoms(task, max_position));
     }
 
     int compute_novelty_k1(const Task &task, const DBState &state);
 
     int compute_novelty_k2(const Task &task, const DBState &state);
 
+    int compute_position(int idx_1, int idx_2);
 };
 
 #endif //SEARCH_NOVELTY_STANDARD_NOVELTY_H_
