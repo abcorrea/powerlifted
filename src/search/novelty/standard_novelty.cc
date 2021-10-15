@@ -11,11 +11,14 @@ int StandardNovelty::compute_novelty_k1(const Task &task, const DBState &state) 
 
     auto &achieved_atoms_in_layer = achieved_atoms[idx];
 
+
     bool has_novel_atom = false;
     for (const Relation &relation : state.get_relations()) {
         int pred_symbol_idx = relation.predicate_symbol;
         for (const GroundAtom& tuple : relation.tuples) {
-            bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(pred_symbol_idx, tuple);
+            auto it = atom_mapping[pred_symbol_idx].insert({tuple, atom_counter + 1});
+            if (it.second) atom_counter++;
+            bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(pred_symbol_idx, it.first->second);
             if (is_new)
                 has_novel_atom = true;
         }
@@ -24,7 +27,9 @@ int StandardNovelty::compute_novelty_k1(const Task &task, const DBState &state) 
     const vector<bool>& nullary_atoms = state.get_nullary_atoms();
     for (size_t i = 0; i < nullary_atoms.size(); ++i) {
         if (nullary_atoms[i]) {
-            bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(i, GroundAtom());
+            auto it = atom_mapping[i].insert({GroundAtom(), atom_counter + 1});
+            if (it.second) atom_counter++;
+            bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(i, it.first->second);
             if (is_new)
                 has_novel_atom = true;
         }
@@ -56,14 +61,16 @@ int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) 
     for (const Relation &r1 : state.get_relations()) {
         int pred_symbol_idx1 = r1.predicate_symbol;
         for (const GroundAtom &t1 : r1.tuples) {
+            int t1_idx = atom_mapping[pred_symbol_idx1][t1];
             for (const Relation &r2 : state.get_relations()) {
                 int pred_symbol_idx2 = r2.predicate_symbol;
                 if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
+                    int t2_idx = atom_mapping[pred_symbol_idx2][t2];
                     bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(pred_symbol_idx1,
                                                                                    pred_symbol_idx2,
-                                                                                   t1,
-                                                                                   t2);
+                                                                                   t1_idx,
+                                                                                   t2_idx);
                     if (is_new and !has_k1_novelty)
                         novelty = 2;
                 }
@@ -75,14 +82,16 @@ int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) 
     for (size_t i = 0; i < nullary_atoms.size(); ++i) {
         if (nullary_atoms[i]) {
             int pred_symbol_idx1 = i;
+            int t1_idx = atom_mapping[pred_symbol_idx1][GroundAtom()];
             for (const Relation &r2 : state.get_relations()) {
                 int pred_symbol_idx2 = r2.predicate_symbol;
                 if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
+                    int t2_idx = atom_mapping[pred_symbol_idx2][t2];
                     bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(pred_symbol_idx1,
                                                                                    pred_symbol_idx2,
-                                                                               GroundAtom(),
-                                                                                   t2);
+                                                                                   t1_idx,
+                                                                                   t2_idx);
                     if (is_new and !has_k1_novelty)
                         novelty = 2;
                 }
