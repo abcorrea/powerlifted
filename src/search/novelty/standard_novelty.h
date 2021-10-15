@@ -14,6 +14,7 @@
 #include "../states/state.h"
 #include "../structures.h"
 
+// TODO This mapping is being done once for each layer. We could do it once for all layers
 typedef absl::flat_hash_map<GroundAtom, int> NoveltySet;
 
 class AchievedGroundAtoms {
@@ -26,6 +27,10 @@ class AchievedGroundAtoms {
     int atom_counter;
 
     std::vector<NoveltySet> ground_atoms_k1;
+
+    // TODO Not use nested vector, but compute position of the pair directly.
+    // TODO For vector entry I we only need an entry for relations I <= J <= K.
+    //  How can we extract indices directly from it?
     std::vector<std::vector<absl::flat_hash_set<std::pair<int, int>>>> ground_atoms_k2;
 
 
@@ -53,9 +58,7 @@ public:
     bool try_to_insert_atom_in_k2(int i, int j, const GroundAtom& ga1, const GroundAtom& ga2) {
         int idx_ga1 = ground_atoms_k1[i][ga1];
         int idx_ga2 = ground_atoms_k1[j][ga2];
-        int max = std::max(i, j);
-        int min = std::min(i, j);
-        auto it = ground_atoms_k2[max][min].insert({idx_ga1, idx_ga2});
+        auto it = ground_atoms_k2[i][j].insert({idx_ga1, idx_ga2});
         return it.second;
     }
 
