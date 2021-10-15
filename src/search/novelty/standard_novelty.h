@@ -22,7 +22,6 @@ class AchievedGroundAtoms {
     /* TODO Check also ArrayPool class (Scorpion).
      * Use ArrayPool to store vectors and each entry could have only the index to it.
      */
-    int number_relations;
     std::vector<absl::flat_hash_set<int>> ground_atoms_k1;
 
     std::vector<absl::flat_hash_set<std::pair<int, int>>> ground_atoms_k2;
@@ -58,13 +57,10 @@ public:
  */
 class StandardNovelty {
 
-    int number_unsatisfied_goals;
     int atom_counter;
     Goalcount gc;
     std::vector<AchievedGroundAtoms> achieved_atoms;
     std::vector<NoveltySet> atom_mapping;
-
-    int compute_unsatisfied_goals(const Task &task, const DBState &state);
 
 public:
 
@@ -81,9 +77,13 @@ public:
                               AchievedGroundAtoms(task, max_position));
     }
 
-    int compute_novelty_k1(const Task &task, const DBState &state);
+    int compute_novelty_k1(const Task &task,
+                           const DBState &state,
+                           int number_unsatisfied_goals);
 
-    int compute_novelty_k2(const Task &task, const DBState &state);
+    int compute_novelty_k2(const Task &task,
+                           const DBState &state,
+                           int number_unsatisfied_goals);
 
     int compute_position(int idx_1, int idx_2);
 };

@@ -2,8 +2,9 @@
 
 using namespace std;
 
-int StandardNovelty::compute_novelty_k1(const Task &task, const DBState &state) {
-    number_unsatisfied_goals = compute_unsatisfied_goals(task, state);
+int StandardNovelty::compute_novelty_k1(const Task &task,
+                                        const DBState &state,
+                                        int number_unsatisfied_goals) {
     if (number_unsatisfied_goals == 0) {
         return GOAL_STATE;
     }
@@ -43,9 +44,11 @@ int StandardNovelty::compute_novelty_k1(const Task &task, const DBState &state) 
 }
 
 
-int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) {
+int StandardNovelty::compute_novelty_k2(const Task &task,
+                                        const DBState &state,
+                                        int number_unsatisfied_goals) {
     // Number of unsatisfied goals is computed as a side effect of compute_novelty_k1
-    int novelty = compute_novelty_k1(task, state);
+    int novelty = compute_novelty_k1(task, state, number_unsatisfied_goals);
     int idx = number_unsatisfied_goals - 1;
 
     if (novelty == 0) {
@@ -99,12 +102,6 @@ int StandardNovelty::compute_novelty_k2(const Task &task, const DBState &state) 
 
     return novelty;
 }
-
-
-int StandardNovelty::compute_unsatisfied_goals(const Task &task, const DBState &state) {
-    return gc.compute_heuristic(state, task);
-}
-
 
 int StandardNovelty::compute_position(int idx_1, int idx_2) {
     int row_start = (idx_1 * (idx_1+1))/2;
