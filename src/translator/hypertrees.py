@@ -72,25 +72,38 @@ class Hypergraph:
 
 
 '''l1 subset l2'''
-
-
 def subset(l1, l2):
     for e in l1:
         if e not in l2:
             return False
     return True
 
-
-
 def get_hypertree_decompositions(task):
     print("Using Hypertree decompositions. 'BalancedGo' is expected to be in the PATH.")
     delete_previous_htd_files()
     for action in task.actions:
-        i = 0
-        f_name = generate_action_hypertree(action, i)
-        compute_decompositions(f_name)
+        f_name = generate_action_hypertree(action)
+        hd = compute_decompositions(f_name)
+        action.decomposition = parse_decompositions(hd, action)
     delete_files(".ast")
+    delete_files(".htd")
 
+def parse_decompositions(hd, action):
+    '''
+    Transform hypertree into sequence of operations (join, projections, etc).
+
+    '''
+    decomposition = []
+    map_prec_to_hyperedge = dict()
+    for p in action.precondition.parts:
+        map_prec_to_hyperedge[p.hyperedge] = p
+    for node in hd:
+        print("Bag", node.bag)
+        d = []
+        for p in node.cover:
+            d.append(map_prec_to_hyperedge[p])
+        decomposition.append(d)
+    return decomposition
 
 def delete_previous_htd_files():
     print("Deleting previous '.htd' files.")
@@ -105,7 +118,8 @@ def delete_files(extension):
             os.remove(os.path.join(cwd, f))
 
 
-def generate_action_hypertree(action, i):
+def generate_action_hypertree(action):
+    i = 0
     f = open(action.name + ".ast", 'w')
     for p in action.precondition.parts:
         if p.predicate == '=':
@@ -114,6 +128,7 @@ def generate_action_hypertree(action, i):
         i = i + 1
         terms = ','.join(p.args).replace('?', '')
         f.write('%s(%s)\n' % (atom_name, terms))
+        p.hyperedge = atom_name
     f.close()
     return f.name
 
@@ -153,3 +168,19 @@ def compute_decompositions(file):
         elif ']' in line:
             parents = parents[:-1]
     return hd
+
+
+def print_decompositions(action, parameter_index, object_index, predicate_index, type_index, f):
+    '''
+    This is a bit of a hack, but we print the actions in the same order as they were printed by
+    the translator.
+    '''
+    print(len(action.decomposition), file=f)
+    for node in action.decomposition:
+        print (len(node), file=f)
+        for cover in node:
+            print(" ".join([str(predicate_index[cover.predicate])] +
+                           [str(len(cover.args))] +
+                           [str(parameter_index[arg]) for arg in cover.args]),
+                  file=f, end=' ')
+        print(file=f)

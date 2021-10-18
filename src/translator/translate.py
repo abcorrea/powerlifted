@@ -177,7 +177,7 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
     #    - list of pairs in the format (O, i), where O is 'c' if it is a
     # constant and 'p' if it is a parameter. In the case it is a constant, 'i'
     # is its object index; otherwise it is the parameter index
-
+    f = open('decompositions.out', 'w')
     task.actions = list(task.actions)
     task.actions.sort(key=lambda ac: ac.name)
     print("ACTION-SCHEMAS %d" % len(task.actions))
@@ -228,6 +228,8 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
                   int(eff.literal.negated),
                   len(eff.literal.args),
                   ' '.join(i for i in args_list))
+        hypertrees.print_decompositions(action, parameter_index, object_index, predicate_index, type_index, f)
+
 
 
 def print_goal(task, atom_index, object_index, predicate_index):
