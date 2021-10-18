@@ -1,7 +1,7 @@
-
 #include "successor_generator_factory.h"
 
 #include "full_reducer_successor_generator.h"
+#include "hypertree_decomposition.h"
 #include "naive_successor.h"
 #include "ordered_join_successor.h"
 #include "random_successor.h"
@@ -26,6 +26,9 @@ SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method,
     }
     else if (boost::iequals(method, "inverse_ordered_join")) {
         return new OrderedJoinSuccessorGenerator<InverseOrderTable>(task);
+    }
+    else if (boost::iequals(method, "htd")) {
+        return new HypertreeDecompositionSuccessor(task);
     }
     else if (boost::iequals(method, "ordered_join")) {
         return new OrderedJoinSuccessorGenerator<OrderTable>(task);

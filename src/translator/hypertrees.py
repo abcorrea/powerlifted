@@ -85,8 +85,26 @@ def get_hypertree_decompositions(task):
         f_name = generate_action_hypertree(action)
         hd = compute_decompositions(f_name)
         action.decomposition = parse_decompositions(hd, action)
+        action.join_tree = get_join_tree(hd)
     delete_files(".ast")
     delete_files(".htd")
+
+def get_join_tree(hd):
+    '''
+    Return list containing pairs of tree edges, from root (node 0) to leaves.
+    '''
+    edges = []
+    queue = [hd[0]]
+    while len(queue) > 0:
+        top = queue[0]
+        queue.pop(0)
+        idx = hd.index(top)
+        for c in top.children:
+            idx_c = hd.index(c)
+            edges.append((str(idx), str(idx_c)))
+            queue.append(c)
+    return edges
+
 
 def parse_decompositions(hd, action):
     '''
@@ -98,7 +116,6 @@ def parse_decompositions(hd, action):
     for p in action.precondition.parts:
         map_prec_to_hyperedge[p.hyperedge] = p
     for node in hd:
-        print("Bag", node.bag)
         d = []
         for p in node.cover:
             d.append(map_prec_to_hyperedge[p])
@@ -175,12 +192,18 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
     This is a bit of a hack, but we print the actions in the same order as they were printed by
     the translator.
     '''
+    map_precond_to_position = dict()
+    for idx, p in enumerate(action.get_action_preconditions):
+        map_precond_to_position[p] = idx
     print(len(action.decomposition), file=f)
     for node in action.decomposition:
         print (len(node), file=f)
         for cover in node:
-            print(" ".join([str(predicate_index[cover.predicate])] +
+            print(" ".join([str(map_precond_to_position[cover])] +
                            [str(len(cover.args))] +
                            [str(parameter_index[arg]) for arg in cover.args]),
                   file=f, end=' ')
-        print(file=f)
+            print(file=f)
+    print(len(action.join_tree), file=f)
+    for edge in action.join_tree:
+        print(" ".join(edge), file=f)

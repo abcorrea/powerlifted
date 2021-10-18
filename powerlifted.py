@@ -32,7 +32,13 @@ def parse_options():
                         required=True)
     parser.add_argument('-g', '--generator', dest='generator', action='store',
                         default=None, help='Successor generator method',
-                        choices=('yannakakis', 'join', 'random_join', 'ordered_join', 'inverse_ordered_join', 'full_reducer'),
+                        choices=('htd',
+                                 'yannakakis',
+                                 'join',
+                                 'random_join',
+                                 'ordered_join',
+                                 'inverse_ordered_join',
+                                 'full_reducer'),
                         required=True)
     parser.add_argument('--state', action='store', help='Successor generator method',
                         default="sparse", choices=("sparse", "extensional"))
