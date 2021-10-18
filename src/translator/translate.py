@@ -177,6 +177,8 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
     #    - list of pairs in the format (O, i), where O is 'c' if it is a
     # constant and 'p' if it is a parameter. In the case it is a constant, 'i'
     # is its object index; otherwise it is the parameter index
+
+    # TODO Make this into (optional parameter)
     f = open('decompositions.out', 'w')
     task.actions = list(task.actions)
     task.actions.sort(key=lambda ac: ac.name)

@@ -114,6 +114,8 @@ def parse_decompositions(hd, action):
     decomposition = []
     map_prec_to_hyperedge = dict()
     for p in action.precondition.parts:
+        if p.negated:
+            continue
         map_prec_to_hyperedge[p.hyperedge] = p
     for node in hd:
         d = []

@@ -15,7 +15,9 @@ using namespace std;
 HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &task)
     : GenericJoinSuccessor(task) {
 
+    // TODO Make this into parameter
     ifstream infile("decompositions.out");
+    int ht_width = 0;
     hypertrees.resize(task.actions.size());
     for (size_t action_idx = 0; action_idx < task.actions.size(); action_idx++) {
         int number_nodes = 0;
@@ -23,8 +25,10 @@ HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &tas
         for (int i = 0; i  < number_nodes; ++i) {
             int number_relations = 0;
             infile >> number_relations;
+            ht_width = std::max(ht_width, number_relations);
             vector<int> relations_indices(number_relations);
             for (int j = 0; j  < number_relations; ++j) {
+                // TODO We never use the param variable. Why do we even output it in the translator?
                 int number_params;
                 infile >> relations_indices[j] >> number_params;
                 vector<int> params(number_params);
@@ -44,6 +48,7 @@ HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &tas
         }
     }
     cout << "Finished creating HT for successor generation...." << endl;
+    cout << "Hypertree width: " << ht_width << endl;
 }
 
 
@@ -69,6 +74,7 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
     for (const auto &node : ht.get_nodes()) {
         Table &working_table = tables[node.get_first()];
         for (size_t i = 1; i < node.get_indices().size(); ++i) {
+            // TODO This is the bottleneck apparently. Order relations in node in some smart way
             hash_join(working_table, tables[node.get_ith_index(i)]);
         }
     }

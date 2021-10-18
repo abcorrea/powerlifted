@@ -89,6 +89,28 @@ class Action(object):
         return precond
 
     @property
+    def get_positive_action_preconditions(self):
+        """
+        Return a list of positive preconditions of an action
+
+        :return: list of positive preconditions
+        """
+        precond = []
+        if isinstance(self.precondition, conditions.Atom):
+            precond = [self.precondition]
+        else:
+            for p in list(self.precondition.parts):
+                if not p.negated:
+                    precond.append(p)
+        try:
+            assert isinstance(precond, list)
+        except AssertionError:
+            raise NotImplementedError(
+                'Preconditions must be a single atom or a conjunction of '
+                'atoms.')
+        return precond
+
+    @property
     def get_literals_in_effects(self):
         """
         Return set with all literals occurring in effects, but not in effect
