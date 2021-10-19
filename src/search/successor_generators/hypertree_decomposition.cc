@@ -50,6 +50,10 @@ HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &tas
             infile >> u >> v;
             hypertrees[action_idx].add_edge(u, v);
         }
+
+        // Compute BFS order over edges
+        hypertrees[action_idx].compute_bfs_order();
+
     }
     cout << "Finished creating HT for successor generation...." << endl;
     cout << "Hypertree width: " << ht_width << endl;
@@ -80,6 +84,9 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
         for (size_t i = 1; i < node.get_indices().size(); ++i) {
             // TODO This is the bottleneck apparently. Order relations in node in some smart way
             hash_join(working_table, tables[node.get_ith_index(i)]);
+            if (working_table.tuples.empty()) {
+                return Table::EMPTY_TABLE();
+            }
         }
     }
 
@@ -92,8 +99,8 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
         }
     }
 
-    // Bottom up semi-join, needs to be in the inverted order of the hypertree
-    for (int i = ht.get_edges().size() - 1; i >= 0; --i) {
+    // Top down semi-join
+    for (size_t i = 0; i < ht.get_edges().size(); ++i) {
         const HTEdge &edge = ht.get_edge(i);
         size_t s = semi_join(tables[edge.get_parent()], tables[edge.get_child()]);
         if (s==0) {
@@ -102,8 +109,8 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
     }
 
     Table &working_table = tables[0];
-    for (size_t i = 1; i < tables.size(); ++i) {
-        hash_join(working_table, tables[i]);
+    for (size_t i = 1; i < ht.get_number_of_nodes(); ++i) {
+        hash_join(working_table, tables[ht.get_bfs_node(i)]);
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
             return working_table;

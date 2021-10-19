@@ -6,6 +6,8 @@
 #include "../database/table.h"
 
 #include <cassert>
+#include <queue>
+#include <vector>
 
 class HTEdge {
     int parent;
@@ -47,6 +49,7 @@ class Hypertree {
      */
     std::vector<HTNode> nodes;
     std::vector<HTEdge> edges;
+    std::vector<int> bfs_order;
 public:
     Hypertree() {};
 
@@ -76,6 +79,26 @@ public:
         return edges[i];
     }
 
+    void compute_bfs_order() {
+        std::vector<std::vector<int>> adjacency_matrix(nodes.size(), std::vector<int>());
+        for (auto e : edges) {
+            adjacency_matrix[e.get_parent()].push_back(e.get_child());
+        }
+
+        bfs_order.reserve(nodes.size());
+        std::queue<int> q;
+        q.push(0);
+        while (!q.empty()) {
+            int front = q.front();
+            q.pop();
+            bfs_order.push_back(front);
+            for (auto succ : adjacency_matrix[front]) {
+                q.push(succ);
+            }
+        }
+    }
+
+    const int get_bfs_node(size_t i) const {return bfs_order[i];}
 };
 
 
