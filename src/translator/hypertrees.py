@@ -114,7 +114,9 @@ def parse_decompositions(hd, action):
     decomposition = []
     map_prec_to_hyperedge = dict()
     for p in action.precondition.parts:
-        if p.negated:
+        if p.predicate == '=' and p.negated:
+            continue
+        if len(p.args) == 0:
             continue
         map_prec_to_hyperedge[p.hyperedge] = p
     for node in hd:
@@ -141,7 +143,9 @@ def generate_action_hypertree(action):
     i = 0
     f = open(action.name + ".ast", 'w')
     for p in action.precondition.parts:
-        if p.predicate == '=':
+        if p.predicate == '=' and p.negated:
+            continue
+        if len(p.args) == 0:
             continue
         atom_name = "{}-{}".format(p.predicate, str(i))
         i = i + 1
@@ -195,11 +199,17 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
     the translator.
     '''
     map_precond_to_position = dict()
-    for idx, p in enumerate(action.get_action_preconditions):
+    idx = 0
+    for p in action.get_action_preconditions:
+        if p.predicate == '=' and p.negated:
+            continue
+        if len(p.args) == 0:
+            continue
         map_precond_to_position[p] = idx
+        idx += 1
     print(len(action.decomposition), file=f)
     for node in action.decomposition:
-        print (len(node), file=f)
+        print(len(node), file=f)
         for cover in node:
             print(" ".join([str(map_precond_to_position[cover])] +
                            [str(len(cover.args))] +
@@ -209,3 +219,4 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
     print(len(action.join_tree), file=f)
     for edge in action.join_tree:
         print(" ".join(edge), file=f)
+    return

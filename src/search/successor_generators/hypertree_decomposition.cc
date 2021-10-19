@@ -15,6 +15,10 @@ using namespace std;
 HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &task)
     : GenericJoinSuccessor(task) {
 
+    /*
+     * TODO There seems to be some error with inequalities
+     */
+
     // TODO Make this into parameter
     ifstream infile("decompositions.out");
     int ht_width = 0;
