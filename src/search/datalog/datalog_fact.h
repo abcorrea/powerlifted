@@ -32,22 +32,22 @@ class Fact : public DatalogAtom {
     int cost;
     Achievers achievers;
 public:
-    Fact(Arguments arguments, int predicate_index) :
-        DatalogAtom(std::move(arguments), predicate_index) {
+    Fact(Arguments arguments, int predicate_index, bool new_pred) :
+        DatalogAtom(std::move(arguments), predicate_index, new_pred) {
         // Every fact starts with a fact of -1 and then we set it to a proper value
         // if the fact was not previously reached.
         fact_index = -1;
         cost = 0;
     }
 
-    Fact(Arguments arguments, int predicate_index, int cost) :
-        DatalogAtom(std::move(arguments), predicate_index), cost(cost) {
+    Fact(Arguments arguments, int predicate_index, int cost, bool new_pred) :
+        DatalogAtom(std::move(arguments), predicate_index, new_pred), cost(cost) {
         // See comment in constructor above
         fact_index = -1;
     }
 
-    Fact(Arguments arguments, int predicate_index, int cost, Achievers achievers) :
-        DatalogAtom(std::move(arguments), predicate_index), cost(cost), achievers(std::move(achievers)) {
+    Fact(Arguments arguments, int predicate_index, int cost, Achievers achievers, bool new_pred) :
+        DatalogAtom(std::move(arguments), predicate_index, new_pred), cost(cost), achievers(std::move(achievers)) {
         // See comment in constructor above
         fact_index = -1;
     }

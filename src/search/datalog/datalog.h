@@ -6,7 +6,9 @@
 #include "../atom.h"
 #include "../task.h"
 
+#include <map>
 #include <memory>
+#include <vector>
 
 /*
  * h-add:
@@ -80,6 +82,23 @@ Aux1(A) :- P(A, C)
 
 
 class Annotation;
+
+using Annotation = void(head, rule);
+
+ class FFHeuristic {
+vector<int> piff;
+
+ void add_action(head, rule) {...}
+
+ void createDatalog() {
+    Annotation f = [](head, rule) {
+       piff.push_back(get_action(head, rule));
+    }
+    Datalog p = create_datalog(add_action);
+ }
+ }
+
+
 class ConcatenationAnnotation extends Annotation;
 class FFAnnotation extends Annotation;
 class RuleBasedFFAnnotation extends Annotation;
@@ -161,6 +180,9 @@ class Datalog {
     // Is this what we want?
     const Task &task;
 
+    std::vector<std::string> new_predicates;
+    std::unordered_map<std::string, int> map_new_predicates_to_idx;
+
     void output_atom(const DatalogAtom &atom);
     void output_parameters(const Arguments& v);
 
@@ -176,11 +198,17 @@ public:
     std::vector<DatalogAtom> get_atoms_in_rule_body(const ActionSchema &schema,
                                                     const std::vector<size_t> &nullary_preconds) const;
 
+    void generate_action_rule(const ActionSchema &schema, std::vector<size_t> nullary_preconds);
+
+    void generate_action_effect_rules(const ActionSchema &schema);
+
     void generate_rules_with_nullary_heads(const ActionSchema &schema,
                                            const std::vector<size_t> &nullary_preconds);
 
     void generate_rules_with_n_ary_heads(const ActionSchema &schema,
                                          const std::vector<size_t> &nullary_preconds);
+
+    std::vector<DatalogAtom> get_action_effect_rule_body(const ActionSchema &schema);
 };
 
 }

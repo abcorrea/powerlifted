@@ -60,6 +60,7 @@ protected:
     int weight;
     int index;
     bool ground_effect;
+
     static int next_index;
 
     MapVariablePosition variable_position;

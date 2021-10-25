@@ -6,6 +6,7 @@
 #include "term.h"
 
 #include "../atom.h"
+#include "../action_schema.h"
 
 #include <cassert>
 #include <iostream>
@@ -20,15 +21,19 @@ class DatalogAtom {
     Arguments arguments;
     int predicate_index;
     int index;
+    bool new_pred_symbol; // If atom has a predicate symbol that is not an atom in the task
     static int next_index;
 
 public:
-    DatalogAtom(Arguments arguments, int predicate_index) :
+    DatalogAtom(Arguments arguments, int predicate_index, bool new_pred_symbol) :
         arguments(Arguments(std::move(arguments))),
         predicate_index(predicate_index),
-        index(next_index++) {}
+        index(next_index++),
+        new_pred_symbol(new_pred_symbol) {}
 
     DatalogAtom(const Atom &atom);
+
+    DatalogAtom(const ActionSchema &schema, int idx);
 
     DatalogAtom() = default;
 
@@ -49,6 +54,10 @@ public:
         return arguments[i];
     }
 
+    bool is_pred_symbol_new() const {
+        return new_pred_symbol;
+    }
+
     void print_atom(const std::vector<Object> &obj,
                           const std::unordered_map<int, std::string> &map_index_to_atom) const {
         std::cout << map_index_to_atom.at(predicate_index) << '(';
@@ -67,8 +76,6 @@ public:
         }
         std::cout << ')'; //<< std::endl;
     }
-
-
 };
 
 }

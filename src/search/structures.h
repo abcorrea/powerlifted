@@ -29,6 +29,10 @@ struct Parameter {
     std::string name;
     int index;
     int type;
+
+    int get_index() {
+        return index;
+    }
 };
 
 
