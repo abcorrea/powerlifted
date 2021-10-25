@@ -11,7 +11,9 @@
 namespace datalog {
 
 class MapVariablePosition {
-    // Class mapping free variables to positions of the head/effect
+    // Class mapping free variables to positions of the head/effect.
+    // This class is used only for the join/product/projection operation, and not to retrieve
+    // the full instantiation of action by "unsplitting" it.
     std::unordered_map<Term, int, boost::hash<Term>> mapping;
 
 public:
@@ -61,6 +63,16 @@ protected:
     int index;
     bool ground_effect;
 
+    // TODO Rewrite it.
+    // Where to get the variable from:
+    // Entry i is the ith variable of the action schema.
+    // If the first element is negative, then it indicates the atom in the body where this variable
+    // can be retrieved. If its positive, it indicates the auxiliary body atom that can query this
+    // variable. The second element indicates the position of the variable in the rule atom or in the
+    // auxiliary atom variables.
+    // Attention: if it is negative, we need to reduce 1 after transforming to positive (to avoid ambiguity with 0)
+    std::vector<std::pair<int, int>> variable_source;
+
     static int next_index;
 
     MapVariablePosition variable_position;
@@ -77,6 +89,28 @@ public:
             if (!e.is_object()) {
                 ground_effect = false;
             }
+        }
+        for (const Term &arg : effect.get_arguments()) {
+            if (arg.is_object()) continue;
+            std::pair<int, int> p;
+            bool found_correspondence = false;
+            int body_atom_counter = 0;
+            for (const DatalogAtom &b : conditions) {
+                int position_counter = 0;
+                for (const Term &body_arg : b.get_arguments()) {
+                    if (body_arg.is_object()) continue;
+                    if (body_arg.get_index() == arg.get_index()) {
+                        p.first = (body_atom_counter + 1) * -1;
+                        p.second = position_counter;
+                        found_correspondence = true;
+                        break;
+                    }
+                    position_counter++;
+                }
+                if (found_correspondence) break;
+                body_atom_counter++;
+            }
+            variable_source.emplace_back(p);
         }
     };
 
@@ -119,6 +153,29 @@ public:
 
     const Arguments &get_effect_arguments() const {
         return effect.get_arguments();
+    }
+
+    int get_atom_position_same_rule_body(int i) const {
+        if (i < 0)
+            return (i*-1)-1;
+        else
+            return i;
+    }
+
+    void output_variable_table() {
+        int v = 0;
+        for (const std::pair<int, int> p : variable_source) {
+            bool is_found_in_rule = (p.first < 0);
+            int position_in_body = p.second;
+            int body_position = get_atom_position_same_rule_body(p.first);
+            if (is_found_in_rule) {
+                std::cout << "?v" << v << ' ' << "BODY " << body_position << ' ' << position_in_body << std::endl;
+            }
+            else {
+                std::cout << "?v" << v << ' ' << "BODY " << body_position << ' ' << position_in_body << std::endl;
+            }
+            ++v;
+        }
     }
 };
 

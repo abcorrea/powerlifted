@@ -128,6 +128,7 @@ void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) {
             cout << "." << endl;
         }
     }
+    rule->output_variable_table();
 }
 
 void Datalog::output_atom(const DatalogAtom &atom) {
