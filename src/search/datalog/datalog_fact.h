@@ -13,7 +13,7 @@
 namespace  datalog {
 
 
-typedef std::vector<int> Achievers;
+using Achievers = std::vector<int>;
 
 /*
  *

@@ -8,10 +8,10 @@
 using namespace datalog;
 using namespace std;
 
-Datalog::Datalog(const Task &task) : task(task) {
+Datalog::Datalog(const Task &task, AnnotationGenerator ann) : task(task) {
 
     // Idea: pass callback function as parameter to handle annotations
-    create_rules();
+    create_rules(ann);
 
     for (const auto &rule : rules) {
         output_rule(rule);
@@ -27,43 +27,46 @@ void Datalog::get_nullary_atoms_from_vector(const vector<bool> &nullary_predicat
     }
 }
 
-void Datalog::create_rules() {
+void Datalog::create_rules(AnnotationGenerator ann) {
     for (const ActionSchema &schema : task.get_action_schemas()) {
         const std::vector<bool> &nullary_predicates_in_precond = schema.get_positive_nullary_precond();
         std::vector<size_t> nullary_preconds;
         get_nullary_atoms_from_vector(nullary_predicates_in_precond, nullary_preconds);
-        generate_action_rule(schema, nullary_preconds);
-        generate_action_effect_rules(schema);
+        generate_action_rule(schema, nullary_preconds, ann);
+        generate_action_effect_rules(schema, ann);
         //generate_rules_with_n_ary_heads(schema, nullary_preconds);
         //generate_rules_with_nullary_heads(schema, nullary_preconds);
     }
 }
 
 void Datalog::generate_action_rule(const ActionSchema &schema,
-                                   std::vector<size_t> nullary_preconds) {
+                                   std::vector<size_t> nullary_preconds, AnnotationGenerator &annotation_generator) {
     string action_predicate = "action-" + schema.get_name();
     size_t idx = new_predicates.size();
     map_new_predicates_to_idx.emplace(action_predicate, idx);
     DatalogAtom eff(schema, idx);
     new_predicates.emplace_back(action_predicate);
     vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
-    rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body)));
+    std::unique_ptr<Annotation> ann = annotation_generator(schema.get_index(), task);
+    rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body), move(ann)));
 }
 
-void Datalog::generate_action_effect_rules(const ActionSchema &schema) {
+void Datalog::generate_action_effect_rules(const ActionSchema &schema, AnnotationGenerator &annotation_generator) {
     vector<DatalogAtom> body = get_action_effect_rule_body(schema);
     for (const Atom &eff : schema.get_effects()) {
         if (eff.is_negated())
             continue;
         DatalogAtom effect(eff);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body));
+        std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
+        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, move(ann)));
     }
     const vector<bool> &nullary_predicates_in_eff = schema.get_positive_nullary_effects();
     vector<size_t> nullary_effects;
     get_nullary_atoms_from_vector(nullary_predicates_in_eff, nullary_effects);
     for (size_t eff_idx : nullary_effects) {
         DatalogAtom eff(Arguments(), eff_idx, false);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body));
+        std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
+        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, move(ann)));
     }
 }
 
@@ -73,30 +76,6 @@ vector<DatalogAtom> Datalog::get_action_effect_rule_body(const ActionSchema &sch
     size_t idx = map_new_predicates_to_idx[action_predicate];
     body[0] = DatalogAtom(schema, idx);
     return body;
-}
-
-
-void Datalog::generate_rules_with_n_ary_heads(const ActionSchema &schema,
-                                              const vector<size_t> &nullary_preconds) {
-    for (const Atom &eff : schema.get_effects()) {
-        if (eff.is_negated())
-            continue;
-        DatalogAtom effect(eff);
-        vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body)));
-    }
-}
-
-void Datalog::generate_rules_with_nullary_heads(const ActionSchema &schema,
-                                                const vector<size_t> &nullary_preconds) {
-    const vector<bool> &nullary_predicates_in_eff = schema.get_positive_nullary_effects();
-    vector<size_t> nullary_effects;
-    get_nullary_atoms_from_vector(nullary_predicates_in_eff, nullary_effects);
-    for (size_t eff_idx : nullary_effects) {
-        DatalogAtom eff(Arguments(), eff_idx, false);
-        vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body)));
-    }
 }
 
 vector<DatalogAtom> Datalog::get_atoms_in_rule_body(const ActionSchema &schema,

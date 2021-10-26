@@ -10,7 +10,7 @@
 #include "successor_generators/successor_generator_factory.h"
 
 // TODO This should be included in the heuristic, not here. Right now it is here for testing
-#include "datalog/datalog.h"
+#include "heuristics/ff_heuristic.h"
 
 #include <iostream>
 #include <memory>
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
                                                                                task));
 
     // TODO This should be created in the heuristic
-    datalog::Datalog datalog_program = datalog::Datalog(task);
+    FFHeuristic ff(task);
 
     // Start search
     if (task.is_trivially_unsolvable()) {

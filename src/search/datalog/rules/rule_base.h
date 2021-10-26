@@ -4,6 +4,8 @@
 #include "../datalog_atom.h"
 #include "../datalog_fact.h"
 
+#include "../annotations/annotation.h"
+
 #include <string>
 #include <utility>
 #include <unordered_set>
@@ -62,6 +64,7 @@ protected:
     int weight;
     int index;
     bool ground_effect;
+    std::unique_ptr<Annotation> annotation;
 
     // TODO Rewrite it.
     // Where to get the variable from:
@@ -78,11 +81,12 @@ protected:
     MapVariablePosition variable_position;
 
 public:
-    RuleBase(int weight, DatalogAtom eff, std::vector<DatalogAtom> c) :
+    RuleBase(int weight, DatalogAtom eff, std::vector<DatalogAtom> c, std::unique_ptr<Annotation> annotation) :
         effect(std::move(eff)),
         conditions(std::move(c)),
         weight(weight),
-        index(next_index++) {
+        index(next_index++),
+        annotation(move(annotation)) {
         variable_position.create_map(effect);
         ground_effect = true;
         for (const auto &e : effect.get_arguments()) {
@@ -172,7 +176,7 @@ public:
                 std::cout << "?v" << v << ' ' << "BODY " << body_position << ' ' << position_in_body << std::endl;
             }
             else {
-                std::cout << "?v" << v << ' ' << "BODY " << body_position << ' ' << position_in_body << std::endl;
+                std::cout << "?v" << v << ' ' << "AUX_BODY " << body_position << ' ' << position_in_body << std::endl;
             }
             ++v;
         }
