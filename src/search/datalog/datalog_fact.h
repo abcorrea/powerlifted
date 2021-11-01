@@ -3,6 +3,8 @@
 
 #include "datalog_atom.h"
 
+#include "achievers.h"
+
 #include <iostream>
 #include <string>
 #include <utility>
@@ -11,9 +13,6 @@
 #include <boost/functional/hash.hpp>
 
 namespace  datalog {
-
-
-using Achievers = std::vector<int>;
 
 /*
  *
