@@ -187,7 +187,7 @@ class Datalog {
     void output_parameters(const Arguments& v);
 
 public:
-    Datalog(const Task &task, AnnotationGenerator ann);
+    Datalog(const Task &task, AnnotationGenerator annotation_generator);
 
     void get_nullary_atoms_from_vector(const std::vector<bool> &nullary_predicates_in_precond,
                                        std::vector<size_t> &nullary_preconds) const;
@@ -203,6 +203,10 @@ public:
     void generate_action_effect_rules(const ActionSchema &schema, AnnotationGenerator &annotation_generator);
 
     std::vector<DatalogAtom> get_action_effect_rule_body(const ActionSchema &schema);
+
+    std::vector<std::unique_ptr<RuleBase>> &get_rules() {
+        return rules;
+    }
 };
 
 }

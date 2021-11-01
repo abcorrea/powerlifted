@@ -80,6 +80,14 @@ protected:
 
     MapVariablePosition variable_position;
 
+    int get_position_of_atom_in_same_body_rule(int i) const {
+        if (i < 0)
+            return (i*-1)-1;
+        else
+            return i;
+    }
+
+
 public:
     RuleBase(int weight, DatalogAtom eff, std::vector<DatalogAtom> c, std::unique_ptr<Annotation> annotation) :
         effect(std::move(eff)),
@@ -159,11 +167,12 @@ public:
         return effect.get_arguments();
     }
 
-    int get_atom_position_same_rule_body(int i) const {
-        if (i < 0)
-            return (i*-1)-1;
-        else
-            return i;
+    std::vector<std::pair<int, int>> get_variable_source_table() {
+        return variable_source;
+    }
+
+    void update_variable_source_table(std::vector<std::pair<int, int>> new_table) {
+        variable_source = new_table;
     }
 
     void output_variable_table() {
@@ -171,7 +180,7 @@ public:
         for (const std::pair<int, int> p : variable_source) {
             bool is_found_in_rule = (p.first < 0);
             int position_in_body = p.second;
-            int body_position = get_atom_position_same_rule_body(p.first);
+            int body_position = get_position_of_atom_in_same_body_rule(p.first);
             if (is_found_in_rule) {
                 std::cout << "?v" << v << ' ' << "BODY " << body_position << ' ' << position_in_body << std::endl;
             }

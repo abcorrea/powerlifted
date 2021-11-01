@@ -2,20 +2,34 @@
 
 #include "rules/generic_rule.h"
 
+#include "transformations/action_predicate_removal.h"
+
 #include <iostream>
 #include <memory>
 
 using namespace datalog;
 using namespace std;
 
-Datalog::Datalog(const Task &task, AnnotationGenerator ann) : task(task) {
+Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : task(task) {
 
     // Idea: pass callback function as parameter to handle annotations
-    create_rules(ann);
+    create_rules(annotation_generator);
 
+    cout << endl << "### ORIGINAL: " << endl;
     for (const auto &rule : rules) {
         output_rule(rule);
     }
+
+    cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
+    rules = remove_action_predicates(rules, annotation_generator, task);
+    for (const auto &rule : rules) {
+        output_rule(rule);
+    }
+
+
+    // TODO Update rule indices, as they are messed up right now
+
+    // Add goal rule at the end
 }
 
 void Datalog::get_nullary_atoms_from_vector(const vector<bool> &nullary_predicates_in_precond,
@@ -48,7 +62,7 @@ void Datalog::generate_action_rule(const ActionSchema &schema,
     new_predicates.emplace_back(action_predicate);
     vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
     std::unique_ptr<Annotation> ann = annotation_generator(schema.get_index(), task);
-    rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body), move(ann)));
+    rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body), move(ann), schema.get_index()));
 }
 
 void Datalog::generate_action_effect_rules(const ActionSchema &schema, AnnotationGenerator &annotation_generator) {
@@ -66,7 +80,7 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
     for (size_t eff_idx : nullary_effects) {
         DatalogAtom eff(Arguments(), eff_idx, false);
         std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, move(ann)));
+        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, move(ann), schema.get_index()));
     }
 }
 
