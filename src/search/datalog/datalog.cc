@@ -12,6 +12,12 @@ using namespace std;
 
 Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : task(task) {
 
+    number_original_predicate_symbols = task.initial_state.get_relations().size() - 1;
+
+    // We add these empty strings to the beginning just so we have the a perfect mapping between
+    // new predicate symbols and positions of the vector.
+    new_predicates.resize(number_original_predicate_symbols+1);
+
     // Idea: pass callback function as parameter to handle annotations
     create_rules(annotation_generator);
 
@@ -56,10 +62,10 @@ void Datalog::create_rules(AnnotationGenerator ann) {
 void Datalog::generate_action_rule(const ActionSchema &schema,
                                    std::vector<size_t> nullary_preconds, AnnotationGenerator &annotation_generator) {
     string action_predicate = "action-" + schema.get_name();
-    size_t idx = new_predicates.size();
+    int idx = get_next_auxiliary_predicate_idx();
     map_new_predicates_to_idx.emplace(action_predicate, idx);
+    new_predicates.push_back(action_predicate);
     DatalogAtom eff(schema, idx);
-    new_predicates.emplace_back(action_predicate);
     vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
     std::unique_ptr<Annotation> ann = annotation_generator(schema.get_index(), task);
     rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body), move(ann), schema.get_index()));
@@ -109,8 +115,13 @@ vector<DatalogAtom> Datalog::get_atoms_in_rule_body(const ActionSchema &schema,
 void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) {
     DatalogAtom effect = rule->get_effect();
     output_atom(effect);
-    cout << " :- ";
     size_t number_conditions = rule->get_conditions().size();
+    if (number_conditions == 0) {
+        cout << "." << endl;
+    }
+    else {
+        cout << " :- ";
+    }
     for (const auto &condition : rule->get_conditions()) {
         --number_conditions;
         output_atom(condition);
@@ -126,7 +137,6 @@ void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) {
 
 void Datalog::output_atom(const DatalogAtom &atom) {
     if (atom.is_pred_symbol_new()) {
-        assert(int(new_predicates.size()) > atom.get_predicate_index());
         std::cout << new_predicates[atom.get_predicate_index()];
     }
     else {

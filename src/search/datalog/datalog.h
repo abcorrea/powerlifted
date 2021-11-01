@@ -180,6 +180,8 @@ class Datalog {
     // Is this what we want?
     const Task &task;
 
+    int number_original_predicate_symbols;
+
     std::vector<std::string> new_predicates;
     std::unordered_map<std::string, int> map_new_predicates_to_idx;
 
@@ -203,6 +205,12 @@ public:
     void generate_action_effect_rules(const ActionSchema &schema, AnnotationGenerator &annotation_generator);
 
     std::vector<DatalogAtom> get_action_effect_rule_body(const ActionSchema &schema);
+
+    int get_next_auxiliary_predicate_idx() {
+        return new_predicates.size();
+    }
+
+
 
     std::vector<std::unique_ptr<RuleBase>> &get_rules() {
         return rules;
