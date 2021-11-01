@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <memory>
+#include <stack>
 
 using namespace datalog;
 using namespace std;
@@ -26,12 +27,17 @@ Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : t
         output_rule(rule);
     }
 
+
     cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
     rules = remove_action_predicates(rules, annotation_generator, task);
+
+    set_permanent_edb(task.get_static_info());
+
     for (const auto &rule : rules) {
         output_rule(rule);
     }
 
+    output_permanent_edb();
 
     // TODO Update rule indices, as they are messed up right now
 
@@ -157,4 +163,42 @@ void Datalog::output_parameters(const Arguments& v) {
         if (--number_params > 0) cout << ", ";
     }
     cout << ')';
+}
+
+
+void Datalog::set_permanent_edb(StaticInformation static_information) {
+    for (const auto &r : static_information.get_relations()) {
+        for (const auto &tuple : r.tuples) {
+            vector<pair<int, int>> args;
+            for (int i : tuple) {
+                args.emplace_back(i, OBJECT);
+            }
+            permanent_edb.emplace_back(Arguments(args), r.predicate_symbol, false);
+        }
+    }
+    get_always_reachable_rule_heads();
+}
+
+void Datalog::get_always_reachable_rule_heads() {
+    stack<size_t> to_be_deleted;
+    for (size_t i = 0; i < rules.size(); ++i) {
+        if (rules[i]->get_conditions().size() == 0) {
+            DatalogAtom eff = rules[i]->get_effect();
+            to_be_deleted.push(i);
+            permanent_edb.emplace_back(Fact(eff.get_arguments(), eff.get_predicate_index(), eff.is_pred_symbol_new()));
+        }
+    }
+    while (!to_be_deleted.empty()) {
+        size_t n = to_be_deleted.top();
+        to_be_deleted.pop();
+        rules.erase(rules.begin() + n);
+    }
+}
+
+void Datalog::output_permanent_edb() {
+    cout << "### PERMANENT EDB: " << endl;
+    for (const Fact &f : permanent_edb) {
+        output_atom(f);
+        cout << "." << endl;
+    }
 }

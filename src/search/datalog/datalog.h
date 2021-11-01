@@ -175,6 +175,7 @@ namespace datalog {
 
 class Datalog {
 
+    std::vector<Fact> permanent_edb;
     std::vector<std::unique_ptr<RuleBase>> rules;
 
     // Is this what we want?
@@ -187,6 +188,10 @@ class Datalog {
 
     void output_atom(const DatalogAtom &atom);
     void output_parameters(const Arguments& v);
+
+    void set_permanent_edb(StaticInformation static_information);
+    void get_always_reachable_rule_heads();
+    void output_permanent_edb();
 
 public:
     Datalog(const Task &task, AnnotationGenerator annotation_generator);
@@ -210,11 +215,10 @@ public:
         return new_predicates.size();
     }
 
-
-
     std::vector<std::unique_ptr<RuleBase>> &get_rules() {
         return rules;
     }
+
 };
 
 }
