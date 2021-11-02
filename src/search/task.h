@@ -26,13 +26,13 @@
 class Task {
 
     std::vector<ActionSchema> action_schemas;
+    GoalCondition goal;
 
 public:
     std::vector<Predicate> predicates;
     std::vector<Object> objects;
-    DBState initial_state;
-    GoalCondition goal;
     std::vector<std::string> type_names;
+    DBState initial_state;
     std::unordered_set<int> nullary_predicates;
     StaticInformation static_info;
 
@@ -64,6 +64,14 @@ public:
                                std::unordered_set<int> negative_nullary_goals);
 
     void initialize_action_schemas(const std::vector<ActionSchema> &action_list);
+
+    const GoalCondition &get_goal() const {
+        return goal;
+    }
+
+    const DBState &get_initial_state() const {
+        return initial_state;
+    }
 
     void dump_state(DBState s) const;
 

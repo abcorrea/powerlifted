@@ -11,11 +11,11 @@ int Goalcount::compute_heuristic(const DBState &s, const Task &task) {
      *
      */
     const auto& nullary_atoms = s.get_nullary_atoms();
-    int h = compute_unreached_nullary_atoms(task.goal.positive_nullary_goals,
-                                            task.goal.negative_nullary_goals,
+    int h = compute_unreached_nullary_atoms(task.get_goal().positive_nullary_goals,
+                                            task.get_goal().negative_nullary_goals,
                                             nullary_atoms);
 
-    for (const AtomicGoal &atomicGoal : task.goal.goal) {
+    for (const AtomicGoal &atomicGoal : task.get_goal().goal) {
         assert(atomicGoal.get_predicate_index()==
             s.get_relations()[atomicGoal.get_predicate_index()].predicate_symbol);
         h += atom_not_satisfied(s, atomicGoal);
