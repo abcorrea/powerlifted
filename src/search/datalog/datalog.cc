@@ -15,9 +15,9 @@ Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : t
 
     number_original_predicate_symbols = task.initial_state.get_relations().size() - 1;
 
-    // We add these empty strings to the beginning just so we have the a perfect mapping between
-    // new predicate symbols and positions of the vector.
-    new_predicates.resize(number_original_predicate_symbols+1);
+    for (auto p : task.predicates) {
+        predicate_names.push_back(p.get_name());
+    }
 
     // Idea: pass callback function as parameter to handle annotations
     create_rules(annotation_generator);
@@ -70,7 +70,7 @@ void Datalog::generate_action_rule(const ActionSchema &schema,
     string action_predicate = "action-" + schema.get_name();
     int idx = get_next_auxiliary_predicate_idx();
     map_new_predicates_to_idx.emplace(action_predicate, idx);
-    new_predicates.push_back(action_predicate);
+    predicate_names.push_back(action_predicate);
     DatalogAtom eff(schema, idx);
     vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
     std::unique_ptr<Annotation> ann = annotation_generator(schema.get_index(), task);
@@ -135,7 +135,7 @@ void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) {
             cout << ", ";
         }
         else {
-            cout << "." << endl;
+            cout << " [weight: " << rule->get_weight() << "]." << endl;
         }
     }
     rule->output_variable_table();
@@ -143,7 +143,7 @@ void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) {
 
 void Datalog::output_atom(const DatalogAtom &atom) {
     if (atom.is_pred_symbol_new()) {
-        std::cout << new_predicates[atom.get_predicate_index()];
+        std::cout << predicate_names[atom.get_predicate_index()];
     }
     else {
         cout << task.get_predicate_name(atom.get_predicate_index());
@@ -185,7 +185,7 @@ void Datalog::get_always_reachable_rule_heads() {
         if (rules[i]->get_conditions().size() == 0) {
             DatalogAtom eff = rules[i]->get_effect();
             to_be_deleted.push(i);
-            permanent_edb.emplace_back(Fact(eff.get_arguments(), eff.get_predicate_index(), eff.is_pred_symbol_new()));
+            permanent_edb.emplace_back(Fact(eff.get_arguments(), eff.get_predicate_index(), rules[i]->get_weight(), eff.is_pred_symbol_new()));
         }
     }
     while (!to_be_deleted.empty()) {
@@ -199,6 +199,6 @@ void Datalog::output_permanent_edb() {
     cout << "### PERMANENT EDB: " << endl;
     for (const Fact &f : permanent_edb) {
         output_atom(f);
-        cout << "." << endl;
+        cout << " [cost: " << f.get_cost() << "]." << endl;
     }
 }

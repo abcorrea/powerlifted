@@ -183,7 +183,7 @@ class Datalog {
 
     int number_original_predicate_symbols;
 
-    std::vector<std::string> new_predicates;
+    std::vector<std::string> predicate_names;
     std::unordered_map<std::string, int> map_new_predicates_to_idx;
 
     void output_atom(const DatalogAtom &atom);
@@ -212,7 +212,7 @@ public:
     std::vector<DatalogAtom> get_action_effect_rule_body(const ActionSchema &schema);
 
     int get_next_auxiliary_predicate_idx() {
-        return new_predicates.size();
+        return predicate_names.size();
     }
 
     std::vector<std::unique_ptr<RuleBase>> &get_rules() {
