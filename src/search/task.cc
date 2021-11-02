@@ -75,11 +75,11 @@ void Task::dump_goal()
         cout << "Not " << predicates[g].get_name() << endl;
     }
     for (const auto &g : goal.goal) {
-        if (g.negated) {
+        if (g.is_negated()) {
             cout << "Not ";
         }
-        cout << predicates[g.predicate].get_name() << " ";
-        for (int arg : g.args) {
+        cout << predicates[g.get_predicate_index()].get_name() << " ";
+        for (int arg : g.get_arguments()) {
             cout << objects[arg].get_name() << " ";
         }
         cout << endl;
@@ -111,15 +111,15 @@ bool Task::is_goal(const DBState &state) const
             return false;
     }
     for (const AtomicGoal &atomicGoal : goal.goal) {
-        int goal_predicate = atomicGoal.predicate;
+        int goal_predicate = atomicGoal.get_predicate_index();
         const Relation &relation_at_goal_predicate = state.get_relations()[goal_predicate];
 
         assert(!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate());
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
 
-        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.args);
+        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.get_arguments());
         const auto end = relation_at_goal_predicate.tuples.end();
-        if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
+        if ((!atomicGoal.is_negated() && it == end) || (atomicGoal.is_negated() && it != end)) {
             return false;
         }
     }
@@ -135,15 +135,15 @@ bool Task::is_trivially_unsolvable() const
      * This should be guaranteed by the translator. Just a safety check.
      */
     for (const AtomicGoal &atomicGoal : goal.goal) {
-        int goal_predicate = atomicGoal.predicate;
+        int goal_predicate = atomicGoal.get_predicate_index();
         Relation relation_at_goal_predicate = static_info.get_relations()[goal_predicate];
         if (!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate())
             continue;
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
 
-        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.args);
+        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.get_arguments());
         const auto end = relation_at_goal_predicate.tuples.end();
-        if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
+        if ((!atomicGoal.is_negated() && it == end) || (atomicGoal.is_negated() && it != end)) {
             return true;
         }
     }
