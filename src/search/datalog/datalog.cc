@@ -14,8 +14,6 @@ using namespace std;
 
 Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : task(task) {
 
-    number_original_predicate_symbols = task.initial_state.get_relations().size() - 1;
-
     for (auto p : task.predicates) {
         predicate_names.push_back(p.get_name());
     }
