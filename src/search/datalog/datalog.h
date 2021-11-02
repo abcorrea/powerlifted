@@ -181,7 +181,7 @@ class Datalog {
     // Is this what we want?
     const Task &task;
 
-    int number_original_predicate_symbols;
+    int goal_atom_idx;
 
     std::vector<std::string> predicate_names;
     std::unordered_map<std::string, int> map_new_predicates_to_idx;
@@ -210,7 +210,7 @@ class Datalog {
     void get_always_reachable_rule_heads();
     void output_permanent_edb();
 
-    void add_goal_rule(const Task &task);
+    void add_goal_rule(const Task &task, AnnotationGenerator &annotation_generator);
 
 public:
     Datalog(const Task &task, AnnotationGenerator annotation_generator);

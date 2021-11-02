@@ -1,6 +1,7 @@
 #include "datalog.h"
 
 #include "rules/generic_rule.h"
+#include "rules/product.h"
 
 #include "transformations/action_predicate_removal.h"
 
@@ -27,11 +28,13 @@ Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : t
         output_rule(rule);
     }
 
-
     cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
     rules = remove_action_predicates(rules, annotation_generator, task);
 
     set_permanent_edb(task.get_static_info());
+
+    // Add goal rule at the end
+    add_goal_rule(task, annotation_generator);
 
     for (const auto &rule : rules) {
         output_rule(rule);
@@ -41,8 +44,6 @@ Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : t
 
     // TODO Update rule indices, as they are messed up right now
 
-    // Add goal rule at the end
-    add_goal_rule(task);
 }
 
 void Datalog::get_nullary_atoms_from_vector(const vector<bool> &nullary_predicates_in_precond,
@@ -97,8 +98,31 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
     }
 }
 
-void Datalog::add_goal_rule(const Task &task) {
-    return;
+void Datalog::add_goal_rule(const Task &task, AnnotationGenerator &annotation_generator) {
+    string goal_predicate = "@goal-reachable";
+    int idx = get_next_auxiliary_predicate_idx();
+    map_new_predicates_to_idx.emplace(goal_predicate, idx);
+    predicate_names.push_back(goal_predicate);
+    DatalogAtom goal(Arguments(), idx, true);
+    std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
+
+    goal_atom_idx = idx;
+
+    vector<DatalogAtom> body;
+    for (const AtomicGoal &ag : task.get_goal().goal) {
+        vector<pair<int, int>> terms;
+        for (int arg : ag.get_arguments()) {
+            terms.emplace_back(arg, OBJECT); // All goal conditions are ground.
+        }
+        DatalogAtom atom(Arguments(terms), ag.get_predicate_index(), false);
+        body.push_back(atom);
+    }
+
+    for (int nullary_goal_idx : task.get_goal().positive_nullary_goals) {
+        body.emplace_back(Arguments(), nullary_goal_idx, false);
+    }
+
+    rules.emplace_back(make_unique<ProductRule>(0, goal, body, move(ann)));
 }
 
 vector<DatalogAtom> Datalog::get_action_effect_rule_body(const ActionSchema &schema) {

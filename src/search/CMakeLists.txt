@@ -103,7 +103,16 @@ add_executable(search
         datalog/datalog_fact.cc datalog/datalog_fact.h
         datalog/term.h
         datalog/object.cc datalog/object.h
-        datalog/rules/rule_base.cc datalog/rules/rule_base.cc
-        delete_relaxation_heuristics/delete_relaxation_heuristic.h datalog/rules/generic_rule.h heuristics/ff_heuristic.h datalog/annotations/annotation.h datalog/ground_rule.h heuristics/ff_heuristic.cc heuristics/rff_heuristic.cc heuristics/rff_heuristic.h datalog/achievers.h datalog/transformations/action_predicate_removal.h)
+        datalog/rules/rule_base.cc datalog/rules/rule_base.h
+        delete_relaxation_heuristics/delete_relaxation_heuristic.h
+        datalog/rules/generic_rule.h
+        datalog/rules/product.h
+        heuristics/ff_heuristic.h
+        datalog/annotations/annotation.h
+        datalog/ground_rule.h
+        heuristics/ff_heuristic.cc
+        heuristics/rff_heuristic.cc
+        heuristics/rff_heuristic.h
+        datalog/achievers.h datalog/transformations/action_predicate_removal.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})
