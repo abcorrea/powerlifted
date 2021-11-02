@@ -42,6 +42,7 @@ Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : t
     // TODO Update rule indices, as they are messed up right now
 
     // Add goal rule at the end
+    add_goal_rule(task);
 }
 
 void Datalog::get_nullary_atoms_from_vector(const vector<bool> &nullary_predicates_in_precond,
@@ -94,6 +95,10 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
         std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
         rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, move(ann), schema.get_index()));
     }
+}
+
+void Datalog::add_goal_rule(const Task &task) {
+    return;
 }
 
 vector<DatalogAtom> Datalog::get_action_effect_rule_body(const ActionSchema &schema) {
