@@ -55,8 +55,8 @@ HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &tas
         hypertrees[action_idx].compute_bfs_order();
 
     }
-    cout << "Finished creating HT for successor generation...." << endl;
-    cout << "Hypertree width: " << ht_width << endl;
+    cout << "Finished creating hypertrees for successor generation...." << endl;
+    cout << "Maximum hypertree width: " << ht_width << endl;
 }
 
 
@@ -93,7 +93,13 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
     // Bottom up semi-join, needs to be in the inverted order of the hypertree
     for (int i = ht.get_edges().size() - 1; i >= 0; --i) {
         const HTEdge &edge = ht.get_edge(i);
-        size_t s = semi_join(tables[edge.get_child()], tables[edge.get_parent()]);
+        size_t before = tables[edge.get_parent()].tuples.size();
+        size_t s = semi_join(tables[edge.get_parent()], tables[edge.get_child()]);
+        size_t after = tables[edge.get_parent()].tuples.size();
+        if (after > before) {
+            cerr << "ERROR: Semi-join increased number of tuples???" << endl;
+            exit(0);
+        }
         if (s==0) {
             return Table::EMPTY_TABLE();
         }
@@ -102,7 +108,13 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
     // Top down semi-join
     for (size_t i = 0; i < ht.get_edges().size(); ++i) {
         const HTEdge &edge = ht.get_edge(i);
-        size_t s = semi_join(tables[edge.get_parent()], tables[edge.get_child()]);
+        size_t before = tables[edge.get_child()].tuples.size();
+        size_t s = semi_join(tables[edge.get_child()], tables[edge.get_parent()]);
+        size_t after = tables[edge.get_child()].tuples.size();
+        if (after > before) {
+            cerr << "ERROR: Semi-join increased number of tuples???" << endl;
+            exit(0);
+        }
         if (s==0) {
             return Table::EMPTY_TABLE();
         }
@@ -110,10 +122,16 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
 
     Table &working_table = tables[0];
     for (size_t i = 1; i < ht.get_number_of_nodes(); ++i) {
-        hash_join(working_table, tables[ht.get_bfs_node(i)]);
+        size_t before = working_table.tuples.size();
+        hash_join(working_table, tables[i]);
+        size_t after = working_table.tuples.size();
+        if (before > after) {
+            cerr << "ERROR: Some tuples are not matching in the final join of action schema " << action.get_index() << endl;
+            exit(0);
+        }
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
-            return working_table;
+            return Table::EMPTY_TABLE();
         }
     }
 

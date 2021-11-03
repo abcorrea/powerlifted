@@ -1,6 +1,7 @@
 #ifndef SEARCH_TABLE_H
 #define SEARCH_TABLE_H
 
+#include <iostream>
 #include <vector>
 
 /**
@@ -26,6 +27,19 @@ public:
     }
 
     Table() = default;
+
+    void dump_table() const {
+        for (size_t i = 0; i < tuple_index.size(); ++i) {
+            std::cerr << tuple_index[i] << '\t';
+        }
+        std::cerr << std::endl << "=" << std::endl;
+        for (auto tuple : tuples) {
+            for (size_t i = 0; i < tuple.size(); ++i) {
+                std::cerr << tuple[i] << '\t';
+            }
+            std::cerr << std::endl;
+        }
+    }
 
     static const Table& EMPTY_TABLE();
 };

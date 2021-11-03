@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import sys
 
 
 class Hypertree:
@@ -80,14 +81,14 @@ def subset(l1, l2):
 
 def get_hypertree_decompositions(task):
     print("Using Hypertree decompositions. 'BalancedGo' is expected to be in the PATH.")
-    delete_previous_htd_files()
+    #delete_previous_htd_files()
     for action in task.actions:
         f_name = generate_action_hypertree(action)
         hd = compute_decompositions(f_name)
         action.decomposition = parse_decompositions(hd, action)
         action.join_tree = get_join_tree(hd)
     delete_files(".ast")
-    delete_files(".htd")
+    #delete_files(".htd")
 
 def get_join_tree(hd):
     '''
@@ -101,7 +102,7 @@ def get_join_tree(hd):
         idx = hd.index(top)
         for c in top.children:
             idx_c = hd.index(c)
-            edges.append((str(idx), str(idx_c)))
+            edges.append((idx, idx_c))
             queue.append(c)
     return edges
 
@@ -198,9 +199,10 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
     This is a bit of a hack, but we print the actions in the same order as they were printed by
     the translator.
     '''
+    action_width = 1
     map_precond_to_position = dict()
     idx = 0
-    for p in action.get_action_preconditions:
+    for p in sorted(action.get_action_preconditions):
         if p.predicate == '=' and p.negated:
             continue
         if len(p.args) == 0:
@@ -210,6 +212,7 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
     print(len(action.decomposition), file=f)
     for node in action.decomposition:
         print(len(node), file=f)
+        action_width = max(action_width, len(node))
         for cover in node:
             print(" ".join([str(map_precond_to_position[cover])] +
                            [str(len(cover.args))] +
@@ -218,5 +221,9 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
             print(file=f)
     print(len(action.join_tree), file=f)
     for edge in action.join_tree:
-        print(" ".join(edge), file=f)
+        parent = action.decomposition[edge[0]][0]
+        child = action.decomposition[edge[1]][0]
+        print(" ".join([str(map_precond_to_position[parent]),
+                        str(map_precond_to_position[child])]), file=f)
+    print("Action %s has width %d" % (action.name, action_width), file=sys.stderr)
     return
