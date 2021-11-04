@@ -81,14 +81,14 @@ def subset(l1, l2):
 
 def get_hypertree_decompositions(task):
     print("Using Hypertree decompositions. 'BalancedGo' is expected to be in the PATH.")
-    #delete_previous_htd_files()
+    delete_previous_htd_files()
     for action in task.actions:
         f_name = generate_action_hypertree(action)
         hd = compute_decompositions(f_name)
         action.decomposition = parse_decompositions(hd, action)
         action.join_tree = get_join_tree(hd)
     delete_files(".ast")
-    #delete_files(".htd")
+    delete_files(".htd")
 
 def get_join_tree(hd):
     '''
