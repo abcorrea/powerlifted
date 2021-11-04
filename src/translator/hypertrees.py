@@ -221,9 +221,10 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
             print(file=f)
     print(len(action.join_tree), file=f)
     for edge in action.join_tree:
-        parent = action.decomposition[edge[0]][0]
-        child = action.decomposition[edge[1]][0]
-        print(" ".join([str(map_precond_to_position[parent]),
-                        str(map_precond_to_position[child])]), file=f)
+
+        #print(" ".join([str(map_precond_to_position[parent]),
+        #                str(map_precond_to_position[child])]), file=f)
+        print(" ".join([str(edge[0]),
+                        str(edge[1])]), file=f)
     print("Action %s has width %d" % (action.name, action_width), file=sys.stderr)
     return

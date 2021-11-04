@@ -79,7 +79,13 @@ public:
         return edges[i];
     }
 
+    const HTNode &get_node(size_t i) const {
+        assert(i < nodes.size() and i >= 0);
+        return nodes[i];
+    }
+
     void compute_bfs_order() {
+        std::vector<int> nodes_order;
         std::vector<std::vector<int>> adjacency_matrix(nodes.size(), std::vector<int>());
         for (auto e : edges) {
             adjacency_matrix[e.get_parent()].push_back(e.get_child());
@@ -91,10 +97,14 @@ public:
         while (!q.empty()) {
             int front = q.front();
             q.pop();
-            bfs_order.push_back(front);
+            nodes_order.push_back(front);
             for (auto succ : adjacency_matrix[front]) {
                 q.push(succ);
             }
+        }
+
+        for (int i : nodes_order) {
+            bfs_order.push_back(nodes[i].get_first());
         }
     }
 

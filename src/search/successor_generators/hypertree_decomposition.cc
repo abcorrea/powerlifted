@@ -93,13 +93,9 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
     // Bottom up semi-join, needs to be in the inverted order of the hypertree
     for (int i = ht.get_edges().size() - 1; i >= 0; --i) {
         const HTEdge &edge = ht.get_edge(i);
-        size_t before = tables[edge.get_parent()].tuples.size();
-        size_t s = semi_join(tables[edge.get_parent()], tables[edge.get_child()]);
-        size_t after = tables[edge.get_parent()].tuples.size();
-        if (after > before) {
-            cerr << "ERROR: Semi-join increased number of tuples???" << endl;
-            exit(0);
-        }
+        int parent = ht.get_node(edge.get_parent()).get_first();
+        int child = ht.get_node(edge.get_child()).get_first();
+        size_t s = semi_join(tables[parent], tables[child]);
         if (s==0) {
             return Table::EMPTY_TABLE();
         }
@@ -108,22 +104,18 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
     // Top down semi-join
     for (size_t i = 0; i < ht.get_edges().size(); ++i) {
         const HTEdge &edge = ht.get_edge(i);
-        size_t before = tables[edge.get_child()].tuples.size();
-        size_t s = semi_join(tables[edge.get_child()], tables[edge.get_parent()]);
-        size_t after = tables[edge.get_child()].tuples.size();
-        if (after > before) {
-            cerr << "ERROR: Semi-join increased number of tuples???" << endl;
-            exit(0);
-        }
+        int parent = ht.get_node(edge.get_parent()).get_first();
+        int child = ht.get_node(edge.get_child()).get_first();
+        size_t s = semi_join(tables[child], tables[parent]);
         if (s==0) {
             return Table::EMPTY_TABLE();
         }
     }
 
-    Table &working_table = tables[0];
+    Table &working_table = tables[ht.get_node(0).get_first()];
     for (size_t i = 1; i < ht.get_number_of_nodes(); ++i) {
         size_t before = working_table.tuples.size();
-        hash_join(working_table, tables[i]);
+        hash_join(working_table, tables[ht.get_node(i).get_first()]);
         size_t after = working_table.tuples.size();
         if (before > after) {
             cerr << "ERROR: Some tuples are not matching in the final join of action schema " << action.get_index() << endl;
