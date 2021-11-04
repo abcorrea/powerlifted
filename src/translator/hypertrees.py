@@ -226,5 +226,5 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
         #                str(map_precond_to_position[child])]), file=f)
         print(" ".join([str(edge[0]),
                         str(edge[1])]), file=f)
-    print("Action %s has width %d" % (action.name, action_width), file=sys.stderr)
+    #print("Action %s has width %d" % (action.name, action_width), file=sys.stderr)
     return
