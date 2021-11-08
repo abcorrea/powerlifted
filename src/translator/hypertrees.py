@@ -83,9 +83,11 @@ def get_hypertree_decompositions(task):
     print("Using Hypertree decompositions. 'BalancedGo' is expected to be in the PATH.")
     delete_previous_htd_files()
     for action in task.actions:
-        f_name = generate_action_hypertree(action)
+        if len(action.parameters) == 0:
+            continue
+        f_name, map_pred_edge = generate_action_hypertree(action)
         hd = compute_decompositions(f_name)
-        action.decomposition = parse_decompositions(hd, action)
+        action.decomposition = parse_decompositions(hd, map_pred_edge)
         action.join_tree = get_join_tree(hd)
     delete_files(".ast")
     delete_files(".htd")
@@ -107,19 +109,12 @@ def get_join_tree(hd):
     return edges
 
 
-def parse_decompositions(hd, action):
+def parse_decompositions(hd, map_prec_to_hyperedge):
     '''
     Transform hypertree into sequence of operations (join, projections, etc).
 
     '''
     decomposition = []
-    map_prec_to_hyperedge = dict()
-    for p in action.precondition.parts:
-        if p.predicate == '=' and p.negated:
-            continue
-        if len(p.args) == 0:
-            continue
-        map_prec_to_hyperedge[p.hyperedge] = p
     for node in hd:
         d = []
         for p in node.cover:
@@ -141,6 +136,7 @@ def delete_files(extension):
 
 
 def generate_action_hypertree(action):
+    map_pred_edge = dict()
     i = 0
     f = open(action.name + ".ast", 'w')
     for p in action.precondition.parts:
@@ -149,12 +145,13 @@ def generate_action_hypertree(action):
         if len(p.args) == 0:
             continue
         atom_name = "{}-{}".format(p.predicate, str(i))
+        map_pred_edge[atom_name] = p
         i = i + 1
-        terms = ','.join(p.args).replace('?', '')
+        terms = ','.join([x for x in p.args if x[0] == '?']).replace('?', '')
         f.write('%s(%s)\n' % (atom_name, terms))
         p.hyperedge = atom_name
     f.close()
-    return f.name
+    return f.name, map_pred_edge
 
 
 def compute_decompositions(file):
@@ -167,6 +164,7 @@ def compute_decompositions(file):
                        '-det',
                        '-graph', file,
                        '-complete',
+                       '-cpu', '1',
                        '-gml', decomp_file_name]
 
     res = subprocess.run(BALANCED_GO_CMD, stdout=subprocess.PIPE,
@@ -199,6 +197,10 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
     This is a bit of a hack, but we print the actions in the same order as they were printed by
     the translator.
     '''
+    if len(action.parameters) == 0:
+        print(0, file=f) # size of the action decomposition is 0
+        print(0, file=f) # number of edges is also 0
+        return
     action_width = 1
     map_precond_to_position = dict()
     idx = 0
@@ -214,9 +216,7 @@ def print_decompositions(action, parameter_index, object_index, predicate_index,
         print(len(node), file=f)
         action_width = max(action_width, len(node))
         for cover in node:
-            print(" ".join([str(map_precond_to_position[cover])] +
-                           [str(len(cover.args))] +
-                           [str(parameter_index[arg]) for arg in cover.args]),
+            print(" ".join([str(map_precond_to_position[cover])]),
                   file=f, end=' ')
             print(file=f)
     print(len(action.join_tree), file=f)

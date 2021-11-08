@@ -85,6 +85,8 @@ public:
     }
 
     void compute_bfs_order() {
+        if (nodes.size() == 0)
+            return;
         std::vector<int> nodes_order;
         std::vector<std::vector<int>> adjacency_matrix(nodes.size(), std::vector<int>());
         for (auto e : edges) {

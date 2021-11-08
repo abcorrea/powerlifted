@@ -31,15 +31,8 @@ HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &tas
             infile >> number_relations;
             ht_width = std::max(ht_width, number_relations);
             vector<int> relations_indices(number_relations);
-            for (int j = 0; j  < number_relations; ++j) {
-                // TODO We never use the param variable. Why do we even output it in the translator?
-                int number_params;
-                infile >> relations_indices[j] >> number_params;
-                vector<int> params(number_params);
-                for (int k = 0; k < number_params; ++k) {
-                    infile >> params[k];
-                }
-            }
+            for (int j = 0; j  < number_relations; ++j)
+                infile >> relations_indices[j];
             hypertrees[action_idx].add_node(relations_indices);
         }
         int number_edges = 0;
