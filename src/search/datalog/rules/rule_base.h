@@ -190,6 +190,10 @@ public:
             ++v;
         }
     }
+
+    virtual std::string get_type_name() {
+        return "RuleBase";
+    }
 };
 
 }

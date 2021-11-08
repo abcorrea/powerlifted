@@ -29,6 +29,10 @@ public:
     int get_schema_index() {
         return schema_index;
     }
+
+    std::string get_type_name() override {
+        return "GenericRule";
+    }
 };
 }
 

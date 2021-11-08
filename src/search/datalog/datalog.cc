@@ -4,6 +4,7 @@
 #include "rules/product.h"
 
 #include "transformations/action_predicate_removal.h"
+#include "transformations/rule_splitting.h"
 
 #include <iostream>
 #include <memory>
@@ -28,6 +29,8 @@ Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : t
 
     cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
     rules = remove_action_predicates(rules, annotation_generator, task);
+
+    split_rules(rules, annotation_generator, task);
 
     set_permanent_edb(task.get_static_info());
 
@@ -162,7 +165,7 @@ void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) {
             cout << ", ";
         }
         else {
-            cout << " [weight: " << rule->get_weight() << "]." << endl;
+            cout << " [weight: " << rule->get_weight() << ", " << rule->get_type_name() << "]." << endl;
         }
     }
     rule->output_variable_table();

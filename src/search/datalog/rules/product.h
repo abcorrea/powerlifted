@@ -100,7 +100,11 @@ public:
         return reached_facts_per_condition[position_counter].get_fact_index(reached_fact_index);
     }
 
-    };
+    std::string get_type_name() override {
+        return "ProductRule";
+    }
+
+};
 
 }
 
