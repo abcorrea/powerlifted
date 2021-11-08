@@ -37,7 +37,7 @@ Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : t
     // Add goal rule at the end
     add_goal_rule(task, annotation_generator);
 
-    for (const auto &rule : rules) {
+   for (const auto &rule : rules) {
         output_rule(rule);
     }
 

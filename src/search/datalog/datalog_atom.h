@@ -76,6 +76,12 @@ public:
         }
         std::cout << ')'; //<< std::endl;
     }
+
+    friend bool operator==(const DatalogAtom &lhs, const DatalogAtom &rhs) {
+        if (lhs.predicate_index != rhs.predicate_index) return false;
+        if (lhs.index != rhs.predicate_index) return false;
+        return !(lhs.arguments!=rhs.arguments);
+    }
 };
 
 }

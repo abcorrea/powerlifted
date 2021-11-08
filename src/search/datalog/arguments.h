@@ -55,6 +55,10 @@ public:
         return arguments == b.arguments;
     }
 
+    bool operator!=(const Arguments &b) const {
+        return not (arguments == b.arguments);
+    }
+
 };
 
 class HashArguments {

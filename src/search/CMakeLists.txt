@@ -106,6 +106,7 @@ add_executable(search
         datalog/rules/rule_base.cc datalog/rules/rule_base.h
         delete_relaxation_heuristics/delete_relaxation_heuristic.h
         datalog/rules/generic_rule.h
+        datalog/rules/join.h
         datalog/rules/product.h
         datalog/rules/project.h
         heuristics/ff_heuristic.h
@@ -114,6 +115,6 @@ add_executable(search
         heuristics/ff_heuristic.cc
         heuristics/rff_heuristic.cc
         heuristics/rff_heuristic.h
-        datalog/achievers.h datalog/transformations/action_predicate_removal.h datalog/transformations/rule_splitting.h)
+        datalog/achievers.h datalog/transformations/action_predicate_removal.h datalog/transformations/rule_splitting.h datalog/transformations/greedy_join.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})
