@@ -23,8 +23,6 @@ class SuccessorGenerator {
 
 
 public:
-    SuccessorGenerator() : cyclic_time(0.0) {}
-
     virtual ~SuccessorGenerator() = default;
 
     clock_t cyclic_time;

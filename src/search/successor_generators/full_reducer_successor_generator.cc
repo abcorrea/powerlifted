@@ -23,7 +23,7 @@ using namespace std;
 FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
     : GenericJoinSuccessor(task) {
 
-    cyclic_time = 0;
+    cyclic_time = 0.0;
 
     /*
      * Apply GYO algorithm for every action schema to check whether it

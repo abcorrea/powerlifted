@@ -14,7 +14,7 @@ using namespace std;
 
 HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &task)
     : GenericJoinSuccessor(task) {
-    cyclic_time = 0;
+    cyclic_time = 0.0;
 
     /*
      * TODO There seems to be some error with inequalities
