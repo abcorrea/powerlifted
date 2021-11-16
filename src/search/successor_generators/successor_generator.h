@@ -49,7 +49,7 @@ public:
                                const DBState &state) = 0;
 
     double get_time_spent_in_cyclic() {
-        return double(cyclic_time)/CLOCKS_PER_SEC;
+        return double(cyclic_time);
     }
 };
 
