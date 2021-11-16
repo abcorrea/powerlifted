@@ -50,6 +50,7 @@ class Hypertree {
     std::vector<HTNode> nodes;
     std::vector<HTEdge> edges;
     std::vector<int> bfs_order;
+
 public:
     Hypertree() {};
 
@@ -117,6 +118,9 @@ public:
 class HypertreeDecompositionSuccessor : public GenericJoinSuccessor {
     // Each hypertree is ordered from root to leaves
     std::vector<Hypertree> hypertrees;
+
+    std::vector<bool> is_cyclic;
+
 public:
     explicit HypertreeDecompositionSuccessor(const Task &task);
     Table instantiate(const ActionSchema &action,

@@ -4,6 +4,12 @@
 #include "generic_join_successor.h"
 
 class FullReducerSuccessorGenerator : public GenericJoinSuccessor {
+
+    std::vector<std::vector<std::pair<int, int>>> full_reducer_order;
+    std::vector<std::vector<int>> full_join_order;
+
+    std::vector<bool> is_cyclic;
+
 public:
   /**
    * @see full_reducer_successor_generator.cc
@@ -13,9 +19,6 @@ public:
 
     Table instantiate(const ActionSchema &action, const DBState &state) override;
 
-private:
-    std::vector<std::vector<std::pair<int, int>>> full_reducer_order;
-    std::vector<std::vector<int>> full_join_order;
 };
 
 

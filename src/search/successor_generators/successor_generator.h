@@ -1,6 +1,7 @@
 #ifndef SEARCH_SUCCESSOR_GENERATOR_H
 #define SEARCH_SUCCESSOR_GENERATOR_H
 
+#include <ctime>
 #include <vector>
 
 // A few forward declarations :-)
@@ -19,8 +20,12 @@ typedef DBState StaticInformation;
  *
  */
 class SuccessorGenerator {
+
+
 public:
     virtual ~SuccessorGenerator() = default;
+
+    clock_t cyclic_time;
 
     /**
      * Compute the instantiations of the given action schema that are applicable in
@@ -40,6 +45,10 @@ public:
     virtual DBState generate_successor(const LiftedOperatorId &op,
                                const ActionSchema& action,
                                const DBState &state) = 0;
+
+    double get_time_spent_in_cyclic() {
+        return double(cyclic_time)/CLOCKS_PER_SEC;
+    }
 };
 
 #endif //SEARCH_SUCCESSOR_GENERATOR_H

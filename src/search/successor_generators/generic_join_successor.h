@@ -28,6 +28,7 @@ class Table;
  * @see database/join.cc
  */
 class GenericJoinSuccessor : public SuccessorGenerator {
+
 public:
     explicit GenericJoinSuccessor(const Task &task);
 
@@ -64,7 +65,6 @@ public:
 
     const std::unordered_set<GroundAtom, TupleHash>
     &get_tuples_from_static_relation(size_t i) const;
-
 
 protected:
     const StaticInformation& static_information;
@@ -124,6 +124,8 @@ protected:
     static void compute_map_indices_to_table_positions(const Table &instantiations,
                                                        std::vector<int> &free_var_indices,
                                                        std::vector<int> &map_indices_to_position) ;
+
+
 };
 
 class PrecompiledActionData {

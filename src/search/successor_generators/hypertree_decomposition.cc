@@ -14,6 +14,7 @@ using namespace std;
 
 HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &task)
     : GenericJoinSuccessor(task) {
+    cyclic_time = 0;
 
     /*
      * TODO There seems to be some error with inequalities
@@ -24,17 +25,22 @@ HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &tas
     int ht_width = 0;
     hypertrees.resize(task.actions.size());
     for (size_t action_idx = 0; action_idx < task.actions.size(); action_idx++) {
+        bool is_cyclic_action = false;
         int number_nodes = 0;
         infile >> number_nodes;
         for (int i = 0; i  < number_nodes; ++i) {
-            int number_relations = 0;
+            int number_relations = 0; // Number of relations in the bag.
             infile >> number_relations;
+            if (number_relations > 1) {
+                is_cyclic_action = true;
+            }
             ht_width = std::max(ht_width, number_relations);
             vector<int> relations_indices(number_relations);
             for (int j = 0; j  < number_relations; ++j)
                 infile >> relations_indices[j];
             hypertrees[action_idx].add_node(relations_indices);
         }
+        is_cyclic.push_back(is_cyclic_action);
         int number_edges = 0;
         infile >> number_edges;
         for (int i = 0; i < number_edges; ++i) {
@@ -48,6 +54,9 @@ HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &tas
         hypertrees[action_idx].compute_bfs_order();
 
     }
+
+    assert(is_cyclic.size() == hypertrees.size());
+
     cout << "Finished creating hypertrees for successor generation...." << endl;
     cout << "Maximum hypertree width: " << ht_width << endl;
 }
@@ -55,6 +64,7 @@ HypertreeDecompositionSuccessor::HypertreeDecompositionSuccessor(const Task &tas
 
 Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
                                                    const DBState &state) {
+    clock_t start_instantiate = clock();
 
     if (action.is_ground()) {
         throw std::runtime_error("Shouldn't be calling instantiate() on a ground action");
@@ -78,6 +88,9 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
             // TODO This is the bottleneck apparently. Order relations in node in some smart way
             hash_join(working_table, tables[node.get_ith_index(i)]);
             if (working_table.tuples.empty()) {
+                if (is_cyclic[action.get_index()]) {
+                    cyclic_time += clock() - start_instantiate;
+                }
                 return Table::EMPTY_TABLE();
             }
         }
@@ -90,6 +103,9 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
         int child = ht.get_node(edge.get_child()).get_first();
         size_t s = semi_join(tables[parent], tables[child]);
         if (s==0) {
+            if (is_cyclic[action.get_index()]) {
+                cyclic_time += clock() - start_instantiate;
+            }
             return Table::EMPTY_TABLE();
         }
     }
@@ -101,6 +117,9 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
         int child = ht.get_node(edge.get_child()).get_first();
         size_t s = semi_join(tables[child], tables[parent]);
         if (s==0) {
+            if (is_cyclic[action.get_index()]) {
+                cyclic_time += clock() - start_instantiate;
+            }
             return Table::EMPTY_TABLE();
         }
     }
@@ -116,9 +135,15 @@ Table HypertreeDecompositionSuccessor::instantiate(const ActionSchema &action,
         }
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
+            if (is_cyclic[action.get_index()]) {
+                cyclic_time += clock() - start_instantiate;
+            }
             return Table::EMPTY_TABLE();
         }
     }
 
+    if (is_cyclic[action.get_index()]) {
+        cyclic_time += clock() - start_instantiate;
+    }
     return working_table;
 }

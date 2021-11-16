@@ -22,6 +22,9 @@ using namespace std;
  */
 FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
     : GenericJoinSuccessor(task) {
+
+    cyclic_time = 0;
+
     /*
      * Apply GYO algorithm for every action schema to check whether it
      * has an acyclic precondition.
@@ -127,6 +130,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
                     full_join_order[action.get_index()].push_back(edge_to_precond[k]);
                 }
             }
+            is_cyclic.push_back(false);
             // cout << "Action " << action.get_name() << " is acyclic.\n";
         } else {
             priority_queue<pair<int, int>> q;
@@ -144,6 +148,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
                 q.pop();
             }
             // cout << "Action " << action.get_name() << " is cyclic.\n";
+            is_cyclic.push_back(true);
         }
     }
 }
@@ -170,6 +175,8 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
  */
 Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, const DBState &state)
 {
+    clock_t start_instantiate = clock();
+
     if (action.is_ground()) {
         throw std::runtime_error("Shouldn't be calling instantiate() on a ground action");
     }
@@ -190,6 +197,9 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = semi_join(tables[sj.first], tables[sj.second]);
         if (s==0) {
+            if (is_cyclic[action.get_index()]) {
+                cyclic_time += clock() - start_instantiate;
+            }
             return Table::EMPTY_TABLE();
         }
     }
@@ -199,8 +209,15 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
         hash_join(working_table, tables[fjr[i]]);
         filter_inequalities(action, working_table);
         if (working_table.tuples.empty()) {
+            if (is_cyclic[action.get_index()]) {
+                cyclic_time += clock() - start_instantiate;
+            }
             return working_table;
         }
+    }
+
+    if (is_cyclic[action.get_index()]) {
+        cyclic_time += clock() - start_instantiate;
     }
 
     return working_table;
