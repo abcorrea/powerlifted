@@ -115,6 +115,11 @@ add_executable(search
         heuristics/ff_heuristic.cc
         heuristics/rff_heuristic.cc
         heuristics/rff_heuristic.h
-        datalog/achievers.h datalog/transformations/action_predicate_removal.h datalog/transformations/rule_splitting.h datalog/transformations/greedy_join.h)
+        datalog/achievers.h
+        datalog/transformations/action_predicate_removal.h
+        datalog/transformations/normal_form.h
+        datalog/transformations/greedy_join.h
+        datalog/transformations/goal_rule.h
+        datalog/transformations/generate_edb.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})

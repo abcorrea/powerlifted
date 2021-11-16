@@ -7,7 +7,7 @@
 
 namespace  datalog {
 
-std::vector<std::unique_ptr<RuleBase>> remove_action_predicates(const std::vector<std::unique_ptr<RuleBase>> &rules, AnnotationGenerator &annotation_generator, const Task &task) {
+void Datalog::remove_action_predicates(AnnotationGenerator &annotation_generator, const Task &task) {
     std::vector<std::unique_ptr<RuleBase>> new_rules;
 
     for (const auto &action_rule : rules) {
@@ -32,7 +32,7 @@ std::vector<std::unique_ptr<RuleBase>> remove_action_predicates(const std::vecto
         }
     }
 
-    return new_rules;
+    rules = std::move(new_rules);
 }
 }
 

@@ -6,6 +6,7 @@
 #include "../atom.h"
 #include "../task.h"
 
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -202,21 +203,42 @@ class Datalog {
         return predicate_names.size();
     }
 
-    void output_rule(const std::unique_ptr<RuleBase> &rule);
-    void output_atom(const DatalogAtom &atom);
-    void output_parameters(const Arguments& v);
+    void output_rule(const std::unique_ptr<RuleBase> &rule) const;
+    void output_atom(const DatalogAtom &atom) const;
+    void output_parameters(const Arguments& v) const;
 
-    void set_permanent_edb(StaticInformation static_information);
     void get_always_reachable_rule_heads();
-    void output_permanent_edb();
 
-    void add_goal_rule(const Task &task, AnnotationGenerator &annotation_generator);
+    std::unique_ptr<RuleBase> convert_into_project_rule(const std::unique_ptr<RuleBase> &rule,
+                                                        const Task &task);
+    std::unique_ptr<RuleBase> convert_into_product_rule(const std::unique_ptr<RuleBase> &rule,
+                                                        const Task &task);
+    void convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &new_join_rules,
+                                 const std::unique_ptr<RuleBase> &rule,
+                                 const Task &task);
+    bool is_product_rule(const std::unique_ptr<RuleBase> &rule);
+
+    void split_rule(size_t rule_id, std::vector<size_t> body_ids);
 
 public:
     Datalog(const Task &task, AnnotationGenerator annotation_generator);
 
+
     std::vector<std::unique_ptr<RuleBase>> &get_rules() {
         return rules;
+    }
+
+    void remove_action_predicates(AnnotationGenerator &annotation_generator, const Task &task);
+
+    void convert_rules_to_normal_form(const Task &task);
+
+    void set_permanent_edb(StaticInformation static_information);
+    void output_permanent_edb();
+
+    void add_goal_rule(const Task &task, AnnotationGenerator &annotation_generator);
+
+    void output_rules() const {
+        for (const auto &rule : rules) output_rule(rule);
     }
 };
 

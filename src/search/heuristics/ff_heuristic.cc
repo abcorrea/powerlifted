@@ -31,11 +31,31 @@ public:
 
 
 FFHeuristic::FFHeuristic(const Task &task) {
-    datalog::AnnotationGenerator ann = [&](int action_schema_id, const Task &task) -> unique_ptr<datalog::Annotation> {
+    datalog::AnnotationGenerator annotation_generator = [&](int action_schema_id, const Task &task) -> unique_ptr<datalog::Annotation> {
         // TODO Replace this check with enum
         if (action_schema_id < 0)
             return nullptr;
         return make_unique<FFAnnotation>(action_schema_id, pi_ff);
     };
-    datalog::Datalog dl(task, ann);
+    datalog::Datalog dl(task, annotation_generator);
+
+    std::cout << "@@@ ORIGINAL RULES: " << std::endl;
+    dl.output_rules();
+
+    cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
+    dl.remove_action_predicates(annotation_generator, task);
+    dl.output_rules();
+
+    cout << endl << "### CONVERT TO NORMAL FORM: " << endl;
+    dl.convert_rules_to_normal_form(task);
+    dl.output_rules();
+
+    cout << endl << "### INTRODUCE GOAL RULE: " << endl;
+    dl.add_goal_rule(task, annotation_generator);
+    dl.output_rules();
+
+    cout << "### PERMANENT EDB: " << endl;
+    dl.set_permanent_edb(task.get_static_info());
+    dl.output_permanent_edb();
+
 }

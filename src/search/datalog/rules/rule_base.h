@@ -191,6 +191,10 @@ public:
         }
     }
 
+    std::unique_ptr<Annotation> get_annotation() {
+        return std::move(annotation);
+    }
+
     virtual std::string get_type_name() {
         return "RuleBase";
     }

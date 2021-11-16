@@ -4,7 +4,9 @@
 #include "rules/product.h"
 
 #include "transformations/action_predicate_removal.h"
-#include "transformations/rule_splitting.h"
+#include "transformations/generate_edb.h"
+#include "transformations/goal_rule.h"
+#include "transformations/normal_form.h"
 
 #include <iostream>
 #include <memory>
@@ -15,33 +17,16 @@ using namespace std;
 
 Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : task(task) {
 
+    /*
+     * TODO Pass transformations to Datalog interface.
+     */
+
     for (auto p : task.predicates) {
         predicate_names.push_back(p.get_name());
     }
 
     // Idea: pass callback function as parameter to handle annotations
     create_rules(annotation_generator);
-
-    cout << endl << "### ORIGINAL: " << endl;
-    for (const auto &rule : rules) {
-        output_rule(rule);
-    }
-
-    cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
-    rules = remove_action_predicates(rules, annotation_generator, task);
-
-    split_rules(rules, annotation_generator, task);
-
-    set_permanent_edb(task.get_static_info());
-
-    // Add goal rule at the end
-    add_goal_rule(task, annotation_generator);
-
-   for (const auto &rule : rules) {
-        output_rule(rule);
-    }
-
-    output_permanent_edb();
 
     // TODO Update rule indices, as they are messed up right now
 
@@ -99,33 +84,6 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
     }
 }
 
-void Datalog::add_goal_rule(const Task &task, AnnotationGenerator &annotation_generator) {
-    string goal_predicate = "@goal-reachable";
-    int idx = get_next_auxiliary_predicate_idx();
-    map_new_predicates_to_idx.emplace(goal_predicate, idx);
-    predicate_names.push_back(goal_predicate);
-    DatalogAtom goal(Arguments(), idx, true);
-    std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
-
-    goal_atom_idx = idx;
-
-    vector<DatalogAtom> body;
-    for (const AtomicGoal &ag : task.get_goal().goal) {
-        vector<pair<int, int>> terms;
-        for (int arg : ag.get_arguments()) {
-            terms.emplace_back(arg, OBJECT); // All goal conditions are ground.
-        }
-        DatalogAtom atom(Arguments(terms), ag.get_predicate_index(), false);
-        body.push_back(atom);
-    }
-
-    for (int nullary_goal_idx : task.get_goal().positive_nullary_goals) {
-        body.emplace_back(Arguments(), nullary_goal_idx, false);
-    }
-
-    rules.emplace_back(make_unique<ProductRule>(0, goal, body, move(ann)));
-}
-
 vector<DatalogAtom> Datalog::get_action_effect_rule_body(const ActionSchema &schema) {
     vector<DatalogAtom> body(1);
     string action_predicate = "action-" + schema.get_name();
@@ -148,7 +106,7 @@ vector<DatalogAtom> Datalog::get_atoms_in_rule_body(const ActionSchema &schema,
     return body;
 }
 
-void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) {
+void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) const {
     DatalogAtom effect = rule->get_effect();
     output_atom(effect);
     size_t number_conditions = rule->get_conditions().size();
@@ -171,7 +129,7 @@ void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) {
     rule->output_variable_table();
 }
 
-void Datalog::output_atom(const DatalogAtom &atom) {
+void Datalog::output_atom(const DatalogAtom &atom) const {
     if (atom.is_pred_symbol_new()) {
         std::cout << predicate_names[atom.get_predicate_index()];
     }
@@ -181,7 +139,7 @@ void Datalog::output_atom(const DatalogAtom &atom) {
     output_parameters(atom.get_arguments());
 }
 
-void Datalog::output_parameters(const Arguments& v) {
+void Datalog::output_parameters(const Arguments& v) const {
     cout << '(';
     int number_params = v.size();
     for (auto arg : v) {
@@ -193,42 +151,4 @@ void Datalog::output_parameters(const Arguments& v) {
         if (--number_params > 0) cout << ", ";
     }
     cout << ')';
-}
-
-
-void Datalog::set_permanent_edb(StaticInformation static_information) {
-    for (const auto &r : static_information.get_relations()) {
-        for (const auto &tuple : r.tuples) {
-            vector<pair<int, int>> args;
-            for (int i : tuple) {
-                args.emplace_back(i, OBJECT);
-            }
-            permanent_edb.emplace_back(Arguments(args), r.predicate_symbol, false);
-        }
-    }
-    get_always_reachable_rule_heads();
-}
-
-void Datalog::get_always_reachable_rule_heads() {
-    stack<size_t> to_be_deleted;
-    for (size_t i = 0; i < rules.size(); ++i) {
-        if (rules[i]->get_conditions().size() == 0) {
-            DatalogAtom eff = rules[i]->get_effect();
-            to_be_deleted.push(i);
-            permanent_edb.emplace_back(Fact(eff.get_arguments(), eff.get_predicate_index(), rules[i]->get_weight(), eff.is_pred_symbol_new()));
-        }
-    }
-    while (!to_be_deleted.empty()) {
-        size_t n = to_be_deleted.top();
-        to_be_deleted.pop();
-        rules.erase(rules.begin() + n);
-    }
-}
-
-void Datalog::output_permanent_edb() {
-    cout << "### PERMANENT EDB: " << endl;
-    for (const Fact &f : permanent_edb) {
-        output_atom(f);
-        cout << " [cost: " << f.get_cost() << "]." << endl;
-    }
 }
