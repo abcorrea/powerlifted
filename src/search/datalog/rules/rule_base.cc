@@ -1,5 +1,9 @@
 #include "rule_base.h"
 
+#include "join.h"
+
+#include "../datalog.h"
+
 #include <algorithm>
 
 using namespace std;
@@ -14,7 +18,10 @@ void RuleBase::output_variable_table() {
 
 }
 
-void RuleBase::update_conditions(DatalogAtom new_atom, const std::vector<DatalogAtom> &new_rule_conditions, std::vector<size_t> body_ids) {
+void RuleBase::update_conditions(DatalogAtom new_atom,
+                                 const std::vector<DatalogAtom> &new_rule_conditions,
+                                 const VariableSource variable_source_new_rule,
+                                 std::vector<size_t> body_ids) {
 
     /*
      *
@@ -49,7 +56,7 @@ void RuleBase::update_conditions(DatalogAtom new_atom, const std::vector<Datalog
                 for (const Term &body_arg : b.get_arguments()) {
                     if (body_arg.is_object()) continue;
                     if (body_arg.get_index() == term_index) {
-                        p.second = variable_source.get_table_entry_index_from_term(term_index);
+                        p.second = variable_source_new_rule.get_table_entry_index_from_term(term_index);
                         found_correspondence = true;
                         break;
                     }

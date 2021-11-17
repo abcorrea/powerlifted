@@ -152,6 +152,7 @@ public:
 
     void update_conditions(DatalogAtom new_atom,
                            const std::vector<DatalogAtom> &new_rule_conditions,
+                           const VariableSource variable_source_new_rule,
                            std::vector<size_t> body_ids);
 
     void output_variable_table();

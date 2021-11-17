@@ -57,7 +57,11 @@ void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std
                                                                           new_rule_conditions,
                                                                           nullptr);
 
-    rule->update_conditions(new_atom, new_rule_conditions, body_ids);
+
+    rule->update_conditions(new_atom,
+                            new_rule_conditions,
+                            new_split_rule->get_variable_source_object(),
+                            body_ids);
 
     join_rules.push_back(std::move(new_split_rule));
 }
@@ -85,7 +89,6 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
         std::vector<size_t> indices = {0,1};
         std::sort(indices.begin(), indices.end());
         split_rule(join_rules, rule, indices);
-        break;
     }
     std::unique_ptr<RuleBase> join_rule = std::make_unique<JoinRule>(rule->get_weight(),
                                                                      rule->get_effect(),
