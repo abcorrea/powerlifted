@@ -59,8 +59,11 @@ utils::ExitCode BreadthFirstSearch<PackedStateT>::search(const Task &task,
                     child_node.open(node.f+1);
 
                     if (check_goal(task, generator, timer_start, s, child_node, space)) {
-                        std::cout << "Proportion of ime spent in cyclic actions: "
-                        << double(generator.get_time_spent_in_cyclic()/(double(std::clock() - timer_start))) << std::endl;
+                        double time_cyclic_generation = double(generator.get_time_spent_in_cyclic()/(double(std::clock() - timer_start)));
+                        if (std::isnan(time_cyclic_generation))
+                            time_cyclic_generation = 0.0;
+                        std::cout << fixed;
+                        std::cout << "Proportion of time spent in cyclic actions: " << time_cyclic_generation << std::endl;
 
                         return utils::ExitCode::SUCCESS;
                     }
