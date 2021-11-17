@@ -195,7 +195,8 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     assert(!tables.empty());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
-        size_t s = semi_join(tables[sj.first], tables[sj.second]);
+        //size_t s = semi_join(tables[sj.first], tables[sj.second]);
+        size_t s = semi_join(tables[sj.second], tables[sj.first]);
         if (s==0) {
             if (is_cyclic[action.get_index()]) {
                 cyclic_time += clock() - start_instantiate;
