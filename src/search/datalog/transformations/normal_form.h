@@ -35,15 +35,42 @@ std::unique_ptr<RuleBase> Datalog::convert_into_product_rule(const std::unique_p
 }
 
 
+void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std::unique_ptr<RuleBase> &rule, std::vector<size_t> body_ids) {
 
-void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &new_join_rules,
-                             const std::unique_ptr<RuleBase> &rule,
-                             const Task &task) {
+    std::string predicate_name = "p$" + std::to_string(predicate_names.size());
+    int idx = get_next_auxiliary_predicate_idx();
+    map_new_predicates_to_idx.emplace(predicate_name, idx);
+    predicate_names.push_back(predicate_name);
+
+    std::vector<DatalogAtom> original_conditions = rule->get_conditions();
+    std::vector<DatalogAtom> new_rule_conditions;
+    new_rule_conditions.reserve(body_ids.size());
+    for (size_t id : body_ids) {
+        new_rule_conditions.push_back(original_conditions[id]);
+    }
+
+    Arguments new_args = get_joining_arguments(new_rule_conditions);
+
+    DatalogAtom new_atom(new_args, idx, true);
+    std::unique_ptr<JoinRule> new_split_rule = std::make_unique<JoinRule>(0,
+                                                                          new_atom,
+                                                                          new_rule_conditions,
+                                                                          nullptr);
+
+    rule->update_conditions(new_atom, new_rule_conditions, body_ids);
+
+    join_rules.push_back(std::move(new_split_rule));
+}
+
+
+void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &join_rules,
+                                      std::unique_ptr<RuleBase> &rule,
+                                      const Task &task) {
     JoinCost join_cost;
-    size_t idx1 = std::numeric_limits<size_t>::max();
-    size_t idx2 = std::numeric_limits<size_t>::max();
+    //size_t idx1 = std::numeric_limits<size_t>::max();
+    //size_t idx2 = std::numeric_limits<size_t>::max();
     while(rule->get_conditions().size() > 2) {
-        for (size_t i = 0; i < rule->get_conditions().size() - 1; ++i) {
+        /*for (size_t i = 0; i < rule->get_conditions().size() - 1; ++i) {
             for (size_t j = i+1; j < rule->get_conditions().size(); ++j) {
                 JoinCost cost = compute_join_cost(rule, rule->get_conditions()[i], rule->get_conditions()[j]);
                 if (cost < join_cost) {
@@ -54,8 +81,11 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &ne
                 std::vector<size_t> body_atoms_to_split = {idx1, idx2};
                 //split_rule(rule, body_atoms_to_split);
             }
-        }
-        break; // TODO Remove when not testing it
+        }*/
+        std::vector<size_t> indices = {0,1};
+        std::sort(indices.begin(), indices.end());
+        split_rule(join_rules, rule, indices);
+        break;
     }
     std::unique_ptr<RuleBase> join_rule = std::make_unique<JoinRule>(rule->get_weight(),
                                                                      rule->get_effect(),
@@ -63,7 +93,7 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &ne
                                                                      std::move(rule->get_annotation()));
     join_rule->update_variable_source_table(rule->get_variable_source_table());
 
-    new_join_rules.push_back(std::move(join_rule));
+    join_rules.emplace_back(std::move(join_rule));
 }
 
 bool Datalog::is_product_rule(const std::unique_ptr<RuleBase> &rule) {
@@ -98,10 +128,10 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
                 new_rules.push_back(convert_into_product_rule(rule, task));
             }
             else {
-                std::vector<std::unique_ptr<RuleBase>> new_join_rules;
-                convert_into_join_rules(new_join_rules, rule, task);
-                for (auto &r : new_join_rules) {
-                    new_rules.push_back(std::move(r));
+                std::vector<std::unique_ptr<RuleBase>> join_rules;
+                convert_into_join_rules(join_rules, rule, task);
+                for (auto &join_rule : join_rules) {
+                    new_rules.push_back(std::move(join_rule));
                 }
             }
         }
@@ -109,6 +139,20 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
     }
 
     rules = std::move(new_rules);
+}
+
+Arguments Datalog::get_joining_arguments(const std::vector<DatalogAtom> &conditions) {
+    std::vector<Term> terms;
+
+    for (const auto &c : conditions) {
+        for (const auto &t : c.get_arguments()) {
+            if (!t.is_object() and std::find(terms.begin(), terms.end(), t) == terms.end()) {
+                terms.emplace_back(t);
+            }
+        }
+    }
+
+    return Arguments(std::move(terms));
 }
 
 }

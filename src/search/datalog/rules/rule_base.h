@@ -175,21 +175,11 @@ public:
         variable_source = new_table;
     }
 
-    void output_variable_table() {
-        int v = 0;
-        for (const std::pair<int, int> p : variable_source) {
-            bool is_found_in_rule = (p.first < 0);
-            int position_in_body = p.second;
-            int body_position = get_position_of_atom_in_same_body_rule(p.first);
-            if (is_found_in_rule) {
-                std::cout << "?v" << v << ' ' << "BODY " << body_position << ' ' << position_in_body << std::endl;
-            }
-            else {
-                std::cout << "?v" << v << ' ' << "AUX_BODY " << body_position << ' ' << position_in_body << std::endl;
-            }
-            ++v;
-        }
-    }
+    void update_conditions(DatalogAtom new_atom,
+                           const std::vector<DatalogAtom> &new_rule_conditions,
+                           std::vector<size_t> body_ids);
+
+    void output_variable_table();
 
     std::unique_ptr<Annotation> get_annotation() {
         return std::move(annotation);

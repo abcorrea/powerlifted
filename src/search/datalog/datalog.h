@@ -213,12 +213,14 @@ class Datalog {
                                                         const Task &task);
     std::unique_ptr<RuleBase> convert_into_product_rule(const std::unique_ptr<RuleBase> &rule,
                                                         const Task &task);
-    void convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &new_join_rules,
-                                 const std::unique_ptr<RuleBase> &rule,
+    void convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &join_rules,
+                                 std::unique_ptr<RuleBase> &rule,
                                  const Task &task);
     bool is_product_rule(const std::unique_ptr<RuleBase> &rule);
 
-    void split_rule(size_t rule_id, std::vector<size_t> body_ids);
+    void split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules,
+                    std::unique_ptr<RuleBase> &rule, std::vector<size_t> body_ids);
+    Arguments get_joining_arguments(const std::vector<DatalogAtom> &conditions);
 
 public:
     Datalog(const Task &task, AnnotationGenerator annotation_generator);
