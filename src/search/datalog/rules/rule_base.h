@@ -1,6 +1,8 @@
 #ifndef GROUNDER_RULES_H
 #define GROUNDER_RULES_H
 
+#include "variable_source.h"
+
 #include "../datalog_atom.h"
 #include "../datalog_fact.h"
 
@@ -66,25 +68,14 @@ protected:
     bool ground_effect;
     std::unique_ptr<Annotation> annotation;
 
-    // TODO Rewrite it.
-    // Where to get the variable from:
-    // Entry i is the ith variable of the action schema.
-    // If the first element is negative, then it indicates the atom in the body where this variable
-    // can be retrieved. If its positive, it indicates the auxiliary body atom that can query this
-    // variable. The second element indicates the position of the variable in the rule atom or in the
-    // auxiliary atom variables.
-    // Attention: if it is negative, we need to reduce 1 after transforming to positive (to avoid ambiguity with 0)
-    std::vector<std::pair<int, int>> variable_source;
+    VariableSource variable_source;
 
     static int next_index;
 
     MapVariablePosition variable_position;
 
     int get_position_of_atom_in_same_body_rule(int i) const {
-        if (i < 0)
-            return (i*-1)-1;
-        else
-            return i;
+        return variable_source.get_position_of_atom_in_same_body_rule(i);
     }
 
 
@@ -94,7 +85,8 @@ public:
         conditions(std::move(c)),
         weight(weight),
         index(next_index++),
-        annotation(move(annotation)) {
+        annotation(std::move(annotation)),
+        variable_source(effect, conditions) {
         variable_position.create_map(effect);
         ground_effect = true;
         for (const auto &e : effect.get_arguments()) {
@@ -102,28 +94,7 @@ public:
                 ground_effect = false;
             }
         }
-        for (const Term &arg : effect.get_arguments()) {
-            if (arg.is_object()) continue;
-            std::pair<int, int> p;
-            bool found_correspondence = false;
-            int body_atom_counter = 0;
-            for (const DatalogAtom &b : conditions) {
-                int position_counter = 0;
-                for (const Term &body_arg : b.get_arguments()) {
-                    if (body_arg.is_object()) continue;
-                    if (body_arg.get_index() == arg.get_index()) {
-                        p.first = (body_atom_counter + 1) * -1;
-                        p.second = position_counter;
-                        found_correspondence = true;
-                        break;
-                    }
-                    position_counter++;
-                }
-                if (found_correspondence) break;
-                body_atom_counter++;
-            }
-            variable_source.emplace_back(p);
-        }
+
     };
 
     virtual ~RuleBase() = default;
@@ -168,11 +139,15 @@ public:
     }
 
     std::vector<std::pair<int, int>> get_variable_source_table() {
-        return variable_source;
+        return variable_source.get_table();
     }
 
-    void update_variable_source_table(std::vector<std::pair<int, int>> new_table) {
-        variable_source = new_table;
+    void update_variable_source_table(VariableSource &&new_source) {
+        variable_source = std::move(new_source);
+    }
+
+    VariableSource get_variable_source_object() {
+        return variable_source;
     }
 
     void update_conditions(DatalogAtom new_atom,

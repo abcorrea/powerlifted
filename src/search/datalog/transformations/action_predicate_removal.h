@@ -25,7 +25,7 @@ void Datalog::remove_action_predicates(AnnotationGenerator &annotation_generator
                                                                                        action_rule->get_conditions(),
                                                                                        std::move(ann),
                                                                                        action_rule_base->get_schema_index());
-                    new_rule->update_variable_source_table(action_rule->get_variable_source_table());
+                    new_rule->update_variable_source_table(action_rule->get_variable_source_object());
                     new_rules.emplace_back(std::move(new_rule));
                 }
             }

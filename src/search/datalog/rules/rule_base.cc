@@ -10,28 +10,19 @@ int RuleBase::next_index = 0;
 
 
 void RuleBase::output_variable_table() {
-    int v = 0;
-    for (const std::pair<int, int> p : variable_source) {
-        bool is_found_in_rule = (p.first < 0);
-        int position_in_body = p.second;
-        int body_position = get_position_of_atom_in_same_body_rule(p.first);
-        if (is_found_in_rule) {
-            std::cout << v << ' ' << "BODY " << body_position << ' ' << position_in_body << std::endl;
-        }
-        else {
-            std::cout << v << ' ' << "AUX_BODY " << body_position << ' ' << position_in_body << std::endl;
-        }
-        ++v;
-    }
+    variable_source.output();
+
 }
 
 void RuleBase::update_conditions(DatalogAtom new_atom, const std::vector<DatalogAtom> &new_rule_conditions, std::vector<size_t> body_ids) {
+
     /*
      *
      * TODO Implement class to keep track of variable source table and include map from terms
      * to table entries so we can do this update correctly and more elegantly.
      *
      */
+
     std::sort(body_ids.begin(), body_ids.end());
     std::vector<DatalogAtom> old_conditions = conditions;
     for (int i = int(body_ids.size()) -1; i >= 0; --i) {
@@ -40,31 +31,28 @@ void RuleBase::update_conditions(DatalogAtom new_atom, const std::vector<Datalog
     conditions.push_back(new_atom);
 
     int final_index = conditions.size() - 1;
-
-    for (std::pair<int, int> &p : variable_source) {
+    int entry_counter = 0;
+    for (std::pair<int, int> &p : variable_source.get_table()) {
         int canonical_index = p.first;
         if (canonical_index < 0)
             canonical_index = (canonical_index*-1)-1; // Conversion to positive index
 
         if (std::find(body_ids.begin(), body_ids.end(), canonical_index) != body_ids.end()) {
             // First, we find out which term is this entry p referring to
-            Term t = old_conditions[canonical_index].argument(p.second);
-
+            int term_index = variable_source.get_term_from_table_entry_index(entry_counter);
 
             p.first = final_index; // Now this points to the final conditions of the rule
 
             // Then, we find out the position of its entry in the table
             bool found_correspondence = false;
             for (const DatalogAtom &b : new_rule_conditions) {
-                int position_counter = 0;
                 for (const Term &body_arg : b.get_arguments()) {
                     if (body_arg.is_object()) continue;
-                    if (body_arg.get_index() == t.get_index()) {
-                        p.second = position_counter;
+                    if (body_arg.get_index() == term_index) {
+                        p.second = variable_source.get_table_entry_index_from_term(term_index);
                         found_correspondence = true;
                         break;
                     }
-                    position_counter++;
                 }
                 if (found_correspondence) break;
             }
@@ -92,6 +80,7 @@ void RuleBase::update_conditions(DatalogAtom new_atom, const std::vector<Datalog
                 }
             }
         }
+        entry_counter++;
     }
 
 }

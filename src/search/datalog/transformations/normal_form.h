@@ -91,7 +91,7 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
                                                                      rule->get_effect(),
                                                                      rule->get_conditions(),
                                                                      std::move(rule->get_annotation()));
-    join_rule->update_variable_source_table(rule->get_variable_source_table());
+    join_rule->update_variable_source_table(rule->get_variable_source_object());
 
     join_rules.emplace_back(std::move(join_rule));
 }
