@@ -6,6 +6,10 @@
 /*
  * This class simply stores a set of atoms and, given a state, checks how many of these atoms
  * are true in the given state.
+ *
+ * More info: some local profiling showed that the atom counter (for BFWS with R[X]) accounts for
+ * less than 3% of the total time.
+ *
  */
 class AtomCounter {
 
