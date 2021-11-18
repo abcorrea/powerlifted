@@ -8,15 +8,17 @@
 
 #include "../open_lists/tiebreaking_open_list.h"
 
+#include "../lifted_heuristic/lifted_heuristic.h"
+
+#include "../novelty/standard_novelty.h"
+#include "../novelty/atom_counter.h"
+
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 
 #include "../successor_generators/successor_generator.h"
 
 #include "../utils/timer.h"
-
-#include "../novelty/standard_novelty.h"
-#include "../novelty/atom_counter.h"
 
 #include <algorithm>
 #include <iostream>
@@ -34,7 +36,12 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     clock_t timer_start = clock();
     StatePackerT packer(task);
 
-    AtomCounter gc = initialize_counter_with_gc(task);
+
+    if (use_gc)
+        atom_counter = initialize_counter_with_gc(task);
+    else {
+        atom_counter = initialize_counter_with_useful_atoms(task);
+    }
 
     // We use a GreedyOpenList (ordered by the novelty value) for now. This is done to make the
     // search algorithm complete.
@@ -44,13 +51,13 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
         LiftedOperatorId::no_operator, StateID::no_state);
     utils::Timer t;
 
-    StandardNovelty novelty_evaluator(task);
+    StandardNovelty novelty_evaluator(task, atom_counter.get_total_number_of_atoms());
     root_node.open(0, 1);
 
     statistics.inc_evaluations();
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
-    queue.do_insertion(root_node.state_id, {1, gc.count_unachieved_atoms(task.initial_state, task), 0});
+    queue.do_insertion(root_node.state_id, {1, atom_counter.count_unachieved_atoms(task.initial_state, task), 0});
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
@@ -78,7 +85,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
                 DBState s = generator.generate_successor(op_id, action, state);
                 int dist = g + action.get_cost();
                 int novelty_value;
-                int unsatisfied_goals = gc.count_unachieved_atoms(s, task);
+                int unsatisfied_goals = atom_counter.count_unachieved_atoms(s, task);
                 if (width == 1)
                     novelty_value = novelty_evaluator.compute_novelty_k1(task, s, unsatisfied_goals);
                 else
@@ -122,6 +129,44 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_gc(co
              continue;
          atoms[pred_idx].push_back(atomic_goal.args);
      }
+
+    return AtomCounter(atoms, positive, negative);
+}
+
+
+template<class PackedStateT>
+AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_useful_atoms(const Task &task) {
+    std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
+    std::unordered_set<int> positive = task.goal.positive_nullary_goals;
+    std::unordered_set<int> negative = task.goal.negative_nullary_goals;
+
+    std::ifstream datalog_file(datalog_file_name);
+    if (!datalog_file) {
+        std::cerr << "Error opening the Datalog model file: " << datalog_file_name << std::endl;
+        exit(-1);
+    }
+
+    LiftedHeuristic delete_free_h(task, datalog_file, lifted_heuristic::H_ADD);
+
+    int h = delete_free_h.compute_heuristic(task.initial_state, task);
+    std::cout << "Initial h-add value of the task: " << h << std::endl;
+
+    std::vector<bool> useful_nullary = delete_free_h.get_useful_nullary_atoms();
+    for (size_t i = 0; i < useful_nullary.size(); ++i) {
+        if (useful_nullary[i]) {
+            positive.insert(i);
+        }
+    }
+
+    const map<int, std::vector<GroundAtom>> &useful_atoms = delete_free_h.get_useful_atoms();
+    for (const auto &entry : useful_atoms) {
+        int pred_idx = entry.first;
+        if (task.predicates[pred_idx].isStaticPredicate())
+            continue;
+        for (const GroundAtom &atom : entry.second) {
+            atoms[pred_idx].push_back(atom);
+        }
+    }
 
     return AtomCounter(atoms, positive, negative);
 }

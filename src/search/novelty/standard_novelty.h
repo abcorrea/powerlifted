@@ -28,7 +28,6 @@ typedef absl::flat_hash_map<GroundAtom, int> NoveltySet;
 class StandardNovelty {
 
     int atom_counter;
-    Goalcount gc;
     std::vector<AchievedGroundAtoms> achieved_atoms;
     std::vector<NoveltySet> atom_mapping;
 
@@ -37,13 +36,11 @@ public:
     static const int GOAL_STATE = 0;
     static const int NOVELTY_GREATER_THAN_TWO = 3;
 
-    StandardNovelty(const Task &task) : atom_counter(0) {
+    StandardNovelty(const Task &task, size_t number_atoms) : atom_counter(0) {
         size_t n_relations = task.initial_state.get_relations().size();
         atom_mapping.resize(n_relations);
         int max_position = compute_position(n_relations-1, n_relations);
-        achieved_atoms.resize(task.goal.positive_nullary_goals.size()
-                                  + task.goal.negative_nullary_goals.size()
-                                  + task.goal.goal.size(),
+        achieved_atoms.resize(number_atoms,
                               AchievedGroundAtoms(task, max_position));
     }
 

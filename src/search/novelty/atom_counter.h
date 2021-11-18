@@ -13,7 +13,10 @@ class AtomCounter {
     std::unordered_set<int> positive_nullary;
     std::unordered_set<int> negative_nullary;
 
+
 public:
+    AtomCounter() = default;
+
     AtomCounter(const std::vector<std::vector<GroundAtom>> &atoms,
                 const std::unordered_set<int> &positive,
                 const std::unordered_set<int> &negative) :
@@ -46,6 +49,14 @@ public:
             }
         }
         return count;
+    }
+
+    size_t get_total_number_of_atoms() {
+        size_t s = positive_nullary.size() + negative_nullary.size();
+        for (const auto &v : atoms) {
+            s += v.size();
+        }
+        return s;
     }
 };
 

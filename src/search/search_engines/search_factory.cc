@@ -13,7 +13,7 @@
 #include <boost/algorithm/string.hpp>
 
 SearchBase*
-SearchFactory::create(const std::string& method, const std::string& state_type) {
+SearchFactory::create(const Options &opt, const std::string& method, const std::string& state_type) {
     std::cout << "Creating search factory for method " << method << "..." << std::endl;
     bool using_ext_state = boost::iequals(state_type, "extensional");
 
@@ -29,6 +29,10 @@ SearchFactory::create(const std::string& method, const std::string& state_type) 
     else if (boost::iequals(method, "bfws1")) {
         if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1);
         else return new BreadthFirstWidthSearch<SparsePackedState>(1);
+    }
+    else if (boost::iequals(method, "bfws2-rx")) {
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, opt);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(2, opt);
     }
     else if (boost::iequals(method, "bfws2")) {
         if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2);
