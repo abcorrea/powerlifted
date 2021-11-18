@@ -5,12 +5,18 @@
 #include "../action.h"
 
 #include "../heuristics/heuristic.h"
+
 #include "../open_lists/tiebreaking_open_list.h"
+
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
+
 #include "../successor_generators/successor_generator.h"
+
 #include "../utils/timer.h"
+
 #include "../novelty/standard_novelty.h"
+#include "../novelty/atom_counter.h"
 
 #include <algorithm>
 #include <iostream>
@@ -28,7 +34,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     clock_t timer_start = clock();
     StatePackerT packer(task);
 
-    Goalcount gc;
+    AtomCounter gc = initialize_counter_with_gc(task);
 
     // We use a GreedyOpenList (ordered by the novelty value) for now. This is done to make the
     // search algorithm complete.
@@ -44,7 +50,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     statistics.inc_evaluations();
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
-    queue.do_insertion(root_node.state_id, {1, gc.compute_heuristic(task.initial_state, task), 0});
+    queue.do_insertion(root_node.state_id, {1, gc.count_achieved_atoms(task.initial_state, task), 0});
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
@@ -72,7 +78,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
                 DBState s = generator.generate_successor(op_id, action, state);
                 int dist = g + action.get_cost();
                 int novelty_value;
-                int unsatisfied_goals = gc.compute_heuristic(s, task);
+                int unsatisfied_goals = gc.count_achieved_atoms(s, task);
                 if (width == 1)
                     novelty_value = novelty_evaluator.compute_novelty_k1(task, s, unsatisfied_goals);
                 else
@@ -102,6 +108,24 @@ template <class PackedStateT>
 void BreadthFirstWidthSearch<PackedStateT>::print_statistics() const {
     statistics.print_detailed_statistics();
     space.print_statistics();
+}
+
+template<class PackedStateT>
+AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_gc(const Task &task) {
+    std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
+    std::unordered_set<int> positive = task.goal.positive_nullary_goals;
+    std::unordered_set<int> negative = task.goal.negative_nullary_goals;
+
+     for (const AtomicGoal &atomic_goal : task.goal.goal) {
+         size_t pred_idx = atomic_goal.predicate;
+         if (task.predicates[pred_idx].isStaticPredicate())
+             continue;
+         atoms[pred_idx].push_back(atomic_goal.args);
+         }
+     }
+
+
+    return AtomCounter(atoms, positive, negative;
 }
 
 // explicit template instantiations
