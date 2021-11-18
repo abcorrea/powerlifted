@@ -34,18 +34,17 @@ public:
         return h;
     }
 
-    int count_achieved_atoms(const DBState &state, const Task &task) const {
+    int count_unachieved_atoms(const DBState &state, const Task &task) const {
         int count = 0;
 
         count += compute_unreached_nullary_atoms(state.get_nullary_atoms());
 
         for (size_t i = 0; i < atoms.size(); ++i) {
             for (const auto &tuple : atoms[i]) {
-                if (state.get_tuples_of_relation(i).count(tuple) > 0)
+                if (state.get_tuples_of_relation(i).count(tuple) == 0)
                     ++count;
             }
         }
-
         return count;
     }
 };

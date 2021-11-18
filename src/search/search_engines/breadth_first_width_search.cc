@@ -50,7 +50,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     statistics.inc_evaluations();
     cout << "Initial heuristic value " << heuristic_layer << endl;
     statistics.report_f_value_progress(heuristic_layer);
-    queue.do_insertion(root_node.state_id, {1, gc.count_achieved_atoms(task.initial_state, task), 0});
+    queue.do_insertion(root_node.state_id, {1, gc.count_unachieved_atoms(task.initial_state, task), 0});
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
@@ -78,7 +78,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
                 DBState s = generator.generate_successor(op_id, action, state);
                 int dist = g + action.get_cost();
                 int novelty_value;
-                int unsatisfied_goals = gc.count_achieved_atoms(s, task);
+                int unsatisfied_goals = gc.count_unachieved_atoms(s, task);
                 if (width == 1)
                     novelty_value = novelty_evaluator.compute_novelty_k1(task, s, unsatisfied_goals);
                 else
@@ -121,11 +121,9 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_gc(co
          if (task.predicates[pred_idx].isStaticPredicate())
              continue;
          atoms[pred_idx].push_back(atomic_goal.args);
-         }
      }
 
-
-    return AtomCounter(atoms, positive, negative;
+    return AtomCounter(atoms, positive, negative);
 }
 
 // explicit template instantiations
