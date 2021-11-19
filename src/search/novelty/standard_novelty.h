@@ -47,7 +47,7 @@ public:
     static const int NOVELTY_GREATER_THAN_TWO = 3;
 
     static const int R_0 = 0;
-    static const int R_X = 3;
+    static const int R_X = 1;
 
     StandardNovelty(const Task &task,
                     size_t number_goal_atoms,
