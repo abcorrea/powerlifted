@@ -4,11 +4,12 @@ using namespace std;
 
 int StandardNovelty::compute_novelty_k1(const Task &task,
                                         const DBState &state,
-                                        int number_unsatisfied_goals) {
+                                        int number_unsatisfied_goals,
+                                        int number_unsatisfied_relevant_atoms) {
     if (number_unsatisfied_goals == 0) {
         return GOAL_STATE;
     }
-    int idx = number_unsatisfied_goals - 1;
+    int idx = compute_position_of_r_g_tuple(number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
 
     auto &achieved_atoms_in_layer = achieved_atoms[idx];
 
@@ -46,10 +47,12 @@ int StandardNovelty::compute_novelty_k1(const Task &task,
 
 int StandardNovelty::compute_novelty_k2(const Task &task,
                                         const DBState &state,
-                                        int number_unsatisfied_goals) {
+                                        int number_unsatisfied_goals,
+                                        int number_unsatisfied_relevant_atoms) {
     // Number of unsatisfied goals is computed as a side effect of compute_novelty_k1
-    int novelty = compute_novelty_k1(task, state, number_unsatisfied_goals);
-    int idx = number_unsatisfied_goals - 1;
+    int novelty = compute_novelty_k1(task, state, number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
+
+    int idx = compute_position_of_r_g_tuple(number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
 
     if (novelty == 0) {
         // Goal state
@@ -71,7 +74,8 @@ int StandardNovelty::compute_novelty_k2(const Task &task,
                 for (const GroundAtom &t2 : r2.tuples) {
                     int t2_idx = atom_mapping[pred_symbol_idx2][t2];
                     bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                        compute_position(pred_symbol_idx1, pred_symbol_idx2),
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                   pred_symbol_idx2),
                         t1_idx, t2_idx);
                     if (is_new and !has_k1_novelty)
                         novelty = 2;
@@ -91,8 +95,9 @@ int StandardNovelty::compute_novelty_k2(const Task &task,
                 for (const GroundAtom &t2 : r2.tuples) {
                     int t2_idx = atom_mapping[pred_symbol_idx2][t2];
                     bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                                compute_position(pred_symbol_idx1, pred_symbol_idx2),
-                                t1_idx, t2_idx);
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                   pred_symbol_idx2),
+                        t1_idx, t2_idx);
                     if (is_new and !has_k1_novelty)
                         novelty = 2;
                 }
@@ -103,7 +108,7 @@ int StandardNovelty::compute_novelty_k2(const Task &task,
     return novelty;
 }
 
-int StandardNovelty::compute_position(int idx_1, int idx_2) {
+int StandardNovelty::compute_position_of_predicate_indices_pair(int idx_1, int idx_2) {
     int row_start = (idx_1 * (idx_1+1))/2;
     int column_shift = idx_2;
     return row_start + column_shift;

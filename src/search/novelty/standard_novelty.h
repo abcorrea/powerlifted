@@ -18,7 +18,6 @@
 
 typedef absl::flat_hash_map<GroundAtom, int> NoveltySet;
 
-
 /*
  *
  * This implements the evaluator R_0 from Frances et al (IJCAI-17) -- assuming it is combined
@@ -28,31 +27,55 @@ typedef absl::flat_hash_map<GroundAtom, int> NoveltySet;
 class StandardNovelty {
 
     int atom_counter;
+    int number_goal_atoms;
+    int number_relevant_atoms;
     std::vector<AchievedGroundAtoms> achieved_atoms;
     std::vector<NoveltySet> atom_mapping;
+
+    int compute_position_of_predicate_indices_pair(int idx_1, int idx_2);
+
+    int compute_position_of_r_g_tuple(int unreached_goal_atoms, int unreached_relevant_atoms) {
+        /*
+         * Compute for a vector <#g, #r> the position of the tuple in the vector
+         */
+        return unreached_relevant_atoms * (number_goal_atoms+1) + unreached_goal_atoms;
+    }
 
 public:
 
     static const int GOAL_STATE = 0;
     static const int NOVELTY_GREATER_THAN_TWO = 3;
 
-    StandardNovelty(const Task &task, size_t number_atoms) : atom_counter(0) {
+    static const int R_0 = 0;
+    static const int R_X = 3;
+
+    StandardNovelty(const Task &task,
+                    size_t number_goal_atoms,
+                    size_t number_relevant_atoms) : atom_counter(0),
+                                                    number_goal_atoms(number_goal_atoms),
+                                                    number_relevant_atoms(number_relevant_atoms) {
+        std::cout << "Total number of goal atoms: " << number_goal_atoms << std::endl;
+        std:: cout << "Total number of relevant atoms: " << number_relevant_atoms << std::endl;
+
         size_t n_relations = task.initial_state.get_relations().size();
+
         atom_mapping.resize(n_relations);
-        int max_position = compute_position(n_relations-1, n_relations);
-        achieved_atoms.resize(number_atoms,
+
+        int max_position = compute_position_of_predicate_indices_pair(n_relations - 1, n_relations);
+        achieved_atoms.resize((number_relevant_atoms+1) * (number_goal_atoms+1),
                               AchievedGroundAtoms(task, max_position));
     }
 
     int compute_novelty_k1(const Task &task,
                            const DBState &state,
-                           int number_unsatisfied_goals);
+                           int number_unsatisfied_goals,
+                           int number_unsatisfied_relevant_atoms);
 
     int compute_novelty_k2(const Task &task,
                            const DBState &state,
-                           int number_unsatisfied_goals);
+                           int number_unsatisfied_goals,
+                           int number_unsatisfied_relevant_atoms);
 
-    int compute_position(int idx_1, int idx_2);
 };
 
 #endif //SEARCH_NOVELTY_STANDARD_NOVELTY_H_

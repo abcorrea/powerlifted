@@ -3,7 +3,10 @@
 
 #include "search.h"
 #include "search_space.h"
+
 #include "../novelty/atom_counter.h"
+#include "../novelty/standard_novelty.h"
+
 #include "../options.h"
 
 template <class PackedStateT>
@@ -11,7 +14,7 @@ class BreadthFirstWidthSearch : public SearchBase {
     AtomCounter atom_counter;
     int width;
     bool prune_states;
-    bool use_gc;
+    int method;
     std::string datalog_file_name;
 
 protected:
@@ -22,11 +25,11 @@ protected:
     AtomCounter initialize_counter_with_gc(const Task &task);
 
 public:
-    explicit BreadthFirstWidthSearch(int width) : width(width), prune_states(false), use_gc(true) {}
+    explicit BreadthFirstWidthSearch(int width) : width(width), prune_states(false), method(StandardNovelty::R_0) {}
 
-    explicit BreadthFirstWidthSearch(int width, bool prune) : width(width), prune_states(prune), use_gc(true) {}
+    explicit BreadthFirstWidthSearch(int width, bool prune) : width(width), prune_states(prune), method(StandardNovelty::R_0) {}
 
-    explicit BreadthFirstWidthSearch(int width, const Options &opt) : width(width), prune_states(false), use_gc(false) {
+    explicit BreadthFirstWidthSearch(int width, const Options &opt) : width(width), prune_states(false), method(StandardNovelty::R_X) {
         std::cout << "Using version with R-X" << std::endl;
         datalog_file_name = opt.get_datalog_file();
     }
