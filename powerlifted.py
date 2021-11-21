@@ -33,6 +33,8 @@ def parse_options():
                                                                         "gbfs",
                                                                         "iw1",
                                                                         "iw2",
+                                                                        "iw1gc",
+                                                                        "iw2gc",
                                                                         "lazy",
                                                                         "lazy-po",
                                                                         "lazy-prune"),

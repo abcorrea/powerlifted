@@ -25,9 +25,15 @@ protected:
     AtomCounter initialize_counter_with_gc(const Task &task);
 
 public:
-    explicit BreadthFirstWidthSearch(int width) : width(width), prune_states(false), method(StandardNovelty::R_0) {}
+    explicit BreadthFirstWidthSearch(int width, int method) : width(width), method(method) {
+        if ((method == StandardNovelty::IW) || (method == StandardNovelty::IW_G)) {
+            prune_states = true;
+        }
+        else {
+            prune_states = false;
+        }
+    }
 
-    explicit BreadthFirstWidthSearch(int width, bool prune) : width(width), prune_states(prune), method(StandardNovelty::R_0) {}
 
     explicit BreadthFirstWidthSearch(int width, const Options &opt) : width(width), prune_states(false), method(StandardNovelty::R_X) {
         std::cout << "Using version with R-X" << std::endl;

@@ -41,13 +41,13 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     size_t number_goal_conditions = task.goal.goal.size() + task.goal.positive_nullary_goals.size() + task.goal.negative_nullary_goals.size();
     size_t number_relevant_atoms;
 
-    if (method == StandardNovelty::R_0) {
-        atom_counter = initialize_counter_with_gc(task);
-        number_relevant_atoms = 0;
-    }
-    else {
+    if (method == StandardNovelty::R_X) {
         atom_counter = initialize_counter_with_useful_atoms(task);
         number_relevant_atoms = atom_counter.get_total_number_of_atoms();
+    }
+    else {
+        atom_counter = initialize_counter_with_gc(task);
+        number_relevant_atoms = 0;
     }
 
     // We use a GreedyOpenList (ordered by the novelty value) for now. This is done to make the
@@ -63,7 +63,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     int novelty_value = 1;
     int gc_h0 = gc.compute_heuristic(task.initial_state, task);
     int unachieved_atoms_s0 = 0;
-    if (method != StandardNovelty::R_0)
+    if (method == StandardNovelty::R_X)
         unachieved_atoms_s0 = atom_counter.count_unachieved_atoms(task.initial_state, task);
 
     if (width == 1)
@@ -108,7 +108,11 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
                 int unsatisfied_goals = gc.compute_heuristic(s, task);
                 int unsatisfied_relevant_atoms = 0;
 
-                if (method != StandardNovelty::R_0)
+                if (method == StandardNovelty::IW) {
+                    unsatisfied_relevant_atoms = 0;
+                    unsatisfied_goals = 0;
+                }
+                if (method == StandardNovelty::R_X)
                     unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
 
                 if (width == 1)

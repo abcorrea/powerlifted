@@ -48,6 +48,8 @@ public:
 
     static const int R_0 = 0;
     static const int R_X = 1;
+    static const int IW = 2;
+    static const int IW_G = 3;
 
     StandardNovelty(const Task &task,
                     size_t number_goal_atoms,
