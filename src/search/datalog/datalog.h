@@ -278,6 +278,10 @@ public:
         }
     }
 
+    void reset_facts() {
+        facts.clear();
+    }
+
 };
 
 }

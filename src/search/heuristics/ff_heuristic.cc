@@ -37,7 +37,30 @@ int FFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     if (task.is_goal((s))) return 0;
 
     std::vector<datalog::Fact> state_facts;
+
+    for (const auto &r: s.get_relations()) {
+        for (const auto &tuple: r.tuples) {
+            std::vector<std::pair<int, int>> args;
+            for (int i: tuple) {
+                args.emplace_back(i, datalog::OBJECT);
+            }
+            state_facts.emplace_back(datalog::Arguments(args), r.predicate_symbol, false);
+        }
+    }
+    for (size_t i = 0; i < s.get_nullary_atoms().size(); ++i) {
+        if (s.get_nullary_atoms()[i]) {
+            state_facts.emplace_back(datalog::Arguments(), i, false);
+        }
+    }
+
     int h = grounder.ground(datalog, state_facts, datalog.get_goal_atom_idx());
+
+    datalog.reset_facts();
+    for (const auto &r : datalog.get_rules())
+        r->clean_up();
+    if (h == std::numeric_limits<int>::max())
+        return UNSOLVABLE_STATE;
+
     return h;
 
 }

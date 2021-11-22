@@ -9,6 +9,7 @@
 namespace datalog {
 
 void Datalog::set_permanent_edb(StaticInformation static_information) {
+    // What do we do with static information that is nullary?
     for (const auto &r: static_information.get_relations()) {
         for (const auto &tuple: r.tuples) {
             std::vector<std::pair<int, int>> args;

@@ -17,18 +17,10 @@ using namespace std;
 
 Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : task(task) {
 
-    /*
-     * TODO Pass transformations to Datalog interface.
-     */
-
     for (auto p : task.predicates) {
         predicate_names.push_back(p.get_name());
     }
-
-    // Idea: pass callback function as parameter to handle annotations
     create_rules(annotation_generator);
-
-    // TODO Update rule indices, as they are messed up right now
 
 }
 
