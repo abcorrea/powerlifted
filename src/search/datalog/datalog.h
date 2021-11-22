@@ -282,6 +282,13 @@ public:
         facts.clear();
     }
 
+    void print_statistics() {
+        std::cout << "Total number of static atoms in the EDB: " << permanent_edb.size() << std::endl;
+        std::cout << "Total number of rules: " << rules.size() << std::endl;
+    }
+
+    void backchain_from_goal();
+
 };
 
 }

@@ -144,3 +144,11 @@ void Datalog::output_parameters(const Arguments& v) const {
     }
     cout << ')';
 }
+
+const std::vector<Fact> &Datalog::get_facts() {
+    return permanent_edb;
+}
+
+const std::vector<Fact> &Datalog::get_permanent_edb() {
+    return permanent_edb;
+}

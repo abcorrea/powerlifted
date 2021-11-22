@@ -1,6 +1,7 @@
 #include "heuristic_factory.h"
 
 #include "blind_heuristic.h"
+#include "add_heuristic.h"
 #include "ff_heuristic.h"
 #include "goalcount.h"
 
@@ -20,12 +21,9 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
     else if (boost::iequals(method, "goalcount")) {
         return new Goalcount();
     }
-    /*else if (boost::iequals(method, "add")) {
-        return new LiftedHeuristic(task, datalog_file, datalog::H_ADD);
+    else if (boost::iequals(method, "add")) {
+        return new AdditiveHeuristic(task);
     }
-    else if (boost::iequals(method, "hmax")) {
-        return new LiftedHeuristic(task, datalog_file, datalog::H_MAX);
-    }*/
     else if (boost::iequals(method, "ff")) {
         return new FFHeuristic(task);
     }
