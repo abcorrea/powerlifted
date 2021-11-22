@@ -61,7 +61,7 @@ void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std
     rule->update_conditions(new_atom,
                             new_rule_conditions,
                             new_split_rule->get_variable_source_object(),
-                            body_ids);
+                            std::move(body_ids));
 
     join_rules.push_back(std::move(new_split_rule));
 }

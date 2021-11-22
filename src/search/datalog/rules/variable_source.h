@@ -19,6 +19,8 @@ class VariableSource {
     // Attention: if it is negative, we need to reduce 1 after transforming to positive (to avoid ambiguity with 0)
 
     std::vector<std::pair<int, int>> table;
+
+    // TODO Check if this is a bottleneck and perhaps do it locally during the split
     std::unordered_map<int, int> map_term_to_entry;
     std::vector<int> map_entry_to_term;
 
@@ -78,10 +80,10 @@ public:
             int position_in_body = p.second;
             int body_position = get_position_of_atom_in_same_body_rule(p.first);
             if (is_found_in_rule) {
-                std::cout << "?v" << map_entry_to_term[v] << ' ' << "BODY " << body_position << ' ' << position_in_body << std::endl;
+                std::cout << "?v" << map_entry_to_term[v] << ' ' << "DIRECT " << body_position << ' ' << position_in_body << std::endl;
             }
             else {
-                std::cout << "?v" << map_entry_to_term[v] << ' ' << "AUX_BODY " << body_position << ' ' << position_in_body << std::endl;
+                std::cout << "?v" << map_entry_to_term[v] << ' ' << "INDIRECT " << body_position << ' ' << position_in_body << std::endl;
             }
             ++v;
         }

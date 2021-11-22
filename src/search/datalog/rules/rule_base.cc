@@ -20,14 +20,12 @@ void RuleBase::output_variable_table() {
 
 void RuleBase::update_conditions(DatalogAtom new_atom,
                                  const std::vector<DatalogAtom> &new_rule_conditions,
-                                 const VariableSource variable_source_new_rule,
-                                 std::vector<size_t> body_ids) {
+                                 const VariableSource &variable_source_new_rule,
+                                 std::vector<size_t> &&body_ids) {
 
     /*
-     *
-     * TODO Implement class to keep track of variable source table and include map from terms
-     * to table entries so we can do this update correctly and more elegantly.
-     *
+     * TODO Change removal method and create local lookup table to simplify the decrement of
+     * indices.
      */
 
     std::sort(body_ids.begin(), body_ids.end());
