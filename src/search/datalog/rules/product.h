@@ -9,16 +9,16 @@ struct ProductDequeEntry {
     ProductDequeEntry(const Arguments& arguments, int i, int c)
     : arguments(arguments), index(i), cost(c) {}
 
-    ProductDequeEntry(const Arguments& arguments, int i, int c, const Achievers& a)
-        : arguments(arguments), index(i), cost(c), achievers(a) {}
+    ProductDequeEntry(const Arguments& arguments, int i, int c, const std::vector<int>& a)
+        : arguments(arguments), index(i), cost(c), achiever_atoms_indices(a) {}
 
-    ProductDequeEntry(Arguments&& arguments, int i, int c, Achievers&& a)
-            : arguments(std::move(arguments)), index(i), cost(c), achievers(std::move(a)) {}
+    ProductDequeEntry(Arguments&& arguments, int i, int c, std::vector<int>&& a)
+            : arguments(std::move(arguments)), index(i), cost(c), achiever_atoms_indices(std::move(a)) {}
 
     Arguments arguments;
     int index;
     int cost;
-    Achievers achievers;
+    std::vector<int> achiever_atoms_indices;
 };
 
 class ReachedFacts {

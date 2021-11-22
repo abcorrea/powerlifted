@@ -158,6 +158,14 @@ Arguments Datalog::get_joining_arguments(const std::vector<DatalogAtom> &conditi
     return Arguments(std::move(terms));
 }
 
+const std::vector<Fact> &Datalog::get_facts() {
+    return permanent_edb;
+}
+
+const std::vector<Fact> &Datalog::get_permanent_edb() {
+    return permanent_edb;
+}
+
 }
 
 #endif //SEARCH_DATALOG_TRANSFORMATIONS_NORMAL_FORM_H_

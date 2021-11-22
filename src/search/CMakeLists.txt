@@ -120,6 +120,9 @@ add_executable(search
         datalog/transformations/normal_form.h
         datalog/transformations/greedy_join.h
         datalog/transformations/goal_rule.h
-        datalog/transformations/generate_edb.h datalog/rules/variable_source.h)
+        datalog/transformations/generate_edb.h datalog/rules/variable_source.h
+        datalog/grounder/grounder.h
+        datalog/grounder/weighted_grounder.cc datalog/grounder/weighted_grounder.h
+        datalog/rule_matcher.cc datalog/rule_matcher.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})

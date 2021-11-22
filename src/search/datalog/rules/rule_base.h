@@ -105,6 +105,10 @@ public:
         return ground_effect;
     }
 
+    void update_index(int i) {
+        index = i;
+    }
+
     // TODO Introduce overload using only index and passing VARIABLE to has_variable
     int get_head_position_of_arg(const Term &arg) const {
         if (variable_position.has_variable(arg))

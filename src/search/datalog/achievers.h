@@ -13,7 +13,11 @@ class Achievers {
     int rule_cost;
 
 public:
-    Achievers(const std::vector<int> &&a, int idx, int c) : achievers(std::move(a)), rule_idx(idx), rule_cost(c) {};
+
+    // Copy constructor used only for the product rules
+    Achievers(const std::vector<int> &a, int rule_idx, int rule_cost) : achievers(a), rule_idx(rule_idx), rule_cost(rule_cost) {};
+
+    Achievers(const std::vector<int> &&a, int rule_idx, int rule_cost) : achievers(std::move(a)), rule_idx(rule_idx), rule_cost(rule_cost) {};
 
     Achievers() : achievers(), rule_idx(-1), rule_cost(0) {}
 

@@ -22,7 +22,6 @@ namespace  datalog {
  *
  */
 class Fact : public DatalogAtom {
-    static int next_fact_index;
     // Fact index is used to be able to refer to a specific fact in the vector of
     // facts of a LogicProgram. In this way, we only refer to the fact by its
     // index in the vector and we do not need to keep a mapping between facts
@@ -31,6 +30,9 @@ class Fact : public DatalogAtom {
     int cost;
     Achievers achievers;
 public:
+
+    static int next_fact_index;
+
     Fact(Arguments arguments, int predicate_index, bool new_pred) :
         DatalogAtom(std::move(arguments), predicate_index, new_pred) {
         // Every fact starts with a fact of -1 and then we set it to a proper value

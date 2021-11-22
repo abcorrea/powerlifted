@@ -30,7 +30,19 @@ public:
 
 
 
-FFHeuristic::FFHeuristic(const Task &task) {
+FFHeuristic::FFHeuristic(const Task &task) : datalog(std::move(initialize_datalog(task))),
+                                             grounder(datalog, datalog::H_ADD) {}
+
+int FFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
+    if (task.is_goal((s))) return 0;
+
+    std::vector<datalog::Fact> state_facts;
+    int h = grounder.ground(datalog, state_facts, datalog.get_goal_atom_idx());
+    return h;
+
+}
+
+datalog::Datalog FFHeuristic::initialize_datalog(const Task &task) {
     datalog::AnnotationGenerator annotation_generator = [&](int action_schema_id, const Task &task) -> unique_ptr<datalog::Annotation> {
         // TODO Replace this check with enum
         if (action_schema_id < 0)
@@ -39,23 +51,27 @@ FFHeuristic::FFHeuristic(const Task &task) {
     };
     datalog::Datalog dl(task, annotation_generator);
 
-    std::cout << "@@@ ORIGINAL RULES: " << std::endl;
-    dl.output_rules();
+    //std::cout << "@@@ ORIGINAL RULES: " << std::endl;
+    //dl.output_rules();
 
-    cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
+    //cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
     dl.remove_action_predicates(annotation_generator, task);
-    dl.output_rules();
+    //dl.output_rules();
 
-    cout << endl << "### CONVERT TO NORMAL FORM: " << endl;
+    //cout << endl << "### CONVERT TO NORMAL FORM: " << endl;
     dl.convert_rules_to_normal_form(task);
-    dl.output_rules();
+    //dl.output_rules();
 
-    cout << endl << "### INTRODUCE GOAL RULE: " << endl;
+    //cout << endl << "### INTRODUCE GOAL RULE: " << endl;
     dl.add_goal_rule(task, annotation_generator);
-    dl.output_rules();
+    //dl.output_rules();
 
-    cout << "### PERMANENT EDB: " << endl;
+    //cout << "### PERMANENT EDB: " << endl;
     dl.set_permanent_edb(task.get_static_info());
-    dl.output_permanent_edb();
+    //dl.output_permanent_edb();
 
+    dl.update_rule_indices();
+
+    return std::move(dl);
 }
+

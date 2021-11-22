@@ -54,9 +54,6 @@ int main(int argc, char *argv[]) {
                                                                                opt.get_seed(),
                                                                                task));
 
-    // TODO This should be created in the heuristic
-    FFHeuristic ff(task);
-
     // Start search
     if (task.is_trivially_unsolvable()) {
         cout << "Problem goal was statically determined to be unsatisfiable." << endl;

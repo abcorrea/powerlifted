@@ -118,9 +118,9 @@ vector<int = objectID> execute_program_of_node(const GroundAtom &a, Plan &piff) 
   if (is_fact(a)) {
     return a.get_parameters();
   }
-  pair<vector<GroundAtom>, Rule> achievers, achieving_rule = atom.get_achiever();
-  vector<vector<int>> objects(achievers.size());
-  for (const GroundAtom &achiever : achievers) {
+  pair<vector<GroundAtom>, Rule> achiever_atoms_indices, achieving_rule = atom.get_achiever();
+  vector<vector<int>> objects(achiever_atoms_indices.size());
+  for (const GroundAtom &achiever : achiever_atoms_indices) {
      objects[i] = execute_program_of_node(achiever, piff)
   }
   vector<pair<int, int>> parameter_indices = achieving_rule.param_indices;
@@ -176,6 +176,7 @@ namespace datalog {
 
 class Datalog {
 
+    std::vector<Fact> facts;
     std::vector<Fact> permanent_edb;
     std::vector<std::unique_ptr<RuleBase>> rules;
 
@@ -230,6 +231,10 @@ public:
         return rules;
     }
 
+    const std::vector<std::unique_ptr<RuleBase>> &get_rules() const {
+        return rules;
+    }
+
     void remove_action_predicates(AnnotationGenerator &annotation_generator, const Task &task);
 
     void convert_rules_to_normal_form(const Task &task);
@@ -242,6 +247,37 @@ public:
     void output_rules() const {
         for (const auto &rule : rules) output_rule(rule);
     }
+
+    int get_goal_atom_idx() {
+        return goal_atom_idx;
+    }
+
+    const std::vector<Fact> &get_permanent_edb();
+
+    const std::vector<Fact> &get_facts();
+
+    const Fact &get_fact_by_index(int i) const {
+        return facts[i];
+    }
+
+    RuleBase &get_rule_by_index(int index) {
+        return *rules[index];
+    }
+
+    void insert_fact(const Fact &f) {
+        facts.push_back(f);
+    }
+
+    void update_fact_cost(int fact, int cost) {
+        facts[fact].set_cost(cost);
+    }
+
+    void update_rule_indices() {
+        for (size_t i = 0; i < rules.size(); ++i) {
+            rules[i]->update_index(int(i));
+        }
+    }
+
 };
 
 }
