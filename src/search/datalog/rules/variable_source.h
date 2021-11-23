@@ -73,6 +73,14 @@ public:
             return i;
     }
 
+    bool is_variable_found_in_body(int i) const {
+        return table[i].first < 0;
+    }
+
+    std::vector<std::pair<int, int>> get_table() const {
+        return table;
+    }
+
     void output() const {
         int v = 0;
         for (const std::pair<int, int> p : table) {

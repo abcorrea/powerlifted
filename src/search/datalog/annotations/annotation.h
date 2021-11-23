@@ -5,15 +5,21 @@
 
 #include "../ground_rule.h"
 
+
+#include "../rules/rule_base.h"
+
 #include "../../task.h"
 
 namespace datalog {
+
+class Datalog;
 
 class Annotation {
 public:
     virtual ~Annotation() = default;
 
-    virtual void operator()(GroundRule gr) = 0;
+    virtual void execute(int head,
+                         const Datalog &datalog) = 0;
 
     virtual bool operator==(const Annotation &other) = 0;
 

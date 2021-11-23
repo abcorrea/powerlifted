@@ -29,6 +29,10 @@ public:
         return achievers.end();
     }
 
+    int at(int i) const {
+        return achievers[i];
+    }
+
     void set_rule_cost(int c) {
         rule_cost = c;
     }

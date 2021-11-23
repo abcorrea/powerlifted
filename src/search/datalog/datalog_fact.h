@@ -94,9 +94,19 @@ public:
     void update_achievers(Achievers a) {
         achievers = std::move(a);
     }
+
+    const Achievers &get_achiever_body() const {
+        return achievers;
+    }
+
+    int get_achiever_rule_index() const {
+        return achievers.get_achiever_rule_index();
+    }
+
     void set_cost(int new_cost) {
         cost = new_cost;
     }
+
 };
 
 }

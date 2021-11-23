@@ -13,7 +13,8 @@ class RFFAnnotation : public datalog::Annotation {
 public:
     RFFAnnotation(int cost, int &total_cost) : cost(cost), total_cost(total_cost) {}
 
-    void operator()(datalog::GroundRule gr) override {
+    void execute(int head,
+                 const datalog::Datalog &datalog) override {
         total_cost += cost;
     }
 

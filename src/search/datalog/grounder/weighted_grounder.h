@@ -28,7 +28,7 @@ class WeightedGrounder : public Grounder {
 
     priority_queues::AdaptiveQueue<int> q;
 
-    std::unordered_set<int> facts_in_edb;
+    std::unordered_set<int> initial_facts;
     std::vector<int> best_achievers;
 
 protected:

@@ -23,13 +23,13 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
 
     q.clear();
     best_achievers.clear();
-    facts_in_edb.clear();
+    initial_facts.clear();
 
     for (const Fact &f : datalog.get_permanent_edb()) {
         Fact f2 = f;
         f2.set_fact_index();
         q.push(f.get_cost(), f2.get_fact_index());
-        facts_in_edb.insert(f2.get_fact_index());
+        initial_facts.insert(f2.get_fact_index());
         datalog.insert_fact(f2);
         reached_facts.insert(f2);
     }
@@ -37,7 +37,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
     for (Fact &f : state_facts) {
         f.set_fact_index();
         q.push(f.get_cost(), f.get_fact_index());
-        facts_in_edb.insert(f.get_fact_index());
+        initial_facts.insert(f.get_fact_index());
         datalog.insert_fact(f);
         reached_facts.insert(f);
     }
@@ -48,7 +48,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         int top_fact_index = queue_top.second;
         const Fact current_fact = datalog.get_fact_by_index(top_fact_index);
         if (current_fact.get_predicate_index() == goal_predicate) {
-            //compute_best_achievers(current_fact, datalog);
+            datalog.backchain_from_goal(current_fact, initial_facts);
             return current_fact.get_cost();
         }
         if (current_fact.get_cost() < cost) {
@@ -202,23 +202,32 @@ void WeightedGrounder::join(
         position_counter++;
     }
 
+    int rule_index = rule.get_index();
+    int rule_weight = rule.get_weight();
     const int inverse_position = rule.get_inverse_position(position);
-    for (const Fact &f : rule.get_facts_matching_key(key, inverse_position)) {
+    for (const Fact &already_achieved_fact : rule.get_facts_matching_key(key, inverse_position)) {
         Arguments new_arguments = new_arguments_persistent;
         position_counter = 0;
         for (auto &arg : rule.get_condition_arguments(inverse_position)) {
             int pos = rule.get_head_position_of_arg(arg);
             if (pos!=-1 and !arg.is_object()) {
                 new_arguments.set_term_to_object(pos,
-                                                 f.argument(position_counter).get_index());
+                                                 already_achieved_fact.argument(position_counter).get_index());
             }
             position_counter++;
         }
 
+        vector<int> achievers_body{fact.get_fact_index(), already_achieved_fact.get_fact_index()};
+        if (position == 1) {
+            // We need to keep the order of the atoms in the achiever as in the rule body,
+            // so we reverse the order if `fact` is the one in the second position (index 1).
+            reverse(achievers_body.begin(), achievers_body.end());
+        }
+
+        int cost = aggregation_function(fact.get_cost(), already_achieved_fact.get_cost()) + rule_weight;
         newfacts.emplace_back(move(new_arguments),
                            rule.get_effect().get_predicate_index(),
-                           aggregation_function(fact.get_cost(), f.get_cost()) + rule.get_weight(),
-                           Achievers({fact.get_fact_index(), f.get_fact_index()}, rule.get_index(), rule.get_weight()),
+                           cost,Achievers(achievers_body, rule_index, rule_weight),
                            rule.get_effect().is_pred_symbol_new());
     }
 }
@@ -362,7 +371,7 @@ void WeightedGrounder::compute_best_achievers(const Fact &fact, const Datalog &l
             const Fact &achiever_fact = lp.get_fact_by_index(achiever);
             //achiever_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
             //cout << " " << achiever_fact.get_fact_index() << " " << achiever_fact.get_cost() << endl;
-            if (facts_in_edb.count(achiever) == 0) {
+            if (initial_facts.count(achiever) == 0) {
                 // We ignore fluents and static information that are true in the evaluated state
                 best_achievers.push_back(achiever);
                 achievers_queue.push(achiever);

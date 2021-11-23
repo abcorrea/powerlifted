@@ -152,3 +152,99 @@ const std::vector<Fact> &Datalog::get_facts() {
 const std::vector<Fact> &Datalog::get_permanent_edb() {
     return permanent_edb;
 }
+
+int Datalog::get_instantiation_of_variable(const Fact &rule_head, int idx) const {
+    /*
+     * We get a fact (rule head) and a variable index from the variable source table
+     * representing the variable we want to instantiate.
+     */
+    const Achievers &achiever = rule_head.get_achievers();
+    const RuleBase &r = *rules[achiever.get_achiever_rule_index()];
+    const VariableSource &variable_table = r.get_variable_source_object_by_ref();
+    if (variable_table.is_variable_found_in_body(idx)) {
+        /*
+         * We look at the variable source table and check if this instantiation is found in the
+         * body. If it is, we simply retrieve it from the table and return the argument.
+         */
+        std::pair<int, int> variable_entry = variable_table.get_table()[idx];
+        int atom_position = variable_table.get_position_of_atom_in_same_body_rule(variable_entry.first);
+        int fact_idx = achiever.at(atom_position);
+        const Fact &achiever_fact = facts[fact_idx];
+        return achiever_fact.argument(variable_entry.second).get_index();
+    }
+    else {
+        /*
+         * Otherwise, we get from the variable source table through which fact we need to backchain
+         * and we call this function (get_instantiation_of_variable) recursively with this atom.
+         * The 'idx' value in this recursive call (second parameter) can be obtained from the variable
+         * source table which, in the case of indirect access, points to the entry in the variable
+         * table of the achiever that will contain the necessary variable.
+         */
+
+        std::pair<int, int> variable_entry = variable_table.get_table()[idx];
+        int fact_idx = achiever.at(variable_entry.first);
+        const Fact &achiever_fact = facts[fact_idx];
+        return get_instantiation_of_variable(achiever_fact, variable_entry.second);
+    }
+}
+
+std::vector<int> Datalog::extract_variable_instantiation_from_rule(int head) const {
+    /*
+     * TODO Implement this extraction
+     */
+    const datalog::Fact &f = get_fact_by_index(head);
+    int rule_index = f.get_achiever_rule_index();
+    const RuleBase &r = *rules[rule_index];
+    std::vector<int> instantiation(r.get_variable_source_object_by_ref().get_table().size());
+    for (size_t i = 0; i < instantiation.size(); ++i) {
+        instantiation[i] = get_instantiation_of_variable(f, i);
+    }
+    return instantiation;
+}
+
+void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &initial_facts) {
+    useful_atoms.clear();
+
+    std::unordered_set<int> achieved_atoms;
+    std::queue<int> queue;
+
+    for (int achiever_idx : goal_fact.get_achiever_body()) {
+        if (initial_facts.count(achiever_idx) == 0) {
+            queue.push(achiever_idx);
+            useful_atoms.push_back(achiever_idx);
+        }
+    }
+
+     while (!queue.empty()) {
+         int next_achiever_idx = queue.front();
+         queue.pop();
+         auto is_achieved_now = achieved_atoms.insert(next_achiever_idx);
+         if (!is_achieved_now.second) {
+             // Previously achieved and already processed. We can skip this iteration.
+             continue;
+         }
+         if (initial_facts.count(next_achiever_idx) > 0) {
+             continue;
+         }
+         useful_atoms.push_back(next_achiever_idx);
+         const Fact &f = get_fact_by_index(next_achiever_idx);
+         int rule_idx = f.get_achiever_rule_index();
+         const RuleBase &rule = get_rule_by_index(rule_idx);
+         rule.execute(next_achiever_idx, *this);
+         for (int achiever: f.get_achiever_body()) {
+             const Fact &achiever_fact = get_fact_by_index(achiever);
+             if (initial_facts.count(achiever)==0) {
+                 queue.push(achiever);
+             } else {
+                 if (achiever_fact.get_cost() > 0) {
+                     // If a fact in the EDB has cost > 0, it means it is a fact
+                     // achieved by a rule with an empty body.
+                     // TODO Problematic with zero-cost domains
+                     queue.push(achiever);
+                 }
+             }
+         }
+
+     }
+
+}

@@ -154,6 +154,10 @@ public:
         return variable_source;
     }
 
+    const VariableSource &get_variable_source_object_by_ref() const {
+        return variable_source;
+    }
+
     void update_conditions(DatalogAtom new_atom,
                            const std::vector<DatalogAtom> &new_rule_conditions,
                            const VariableSource &variable_source_new_rule,
@@ -163,6 +167,13 @@ public:
 
     std::unique_ptr<Annotation> get_annotation() {
         return std::move(annotation);
+    }
+
+    void execute(int head,
+                 const Datalog &datalog) const {
+        if (annotation) {
+            annotation->execute(head, datalog);
+        }
     }
 
     virtual std::string get_type_name() {

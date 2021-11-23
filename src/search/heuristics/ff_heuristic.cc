@@ -17,8 +17,10 @@ public:
     FFAnnotation(int rule_schema, std::vector<GroundAction> &pi_ff) : rule_schema(rule_schema),
                                                                       pi_ff(pi_ff) {}
 
-    void operator()(datalog::GroundRule gr) override {
-        std::vector<int> parameters = gr.get_parameters();
+    void execute(int head,
+                 const datalog::Datalog &datalog) override {
+        std::vector<int> parameters = datalog.extract_variable_instantiation_from_rule(head);
+
         GroundAction a(make_pair(rule_schema, parameters));
         pi_ff.push_back(a);
     }
@@ -36,19 +38,26 @@ FFHeuristic::FFHeuristic(const Task &task) : datalog(std::move(initialize_datalo
                                              grounder(datalog, datalog::H_ADD) {}
 
 int FFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
+    pi_ff.clear();
     if (task.is_goal((s))) return 0;
 
     std::vector<datalog::Fact> state_facts = get_datalog_facts_from_state(s, task);
 
-    int h = grounder.ground(datalog, state_facts, datalog.get_goal_atom_idx());
+    int h_add = grounder.ground(datalog, state_facts, datalog.get_goal_atom_idx());
+
+    int ff_cost = 0;
+    for (const auto &action : pi_ff) {
+        ff_cost += task.get_action_schema_by_index(action.first).get_cost();
+    }
 
     datalog.reset_facts();
     for (const auto &r : datalog.get_rules())
         r->clean_up();
-    if (h == std::numeric_limits<int>::max())
+    if (h_add == std::numeric_limits<int>::max())
         return UNSOLVABLE_STATE;
 
-    return h;
+
+    return ff_cost;
 
 }
 

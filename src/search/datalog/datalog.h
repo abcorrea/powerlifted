@@ -188,6 +188,8 @@ class Datalog {
     std::vector<std::string> predicate_names;
     std::unordered_map<std::string, int> map_new_predicates_to_idx;
 
+    std::vector<int> useful_atoms;
+
     void create_rules(AnnotationGenerator ann);
     void generate_action_rule(const ActionSchema &schema, std::vector<size_t> nullary_preconds, AnnotationGenerator &annotation_generator);
 
@@ -221,7 +223,10 @@ class Datalog {
 
     void split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules,
                     std::unique_ptr<RuleBase> &rule, std::vector<size_t> body_ids);
+
     Arguments get_joining_arguments(const std::vector<DatalogAtom> &conditions);
+
+    int get_instantiation_of_variable(const Fact &rule_head, int idx) const;
 
 public:
     Datalog(const Task &task, AnnotationGenerator annotation_generator);
@@ -287,7 +292,9 @@ public:
         std::cout << "Total number of rules: " << rules.size() << std::endl;
     }
 
-    void backchain_from_goal();
+    std::vector<int> extract_variable_instantiation_from_rule(int head) const;
+
+    void backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &state_facts);
 
 };
 
