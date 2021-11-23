@@ -56,6 +56,7 @@ int FFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     if (h_add == std::numeric_limits<int>::max())
         return UNSOLVABLE_STATE;
 
+    useful_atoms = datalog.get_useful_atoms();
 
     return ff_cost;
 

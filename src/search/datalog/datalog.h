@@ -188,7 +188,7 @@ class Datalog {
     std::vector<std::string> predicate_names;
     std::unordered_map<std::string, int> map_new_predicates_to_idx;
 
-    std::vector<int> useful_atoms;
+    std::vector<std::vector<GroundAtom>> useful_atoms;
 
     void create_rules(AnnotationGenerator ann);
     void generate_action_rule(const ActionSchema &schema, std::vector<size_t> nullary_preconds, AnnotationGenerator &annotation_generator);
@@ -227,6 +227,8 @@ class Datalog {
     Arguments get_joining_arguments(const std::vector<DatalogAtom> &conditions);
 
     int get_instantiation_of_variable(const Fact &rule_head, int idx) const;
+
+    void add_useful_atom(int achiever_idx);
 
 public:
     Datalog(const Task &task, AnnotationGenerator annotation_generator);
@@ -283,6 +285,10 @@ public:
         }
     }
 
+    void output_fact(const Fact &f) const {
+        output_atom(f);
+    }
+
     void reset_facts() {
         facts.clear();
     }
@@ -294,8 +300,11 @@ public:
 
     std::vector<int> extract_variable_instantiation_from_rule(int head) const;
 
-    void backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &state_facts);
+    const std::vector<std::vector<GroundAtom>> &get_useful_atoms() const {
+        return useful_atoms;
+    }
 
+    void backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &state_facts);
 };
 
 }

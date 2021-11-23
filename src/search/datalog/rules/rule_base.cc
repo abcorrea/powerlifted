@@ -90,4 +90,28 @@ void RuleBase::update_conditions(DatalogAtom new_atom,
 
 }
 
+void RuleBase::update_single_condition(size_t j, DatalogAtom atom)  {
+
+    std::vector<int> argument_shift(conditions[j].get_arguments().size(), 0);
+    int shift = 0;
+    for (const Term &t : atom.get_arguments()) {
+        if (t.is_object()) {
+            shift++;
+            continue;
+        }
+        argument_shift[t.get_index()] = shift;
+    }
+
+    conditions[j] = atom;
+
+    size_t counter = 0;
+    for (std::pair<int, int> &p : variable_source.get_table()) {
+        if (p.first == int(j)) {
+            p.second = p.second - argument_shift[counter];
+        }
+        counter++;
+    }
+}
+
+
 }

@@ -56,8 +56,6 @@ public:
 
     int ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) override;
 
-    void compute_best_achievers(const Fact &fact, const Datalog &lp);
-
     const std::vector<int> &get_best_achiever_indices() const {
         return best_achievers;
     }

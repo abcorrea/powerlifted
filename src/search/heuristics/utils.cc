@@ -16,11 +16,11 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
 
     //cout << endl << "### INTRODUCE GOAL RULE: " << endl;
     dl.add_goal_rule(task, annotation_generator);
-    //dl.output_rules();
+    dl.output_rules();
 
-    //cout << "### PERMANENT EDB: " << endl;
+    //std::cout << "### PERMANENT EDB: " << std::endl;
     dl.set_permanent_edb(task.get_static_info());
-    //dl.output_permanent_edb();
+    dl.output_permanent_edb();
 
     dl.update_rule_indices();
 

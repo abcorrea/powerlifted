@@ -22,6 +22,8 @@ Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : t
     }
     create_rules(annotation_generator);
 
+    useful_atoms.resize(task.get_initial_state().get_relations().size());
+
 }
 
 void Datalog::get_nullary_atoms_from_vector(const vector<bool> &nullary_predicates_in_precond,
@@ -122,12 +124,7 @@ void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) const {
 }
 
 void Datalog::output_atom(const DatalogAtom &atom) const {
-    if (atom.is_pred_symbol_new()) {
-        std::cout << predicate_names[atom.get_predicate_index()];
-    }
-    else {
-        cout << task.get_predicate_name(atom.get_predicate_index());
-    }
+    std::cout << predicate_names[atom.get_predicate_index()];
     output_parameters(atom.get_arguments());
 }
 
@@ -189,9 +186,6 @@ int Datalog::get_instantiation_of_variable(const Fact &rule_head, int idx) const
 }
 
 std::vector<int> Datalog::extract_variable_instantiation_from_rule(int head) const {
-    /*
-     * TODO Implement this extraction
-     */
     const datalog::Fact &f = get_fact_by_index(head);
     int rule_index = f.get_achiever_rule_index();
     const RuleBase &r = *rules[rule_index];
@@ -203,7 +197,10 @@ std::vector<int> Datalog::extract_variable_instantiation_from_rule(int head) con
 }
 
 void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &initial_facts) {
-    useful_atoms.clear();
+
+    for (auto relation : useful_atoms) {
+        relation.clear();
+    }
 
     std::unordered_set<int> achieved_atoms;
     std::queue<int> queue;
@@ -211,7 +208,7 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_se
     for (int achiever_idx : goal_fact.get_achiever_body()) {
         if (initial_facts.count(achiever_idx) == 0) {
             queue.push(achiever_idx);
-            useful_atoms.push_back(achiever_idx);
+            add_useful_atom(achiever_idx);
         }
     }
 
@@ -226,13 +223,21 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_se
          if (initial_facts.count(next_achiever_idx) > 0) {
              continue;
          }
-         useful_atoms.push_back(next_achiever_idx);
+         add_useful_atom(next_achiever_idx);
          const Fact &f = get_fact_by_index(next_achiever_idx);
+         //output_atom(f);
+         //std::cout << std::endl << std::flush;
          int rule_idx = f.get_achiever_rule_index();
+         //std::cout << " achiever rule -> ";
+         //output_rule(rules[rule_idx]);
+         //std::cout << std::endl << std::flush;
          const RuleBase &rule = get_rule_by_index(rule_idx);
          rule.execute(next_achiever_idx, *this);
          for (int achiever: f.get_achiever_body()) {
              const Fact &achiever_fact = get_fact_by_index(achiever);
+             //std::cout << " achiever -> ";
+             //output_atom(achiever_fact);
+             //std::cout << std::endl << std::flush;
              if (initial_facts.count(achiever)==0) {
                  queue.push(achiever);
              } else {
@@ -244,7 +249,16 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_se
                  }
              }
          }
-
      }
+     //exit(0);
+}
 
+void Datalog::add_useful_atom(int achiever_idx) {
+    const Fact &f = facts[achiever_idx];
+    if (f.is_pred_symbol_new()) return;
+    GroundAtom instantiation;
+    for (const Term &t : f.get_arguments()) {
+        instantiation.push_back(t.get_index());
+    }
+    useful_atoms[f.get_predicate_index()].push_back(move(instantiation));
 }

@@ -353,47 +353,6 @@ void WeightedGrounder::product(
     }
 }
 
-void WeightedGrounder::compute_best_achievers(const Fact &fact, const Datalog &lp) {
-    unordered_set<int> marked_achievers;
-    queue<int> achievers_queue;
-    achievers_queue.emplace(fact.get_fact_index());
-    best_achievers.push_back(fact.get_fact_index());
-
-    while (!achievers_queue.empty()) {
-        int index = achievers_queue.front();
-        achievers_queue.pop();
-        auto is_marked = marked_achievers.insert(index);
-        if (!is_marked.second) {
-            continue;
-        }
-        const Fact &f = lp.get_fact_by_index(index);
-        for (int achiever : f.get_achievers()) {
-            const Fact &achiever_fact = lp.get_fact_by_index(achiever);
-            //achiever_fact.print_atom(lp.get_objects(), lp.get_map_index_to_atom());
-            //cout << " " << achiever_fact.get_fact_index() << " " << achiever_fact.get_cost() << endl;
-            if (initial_facts.count(achiever) == 0) {
-                // We ignore fluents and static information that are true in the evaluated state
-                best_achievers.push_back(achiever);
-                achievers_queue.push(achiever);
-            } else {
-                if (achiever_fact.get_cost() > 0) {
-                    // If a fact in the EDB has cost > 0, it means it is a fact
-                    // achieved by a rule with an empty body.
-                    // TODO Problematic with zero-cost domains
-                    best_achievers.push_back(achiever);
-                    achievers_queue.push(achiever);
-                }
-            }
-        }
-    }
-
-    /*cout << "\t\tAchievers: ";
-    for (auto &entry : best_achievers) {
-        lp.get_fact_by_index(entry).print_atom(lp.get_objects(), lp.get_map_index_to_atom());
-    }
-    cout << endl;*/
-}
-
 void WeightedGrounder::create_rule_matcher(const Datalog &lp) {
     // Loop over rule conditions
     for (const auto &rule : lp.get_rules()) {

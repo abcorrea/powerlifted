@@ -115,11 +115,54 @@ bool Datalog::is_product_rule(const std::unique_ptr<RuleBase> &rule) {
 
 void Datalog::convert_rules_to_normal_form(const Task &task) {
     std::vector<std::unique_ptr<RuleBase>> new_rules;
-    // Store action schemas of all generic rules first
-    std::vector<int> schemas;
-    for (const auto &rule : rules) {
-        GenericRule *action_rule_base = dynamic_cast<GenericRule *>(rule.get());
-        schemas.push_back(action_rule_base->get_schema_index());
+
+    /*
+     * First step, project out all constants
+     */
+    for (auto &rule : rules) {
+        if (rule->get_conditions().size() > 1) {
+            /*
+             * TODO Implement projection
+             *
+             * Idea: Iterate over body of rule. If there's one atom with a constant, we call a function
+             * that creates a new auxiliary atom projecting out this constant and also a rule with
+             * the original atom in the body and the projected atom in the head.
+             *
+             * Then, we replace the old body atom in the original rule by the new one. We loop over
+             * the VariableSource table, looking for entries that point to the original atom. If then
+             * simply need to change the indices of the second element of the variable source table.
+             */
+
+            for (size_t i = 0; i < rule->get_conditions().size(); ++i) {
+                auto &condition = rule->get_conditions()[i];
+                bool project_away = false;
+                std::vector<Term> remaining_args;
+                for (size_t j = 0; j < condition.get_arguments().size() and !project_away; ++j) {
+                    if (condition.argument(j).is_object()) {
+                        project_away = true;
+                    } else {
+                        remaining_args.push_back(condition.argument(j));
+                    }
+                }
+                if (project_away) {
+                    std::string predicate_name = "p$" + std::to_string(predicate_names.size());
+                    int idx = get_next_auxiliary_predicate_idx();
+                    map_new_predicates_to_idx.emplace(predicate_name, idx);
+                    predicate_names.push_back(predicate_name);
+
+                    Arguments new_args(std::move(remaining_args));
+                    DatalogAtom new_atom(new_args, idx, true);
+                    std::unique_ptr<RuleBase> new_rule = std::make_unique<ProjectRule>(0,
+                                                                                new_atom,
+                                                                                std::vector<DatalogAtom>{condition},
+                                                                                nullptr);
+                    rule->update_single_condition(i, new_atom);
+                    new_rules.emplace_back(std::move(new_rule));
+                }
+            }
+
+            std::vector<std::unique_ptr<RuleBase>> projection_rules;
+        }
     }
 
     size_t rule_counter = 0;

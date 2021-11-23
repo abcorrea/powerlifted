@@ -163,6 +163,8 @@ public:
                            const VariableSource &variable_source_new_rule,
                            std::vector<size_t> &&body_ids);
 
+    void update_single_condition(size_t j, DatalogAtom new_atom);
+
     void output_variable_table();
 
     std::unique_ptr<Annotation> get_annotation() {
