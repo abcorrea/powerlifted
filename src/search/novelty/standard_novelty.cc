@@ -45,12 +45,14 @@ int StandardNovelty::compute_novelty_k1(const Task &task,
 }
 
 
-int StandardNovelty::compute_novelty_k2(const Task &task,
-                                        const DBState &state,
-                                        int number_unsatisfied_goals,
-                                        int number_unsatisfied_relevant_atoms) {
+int StandardNovelty::compute_novelty(const Task &task,
+                                     const DBState &state,
+                                     int number_unsatisfied_goals,
+                                     int number_unsatisfied_relevant_atoms) {
     // Number of unsatisfied goals is computed as a side effect of compute_novelty_k1
     int novelty = compute_novelty_k1(task, state, number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
+
+    if (width == 1) return novelty;
 
     int idx = compute_position_of_r_g_tuple(number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
 
@@ -112,4 +114,69 @@ int StandardNovelty::compute_position_of_predicate_indices_pair(int idx_1, int i
     int row_start = (idx_1 * (idx_1+1))/2;
     int column_shift = idx_2;
     return row_start + column_shift;
+}
+
+int StandardNovelty::compute_novelty_from_operator(const Task &task,
+                                                   const DBState &state,
+                                                   int number_unsatisfied_goals,
+                                                   int number_unsatisfied_relevant_atoms,
+                                                   const std::vector<std::pair<int, GroundAtom>> & added_atoms) {
+
+    if (number_unsatisfied_goals == 0) {
+        return GOAL_STATE;
+    }
+
+    int novelty = NOVELTY_GREATER_THAN_TWO;
+
+    int idx = compute_position_of_r_g_tuple(number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
+    auto &achieved_atoms_in_layer = achieved_atoms[idx];
+    const vector<bool>& nullary_atoms = state.get_nullary_atoms();
+
+    for (const std::pair<int, GroundAtom> &r1 : added_atoms) {
+        int pred_symbol_idx = r1.first;
+        const GroundAtom &tuple = r1.second;
+        auto it = atom_mapping[pred_symbol_idx].insert({tuple, atom_counter + 1});
+        if (it.second) atom_counter++;
+        bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(pred_symbol_idx, it.first->second);
+        if (is_new)
+            novelty = 1;
+    }
+
+
+    bool has_k1_novelty = (novelty == 1);
+
+    for (const std::pair<int, GroundAtom> &r1 : added_atoms) {
+        int pred_symbol_idx1 = r1.first;
+        const GroundAtom &t1 = r1.second;
+        int t1_idx = atom_mapping[pred_symbol_idx1][t1];
+        for (const Relation &r2 : state.get_relations()) {
+            int pred_symbol_idx2 = r2.predicate_symbol;
+            if (pred_symbol_idx2 > pred_symbol_idx1) continue;
+            for (const GroundAtom &t2 : r2.tuples) {
+                int t2_idx = atom_mapping[pred_symbol_idx2][t2];
+                bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                    compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                               pred_symbol_idx2),
+                    t1_idx, t2_idx);
+                if (is_new and !has_k1_novelty)
+                    novelty = 2;
+            }
+        }
+        for (size_t i = 0; i < state.get_nullary_atoms().size(); ++i) {
+            if (nullary_atoms[i]) {
+                int pred_symbol_idx2 = i;
+                int t2_idx = atom_mapping[pred_symbol_idx1][GroundAtom()];
+                bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                    compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                               pred_symbol_idx2),
+                    t1_idx, t2_idx);
+                if (is_new and !has_k1_novelty)
+                    novelty = 2;
+            }
+        }
+    }
+
+
+    return novelty;
+    return 0;
 }

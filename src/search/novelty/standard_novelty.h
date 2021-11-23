@@ -15,6 +15,7 @@
 #include "../heuristics/goalcount.h"
 #include "../states/state.h"
 #include "../structures.h"
+#include "../action.h"
 
 typedef absl::flat_hash_map<GroundAtom, int> NoveltySet;
 
@@ -29,6 +30,7 @@ class StandardNovelty {
     int atom_counter;
     int number_goal_atoms;
     int number_relevant_atoms;
+    int width;
     std::vector<AchievedGroundAtoms> achieved_atoms;
     std::vector<NoveltySet> atom_mapping;
 
@@ -53,9 +55,11 @@ public:
 
     StandardNovelty(const Task &task,
                     size_t number_goal_atoms,
-                    size_t number_relevant_atoms) : atom_counter(0),
+                    size_t number_relevant_atoms,
+                    int width) : atom_counter(0),
                                                     number_goal_atoms(number_goal_atoms),
-                                                    number_relevant_atoms(number_relevant_atoms) {
+                                                    number_relevant_atoms(number_relevant_atoms),
+                                                    width(width) {
         std::cout << "Total number of goal atoms: " << number_goal_atoms << std::endl;
         std:: cout << "Total number of relevant atoms: " << number_relevant_atoms << std::endl;
 
@@ -73,11 +77,16 @@ public:
                            int number_unsatisfied_goals,
                            int number_unsatisfied_relevant_atoms);
 
-    int compute_novelty_k2(const Task &task,
-                           const DBState &state,
-                           int number_unsatisfied_goals,
-                           int number_unsatisfied_relevant_atoms);
+    int compute_novelty(const Task &task,
+                        const DBState &state,
+                        int number_unsatisfied_goals,
+                        int number_unsatisfied_relevant_atoms);
 
+    int compute_novelty_from_operator(const Task &task,
+                                      const DBState &state,
+                                      int number_unsatisfied_goals,
+                                      int number_unsatisfied_relevant_atoms,
+                                      const std::vector<std::pair<int, std::vector<int>>> &added_atoms);
 };
 
 #endif //SEARCH_NOVELTY_STANDARD_NOVELTY_H_

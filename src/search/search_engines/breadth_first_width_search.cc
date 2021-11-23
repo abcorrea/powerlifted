@@ -25,7 +25,16 @@
 #include <queue>
 #include <vector>
 
+#include <absl/container/flat_hash_map.h>
+
 using namespace std;
+
+struct NodeNovelty {
+    int unsatisfied_goals;
+    int unsatisfied_relevant_atoms;
+
+    NodeNovelty(int g, int r) : unsatisfied_goals(g), unsatisfied_relevant_atoms(r) {}
+};
 
 template <class PackedStateT>
 utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
@@ -54,11 +63,13 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     // search algorithm complete.
     TieBreakingOpenList queue;
 
+    absl::flat_hash_map<int, NodeNovelty> map_state_to_evaluators;
+
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state),
         LiftedOperatorId::no_operator, StateID::no_state);
     utils::Timer t;
 
-    StandardNovelty novelty_evaluator(task, number_goal_conditions, number_relevant_atoms);
+    StandardNovelty novelty_evaluator(task, number_goal_conditions, number_relevant_atoms, width);
 
     int novelty_value = 1;
     int gc_h0 = gc.compute_heuristic(task.initial_state, task);
@@ -69,7 +80,8 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     if (width == 1)
         novelty_value = novelty_evaluator.compute_novelty_k1(task, task.initial_state, gc_h0, unachieved_atoms_s0);
     else
-        novelty_value = novelty_evaluator.compute_novelty_k2(task, task.initial_state, gc_h0, unachieved_atoms_s0);
+        novelty_value =
+            novelty_evaluator.compute_novelty(task, task.initial_state, gc_h0, unachieved_atoms_s0);
 
     root_node.open(0, novelty_value);
 
@@ -79,6 +91,8 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     queue.do_insertion(root_node.state_id, {novelty_value,
                                             gc_h0,
                                             0});
+
+    map_state_to_evaluators.insert({root_node.state_id.id(), NodeNovelty(gc_h0, unachieved_atoms_s0)});
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
@@ -96,7 +110,10 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
 
         DBState state = packer.unpack(space.get_state(sid));
-        if (check_goal(task, generator, timer_start, state, node, space)) return utils::ExitCode::SUCCESS;
+        //if (check_goal(task, generator, timer_start, state, node, space)) return utils::ExitCode::SUCCESS;
+
+        int unsatisfied_goal_parent = map_state_to_evaluators.at(sid.id()).unsatisfied_goals;
+        int unsatisfied_relevant_atoms_parent = map_state_to_evaluators.at(sid.id()).unsatisfied_relevant_atoms;
 
         for (const auto& action:task.actions) {
             auto applicable = generator.get_applicable_actions(action, state);
@@ -110,15 +127,26 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
 
                 if (method == StandardNovelty::IW) {
                     unsatisfied_relevant_atoms = 0;
-                    unsatisfied_goals = 0;
+                    // Important is to make it constant different than 0, otherwise the novelty will
+                    // be 0 because of the goal detection in the evaluator.
+                    unsatisfied_goals = 1;
                 }
                 if (method == StandardNovelty::R_X)
                     unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
 
-                if (width == 1)
-                    novelty_value = novelty_evaluator.compute_novelty_k1(task, s, unsatisfied_goals, unsatisfied_relevant_atoms);
-                else
-                    novelty_value = novelty_evaluator.compute_novelty_k2(task, s, unsatisfied_goals, unsatisfied_relevant_atoms);
+                if ((unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
+                    novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
+                                                                                    s,
+                                                                                    unsatisfied_goals,
+                                                                                    unsatisfied_relevant_atoms,
+                                                                                    generator.get_added_atoms());
+                }
+                else {
+                    novelty_value = novelty_evaluator.compute_novelty(task,
+                                                                      s,
+                                                                      unsatisfied_goals,
+                                                                      unsatisfied_relevant_atoms);
+                }
 
                 statistics.inc_evaluations();
                 statistics.inc_evaluated_states();
@@ -132,6 +160,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
                     child_node.open(dist, novelty_value);
                     if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
                     queue.do_insertion(child_node.state_id, {novelty_value, unsatisfied_goals, dist});
+                    map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
                 }
             }
         }

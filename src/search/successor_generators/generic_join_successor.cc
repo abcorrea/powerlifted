@@ -290,6 +290,7 @@ DBState GenericJoinSuccessor::generate_successor(
     const ActionSchema& action,
     const DBState &state) {
 
+    added_atoms.clear();
     vector<bool> new_nullary_atoms(state.get_nullary_atoms());
     vector<Relation> new_relation(state.get_relations());
     apply_nullary_effects(action, new_nullary_atoms);
@@ -346,8 +347,10 @@ void GenericJoinSuccessor::apply_nullary_effects(const ActionSchema &action,
             new_nullary_atoms[i] = false;
     }
     for (size_t i = 0; i < action.get_positive_nullary_effects().size(); ++i) {
-        if (action.get_positive_nullary_effects()[i])
+        if (action.get_positive_nullary_effects()[i]) {
             new_nullary_atoms[i] = true;
+            add_to_added_atoms(i, GroundAtom());
+        }
     }
 }
 void GenericJoinSuccessor::apply_ground_action_effects(const ActionSchema &action,
@@ -368,6 +371,7 @@ void GenericJoinSuccessor::apply_ground_action_effects(const ActionSchema &actio
         else {
             // If ground effect is not in the state, we add it
             new_relation[eff.predicate_symbol].tuples.insert(ga);
+            add_to_added_atoms(eff.predicate_symbol, ga);
         }
     }
 }
@@ -388,6 +392,7 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
                      ga) == new_relation[eff.predicate_symbol].tuples.end()) {
                 // If ground atom is not in the state, we add it
                 new_relation[eff.predicate_symbol].tuples.insert(ga);
+                add_to_added_atoms(eff.predicate_symbol, ga);
             }
         }
     }
