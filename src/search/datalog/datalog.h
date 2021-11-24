@@ -246,6 +246,8 @@ public:
 
     void convert_rules_to_normal_form(const Task &task);
 
+    bool remove_duplicate_rules();
+
     void set_permanent_edb(StaticInformation static_information);
     void output_permanent_edb();
 

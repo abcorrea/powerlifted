@@ -7,6 +7,7 @@
 #include "transformations/generate_edb.h"
 #include "transformations/goal_rule.h"
 #include "transformations/normal_form.h"
+#include "transformations/remove_equivalent_rules.h"
 
 #include <iostream>
 #include <memory>

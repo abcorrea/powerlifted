@@ -165,6 +165,8 @@ public:
 
     void update_single_condition(size_t j, DatalogAtom new_atom);
 
+    void replace_single_condition(size_t j, DatalogAtom atom) ;
+
     void output_variable_table();
 
     std::unique_ptr<Annotation> get_annotation() {
@@ -176,6 +178,10 @@ public:
         if (annotation) {
             annotation->execute(head, datalog);
         }
+    }
+
+    bool is_equivalent(const RuleBase &other) const {
+        return (weight == other.get_weight())  && (conditions == other.get_conditions());
     }
 
     virtual std::string get_type_name() {

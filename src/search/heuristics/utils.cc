@@ -14,13 +14,17 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
     dl.convert_rules_to_normal_form(task);
     //dl.output_rules();
 
-    //cout << endl << "### INTRODUCE GOAL RULE: " << endl;
+    //std::cout << std::endl << "### INTRODUCE GOAL RULE: " << std::endl;
     dl.add_goal_rule(task, annotation_generator);
-    dl.output_rules();
+    //dl.output_rules();
+
+    //std::cout << std::endl << "### REMOVE EQUIVALENT RULES: " << std::endl;
+    while (dl.remove_duplicate_rules());
+    //dl.output_rules();
 
     //std::cout << "### PERMANENT EDB: " << std::endl;
     dl.set_permanent_edb(task.get_static_info());
-    dl.output_permanent_edb();
+    //dl.output_permanent_edb();
 
     dl.update_rule_indices();
 

@@ -113,5 +113,8 @@ void RuleBase::update_single_condition(size_t j, DatalogAtom atom)  {
     }
 }
 
+void RuleBase::replace_single_condition(size_t j, DatalogAtom atom)  {
+    conditions[j] = atom;
+}
 
 }
