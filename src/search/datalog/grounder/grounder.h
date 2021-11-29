@@ -6,12 +6,15 @@
 namespace datalog {
 
 class Grounder {
+
 public:
     Grounder() = default;
 
     virtual ~Grounder() = default;
 
     virtual int ground(Datalog &lp, std::vector<Fact> &state_facts, int goal_predicate) = 0;
+
+    virtual void print_statistics(const Datalog &lp) = 0;
 };
 
 }

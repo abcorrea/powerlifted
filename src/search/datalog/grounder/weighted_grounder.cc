@@ -18,6 +18,9 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
     unordered_set<Fact> reached_facts;
     std::vector<Fact> newfacts;
 
+    queue_pushes = 0;
+    atoms_produced = 0;
+
     // Reset of data structures
     Fact::next_fact_index = 0;
 
@@ -29,6 +32,8 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         Fact f2 = f;
         f2.set_fact_index();
         q.push(f.get_cost(), f2.get_fact_index());
+        queue_pushes++;
+        atoms_produced++;
         initial_facts.insert(f2.get_fact_index());
         datalog.insert_fact(f2);
         reached_facts.insert(f2);
@@ -37,6 +42,8 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
     for (Fact &f : state_facts) {
         f.set_fact_index();
         q.push(f.get_cost(), f.get_fact_index());
+        queue_pushes++;
+        atoms_produced++;
         initial_facts.insert(f.get_fact_index());
         datalog.insert_fact(f);
         reached_facts.insert(f);
@@ -83,6 +90,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
                 int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, datalog);
                 if (id!=HAS_CHEAPER_PATH) {
                     q.push(new_fact.get_cost(), id);
+                    queue_pushes++;
                 }
             }
         }
@@ -94,7 +102,7 @@ int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                                        unordered_set<Fact> &reached_facts,
                                                        Datalog &lp) {
     const auto& it = reached_facts.find(new_fact);
-
+    atoms_produced++;
     if (it == reached_facts.end()) {  // The fact wasn't reached yet
         new_fact.set_fact_index();
         reached_facts.insert(new_fact);

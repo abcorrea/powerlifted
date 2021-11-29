@@ -307,6 +307,8 @@ public:
     }
 
     void backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &state_facts);
+
+    int get_number_of_facts() const;
 };
 
 }

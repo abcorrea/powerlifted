@@ -22,7 +22,7 @@ const int HAS_CHEAPER_PATH = -2;
 enum {H_ADD, H_MAX};
 
 class WeightedGrounder : public Grounder {
-    static int is_cheapest_path_to_achieve_fact(Fact &new_fact,
+    int is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                          std::unordered_set<Fact> &reached_facts,
                                          Datalog &lp);
 
@@ -30,6 +30,10 @@ class WeightedGrounder : public Grounder {
 
     std::unordered_set<int> initial_facts;
     std::vector<int> best_achievers;
+
+    int queue_pushes;
+    int atoms_produced;
+    int total_number_of_facts;
 
 protected:
     int heuristic_type;
@@ -50,11 +54,20 @@ public:
     WeightedGrounder(const Datalog &lp, int h)  {
         create_rule_matcher(lp);
         heuristic_type = h;
+        queue_pushes = 0;
+        atoms_produced = 0;
+        total_number_of_facts = 0;
     }
 
     ~WeightedGrounder() override = default;
 
     int ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) override;
+
+    void print_statistics(const Datalog &lp) override {
+        std::cout << lp.get_number_of_facts() << " final number of facts" << std::endl;
+        std::cout << atoms_produced << " total atoms produced" << std::endl;
+        std::cout << queue_pushes << " total queue pushes" << std::endl;
+    }
 
     const std::vector<int> &get_best_achiever_indices() const {
         return best_achievers;

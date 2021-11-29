@@ -263,3 +263,8 @@ void Datalog::add_useful_atom(int achiever_idx) {
     }
     useful_atoms[f.get_predicate_index()].push_back(move(instantiation));
 }
+
+
+int Datalog::get_number_of_facts() const {
+    return facts.size();
+}
