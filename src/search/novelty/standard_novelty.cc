@@ -104,6 +104,18 @@ int StandardNovelty::compute_novelty(const Task &task,
                         novelty = 2;
                 }
             }
+            for (size_t j = i+1; j < nullary_atoms.size(); ++j) {
+                if (nullary_atoms[j]) {
+                    int pred_symbol_idx2 = j;
+                    int t2_idx = atom_mapping[pred_symbol_idx2][GroundAtom()];
+                    bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                   pred_symbol_idx2),
+                        t1_idx, t2_idx);
+                    if (is_new and !has_k1_novelty)
+                        novelty = 2;
+                }
+            }
         }
     }
 
@@ -143,6 +155,8 @@ int StandardNovelty::compute_novelty_from_operator(const Task &task,
     }
 
 
+    if (width == 1) return novelty;
+
     bool has_k1_novelty = (novelty == 1);
 
     for (const std::pair<int, GroundAtom> &r1 : added_atoms) {
@@ -178,5 +192,4 @@ int StandardNovelty::compute_novelty_from_operator(const Task &task,
 
 
     return novelty;
-    return 0;
 }

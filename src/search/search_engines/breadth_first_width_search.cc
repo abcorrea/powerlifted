@@ -73,6 +73,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
 
     int novelty_value = 1;
     int gc_h0 = gc.compute_heuristic(task.initial_state, task);
+
     int unachieved_atoms_s0 = 0;
     if (method == StandardNovelty::R_X)
         unachieved_atoms_s0 = atom_counter.count_unachieved_atoms(task.initial_state, task);
@@ -95,7 +96,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     map_state_to_evaluators.insert({root_node.state_id.id(), NodeNovelty(gc_h0, unachieved_atoms_s0)});
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
-
+    
     while (not queue.empty()) {
         StateID sid = queue.remove_min();
         SearchNode &node = space.get_node(sid);
@@ -146,6 +147,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
                                                                       s,
                                                                       unsatisfied_goals,
                                                                       unsatisfied_relevant_atoms);
+
                 }
 
                 statistics.inc_evaluations();
