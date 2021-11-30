@@ -14,6 +14,8 @@ class Options {
     std::string evaluator;
     std::string state_representation;
     std::string datalog_file;
+    bool only_effects_opt;
+    bool novelty_early_stop;
     unsigned seed;
 
 public:
@@ -28,6 +30,8 @@ public:
             ("search,s", po::value<std::string>()->required(), "Search engine.")
             ("state-representation,r", po::value<std::string>()->default_value("sparse"), "State representation.")
             ("datalog-file", po::value<std::string>()->default_value("FilePathUndefined"), "Datalog model file.")
+            ("only-effects-novelty-check", po::value<bool>()->default_value(false), "Check only effects of applied actions when evaluation novelty of a state.")
+            ("novelty-early-stop", po::value<bool>()->default_value(false), "Stop evaluating novelty as soon as w-value is defined.")
             ;
 
         po::variables_map vm;
@@ -52,6 +56,8 @@ public:
         search_engine = vm["search"].as<std::string>();
         state_representation = vm["state-representation"].as<std::string>();
         datalog_file = vm["datalog-file"].as<std::string>();
+        only_effects_opt = vm["only-effects-novelty-check"].as<bool>();
+        novelty_early_stop = vm["novelty-early-stop"].as<bool>();
         seed = vm["seed"].as<unsigned>();
 
     }
@@ -78,6 +84,14 @@ public:
 
     const std::string &get_datalog_file() const {
         return datalog_file;
+    }
+
+    bool get_only_effects_opt() const {
+        return only_effects_opt;
+    }
+
+    bool get_novelty_early_stop() const {
+        return novelty_early_stop;
     }
 
     unsigned get_seed() const {

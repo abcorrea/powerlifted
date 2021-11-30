@@ -13,8 +13,10 @@ template <class PackedStateT>
 class BreadthFirstWidthSearch : public SearchBase {
     AtomCounter atom_counter;
     int width;
-    bool prune_states;
     int method;
+    bool prune_states;
+    bool only_effects_opt;
+    bool early_stop;
     std::string datalog_file_name;
 
 protected:
@@ -25,20 +27,8 @@ protected:
     AtomCounter initialize_counter_with_gc(const Task &task);
 
 public:
-    explicit BreadthFirstWidthSearch(int width, int method) : width(width), method(method) {
-        if ((method == StandardNovelty::IW) || (method == StandardNovelty::IW_G)) {
-            prune_states = true;
-        }
-        else {
-            prune_states = false;
-        }
-    }
 
-
-    explicit BreadthFirstWidthSearch(int width, const Options &opt) : width(width), prune_states(false), method(StandardNovelty::R_X) {
-        std::cout << "Using version with R-X" << std::endl;
-        datalog_file_name = opt.get_datalog_file();
-    }
+    explicit BreadthFirstWidthSearch(int width, const Options &opt, int method);
 
     using StatePackerT = typename PackedStateT::StatePackerT;
 

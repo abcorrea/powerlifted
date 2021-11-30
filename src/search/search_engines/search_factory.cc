@@ -27,36 +27,36 @@ SearchFactory::create(const Options &opt, const std::string& method, const std::
         else return new BreadthFirstSearch<SparsePackedState>();
     }
     else if (boost::iequals(method, "bfws1")) {
-        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, StandardNovelty::R_0);
-        else return new BreadthFirstWidthSearch<SparsePackedState>(1, StandardNovelty::R_0);
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, opt, StandardNovelty::R_0);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::R_0);
     }
     else if (boost::iequals(method, "bfws2")) {
-        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, StandardNovelty::R_0);
-        else return new BreadthFirstWidthSearch<SparsePackedState>(2, StandardNovelty::R_0);
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, opt, StandardNovelty::R_0);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::R_0);
     }
     else if (boost::iequals(method, "bfws1-rx")) {
-        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, opt);
-        else return new BreadthFirstWidthSearch<SparsePackedState>(1, opt);
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, opt, StandardNovelty::R_X);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::R_X);
     }
     else if (boost::iequals(method, "bfws2-rx")) {
-        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, opt);
-        else return new BreadthFirstWidthSearch<SparsePackedState>(2, opt);
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, opt, StandardNovelty::R_X);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::R_X);
     }
     else if (boost::iequals(method, "iw1")) {
-        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, StandardNovelty::IW);
-        else return new BreadthFirstWidthSearch<SparsePackedState>(1, StandardNovelty::IW);
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, opt, StandardNovelty::IW);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::IW);
     }
     else if (boost::iequals(method, "iw2")) {
-        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, StandardNovelty::IW);
-        else return new BreadthFirstWidthSearch<SparsePackedState>(2, StandardNovelty::IW);
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, opt, StandardNovelty::IW);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::IW);
     }
     else if (boost::iequals(method, "iw1gc")) {
-        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, StandardNovelty::IW_G);
-        else return new BreadthFirstWidthSearch<SparsePackedState>(1, StandardNovelty::IW_G);
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(1, opt, StandardNovelty::IW_G);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::IW_G);
     }
     else if (boost::iequals(method, "iw2gc")) {
-        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, StandardNovelty::IW_G);
-        else return new BreadthFirstWidthSearch<SparsePackedState>(2, StandardNovelty::IW_G);
+        if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, opt, StandardNovelty::IW_G);
+        else return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::IW_G);
     }
     else if (boost::iequals(method, "gbfs")) {
         if (using_ext_state) return new GreedyBestFirstSearch<ExtensionalPackedState>();

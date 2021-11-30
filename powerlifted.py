@@ -63,6 +63,10 @@ def parse_options():
                         help="flag if the Datalog model should keep duplicated auxiliary rules")
     parser.add_argument("--add-inequalities", action="store_true",
                         help="flag if the Datalog model should add inequalities to rules")
+    parser.add_argument("--only-effects-novelty-check", action="store_true",
+                        help="flag if the novelty evaluation of a state should only consider atoms in the applied action effect")
+    parser.add_argument("--novelty-early-stop", action="store_true",
+                        help="flag if the novelty evaluation of a state should stop as soon as the w-value is defined")
     parser.add_argument("--unit-cost", action="store_true",
                            help="flag if the actions should be treated as unit-cost actions")
     parser.add_argument("--validate", action="store_true",
@@ -147,6 +151,13 @@ def main():
        if options.add_inequalities:
            PYTHON_EXTRA_OPTIONS.append('--add-inequalities')
        CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
+
+
+    # If it is a width-based search, we might need to pass more flags
+    if options.only_effects_novelty_check:
+        CPP_EXTRA_OPTIONS += ['--only-effects-novelty-check', str(1)]
+    if options.novelty_early_stop:
+        CPP_EXTRA_OPTIONS += ['--novelty-early-stop', str(1)]
 
 
     # Checks if unit-cost flag is true

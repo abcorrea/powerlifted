@@ -21,8 +21,11 @@ int StandardNovelty::compute_novelty_k1(const Task &task,
             auto it = atom_mapping[pred_symbol_idx].insert({tuple, atom_counter + 1});
             if (it.second) atom_counter++;
             bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(pred_symbol_idx, it.first->second);
-            if (is_new)
+            if (is_new) {
                 has_novel_atom = true;
+                if (early_stop)
+                    return has_novel_atom;
+            }
         }
     }
 
@@ -32,8 +35,10 @@ int StandardNovelty::compute_novelty_k1(const Task &task,
             auto it = atom_mapping[i].insert({GroundAtom(), atom_counter + 1});
             if (it.second) atom_counter++;
             bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(i, it.first->second);
-            if (is_new)
+            if (is_new) {
                 has_novel_atom = true;
+                if (early_stop) return has_novel_atom;
+            }
         }
     }
 
@@ -52,14 +57,19 @@ int StandardNovelty::compute_novelty(const Task &task,
     // Number of unsatisfied goals is computed as a side effect of compute_novelty_k1
     int novelty = compute_novelty_k1(task, state, number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
 
-    if (width == 1) return novelty;
-
-    int idx = compute_position_of_r_g_tuple(number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
-
     if (novelty == 0) {
         // Goal state
         return 0;
     }
+
+    if (width == 1) return novelty;
+
+    if (early_stop and novelty == 1) {
+        // If we have early stop flag activated and we found a novel atom, we return directly.
+        return novelty;
+    }
+
+    int idx = compute_position_of_r_g_tuple(number_unsatisfied_goals, number_unsatisfied_relevant_atoms);
 
     bool has_k1_novelty = (novelty == 1);
 
@@ -79,8 +89,10 @@ int StandardNovelty::compute_novelty(const Task &task,
                         compute_position_of_predicate_indices_pair(pred_symbol_idx1,
                                                                    pred_symbol_idx2),
                         t1_idx, t2_idx);
-                    if (is_new and !has_k1_novelty)
+                    if (is_new and !has_k1_novelty) {
                         novelty = 2;
+                        if (early_stop) return novelty;
+                    }
                 }
             }
         }
@@ -100,8 +112,11 @@ int StandardNovelty::compute_novelty(const Task &task,
                         compute_position_of_predicate_indices_pair(pred_symbol_idx1,
                                                                    pred_symbol_idx2),
                         t1_idx, t2_idx);
-                    if (is_new and !has_k1_novelty)
+                    if (is_new and !has_k1_novelty) {
                         novelty = 2;
+                        if (early_stop)
+                            return novelty;
+                    }
                 }
             }
             for (size_t j = i+1; j < nullary_atoms.size(); ++j) {
@@ -112,8 +127,10 @@ int StandardNovelty::compute_novelty(const Task &task,
                         compute_position_of_predicate_indices_pair(pred_symbol_idx1,
                                                                    pred_symbol_idx2),
                         t1_idx, t2_idx);
-                    if (is_new and !has_k1_novelty)
+                    if (is_new and !has_k1_novelty) {
                         novelty = 2;
+                        if (early_stop) return novelty;
+                    }
                 }
             }
         }
@@ -150,12 +167,16 @@ int StandardNovelty::compute_novelty_from_operator(const Task &task,
         auto it = atom_mapping[pred_symbol_idx].insert({tuple, atom_counter + 1});
         if (it.second) atom_counter++;
         bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(pred_symbol_idx, it.first->second);
-        if (is_new)
+        if (is_new) {
             novelty = 1;
+            if (early_stop) return novelty;
+        }
     }
 
 
     if (width == 1) return novelty;
+
+    if (early_stop and novelty == 1) return novelty;
 
     bool has_k1_novelty = (novelty == 1);
 
@@ -172,8 +193,10 @@ int StandardNovelty::compute_novelty_from_operator(const Task &task,
                     compute_position_of_predicate_indices_pair(pred_symbol_idx1,
                                                                pred_symbol_idx2),
                     t1_idx, t2_idx);
-                if (is_new and !has_k1_novelty)
+                if (is_new and !has_k1_novelty) {
                     novelty = 2;
+                    if (early_stop) return novelty;
+                }
             }
         }
         for (size_t i = 0; i < state.get_nullary_atoms().size(); ++i) {
@@ -184,8 +207,10 @@ int StandardNovelty::compute_novelty_from_operator(const Task &task,
                     compute_position_of_predicate_indices_pair(pred_symbol_idx1,
                                                                pred_symbol_idx2),
                     t1_idx, t2_idx);
-                if (is_new and !has_k1_novelty)
+                if (is_new and !has_k1_novelty) {
                     novelty = 2;
+                    if (early_stop) return novelty;
+                }
             }
         }
     }

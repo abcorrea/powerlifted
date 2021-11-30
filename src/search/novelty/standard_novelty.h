@@ -31,6 +31,7 @@ class StandardNovelty {
     int number_goal_atoms;
     int number_relevant_atoms;
     int width;
+    bool early_stop;
     std::vector<AchievedGroundAtoms> achieved_atoms;
     std::vector<NoveltySet> atom_mapping;
 
@@ -56,10 +57,12 @@ public:
     StandardNovelty(const Task &task,
                     size_t number_goal_atoms,
                     size_t number_relevant_atoms,
-                    int width) : atom_counter(0),
+                    int width,
+                    bool early_stop) : atom_counter(0),
                                                     number_goal_atoms(number_goal_atoms),
                                                     number_relevant_atoms(number_relevant_atoms),
-                                                    width(width) {
+                                                    width(width),
+                                                    early_stop(early_stop) {
         std::cout << "Total number of goal atoms: " << number_goal_atoms << std::endl;
         std:: cout << "Total number of relevant atoms: " << number_relevant_atoms << std::endl;
 
