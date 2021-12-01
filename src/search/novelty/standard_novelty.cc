@@ -85,10 +85,19 @@ int StandardNovelty::compute_novelty(const Task &task,
                 if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
                     int t2_idx = atom_mapping[pred_symbol_idx2][t2];
-                    bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
-                                                                   pred_symbol_idx2),
-                        t1_idx, t2_idx);
+                    bool is_new = false;
+                    if (pred_symbol_idx1 == pred_symbol_idx2) {
+                        is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                            compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                       pred_symbol_idx2),
+                            std::min(t1_idx, t2_idx), std::max(t1_idx, t2_idx));
+                    }
+                    else {
+                        is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                            compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                       pred_symbol_idx2),
+                            t1_idx, t2_idx);
+                    }
                     if (is_new and !has_k1_novelty) {
                         novelty = 2;
                         if (early_stop) return novelty;
@@ -186,13 +195,32 @@ int StandardNovelty::compute_novelty_from_operator(const Task &task,
         int t1_idx = atom_mapping[pred_symbol_idx1][t1];
         for (const Relation &r2 : state.get_relations()) {
             int pred_symbol_idx2 = r2.predicate_symbol;
-            if (pred_symbol_idx2 > pred_symbol_idx1) continue;
+
             for (const GroundAtom &t2 : r2.tuples) {
                 int t2_idx = atom_mapping[pred_symbol_idx2][t2];
-                bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                    compute_position_of_predicate_indices_pair(pred_symbol_idx1,
-                                                               pred_symbol_idx2),
-                    t1_idx, t2_idx);
+                bool is_new = false;
+
+                // We have this split case here, because in the case where we check all pair of atoms
+                // in the state, we only compare cases where pred_symbol_idx2 > pred_symbol_idx1. So,
+                // to keep the same "efficiency", we split the insertion in two cases below.
+                if (pred_symbol_idx2 < pred_symbol_idx1) {
+                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                   pred_symbol_idx2),
+                        t1_idx, t2_idx);
+                } else if (pred_symbol_idx1 == pred_symbol_idx2) {
+                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                   pred_symbol_idx2),
+                        std::min(t1_idx, t2_idx), std::max(t1_idx, t2_idx));
+                }
+                else {
+                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx2,
+                                                                   pred_symbol_idx1),
+                        t2_idx, t1_idx);
+                }
+
                 if (is_new and !has_k1_novelty) {
                     novelty = 2;
                     if (early_stop) return novelty;
@@ -202,7 +230,7 @@ int StandardNovelty::compute_novelty_from_operator(const Task &task,
         for (size_t i = 0; i < state.get_nullary_atoms().size(); ++i) {
             if (nullary_atoms[i]) {
                 int pred_symbol_idx2 = i;
-                int t2_idx = atom_mapping[pred_symbol_idx1][GroundAtom()];
+                int t2_idx = atom_mapping[pred_symbol_idx2][GroundAtom()];
                 bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
                     compute_position_of_predicate_indices_pair(pred_symbol_idx1,
                                                                pred_symbol_idx2),

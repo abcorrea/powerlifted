@@ -116,7 +116,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     map_state_to_evaluators.insert({root_node.state_id.id(), NodeNovelty(gc_h0, unachieved_atoms_s0)});
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
-
+    
     while (not queue.empty()) {
         StateID sid = queue.remove_min();
         SearchNode &node = space.get_node(sid);
@@ -142,6 +142,10 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
 
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
+                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+                if (child_node.status != SearchNode::Status::NEW)
+                    continue;
+
                 int dist = g + action.get_cost();
                 int unsatisfied_goals = gc.compute_heuristic(s, task);
                 int unsatisfied_relevant_atoms = 0;
@@ -176,14 +180,10 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
                 if ((prune_states) and (novelty_value == StandardNovelty::NOVELTY_GREATER_THAN_TWO))
                     continue;
 
-                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-
-                if (child_node.status == SearchNode::Status::NEW) {
-                    child_node.open(dist, novelty_value);
-                    if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
-                    queue.do_insertion(child_node.state_id, {novelty_value, unsatisfied_goals, dist});
-                    map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
-                }
+                child_node.open(dist, novelty_value);
+                if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
+                queue.do_insertion(child_node.state_id, {novelty_value, unsatisfied_goals, dist});
+                map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
             }
         }
     }
