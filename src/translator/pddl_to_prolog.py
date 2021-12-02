@@ -22,6 +22,10 @@ class PrologProgram:
         self.objects |= set(atom.args)
     def add_rule(self, rule):
         self.rules.append(rule)
+    def sort_facts(self):
+        self.facts.sort(key=lambda x: str(x))
+    def sort_rules(self):
+        self.rules.sort(key=lambda x: str(x))
     def dump(self, file=None):
         for fact in self.facts:
             print(fact, file=file)
@@ -38,6 +42,11 @@ class PrologProgram:
         self.convert_trivial_rules()
     def split_rules(self):
         import split_rules
+
+        # First, save original rules for further preprocessing
+        self.sort_rules()
+        self.original_rules = copy.deepcopy(self.rules)
+
         # Splits rules whose conditions can be partitioned in such a way that
         # the parts have disjoint variable sets, then split n-ary joins into
         # a number of binary joins, introducing new pseudo-predicates for the
@@ -46,6 +55,7 @@ class PrologProgram:
         for rule in self.rules:
             new_rules += split_rules.split_rule(rule, self.new_name)
         self.rules = new_rules
+        self.sort_rules()
     def remove_free_effect_variables(self):
         """Remove free effect variables like the variable Y in the rule
         p(X, Y) :- q(X). This is done by introducing a new predicate
@@ -141,7 +151,7 @@ class PrologProgram:
             else:
                 final_rules.append(r)
         self.rules = final_rules
-
+        self.sort_rules()
 
     def rename_free_variables(self):
         '''
@@ -240,6 +250,7 @@ class PrologProgram:
             if fact.atom.predicate not in fluents:
                 new_facts.append(fact)
         self.facts = new_facts
+        self.sort_facts()
 
 
 def get_variables(symbolic_atoms):
@@ -305,6 +316,8 @@ def translate_facts(prog, task):
         assert isinstance(fact, pddl.Atom) or isinstance(fact, pddl.Assign)
         if isinstance(fact, pddl.Atom):
             prog.add_fact(fact)
+    # Sort facts to preserve detemrinistic ordering over multiple runs
+    prog.sort_facts()
 
 def add_inequalities(prog,task):
     for obj1 in task.objects:
@@ -337,9 +350,17 @@ def translate(task, keep_action_predicates=False, add_inequalities_flag=False):
         add_inequalities(prog, task)
     for conditions, effect, action in normalize.build_exploration_rules(task, add_inequalities_flag):
         weight = get_action_cost(action)
+        # We sort the conditions to make the output deterministic.
+        # They are sorted by reversed alphabetical order. This shows better results than
+        # alphabetical order. Our hypothesis is that this ordering puts type@ predicates
+        # at the beginning of the condition and thus they are split earlier. Since type predicates
+        # are all unary, this works as a semi-join, filtering intermediate relations.
+        conditions.sort(key=lambda x: str(x))
+        conditions.reverse()
         if effect.predicate == "@goal-reachable":
             weight = 0
         prog.add_rule(Rule(conditions, effect, weight))
+    prog.sort_rules()
     # Using block=True because normalization can output some messages
     # in rare cases.
     prog.remove_fluent_atoms_from_edb(task)

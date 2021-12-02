@@ -390,6 +390,11 @@ def substitute_complicated_goal(task):
     new_axiom = task.add_axiom([], goal)
     task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
 
+
+def sort_actions(task):
+    # Sort actions to guarantee deterministic ordering
+    return sorted(list(task.actions), key=lambda x: str(x))
+
 # Combine Steps [1], [2], [3], [4], [5] and do some additional verification
 # that the task makes sense.
 
