@@ -44,6 +44,26 @@ class StandardNovelty {
         return unreached_relevant_atoms * (number_goal_atoms+1) + unreached_goal_atoms;
     }
 
+    bool compute_k1_novelty_of_n_ary_atoms(const DBState &state,
+                                           AchievedGroundAtoms &achieved_atoms_in_layer);
+    bool compute_k1_novelty_of_nullary_atoms(const DBState &state,
+                                             AchievedGroundAtoms &achieved_atoms_in_layer);
+    int compute_k2_novelty_of_n_ary_atoms(const DBState &state,
+                                          bool has_k1_novelty,
+                                          AchievedGroundAtoms &achieved_atoms_in_layer);
+    int compute_k2_novelty_of_nullary_atoms(const DBState &state,
+                                            bool has_k1_novelty,
+                                            AchievedGroundAtoms &achieved_atoms_in_layer);
+    int compute_k1_novelty_from_operators(const std::vector<std::pair<int,
+                                                                      GroundAtom>> &added_atoms,
+                                          AchievedGroundAtoms &achieved_atoms_in_layer);
+    int compute_k2_novelty_from_operators(const DBState &state,
+                                          const std::vector<std::pair<int,
+                                                                      GroundAtom>> &added_atoms,
+                                          AchievedGroundAtoms &achieved_atoms_in_layer,
+                                          const std::vector<bool> &nullary_atoms,
+                                          bool has_k1_novelty);
+
 public:
 
     static const int GOAL_STATE = 0;
@@ -90,6 +110,7 @@ public:
                                       int number_unsatisfied_goals,
                                       int number_unsatisfied_relevant_atoms,
                                       const std::vector<std::pair<int, std::vector<int>>> &added_atoms);
+
 };
 
 #endif //SEARCH_NOVELTY_STANDARD_NOVELTY_H_
