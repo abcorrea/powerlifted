@@ -112,6 +112,7 @@ int StandardNovelty::compute_k2_novelty_of_nullary_atoms(const DBState &state,
             for (size_t j = 0; j < nullary_atoms.size(); ++j) {
                 if (nullary_atoms[j]) {
                     int pred_symbol_idx2 = j;
+                    if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                     int t2_idx = atom_mapping[pred_symbol_idx2][GroundAtom()];
                     bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
                         compute_position_of_predicate_indices_pair(pred_symbol_idx1,
@@ -261,10 +262,24 @@ int StandardNovelty::compute_k2_novelty_from_operators(const DBState &state,
             if (nullary_atoms[i]) {
                 int pred_symbol_idx2 = i;
                 int t2_idx = atom_mapping[pred_symbol_idx2][GroundAtom()];
-                bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                    compute_position_of_predicate_indices_pair(pred_symbol_idx1,
-                                                               pred_symbol_idx2),
-                    t1_idx, t2_idx);
+                bool is_new;
+                if (pred_symbol_idx2 < pred_symbol_idx1) {
+                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                   pred_symbol_idx2),
+                        t1_idx, t2_idx);
+                } else if (pred_symbol_idx1 == pred_symbol_idx2) {
+                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                                   pred_symbol_idx2),
+                        min(t1_idx, t2_idx), max(t1_idx, t2_idx));
+                }
+                else {
+                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+                        compute_position_of_predicate_indices_pair(pred_symbol_idx2,
+                                                                   pred_symbol_idx1),
+                        t2_idx, t1_idx);
+                }
                 if (is_new and !has_k1_novelty) {
                     novelty = 2;
                 }
