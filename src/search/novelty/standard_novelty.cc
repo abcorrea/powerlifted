@@ -100,6 +100,8 @@ int StandardNovelty::compute_k2_novelty_of_nullary_atoms(const DBState &state,
                 if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
                     int t2_idx = atom_mapping[pred_symbol_idx2][t2];
+                    // We do not have the check if pred_symbol_idx2 == pred_symbol_idx1 because we always
+                    // use the same empty tuple GroundAtom() for the nullary atoms.
                     bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
                         compute_position_of_predicate_indices_pair(pred_symbol_idx1,
                                                                    pred_symbol_idx2),
@@ -113,6 +115,7 @@ int StandardNovelty::compute_k2_novelty_of_nullary_atoms(const DBState &state,
                 if (nullary_atoms[j]) {
                     int pred_symbol_idx2 = j;
                     if (pred_symbol_idx2 > pred_symbol_idx1) continue;
+                    // See comment above about the pred_symbol_idx2 == pred_symbol_idx1 check.
                     int t2_idx = atom_mapping[pred_symbol_idx2][GroundAtom()];
                     bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
                         compute_position_of_predicate_indices_pair(pred_symbol_idx1,
@@ -228,30 +231,11 @@ int StandardNovelty::compute_k2_novelty_from_operators(const DBState &state,
 
             for (const GroundAtom &t2 : r2.tuples) {
                 int t2_idx = atom_mapping[pred_symbol_idx2][t2];
-                bool is_new = false;
-
-                // We have this split cases here, because in the case where we check all pair of atoms
-                // in the state, we only compare cases where pred_symbol_idx2 > pred_symbol_idx1. So,
-                // to keep the same "efficiency", we split the insertion in two cases below.
-                // In the case where pred_symbol_idx2 = pred_symbol_idx1, we insert the tuples
-                // in a canonical order.
-                if (pred_symbol_idx2 < pred_symbol_idx1) {
-                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
-                                                                   pred_symbol_idx2),
-                        t1_idx, t2_idx);
-                } else if (pred_symbol_idx1 == pred_symbol_idx2) {
-                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
-                                                                   pred_symbol_idx2),
-                        min(t1_idx, t2_idx), max(t1_idx, t2_idx));
-                }
-                else {
-                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                        compute_position_of_predicate_indices_pair(pred_symbol_idx2,
-                                                                   pred_symbol_idx1),
-                        t2_idx, t1_idx);
-                }
+                bool is_new = check_tuple_novelty(achieved_atoms_in_layer,
+                                                  pred_symbol_idx1,
+                                                  t1_idx,
+                                                  pred_symbol_idx2,
+                                                  t2_idx);
 
                 if (is_new and !has_k1_novelty) {
                     novelty = 2;
@@ -261,25 +245,13 @@ int StandardNovelty::compute_k2_novelty_from_operators(const DBState &state,
         for (size_t i = 0; i < state.get_nullary_atoms().size(); ++i) {
             if (nullary_atoms[i]) {
                 int pred_symbol_idx2 = i;
+                // See above why we cannot skip the case where pred_symbol_idx2 > pred_symbol_idx1.
                 int t2_idx = atom_mapping[pred_symbol_idx2][GroundAtom()];
-                bool is_new;
-                if (pred_symbol_idx2 < pred_symbol_idx1) {
-                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
-                                                                   pred_symbol_idx2),
-                        t1_idx, t2_idx);
-                } else if (pred_symbol_idx1 == pred_symbol_idx2) {
-                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                        compute_position_of_predicate_indices_pair(pred_symbol_idx1,
-                                                                   pred_symbol_idx2),
-                        min(t1_idx, t2_idx), max(t1_idx, t2_idx));
-                }
-                else {
-                    is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
-                        compute_position_of_predicate_indices_pair(pred_symbol_idx2,
-                                                                   pred_symbol_idx1),
-                        t2_idx, t1_idx);
-                }
+                bool is_new = check_tuple_novelty(achieved_atoms_in_layer,
+                                                  pred_symbol_idx1,
+                                                  t1_idx,
+                                                  pred_symbol_idx2,
+                                                  t2_idx);
                 if (is_new and !has_k1_novelty) {
                     novelty = 2;
                 }
@@ -288,6 +260,7 @@ int StandardNovelty::compute_k2_novelty_from_operators(const DBState &state,
     }
     return novelty;
 }
+
 
 int StandardNovelty::compute_k1_novelty_from_operators(const vector<std::pair<int,
                                                                               GroundAtom>> &added_atoms,
@@ -304,4 +277,36 @@ int StandardNovelty::compute_k1_novelty_from_operators(const vector<std::pair<in
         }
     }
     return novelty;
+}
+
+bool StandardNovelty::check_tuple_novelty(AchievedGroundAtoms &achieved_atoms_in_layer,
+                                          int pred_symbol_idx1,
+                                          int t1_idx,
+                                          int pred_symbol_idx2,
+                                          int t2_idx) {
+    // We have this split cases here, because in the case where we check all pair of atoms
+    // in the state, we only compare cases where pred_symbol_idx2 > pred_symbol_idx1. So,
+    // to keep the same "efficiency", we split the insertion in two cases below.
+    // In the case where pred_symbol_idx2 = pred_symbol_idx1, we insert the tuples
+    // in a canonical order.
+    bool is_new;
+    if (pred_symbol_idx2 < pred_symbol_idx1) {
+        is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+            compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                       pred_symbol_idx2),
+            t1_idx, t2_idx);
+    } else if (pred_symbol_idx1 == pred_symbol_idx2) {
+        is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+            compute_position_of_predicate_indices_pair(pred_symbol_idx1,
+                                                       pred_symbol_idx2),
+            min(t1_idx, t2_idx), max(t1_idx, t2_idx));
+    }
+    else {
+        // Note: tuples and predicate symbols are swapped here compared to the first case.
+        is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k2(
+            compute_position_of_predicate_indices_pair(pred_symbol_idx2,
+                                                       pred_symbol_idx1),
+            t2_idx, t1_idx);
+    }
+    return is_new;
 }

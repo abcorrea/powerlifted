@@ -44,6 +44,11 @@ class StandardNovelty {
         return unreached_relevant_atoms * (number_goal_atoms+1) + unreached_goal_atoms;
     }
 
+    int compute_novelty_k1(const Task &task,
+                           const DBState &state,
+                           int number_unsatisfied_goals,
+                           int number_unsatisfied_relevant_atoms);
+
     bool compute_k1_novelty_of_n_ary_atoms(const DBState &state,
                                            AchievedGroundAtoms &achieved_atoms_in_layer);
     bool compute_k1_novelty_of_nullary_atoms(const DBState &state,
@@ -63,6 +68,13 @@ class StandardNovelty {
                                           AchievedGroundAtoms &achieved_atoms_in_layer,
                                           const std::vector<bool> &nullary_atoms,
                                           bool has_k1_novelty);
+
+    bool check_tuple_novelty(AchievedGroundAtoms &achieved_atoms_in_layer,
+                             int pred_symbol_idx1,
+                             int t1_idx,
+                             int pred_symbol_idx2,
+                             int t2_idx);
+
 
 public:
 
@@ -94,11 +106,6 @@ public:
         achieved_atoms.resize((number_relevant_atoms+1) * (number_goal_atoms+1),
                               AchievedGroundAtoms(task, max_position));
     }
-
-    int compute_novelty_k1(const Task &task,
-                           const DBState &state,
-                           int number_unsatisfied_goals,
-                           int number_unsatisfied_relevant_atoms);
 
     int compute_novelty(const Task &task,
                         const DBState &state,

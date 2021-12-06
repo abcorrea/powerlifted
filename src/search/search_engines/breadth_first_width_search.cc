@@ -91,18 +91,13 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
 
     StandardNovelty novelty_evaluator(task, number_goal_conditions, number_relevant_atoms, width, early_stop);
 
-    int novelty_value = 1;
     int gc_h0 = gc.compute_heuristic(task.initial_state, task);
 
     int unachieved_atoms_s0 = 0;
     if (method == StandardNovelty::R_X)
         unachieved_atoms_s0 = atom_counter.count_unachieved_atoms(task.initial_state, task);
 
-    if (width == 1)
-        novelty_value = novelty_evaluator.compute_novelty_k1(task, task.initial_state, gc_h0, unachieved_atoms_s0);
-    else
-        novelty_value =
-            novelty_evaluator.compute_novelty(task, task.initial_state, gc_h0, unachieved_atoms_s0);
+    int novelty_value = novelty_evaluator.compute_novelty(task, task.initial_state, gc_h0, unachieved_atoms_s0);
 
     root_node.open(0, novelty_value);
 
@@ -116,7 +111,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     map_state_to_evaluators.insert({root_node.state_id.id(), NodeNovelty(gc_h0, unachieved_atoms_s0)});
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
-    
+
     while (not queue.empty()) {
         StateID sid = queue.remove_min();
         SearchNode &node = space.get_node(sid);
