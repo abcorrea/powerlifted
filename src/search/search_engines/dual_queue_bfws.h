@@ -25,7 +25,9 @@ class DualQueueBFWS : public SearchBase {
     int priority_preferred;
     int priority_regular;
 
-    void boost_priority_queue(int inc = 1000);
+    const int BOOST_PREF_OPEN_LIST = 1000;
+
+    void boost_priority_queue();
 
     StateID get_top_node(TieBreakingOpenList &preferred, TieBreakingOpenList &other) {
         /*
@@ -53,7 +55,7 @@ public:
     explicit DualQueueBFWS(int width, const Options &opt) : width(width) {
         std::cout << "Using Dual-Queue BFWS" << std::endl;
         datalog_file_name = opt.get_datalog_file();
-        priority_preferred = 0;
+        priority_preferred = BOOST_PREF_OPEN_LIST;
         priority_regular = 0;
     }
 

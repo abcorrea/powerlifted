@@ -91,7 +91,7 @@ utils::ExitCode DualQueueBFWS<PackedStateT>::search(const Task &task,
 
         if (unsatisfied_goal_parent < goalcount_layer) {
             goalcount_layer = unsatisfied_goal_parent;
-            boost_priority_queue(1000);
+            boost_priority_queue();
         }
 
         for (const auto& action:task.actions) {
@@ -200,8 +200,8 @@ AtomCounter DualQueueBFWS<PackedStateT>::initialize_counter_with_useful_atoms(co
 }
 
 template<class PackedStateT>
-void DualQueueBFWS<PackedStateT>::boost_priority_queue(int inc) {
-    priority_preferred += inc;
+void DualQueueBFWS<PackedStateT>::boost_priority_queue() {
+    priority_preferred += BOOST_PREF_OPEN_LIST;
 }
 
 // explicit template instantiations
