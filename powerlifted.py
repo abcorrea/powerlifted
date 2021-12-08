@@ -30,6 +30,8 @@ def parse_options():
                                                                         "bfws2",
                                                                         "bfws1-rx",
                                                                         "bfws2-rx",
+                                                                        "dq-bfws1-rx",
+                                                                        "dq-bfws2-rx",
                                                                         "gbfs",
                                                                         "iw1",
                                                                         "iw2",
@@ -142,7 +144,7 @@ def main():
         raise OSError("Planner not built!")
 
     # If it is the lifted heuristic, we need to obtain the Datalog model
-    if options.heuristic in ['add', 'hmax'] or options.search in ['bfws1-rx', 'bfws2-rx']:
+    if options.heuristic in ['add', 'hmax'] or options.search in ['bfws1-rx', 'bfws2-rx', 'dq-bfws1-rx', 'dq-bfws2-rx']:
        PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
        if options.keep_action_predicates:
            PYTHON_EXTRA_OPTIONS.append('--keep-action-predicates')

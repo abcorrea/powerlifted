@@ -3,6 +3,7 @@
 
 #include "breadth_first_search.h"
 #include "breadth_first_width_search.h"
+#include "dual_queue_bfws.h"
 #include "greedy_best_first_search.h"
 #include "lazy_search.h"
 #include "search.h"
@@ -57,6 +58,14 @@ SearchFactory::create(const Options &opt, const std::string& method, const std::
     else if (boost::iequals(method, "iw2gc")) {
         if (using_ext_state) return new BreadthFirstWidthSearch<ExtensionalPackedState>(2, opt, StandardNovelty::IW_G);
         else return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::IW_G);
+    }
+    else if (boost::iequals(method, "dq-bfws1-rx")) {
+        if (using_ext_state) return new DualQueueBFWS<ExtensionalPackedState>(1, opt);
+        else return new DualQueueBFWS<SparsePackedState>(1, opt);
+    }
+    else if (boost::iequals(method, "dq-bfws2-rx")) {
+        if (using_ext_state) return new DualQueueBFWS<ExtensionalPackedState>(2, opt);
+        else return new DualQueueBFWS<SparsePackedState>(2, opt);
     }
     else if (boost::iequals(method, "gbfs")) {
         if (using_ext_state) return new GreedyBestFirstSearch<ExtensionalPackedState>();

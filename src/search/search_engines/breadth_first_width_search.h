@@ -5,6 +5,7 @@
 #include "search_space.h"
 
 #include "../novelty/atom_counter.h"
+#include "../novelty/node_novelty.h"
 #include "../novelty/standard_novelty.h"
 
 #include "../options.h"
