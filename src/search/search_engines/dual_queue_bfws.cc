@@ -70,6 +70,7 @@ utils::ExitCode DualQueueBFWS<PackedStateT>::search(const Task &task,
 
     if (check_goal(task, generator, timer_start, task.initial_state, root_node, space)) return utils::ExitCode::SUCCESS;
 
+    int goalcount_layer = gc_h0;
     while ((not regular_open_list.empty()) or (not preferred_open_list.empty())) {
         StateID sid = get_top_node(preferred_open_list, regular_open_list);
         SearchNode &node = space.get_node(sid);
@@ -87,6 +88,11 @@ utils::ExitCode DualQueueBFWS<PackedStateT>::search(const Task &task,
 
         int unsatisfied_goal_parent = map_state_to_evaluators.at(sid.id()).unsatisfied_goals;
         int unsatisfied_relevant_atoms_parent = map_state_to_evaluators.at(sid.id()).unsatisfied_relevant_atoms;
+
+        if (unsatisfied_goal_parent < goalcount_layer) {
+            goalcount_layer = unsatisfied_goal_parent;
+            boost_priority_queue(1000);
+        }
 
         for (const auto& action:task.actions) {
             auto applicable = generator.get_applicable_actions(action, state);
@@ -191,6 +197,11 @@ AtomCounter DualQueueBFWS<PackedStateT>::initialize_counter_with_useful_atoms(co
     }
 
     return AtomCounter(atoms, positive, negative);
+}
+
+template<class PackedStateT>
+void DualQueueBFWS<PackedStateT>::boost_priority_queue(int inc) {
+    priority_preferred += inc;
 }
 
 // explicit template instantiations

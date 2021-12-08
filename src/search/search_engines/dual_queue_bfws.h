@@ -25,6 +25,8 @@ class DualQueueBFWS : public SearchBase {
     int priority_preferred;
     int priority_regular;
 
+    void boost_priority_queue(int inc = 1000);
+
     StateID get_top_node(TieBreakingOpenList &preferred, TieBreakingOpenList &other) {
         /*
          * This alternated between the preferred and the regular open list.
@@ -32,17 +34,12 @@ class DualQueueBFWS : public SearchBase {
          * a new h-layer. However, I kept the implementation using numeric priority values just
          * in case we decide to adapt it later to some specific use case.
          */
-        /*if ((priority_preferred > priority_regular) and (not preferred.empty())) {
-            priority_regular = 1;
-            priority_preferred = 0;
+        if ((priority_preferred > priority_regular) and (not preferred.empty())) {
+            priority_preferred--;
             return preferred.remove_min();
         } else {
-            priority_preferred = 1;
-            priority_regular = 0;
             return other.remove_min();
-        }*/
-        if (not preferred.empty()) return preferred.remove_min();
-        else return other.remove_min();
+        }
     }
 
 protected:
