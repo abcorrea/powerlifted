@@ -30,12 +30,6 @@ class DualQueueBFWS : public SearchBase {
     void boost_priority_queue();
 
     StateID get_top_node(TieBreakingOpenList &preferred, TieBreakingOpenList &other) {
-        /*
-         * This alternated between the preferred and the regular open list.
-         * The reason why we cannot use a boost is because we cannot easily check when we enter
-         * a new h-layer. However, I kept the implementation using numeric priority values just
-         * in case we decide to adapt it later to some specific use case.
-         */
         if ((priority_preferred > priority_regular) and (not preferred.empty())) {
             priority_preferred--;
             return preferred.remove_min();

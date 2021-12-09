@@ -130,10 +130,13 @@ utils::ExitCode DualQueueBFWS<PackedStateT>::search(const Task &task,
 
                 child_node.open(dist, novelty_value);
                 if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
-                if (is_preferred)
-                    preferred_open_list.do_insertion(child_node.state_id, {novelty_value, unsatisfied_goals, dist});
-                else
-                    regular_open_list.do_insertion(child_node.state_id, {novelty_value, unsatisfied_goals, dist});
+                if (is_preferred) {
+                    preferred_open_list.do_insertion(child_node.state_id,
+                                                     {novelty_value, unsatisfied_goals, dist});
+                }
+                // Using a boosted dual queue, it is needed to insert every node in the regular
+                // open list for completeness.
+                regular_open_list.do_insertion(child_node.state_id,{novelty_value, unsatisfied_goals, dist});
                 map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
             }
         }
