@@ -27,7 +27,23 @@ class VariableSource {
 public:
     VariableSource(const DatalogAtom &effect, const std::vector<DatalogAtom> &conditions) {
         table.clear();
-        for (const Term &arg: effect.get_arguments()) {
+
+        std::vector<Term> all_arguments;
+        for (Term t: effect.get_arguments()) {
+            if (t.is_object()) continue;
+            all_arguments.emplace_back(t);
+        }
+        for (const DatalogAtom &b : conditions) {
+            for (const Term &t: b.get_arguments()) {
+                if (t.is_object()) continue;
+                if (std::find(all_arguments.begin(), all_arguments.end(), t) == all_arguments.end()) {
+                    all_arguments.emplace_back(t);
+                }
+            }
+        }
+
+
+        for (const Term &arg: all_arguments) {
             if (arg.is_object()) continue;
             int term_index = arg.get_index();
             map_term_to_entry.insert(std::make_pair(term_index, table.size()));
@@ -97,6 +113,9 @@ public:
         }
     }
 
+    void update_ith_entry(int i, int first, int second) {
+        table[i] = std::make_pair(first, second);
+    }
 };
 
 }

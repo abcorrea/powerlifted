@@ -33,4 +33,26 @@ DatalogAtom::DatalogAtom(const ActionSchema &schema, int idx) {
     arguments = Arguments(args);
 }
 
+bool DatalogAtom::is_nullary() const {
+    return (arguments.size() == 0);
+}
+
+bool DatalogAtom::is_ground()  const {
+    for (const Term term : arguments) {
+        if (!term.is_object()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool DatalogAtom::share_variables(const DatalogAtom &atom) const {
+    for (const Term &term : arguments)
+        if (!term.is_object())
+            for (const Term &term2 : atom.arguments)
+                if (term == term2)
+                    return true;
+    return false;
+}
+
 }

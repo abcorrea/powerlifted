@@ -113,6 +113,13 @@ void RuleBase::update_single_condition(size_t j, DatalogAtom atom)  {
     }
 }
 
+void RuleBase::set_conditions(std::vector<DatalogAtom> new_rule_conditions) {
+
+
+
+    conditions = new_rule_conditions;
+}
+
 void RuleBase::replace_single_condition(size_t j, DatalogAtom atom)  {
     conditions[j] = atom;
 }

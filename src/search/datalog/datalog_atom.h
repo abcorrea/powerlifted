@@ -77,11 +77,16 @@ public:
         std::cout << ')'; //<< std::endl;
     }
 
+    bool is_nullary() const;
+
+    bool is_ground() const;
+
     friend bool operator==(const DatalogAtom &lhs, const DatalogAtom &rhs) {
         if (lhs.predicate_index != rhs.predicate_index) return false;
         //if (lhs.index != rhs.predicate_index) return false;
         return !(lhs.arguments!=rhs.arguments);
     }
+    bool share_variables(const DatalogAtom &atom) const;
 };
 
 }

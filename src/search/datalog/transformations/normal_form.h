@@ -1,7 +1,9 @@
 #ifndef SEARCH_DATALOG_TRANSFORMATIONS_NORMAL_FORM_H_
 #define SEARCH_DATALOG_TRANSFORMATIONS_NORMAL_FORM_H_
 
+#include "connected_components.h"
 #include "greedy_join.h"
+
 
 #include "../datalog.h"
 
@@ -22,16 +24,20 @@ namespace  datalog {
 
 std::unique_ptr<RuleBase> Datalog::convert_into_project_rule(const std::unique_ptr<RuleBase> &rule,
                                                     const Task &task) {
+    VariableSource old_source = rule->get_variable_source_object();
     std::unique_ptr<RuleBase> project_rule = std::make_unique<ProjectRule>(rule->get_weight(), rule->get_effect(), rule->get_conditions(),  std::move(rule->get_annotation()));
+    project_rule->update_variable_source_table(std::move(old_source));
     return project_rule;
 }
 
 std::unique_ptr<RuleBase> Datalog::convert_into_product_rule(const std::unique_ptr<RuleBase> &rule,
                                                     const Task &task) {
+    VariableSource old_source = rule->get_variable_source_object();
     std::unique_ptr<RuleBase> product_rule = std::make_unique<ProductRule>(rule->get_weight(),
                                                                            rule->get_effect(),
                                                                            rule->get_conditions(),
                                                                            std::move(rule->get_annotation()));
+    product_rule->update_variable_source_table(std::move(old_source));
     return product_rule;
 }
 
@@ -50,7 +56,7 @@ void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std
         new_rule_conditions.push_back(original_conditions[id]);
     }
 
-    Arguments new_args = get_joining_arguments(new_rule_conditions);
+    Arguments new_args = get_conditions_arguments(new_rule_conditions);
 
     DatalogAtom new_atom(new_args, idx, true);
     std::unique_ptr<JoinRule> new_split_rule = std::make_unique<JoinRule>(0,
@@ -95,6 +101,8 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
                                                                      rule->get_effect(),
                                                                      rule->get_conditions(),
                                                                      std::move(rule->get_annotation()));
+
+    // TODO This is wrong. Try to create method similar as the one used in connected_components.h
     join_rule->update_variable_source_table(rule->get_variable_source_object());
 
     join_rules.emplace_back(std::move(join_rule));
@@ -117,13 +125,31 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
     std::vector<std::unique_ptr<RuleBase>> new_rules;
 
     /*
-     * First step, project out all constants
+     * First step, split rules into connected components.
      */
+
+    for (auto &rule : rules) {
+        if (rule->get_conditions().size() > 1) {
+            split_into_connected_components(rule, new_rules);
+        }
+    }
+    for (auto &rule : new_rules) {
+        rules.emplace_back(std::move(rule));
+    }
+
+    std::cout << "@@@@ AFTER CONNECTED COMPONENT SPLIT: " << std::endl;
+    output_rules();
+    std::cout << std::endl;
+
+    new_rules.clear();
+
+    /*** TODO This is a quick solution to the problem with constant in join rules.
+        Ideally we want to either check before the join if the constants match, or make the
+        rule matcher also take into account the constants.
+   */
     for (auto &rule : rules) {
         if (rule->get_conditions().size() > 1) {
             /*
-             * TODO Implement projection
-             *
              * Idea: Iterate over body of rule. If there's one atom with a constant, we call a function
              * that creates a new auxiliary atom projecting out this constant and also a rule with
              * the original atom in the body and the projected atom in the head.
@@ -188,12 +214,28 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
     rules = std::move(new_rules);
 }
 
-Arguments Datalog::get_joining_arguments(const std::vector<DatalogAtom> &conditions) {
+Arguments Datalog::get_conditions_arguments(const std::vector<DatalogAtom> &conditions) {
     std::vector<Term> terms;
 
     for (const auto &c : conditions) {
         for (const auto &t : c.get_arguments()) {
             if (!t.is_object() and std::find(terms.begin(), terms.end(), t) == terms.end()) {
+                terms.emplace_back(t);
+            }
+        }
+    }
+
+    return Arguments(std::move(terms));
+}
+
+Arguments Datalog::get_relevant_joining_arguments(const DatalogAtom &rule_head, const std::vector<DatalogAtom> &conditions) {
+    Arguments rule_head_args = rule_head.get_arguments();
+    std::vector<Term> terms;
+
+    for (const auto &c : conditions) {
+        for (const auto &t : c.get_arguments()) {
+            if (!t.is_object() and (std::find(terms.begin(), terms.end(), t) == terms.end())
+                and (std::find(rule_head_args.begin(), rule_head_args.end(), t) != rule_head_args.end())) {
                 terms.emplace_back(t);
             }
         }

@@ -110,6 +110,6 @@ add_executable(search
         datalog/transformations/generate_edb.h datalog/rules/variable_source.h
         datalog/grounder/grounder.h
         datalog/grounder/weighted_grounder.cc datalog/grounder/weighted_grounder.h
-        datalog/rule_matcher.cc datalog/rule_matcher.h heuristics/add_heuristic.cc heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc datalog/transformations/remove_equivalent_rules.h)
+        datalog/rule_matcher.cc datalog/rule_matcher.h heuristics/add_heuristic.cc heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})

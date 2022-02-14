@@ -224,7 +224,13 @@ class Datalog {
     void split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules,
                     std::unique_ptr<RuleBase> &rule, std::vector<size_t> body_ids);
 
-    Arguments get_joining_arguments(const std::vector<DatalogAtom> &conditions);
+    void split_into_connected_components(std::unique_ptr<RuleBase> &rule, std::vector<std::unique_ptr<RuleBase>> &new_rules);
+
+    DatalogAtom split_connected_component(std::unique_ptr<RuleBase> &original_rule, const std::vector<int> &component, std::vector<std::unique_ptr<RuleBase>> &new_rules, int component_counter);
+
+    Arguments get_conditions_arguments(const std::vector<DatalogAtom> &conditions);
+
+    Arguments get_relevant_joining_arguments(const DatalogAtom &rule_head, const std::vector<DatalogAtom> &conditions);
 
     int get_instantiation_of_variable(const Fact &rule_head, int idx) const;
 

@@ -10,6 +10,8 @@
 
 namespace datalog {
 
+// TODO This is incomplete.
+
 class JoinCost {
     int new_arity;
     int max_arity;

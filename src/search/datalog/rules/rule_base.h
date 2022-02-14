@@ -165,6 +165,8 @@ public:
 
     void update_single_condition(size_t j, DatalogAtom new_atom);
 
+    void set_conditions(std::vector<DatalogAtom> new_rule_conditions);
+
     void replace_single_condition(size_t j, DatalogAtom atom) ;
 
     void output_variable_table();
@@ -178,6 +180,18 @@ public:
         if (annotation) {
             annotation->execute(head, datalog);
         }
+    }
+
+    std::vector<int> get_variables_in_body() const {
+        std::vector<int> variables;
+        for (const DatalogAtom &atom : conditions) {
+            for (const Term &term : atom.get_arguments()) {
+                if (!term.is_object()) {
+                    variables.push_back(term.get_index());
+                }
+            }
+        }
+        return variables;
     }
 
     bool is_equivalent(const RuleBase &other) const {
