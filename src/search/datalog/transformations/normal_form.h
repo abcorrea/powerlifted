@@ -102,7 +102,7 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
                                                                      rule->get_conditions(),
                                                                      std::move(rule->get_annotation()));
 
-    // TODO This is wrong. Try to create method similar as the one used in connected_components.h
+
     join_rule->update_variable_source_table(rule->get_variable_source_object());
 
     join_rules.emplace_back(std::move(join_rule));
@@ -136,10 +136,6 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
     for (auto &rule : new_rules) {
         rules.emplace_back(std::move(rule));
     }
-
-    std::cout << "@@@@ AFTER CONNECTED COMPONENT SPLIT: " << std::endl;
-    output_rules();
-    std::cout << std::endl;
 
     new_rules.clear();
 

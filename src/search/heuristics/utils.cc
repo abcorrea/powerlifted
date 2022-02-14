@@ -10,11 +10,10 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
     dl.remove_action_predicates(annotation_generator, task);
     //dl.output_rules();
 
-    dl.output_rules();
-    std::cout << std::endl << "### CONVERT TO NORMAL FORM: " << std::endl;
+    //std::cout << std::endl << "### CONVERT TO NORMAL FORM: " << std::endl;
     dl.convert_rules_to_normal_form(task);
-    dl.output_rules();
-    exit(0);
+    //dl.output_rules();
+    //exit(0);
 
     //std::cout << std::endl << "### INTRODUCE GOAL RULE: " << std::endl;
     dl.add_goal_rule(task, annotation_generator);
@@ -32,7 +31,7 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
 
     dl.print_statistics();
 
-    dl.output_rules();
+    //dl.output_rules();
     return std::move(dl);
 }
 

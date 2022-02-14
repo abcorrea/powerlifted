@@ -195,7 +195,7 @@ public:
     }
 
     bool is_equivalent(const RuleBase &other) const {
-        return (weight == other.get_weight())  && (conditions == other.get_conditions());
+        return (weight == other.get_weight()) && (get_effect_arguments() == other.get_effect_arguments())  && (conditions == other.get_conditions());
     }
 
     virtual std::string get_type_name() {
