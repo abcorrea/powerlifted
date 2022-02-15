@@ -40,15 +40,15 @@ public:
 Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {
     const Arguments &args1 = atom1.get_arguments();
     const Arguments &args2 = atom2.get_arguments();
-    std::unordered_set<Term, boost::hash<Term>> variables_from_removed_atoms;
+    std::unordered_set<Term, boost::hash<Term>> variables_in_both_atoms;
     for (const auto &t : args1) {
         if (not t.is_object()) {
-            variables_from_removed_atoms.insert(t);
+            variables_in_both_atoms.insert(t);
         }
     }
     for (const auto &t : args2) {
         if (not t.is_object()) {
-            variables_from_removed_atoms.insert(t);
+            variables_in_both_atoms.insert(t);
         }
     }
 
@@ -65,7 +65,7 @@ Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule, const
     }
 
     std::vector<Term> joining_variables;
-    for (auto i = variables_from_removed_atoms.begin(); i != variables_from_removed_atoms.end(); i++) {
+    for (auto i = variables_in_both_atoms.begin(); i != variables_in_both_atoms.end(); i++) {
         if (important_vars_for_body_and_head.find(*i) != important_vars_for_body_and_head.end())
             joining_variables.push_back(*i);
     }
@@ -73,22 +73,22 @@ Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule, const
 }
 
 JoinCost compute_join_cost(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {
-    std::unordered_set<Term, boost::hash<Term>> free_atom1;
+    std::unordered_set<Term, boost::hash<Term>> free_variables_atom1;
     for (const auto &t : atom1.get_arguments()) {
         if (not t.is_object()) {
-            free_atom1.insert(t);
+            free_variables_atom1.insert(t);
         }
     }
 
-    std::unordered_set<Term, boost::hash<Term>> free_atom2;
+    std::unordered_set<Term, boost::hash<Term>> free_variables_atom2;
     for (const auto &t : atom2.get_arguments()) {
         if (not t.is_object()) {
-            free_atom2.insert(t);
+            free_variables_atom2.insert(t);
         }
     }
 
-    int arity_atom1 = free_atom1.size();
-    int arity_atom2 = free_atom2.size();
+    int arity_atom1 = free_variables_atom1.size();
+    int arity_atom2 = free_variables_atom2.size();
 
     int new_arity = compute_joining_variables(rule, atom1, atom2).size();
     int max_arity = std::max(arity_atom1, arity_atom2);

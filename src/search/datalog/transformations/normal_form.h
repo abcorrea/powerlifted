@@ -77,11 +77,11 @@ void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std
 void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &join_rules,
                                       std::unique_ptr<RuleBase> &rule,
                                       const Task &task) {
-    JoinCost join_cost;
-    //size_t idx1 = std::numeric_limits<size_t>::max();
-    //size_t idx2 = std::numeric_limits<size_t>::max();
     while(rule->get_conditions().size() > 2) {
-        /*for (size_t i = 0; i < rule->get_conditions().size() - 1; ++i) {
+        JoinCost join_cost;
+        size_t idx1 = std::numeric_limits<size_t>::max();
+        size_t idx2 = std::numeric_limits<size_t>::max();
+        for (size_t i = 0; i < rule->get_conditions().size() - 1; ++i) {
             for (size_t j = i+1; j < rule->get_conditions().size(); ++j) {
                 JoinCost cost = compute_join_cost(rule, rule->get_conditions()[i], rule->get_conditions()[j]);
                 if (cost < join_cost) {
@@ -89,11 +89,9 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
                     idx1 = i;
                     idx2 = j;
                 }
-                std::vector<size_t> body_atoms_to_split = {idx1, idx2};
-                //split_rule(rule, body_atoms_to_split);
             }
-        }*/
-        std::vector<size_t> indices = {0,1};
+        }
+        std::vector<size_t> indices = {idx1,idx2};
         std::sort(indices.begin(), indices.end());
         split_rule(join_rules, rule, indices);
     }

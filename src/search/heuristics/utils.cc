@@ -6,7 +6,7 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
     //std::cout << "@@@ ORIGINAL RULES: " << std::endl;
     //dl.output_rules();
 
-    //cout << endl << "### ACTION PREDICATES REMOVED: " << endl;
+    std::cout << std::endl << "### ACTION PREDICATES REMOVED: " << std::endl;
     dl.remove_action_predicates(annotation_generator, task);
     //dl.output_rules();
 
@@ -31,7 +31,9 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
 
     dl.print_statistics();
 
+    std::cout << std::endl << "@@@ FINAL RULES: " << std::endl;
     //dl.output_rules();
+    //exit(0);
     return std::move(dl);
 }
 
