@@ -13,26 +13,26 @@ namespace datalog {
 // TODO This is incomplete.
 
 class JoinCost {
+    int new_arity_minus_max;
+    int new_arity_minus_min;
     int new_arity;
-    int max_arity;
-    int min_arity;
 
 public:
-    JoinCost(int n, int max, int min) : new_arity(n), max_arity(max), min_arity(min) {}
+    JoinCost(int n, int max, int min) : new_arity_minus_max(n-max), new_arity_minus_min(n-min), new_arity(n) {}
 
-    JoinCost() : new_arity(std::numeric_limits<int>::max()),
-                 max_arity(std::numeric_limits<int>::max()),
-                 min_arity(std::numeric_limits<int>::max()) {}
+    JoinCost() : new_arity_minus_max(std::numeric_limits<int>::max()),
+                 new_arity_minus_min(std::numeric_limits<int>::max()),
+                 new_arity(std::numeric_limits<int>::max()) {}
 
 
     friend bool operator<(const JoinCost &lhs, const JoinCost &rhs) {
-        if (lhs.new_arity != rhs.new_arity) {
-            return (lhs.new_arity < rhs.new_arity);
+        if (lhs.new_arity_minus_max != rhs.new_arity_minus_max) {
+            return (lhs.new_arity_minus_max < rhs.new_arity_minus_max);
         }
-        if (lhs.max_arity != rhs.max_arity) {
-            return (lhs.max_arity < rhs.max_arity);
+        if (lhs.new_arity_minus_min != rhs.new_arity_minus_min) {
+            return (lhs.new_arity_minus_min < rhs.new_arity_minus_min);
         }
-        return (lhs.min_arity < rhs.min_arity);
+        return (lhs.new_arity < rhs.new_arity);
     }
 
 };
