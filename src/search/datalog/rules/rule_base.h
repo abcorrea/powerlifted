@@ -163,13 +163,13 @@ public:
                            const VariableSource &variable_source_new_rule,
                            std::vector<size_t> &&body_ids);
 
-    void update_single_condition(size_t j, DatalogAtom new_atom);
+    void update_single_condition_and_variable_source_table(size_t j, DatalogAtom atom);
 
     void set_conditions(std::vector<DatalogAtom> new_rule_conditions);
 
     void replace_single_condition(size_t j, DatalogAtom atom) ;
 
-    void output_variable_table();
+    void output_variable_table() const;
 
     std::unique_ptr<Annotation> get_annotation() {
         return std::move(annotation);
@@ -201,6 +201,8 @@ public:
     virtual std::string get_type_name() {
         return "RuleBase";
     }
+
+    void set_specific_condition(size_t i, DatalogAtom atom);
 };
 
 }

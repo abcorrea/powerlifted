@@ -226,6 +226,8 @@ class Datalog {
 
     void split_into_connected_components(std::unique_ptr<RuleBase> &rule, std::vector<std::unique_ptr<RuleBase>> &new_rules);
 
+    void project_out_variables(std::unique_ptr<RuleBase> &rule, std::vector<std::unique_ptr<RuleBase>> &new_rules);
+
     DatalogAtom split_connected_component(std::unique_ptr<RuleBase> &original_rule, const std::vector<int> &component, std::vector<std::unique_ptr<RuleBase>> &new_rules, int component_counter);
 
     Arguments get_conditions_arguments(const std::vector<DatalogAtom> &conditions);

@@ -13,7 +13,7 @@ namespace datalog {
 int RuleBase::next_index = 0;
 
 
-void RuleBase::output_variable_table() {
+void RuleBase::output_variable_table() const {
     variable_source.output();
 
 }
@@ -90,7 +90,11 @@ void RuleBase::update_conditions(DatalogAtom new_atom,
 
 }
 
-void RuleBase::update_single_condition(size_t j, DatalogAtom atom)  {
+void RuleBase::set_specific_condition(size_t i, DatalogAtom atom) {
+    conditions[i] = atom;
+}
+
+void RuleBase::update_single_condition_and_variable_source_table(size_t j, DatalogAtom atom)  {
 
     std::vector<int> argument_shift(conditions[j].get_arguments().size(), 0);
     int shift = 0;

@@ -31,9 +31,8 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
 
     dl.print_statistics();
 
-    std::cout << std::endl << "@@@ FINAL RULES: " << std::endl;
-    //dl.output_rules();
-    //exit(0);
+    //std::cout << std::endl << "@@@ FINAL RULES: " << std::endl;
+    dl.output_rules();
     return std::move(dl);
 }
 

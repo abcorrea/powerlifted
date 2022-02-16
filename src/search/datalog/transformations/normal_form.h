@@ -3,6 +3,7 @@
 
 #include "connected_components.h"
 #include "greedy_join.h"
+#include "variable_projection.h"
 
 
 #include "../datalog.h"
@@ -57,13 +58,13 @@ void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std
     }
 
     Arguments new_args = get_conditions_arguments(new_rule_conditions);
+    //Arguments new_args = get_relevant_joining_arguments(rule->get_effect(), new_rule_conditions);
 
     DatalogAtom new_atom(new_args, idx, true);
     std::unique_ptr<JoinRule> new_split_rule = std::make_unique<JoinRule>(0,
                                                                           new_atom,
                                                                           new_rule_conditions,
                                                                           nullptr);
-
 
     rule->update_conditions(new_atom,
                             new_rule_conditions,
@@ -176,7 +177,7 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
                                                                                 new_atom,
                                                                                 std::vector<DatalogAtom>{condition},
                                                                                 nullptr);
-                    rule->update_single_condition(i, new_atom);
+                    rule->update_single_condition_and_variable_source_table(i, new_atom);
                     new_rules.emplace_back(std::move(new_rule));
                 }
             }
@@ -185,6 +186,26 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
         }
     }
 
+    std::cout << std::endl << std::endl;
+
+    /*
+     * TODO Second, project out variables that are not relevant to the join. This means variables that:
+     * (i) do not join with any other atom in the rule condition; AND (important *AND* and not *OR*)
+     * (ii) do not appear in the head of the rule.
+     */
+
+    for (auto &rule : rules) {
+        if (rule->get_conditions().size() <= 1) continue;
+        project_out_variables(rule, new_rules);
+    }
+    for (auto &rule : new_rules) {
+        rules.emplace_back(std::move(rule));
+    }
+    new_rules.clear();
+
+    /*
+     * Last step, transform rules into product/project rules or split them into multiple join rules.
+     */
     size_t rule_counter = 0;
     for (auto &rule : rules) {
         if (rule->get_conditions().size() == 1) {
