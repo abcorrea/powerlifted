@@ -35,6 +35,16 @@ public:
         return (lhs.new_arity < rhs.new_arity);
     }
 
+    friend bool operator==(const JoinCost &lhs, const JoinCost &rhs) {
+        return (lhs.new_arity_minus_max == rhs.new_arity_minus_max) and
+            (lhs.new_arity_minus_min == rhs.new_arity_minus_min) and
+            (lhs.new_arity == rhs.new_arity);
+    }
+
+    friend bool operator<=(const JoinCost &lhs, const JoinCost &rhs) {
+        return lhs < rhs or lhs==rhs;
+    }
+
 };
 
 Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {

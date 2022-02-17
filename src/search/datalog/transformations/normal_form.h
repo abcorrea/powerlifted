@@ -93,9 +93,11 @@ void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std
     // This part is unfortunately very inefficient....
 
     std::vector<int> term_indices_in_new_args;
-    for (const Term &t : new_args) {
-        if (t.is_object()) continue;
-        term_indices_in_new_args.push_back(t.get_index());
+    for (const auto &c : new_split_rule->get_conditions()) {
+        for (const Term &t: c.get_arguments()) {
+            if (t.is_object()) continue;
+            term_indices_in_new_args.push_back(t.get_index());
+        }
     }
 
     add_missing_entries_to_source_table(0, join_rules,
@@ -128,7 +130,7 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
         for (size_t i = 0; i < rule->get_conditions().size() - 1; ++i) {
             for (size_t j = i+1; j < rule->get_conditions().size(); ++j) {
                 JoinCost cost = compute_join_cost(rule, rule->get_conditions()[i], rule->get_conditions()[j]);
-                if (cost < join_cost) {
+                if ((cost < join_cost) or (cost == join_cost)) {
                     join_cost = cost;
                     idx1 = i;
                     idx2 = j;
@@ -138,7 +140,6 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
         std::vector<size_t> indices = {idx1,idx2};
         std::sort(indices.begin(), indices.end());
         split_rule(join_rules, rule, indices);
-        std::cout << std::endl;
     }
     std::unique_ptr<RuleBase> join_rule = std::make_unique<JoinRule>(rule->get_weight(),
                                                                      rule->get_effect(),
@@ -230,8 +231,6 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
         }
     }
 
-    std::cout << std::endl << std::endl;
-
     /*
      * TODO Second, project out variables that are not relevant to the join. This means variables that:
      * (i) do not join with any other atom in the rule condition; AND (important *AND* and not *OR*)
@@ -261,8 +260,10 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
             }
             else {
                 std::vector<std::unique_ptr<RuleBase>> join_rules;
+                std::cout<<"splitting rule:" << std::endl;
                 convert_into_join_rules(join_rules, rule, task);
                 for (auto &join_rule : join_rules) {
+                    std::cout<<"new rule:" << std::endl;
                     new_rules.push_back(std::move(join_rule));
                 }
             }

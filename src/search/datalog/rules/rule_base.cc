@@ -76,8 +76,8 @@ void RuleBase::update_conditions(DatalogAtom new_atom,
                  * whether it is a positive or a negative value.
                  */
                 if (p.first < 0) {
-                    if (p.first < int(body_ids[i]))
-                        p.first = p.first + 1;
+                    if (canonical_index > int(body_ids[i]))
+                        p.first = p.first + 1; // Case where p.first is negative, so we increment 1
                 }
                 else {
                     if (p.first > int(body_ids[i]))
