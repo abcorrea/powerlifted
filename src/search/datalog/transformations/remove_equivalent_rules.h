@@ -36,7 +36,17 @@ bool Datalog::remove_duplicate_rules() {
             size_t counter = 0;
             for (const DatalogAtom &condition : rules[j]->get_conditions()) {
                 if (equivalent_to_i.count(condition.get_predicate_index()) > 0) {
-                    rules[j]->replace_single_condition(counter, head_rule_i);
+                    /*
+                     * Whenever equivalent atoms are replaced in rule bodies, we need to use the
+                     * old variable names.
+                     */
+                    std::vector<Term> old_args;
+                    for (auto t : rules[j]->get_condition_arguments(counter)) {
+                        old_args.emplace_back(t);
+                    }
+                    DatalogAtom new_atom = head_rule_i;
+                    new_atom.update_arguments(old_args);
+                    rules[j]->replace_single_condition(counter, new_atom);
                 }
                 ++counter;
             }

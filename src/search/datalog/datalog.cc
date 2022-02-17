@@ -8,6 +8,7 @@
 #include "transformations/goal_rule.h"
 #include "transformations/normal_form.h"
 #include "transformations/remove_equivalent_rules.h"
+#include "transformations/variable_renaming.h"
 
 #include <iostream>
 #include <memory>
@@ -118,7 +119,7 @@ void Datalog::output_rule(const std::unique_ptr<RuleBase> &rule) const {
             cout << ", ";
         }
         else {
-            cout << " [weight: " << rule->get_weight() << ", " << rule->get_type_name() << "]." << endl;
+            cout << " [weight: " << rule->get_weight() << ", " << rule->get_type_name() << ", index:" << rule->get_index() << "]." << endl;
         }
     }
     rule->output_variable_table();
@@ -179,6 +180,7 @@ int Datalog::get_instantiation_of_variable(const Fact &rule_head, int idx) const
          * table of the achiever that will contain the necessary variable.
          */
 
+        //std::cout << "rule id: " << r.get_index() << std::endl << std::flush;
         std::pair<int, int> variable_entry = variable_table.get_table()[idx];
         int fact_idx = achiever.at(variable_entry.first);
         const Fact &achiever_fact = facts[fact_idx];

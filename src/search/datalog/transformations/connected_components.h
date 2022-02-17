@@ -98,7 +98,8 @@ DatalogAtom Datalog::split_connected_component(std::unique_ptr<RuleBase> &origin
         new_rule_conditions.push_back(original_conditions[id]);
     }
 
-    Arguments new_args = get_relevant_joining_arguments(original_rule->get_effect(), new_rule_conditions);
+    Arguments new_args = get_relevant_joining_arguments_from_component(original_rule->get_effect(),
+                                                                       new_rule_conditions);
 
     DatalogAtom new_atom(new_args, idx, true);
     std::unique_ptr<GenericRule> new_split_rule = std::make_unique<GenericRule>(0,

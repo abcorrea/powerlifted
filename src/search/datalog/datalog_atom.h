@@ -86,6 +86,11 @@ public:
         //if (lhs.index != rhs.predicate_index) return false;
         return !(lhs.arguments!=rhs.arguments);
     }
+
+    void update_arguments(std::vector<Term> &terms) {
+        arguments = Arguments(std::move(terms));
+    }
+
     bool share_variables(const DatalogAtom &atom) const;
 };
 

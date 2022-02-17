@@ -207,7 +207,6 @@ class Datalog {
     }
 
     void output_rule(const std::unique_ptr<RuleBase> &rule) const;
-    void output_atom(const DatalogAtom &atom) const;
     void output_parameters(const Arguments& v) const;
 
     void get_always_reachable_rule_heads();
@@ -232,7 +231,12 @@ class Datalog {
 
     Arguments get_conditions_arguments(const std::vector<DatalogAtom> &conditions);
 
-    Arguments get_relevant_joining_arguments(const DatalogAtom &rule_head, const std::vector<DatalogAtom> &conditions);
+    Arguments get_relevant_joining_arguments_from_component(const DatalogAtom &rule_head, const std::vector<DatalogAtom> &conditions);
+
+    Arguments get_relevant_arguments_for_split(const std::unique_ptr<RuleBase> &original_rule,
+                                               const std::vector<DatalogAtom> &conditions_new_rule,
+                                               const std::vector<size_t> body_ids);
+
 
     int get_instantiation_of_variable(const Fact &rule_head, int idx) const;
 
@@ -257,6 +261,9 @@ public:
     bool remove_duplicate_rules();
 
     void set_permanent_edb(StaticInformation static_information);
+
+    void rename_variables();
+
     void output_permanent_edb();
 
     void add_goal_rule(const Task &task, AnnotationGenerator &annotation_generator);
@@ -317,6 +324,8 @@ public:
     void backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &state_facts);
 
     int get_number_of_facts() const;
+    void output_atom(const DatalogAtom &atom) const;
+
 };
 
 }

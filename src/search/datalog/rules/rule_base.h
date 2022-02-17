@@ -24,6 +24,7 @@ public:
     MapVariablePosition() = default;
 
     void create_map(const DatalogAtom &effect) {
+        mapping.clear();
         int position_counter = 0;
         for (const auto &eff : effect.get_arguments()) {
             if (!eff.is_object()) {
@@ -116,6 +117,10 @@ public:
         return -1;
     }
 
+    void recreate_map_variable_position(const DatalogAtom &effect) {
+        variable_position.create_map(effect);
+    }
+
     const DatalogAtom &get_effect() const {
         return effect;
     }
@@ -203,6 +208,14 @@ public:
     }
 
     void set_specific_condition(size_t i, DatalogAtom atom);
+
+    void update_condition_arguments(int i, std::vector<Term> &terms) {
+        conditions[i].update_arguments(terms);
+    }
+
+    void update_effect_arguments(std::vector<Term> &terms) {
+        effect.update_arguments(terms);
+    }
 };
 
 }

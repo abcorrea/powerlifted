@@ -21,7 +21,29 @@
  * Implement rule-splitting by Helmert (AIJ 2009).
  */
 
+
 namespace  datalog {
+
+void add_missing_entries_to_source_table(int position, std::vector<std::unique_ptr<RuleBase>> &join_rules,
+                                         const std::vector<DatalogAtom> &new_rule_conditions,
+                                         std::unique_ptr<JoinRule> &new_split_rule,
+                                         std::vector<int> &term_indices_in_new_args) {
+    int idx_condition = new_rule_conditions[position].get_predicate_index();
+    VariableSource source = new_split_rule->get_variable_source_object();
+    for (const auto &join_rule : join_rules) {
+        if (join_rule->get_effect().get_predicate_index() == idx_condition) {
+            const VariableSource source_join_rule = join_rule->get_variable_source_object_by_ref();
+            for (size_t entry_table_counter = 0; entry_table_counter < source_join_rule.get_table().size(); ++entry_table_counter) {
+                int entry_term = source_join_rule.get_term_from_table_entry_index(entry_table_counter);
+                if (std::find(term_indices_in_new_args.begin(), term_indices_in_new_args.end(), entry_term) == term_indices_in_new_args.end()) {
+                    source.add_entry(entry_term, position, entry_table_counter);
+                    term_indices_in_new_args.push_back(entry_term);
+                }
+            }
+        }
+    }
+    new_split_rule->update_variable_source_table(std::move(source));
+}
 
 std::unique_ptr<RuleBase> Datalog::convert_into_project_rule(const std::unique_ptr<RuleBase> &rule,
                                                     const Task &task) {
@@ -57,8 +79,8 @@ void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std
         new_rule_conditions.push_back(original_conditions[id]);
     }
 
-    Arguments new_args = get_conditions_arguments(new_rule_conditions);
-    //Arguments new_args = get_relevant_joining_arguments(rule->get_effect(), new_rule_conditions);
+    //Arguments new_args = get_conditions_arguments(new_rule_conditions);
+    Arguments new_args = get_relevant_arguments_for_split(rule, new_rule_conditions, body_ids);
 
     DatalogAtom new_atom(new_args, idx, true);
     std::unique_ptr<JoinRule> new_split_rule = std::make_unique<JoinRule>(0,
@@ -66,13 +88,34 @@ void Datalog::split_rule(std::vector<std::unique_ptr<RuleBase>> &join_rules, std
                                                                           new_rule_conditions,
                                                                           nullptr);
 
+    // We need to get the entries of the variables in the tables of the conditions that were not
+    // carried to the new split rule (because these variables have been projected out).
+    // This part is unfortunately very inefficient....
+
+    std::vector<int> term_indices_in_new_args;
+    for (const Term &t : new_args) {
+        if (t.is_object()) continue;
+        term_indices_in_new_args.push_back(t.get_index());
+    }
+
+    add_missing_entries_to_source_table(0, join_rules,
+                                        new_rule_conditions,
+                                        new_split_rule,
+                                        term_indices_in_new_args);
+    add_missing_entries_to_source_table(1, join_rules,
+                                        new_rule_conditions,
+                                        new_split_rule,
+                                        term_indices_in_new_args);
+
     rule->update_conditions(new_atom,
                             new_rule_conditions,
                             new_split_rule->get_variable_source_object(),
                             std::move(body_ids));
 
+
     join_rules.push_back(std::move(new_split_rule));
 }
+
 
 
 void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &join_rules,
@@ -95,6 +138,7 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
         std::vector<size_t> indices = {idx1,idx2};
         std::sort(indices.begin(), indices.end());
         split_rule(join_rules, rule, indices);
+        std::cout << std::endl;
     }
     std::unique_ptr<RuleBase> join_rule = std::make_unique<JoinRule>(rule->get_weight(),
                                                                      rule->get_effect(),
@@ -243,7 +287,7 @@ Arguments Datalog::get_conditions_arguments(const std::vector<DatalogAtom> &cond
     return Arguments(std::move(terms));
 }
 
-Arguments Datalog::get_relevant_joining_arguments(const DatalogAtom &rule_head, const std::vector<DatalogAtom> &conditions) {
+Arguments Datalog::get_relevant_joining_arguments_from_component(const DatalogAtom &rule_head, const std::vector<DatalogAtom> &conditions) {
     Arguments rule_head_args = rule_head.get_arguments();
     std::vector<Term> terms;
 
@@ -257,6 +301,49 @@ Arguments Datalog::get_relevant_joining_arguments(const DatalogAtom &rule_head, 
     }
 
     return Arguments(std::move(terms));
+}
+
+Arguments Datalog::get_relevant_arguments_for_split(const std::unique_ptr<RuleBase> &original_rule,
+                                                    const std::vector<DatalogAtom> &conditions_new_rule,
+                                                    const std::vector<size_t> body_ids) {
+    const DatalogAtom &rule_head = original_rule->get_effect();
+    Arguments rule_head_args = rule_head.get_arguments();
+    std::vector<Term> terms_in_new_conditions;
+
+    for (const auto &c : conditions_new_rule) {
+        for (const auto &t: c.get_arguments()) {
+            if (!t.is_object()
+                and (std::find(terms_in_new_conditions.begin(), terms_in_new_conditions.end(), t)
+                    ==terms_in_new_conditions.end())) {
+                terms_in_new_conditions.emplace_back(t);
+            }
+        }
+    }
+
+    std::vector<Term> final_terms;
+    int counter = 0;
+    for (const auto &c : original_rule->get_conditions()) {
+        if (std::find(body_ids.begin(), body_ids.end(), counter) != body_ids.end()) {
+            ++counter;
+            continue;
+        }
+        for (const auto &t : c.get_arguments()) {
+            if (!t.is_object() and (std::find(terms_in_new_conditions.begin(), terms_in_new_conditions.end(), t) != terms_in_new_conditions.end())
+                and std::find(final_terms.begin(), final_terms.end(), t) == final_terms.end()) {
+                // joining terms
+                final_terms.emplace_back(t);
+            }
+        }
+        ++counter;
+    }
+    for (const Term &t : rule_head_args) {
+        if (!t.is_object() and (std::find(terms_in_new_conditions.begin(), terms_in_new_conditions.end(), t) != terms_in_new_conditions.end())
+            and std::find(final_terms.begin(), final_terms.end(), t) == final_terms.end()) {
+            final_terms.emplace_back(t);
+        }
+    }
+
+    return Arguments(std::move(final_terms));
 }
 
 

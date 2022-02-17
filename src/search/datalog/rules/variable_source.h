@@ -116,6 +116,13 @@ public:
     void update_ith_entry(int i, int first, int second) {
         table[i] = std::make_pair(first, second);
     }
+
+    void add_entry(int term_index, int first, int second) {
+        table.emplace_back(first, second);
+        map_term_to_entry.insert(std::make_pair(term_index, table.size()));
+        map_entry_to_term.push_back(term_index);
+    }
+
 };
 
 }

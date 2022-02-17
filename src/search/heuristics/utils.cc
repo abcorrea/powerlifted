@@ -6,7 +6,7 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
     //std::cout << "@@@ ORIGINAL RULES: " << std::endl;
     //dl.output_rules();
 
-    std::cout << std::endl << "### ACTION PREDICATES REMOVED: " << std::endl;
+    //std::cout << std::endl << "### ACTION PREDICATES REMOVED: " << std::endl;
     dl.remove_action_predicates(annotation_generator, task);
     //dl.output_rules();
 
@@ -18,6 +18,11 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
     //std::cout << std::endl << "### INTRODUCE GOAL RULE: " << std::endl;
     dl.add_goal_rule(task, annotation_generator);
     //dl.output_rules();
+
+    //std::cout << std::endl << "### RENAME VARIABLES: " << std::endl;
+    dl.rename_variables();
+    //dl.output_rules();
+
 
     //std::cout << std::endl << "### REMOVE EQUIVALENT RULES: " << std::endl;
     while (dl.remove_duplicate_rules());
