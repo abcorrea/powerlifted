@@ -114,6 +114,7 @@ public:
     }
 
     void update_ith_entry(int i, int first, int second) {
+        assert(i < int(table.size()));
         table[i] = std::make_pair(first, second);
     }
 

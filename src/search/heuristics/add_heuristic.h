@@ -15,6 +15,8 @@ class AdditiveHeuristic : public Heuristic{
 
     datalog::AnnotationGenerator get_annotation_generator();
 
+    int state_counter;
+
 public:
     AdditiveHeuristic(const Task &task);
 

@@ -39,11 +39,23 @@ public:
 
     StateID get_top_node(GreedyOpenList &preferred, GreedyOpenList &other) {
         if (priority_preferred >= priority_regular) {
-            if (not preferred.empty()) return preferred.remove_min();
-            else return other.remove_min();
+            if (not preferred.empty()) {
+                std::cout<< "popping from preferred" << std::endl;
+                return preferred.remove_min();
+            }
+            else {
+                std::cout<< "popping from normal" << std::endl;
+                return other.remove_min();
+            }
         } else {
-            if (not other.empty()) return other.remove_min();
-            else return preferred.remove_min();
+            if (not other.empty()) {
+                std::cout<< "popping from normal" << std::endl;
+                return other.remove_min();
+            }
+            else {
+                std::cout<< "popping from preferred" << std::endl;
+              return preferred.remove_min();
+            }
         }
     }
 };

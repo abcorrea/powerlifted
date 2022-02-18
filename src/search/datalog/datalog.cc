@@ -201,19 +201,24 @@ std::vector<int> Datalog::extract_variable_instantiation_from_rule(int head) con
 
 void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &initial_facts) {
 
-    for (auto relation : useful_atoms) {
+    for (auto &relation : useful_atoms) {
         relation.clear();
     }
 
     std::unordered_set<int> achieved_atoms;
     std::queue<int> queue;
 
+    // TODO Isn't this redundant?
     for (int achiever_idx : goal_fact.get_achiever_body()) {
         if (initial_facts.count(achiever_idx) == 0) {
             queue.push(achiever_idx);
             add_useful_atom(achiever_idx);
+            const Fact &f = get_fact_by_index(achiever_idx);
+            output_atom(f);
+            std::cout << ", " << std::flush;
         }
     }
+
 
      while (!queue.empty()) {
          int next_achiever_idx = queue.front();
@@ -228,8 +233,10 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_se
          }
          add_useful_atom(next_achiever_idx);
          const Fact &f = get_fact_by_index(next_achiever_idx);
-         //output_atom(f);
-         //std::cout << std::endl << std::flush;
+         if (not f.is_pred_symbol_new())  {
+             output_atom(f);
+             std::cout << ", " << std::flush;
+         }
          int rule_idx = f.get_achiever_rule_index();
          //std::cout << " achiever rule -> ";
          //output_rule(rules[rule_idx]);
@@ -253,7 +260,7 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_se
              }
          }
      }
-     //exit(0);
+     std::cout << std::endl;
 }
 
 void Datalog::add_useful_atom(int achiever_idx) {
