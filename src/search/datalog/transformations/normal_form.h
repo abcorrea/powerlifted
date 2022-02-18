@@ -129,8 +129,10 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
         size_t idx2 = std::numeric_limits<size_t>::max();
         for (size_t i = 0; i < rule->get_conditions().size() - 1; ++i) {
             for (size_t j = i+1; j < rule->get_conditions().size(); ++j) {
-                JoinCost cost = compute_join_cost(rule, rule->get_conditions()[i], rule->get_conditions()[j]);
-                if ((cost < join_cost) or (cost == join_cost)) {
+                JoinCost cost = compute_join_cost_fast_downward(rule,
+                                                              rule->get_conditions()[i],
+                                                              rule->get_conditions()[j]);
+                if (cost < join_cost) {
                     join_cost = cost;
                     idx1 = i;
                     idx2 = j;
@@ -260,10 +262,8 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
             }
             else {
                 std::vector<std::unique_ptr<RuleBase>> join_rules;
-                std::cout<<"splitting rule:" << std::endl;
                 convert_into_join_rules(join_rules, rule, task);
                 for (auto &join_rule : join_rules) {
-                    std::cout<<"new rule:" << std::endl;
                     new_rules.push_back(std::move(join_rule));
                 }
             }

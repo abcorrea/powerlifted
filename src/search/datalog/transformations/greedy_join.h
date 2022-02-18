@@ -10,35 +10,52 @@
 
 namespace datalog {
 
-// TODO This is incomplete.
+enum {FAST_DOWNWARD, HELMERT_2009};
 
 class JoinCost {
-    int new_arity_minus_max;
-    int new_arity_minus_min;
-    int new_arity;
+    /*
+     * This is not according to Helmert (2009), but according to the implementation of
+     * Fast Downward.
+     */
+    int first_parameter;
+    int second_parameter;
+    int third_parameter;
 
 public:
-    JoinCost(int n, int max, int min) : new_arity_minus_max(n-max), new_arity_minus_min(n-min), new_arity(n) {}
+    JoinCost(int n, int max, int min, int mode=FAST_DOWNWARD) {
+        if (mode == FAST_DOWNWARD) {
+            first_parameter = min - n;
+            second_parameter = max - n;
+            third_parameter = -1 * n;
+        } else if (mode == HELMERT_2009) {
+            first_parameter = n - max;
+            second_parameter = n - min;
+            third_parameter = n;
+        } else {
+            std::cerr << "Using undefined JoinCost." << std::endl;
+            exit(-1);
+        }
+    }
 
-    JoinCost() : new_arity_minus_max(std::numeric_limits<int>::max()),
-                 new_arity_minus_min(std::numeric_limits<int>::max()),
-                 new_arity(std::numeric_limits<int>::max()) {}
+    JoinCost() : first_parameter(std::numeric_limits<int>::max()),
+                 second_parameter(std::numeric_limits<int>::max()),
+                 third_parameter(std::numeric_limits<int>::max()) {}
 
 
     friend bool operator<(const JoinCost &lhs, const JoinCost &rhs) {
-        if (lhs.new_arity_minus_max != rhs.new_arity_minus_max) {
-            return (lhs.new_arity_minus_max < rhs.new_arity_minus_max);
+        if (lhs.first_parameter != rhs.first_parameter) {
+            return (lhs.first_parameter < rhs.first_parameter);
         }
-        if (lhs.new_arity_minus_min != rhs.new_arity_minus_min) {
-            return (lhs.new_arity_minus_min < rhs.new_arity_minus_min);
+        if (lhs.second_parameter != rhs.second_parameter) {
+            return (lhs.second_parameter < rhs.second_parameter);
         }
-        return (lhs.new_arity < rhs.new_arity);
+        return (lhs.third_parameter < rhs.third_parameter);
     }
 
     friend bool operator==(const JoinCost &lhs, const JoinCost &rhs) {
-        return (lhs.new_arity_minus_max == rhs.new_arity_minus_max) and
-            (lhs.new_arity_minus_min == rhs.new_arity_minus_min) and
-            (lhs.new_arity == rhs.new_arity);
+        return (lhs.first_parameter == rhs.first_parameter) and
+            (lhs.second_parameter == rhs.second_parameter) and
+            (lhs.third_parameter == rhs.third_parameter);
     }
 
     friend bool operator<=(const JoinCost &lhs, const JoinCost &rhs) {
@@ -82,7 +99,7 @@ Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule, const
     return Arguments(std::move(joining_variables));
 }
 
-JoinCost compute_join_cost(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {
+JoinCost compute_join_cost_helmert2009(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {
     std::unordered_set<Term, boost::hash<Term>> free_variables_atom1;
     for (const auto &t : atom1.get_arguments()) {
         if (not t.is_object()) {
@@ -103,7 +120,36 @@ JoinCost compute_join_cost(const std::unique_ptr<RuleBase> &rule, const DatalogA
     int new_arity = compute_joining_variables(rule, atom1, atom2).size();
     int max_arity = std::max(arity_atom1, arity_atom2);
     int min_arity = std::min(arity_atom1, arity_atom2);
-    return JoinCost(new_arity, max_arity, min_arity);
+    return JoinCost(new_arity, max_arity, min_arity, HELMERT_2009);
+}
+
+JoinCost compute_join_cost_fast_downward(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {
+    std::unordered_set<int> free_variables_atom1;
+    for (const auto &t : atom1.get_arguments()) {
+        if (not t.is_object()) {
+            free_variables_atom1.insert(t.get_index());
+        }
+    }
+
+    std::unordered_set<int> free_variables_atom2;
+    std::unordered_set<int> common_vars;
+    for (const auto &t : atom2.get_arguments()) {
+        if (not t.is_object()) {
+            free_variables_atom2.insert(t.get_index());
+            if (free_variables_atom1.count(t.get_index()) > 0)
+                common_vars.insert(t.get_index());
+        }
+    }
+
+    int arity_atom1 = free_variables_atom1.size();
+    int arity_atom2 = free_variables_atom2.size();
+
+    int max_arity = std::max(arity_atom1, arity_atom2);
+    int min_arity = std::min(arity_atom1, arity_atom2);
+
+    int common_vars_arity = common_vars.size();
+
+    return JoinCost(common_vars_arity, max_arity, min_arity);
 }
 
 }
