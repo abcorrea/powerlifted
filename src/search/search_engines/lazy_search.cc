@@ -53,7 +53,6 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
         StateID sid = get_top_node(preferred_open_list, regular_open_list); //regular_open_list.remove_min();
         SearchNode &node = space.get_node(sid);
         DBState state = packer.unpack(space.get_state(sid));
-        task.dump_state(state);
         if (node.status == SearchNode::Status::CLOSED) {
             continue;
         }
@@ -93,8 +92,6 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
-                std::cout << "generating successor: ";
-                task.dump_state(s);
                 int dist = g + action.get_cost();
                 auto &child_node =
                     space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);

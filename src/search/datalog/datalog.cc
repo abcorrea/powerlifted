@@ -213,9 +213,6 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_se
         if (initial_facts.count(achiever_idx) == 0) {
             queue.push(achiever_idx);
             add_useful_atom(achiever_idx);
-            const Fact &f = get_fact_by_index(achiever_idx);
-            output_atom(f);
-            std::cout << ", " << std::flush;
         }
     }
 
@@ -233,10 +230,6 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_se
          }
          add_useful_atom(next_achiever_idx);
          const Fact &f = get_fact_by_index(next_achiever_idx);
-         if (not f.is_pred_symbol_new())  {
-             output_atom(f);
-             std::cout << ", " << std::flush;
-         }
          int rule_idx = f.get_achiever_rule_index();
          //std::cout << " achiever rule -> ";
          //output_rule(rules[rule_idx]);
@@ -260,7 +253,6 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_se
              }
          }
      }
-     std::cout << std::endl;
 }
 
 void Datalog::add_useful_atom(int achiever_idx) {

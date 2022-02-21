@@ -234,19 +234,21 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
     }
 
     /*
-     * TODO Second, project out variables that are not relevant to the join. This means variables that:
+     * This part is commented out because Fast Downward does not seem to do it.
+     *  Project out variables that are not relevant to the join. This means variables that:
      * (i) do not join with any other atom in the rule condition; AND (important *AND* and not *OR*)
      * (ii) do not appear in the head of the rule.
      */
 
-    for (auto &rule : rules) {
+    /*for (auto &rule : rules) {
         if (rule->get_conditions().size() <= 1) continue;
         project_out_variables(rule, new_rules);
     }
     for (auto &rule : new_rules) {
         rules.emplace_back(std::move(rule));
     }
-    new_rules.clear();
+    new_rules.clear();*/
+
 
     /*
      * Last step, transform rules into product/project rules or split them into multiple join rules.

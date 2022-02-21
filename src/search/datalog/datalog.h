@@ -325,7 +325,6 @@ public:
 
     int get_number_of_facts() const;
     void output_atom(const DatalogAtom &atom) const;
-
 };
 
 }

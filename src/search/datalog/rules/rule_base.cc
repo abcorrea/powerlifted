@@ -118,9 +118,6 @@ void RuleBase::update_single_condition_and_variable_source_table(size_t j, Datal
 }
 
 void RuleBase::set_conditions(std::vector<DatalogAtom> new_rule_conditions) {
-
-
-
     conditions = new_rule_conditions;
 }
 

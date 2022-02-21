@@ -49,6 +49,35 @@ public:
 
 namespace datalog {
 
+VariableSource update_source_after_component_split(std::unique_ptr<RuleBase> &original_rule,
+                                                   const std::vector<int> &component,
+                                                   int component_counter,
+                                                   const VariableSource &source_new_split_rule) {// Update variable new_source of original rule
+    VariableSource new_source = original_rule->get_variable_source_object();
+    int counter = 0;
+    for (auto entry : new_source.get_table()) {
+        /*
+         * TODO Change so it works for indirect entries as well. Currently, it only works for direct
+         * queries, but it should work for both if we do a case splitting.
+         */
+        if (entry.first >= 0 or (std::find(component.begin(), component.end(), new_source.get_position_of_atom_in_same_body_rule(entry.first)) == component.end())) {
+            counter++;
+            continue;
+        }
+
+        int term = new_source.get_term_from_table_entry_index(counter);
+        int new_position_in_condition = component_counter;
+        int new_position_in_indirect_table = -1;
+
+        int entry_position_indirect_table = source_new_split_rule.get_table_entry_index_from_term(term);
+        new_position_in_indirect_table = entry_position_indirect_table ;
+
+        new_source.update_ith_entry(counter, new_position_in_condition, new_position_in_indirect_table);
+        counter++;
+    }
+    return new_source;
+}
+
 std::vector<std::vector<int>> get_components(std::unique_ptr<RuleBase> &rule) {
 
     std::vector<int> variables = rule->get_variables_in_body();
@@ -80,9 +109,24 @@ std::vector<std::vector<int>> get_components(std::unique_ptr<RuleBase> &rule) {
 }
 
 DatalogAtom Datalog::split_connected_component(std::unique_ptr<RuleBase> &original_rule, const std::vector<int> &component, std::vector<std::unique_ptr<RuleBase>> &new_rules, int component_counter) {
-    // TODO: implement
 
     if (component.size() == 1) {
+        // Update source table
+        VariableSource new_source = original_rule->get_variable_source_object();
+        int condition_in_component = component[0];
+        int counter = 0;
+        for (auto entry : new_source.get_table()) {
+            if (new_source.get_position_of_atom_in_same_body_rule(entry.first) != condition_in_component) {
+                counter++;
+                continue;
+            }
+            if (entry.first >= 0)
+                new_source.update_ith_entry(counter, component_counter, entry.second);
+            else
+                new_source.update_ith_entry(counter, (-1*component_counter)-1, entry.second);
+            counter++;
+        }
+        original_rule->update_variable_source_table(std::move(new_source));
         return original_rule->get_conditions()[component[0]];
     }
 
@@ -106,33 +150,17 @@ DatalogAtom Datalog::split_connected_component(std::unique_ptr<RuleBase> &origin
                                                                           new_atom,
                                                                           new_rule_conditions,
                                                                           nullptr);
-
-    // Update variable new_source of original rule
-   VariableSource new_source = original_rule->get_variable_source_object();
-    int counter = 0;
-    for (auto entry : new_source.get_table()) {
-        if (entry.first > 0 or (std::find(component.begin(), component.end(), new_source.get_position_of_atom_in_same_body_rule(entry.first)) == component.end())) {
-            counter++;
-            continue;
-        }
-
-        int term = new_source.get_term_from_table_entry_index(counter);
-        int new_position_in_condition = component_counter;
-        int new_position_in_indirect_table = -1;
-
-        auto source_new_split_rule = new_split_rule->get_variable_source_object_by_ref();
-        int entry_position_indirect_table = source_new_split_rule.get_table_entry_index_from_term(term);
-        new_position_in_indirect_table = entry_position_indirect_table ;
-
-        new_source.update_ith_entry(counter, new_position_in_condition, new_position_in_indirect_table);
-        counter++;
-    }
+    VariableSource new_source = update_source_after_component_split(original_rule,
+                                                                    component,
+                                                                    component_counter,
+                                                                    new_split_rule->get_variable_source_object_by_ref());
 
     original_rule->update_variable_source_table(std::move(new_source));
     new_rules.push_back(std::move(new_split_rule));
 
     return new_atom;
 }
+
 
 void Datalog::split_into_connected_components(std::unique_ptr<RuleBase> &rule, std::vector<std::unique_ptr<RuleBase>> &new_rules) {
     std::vector<std::vector<int>> components = get_components(rule);
@@ -157,7 +185,6 @@ void Datalog::split_into_connected_components(std::unique_ptr<RuleBase> &rule, s
     }
 
     rule->set_conditions(new_rule_conditions);
-
 
 }
 

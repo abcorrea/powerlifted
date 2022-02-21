@@ -62,7 +62,6 @@ void Datalog::project_out_variables(std::unique_ptr<RuleBase> &rule,
                 relevant_variables_for_condition.push_back(index);
             else {
                 project_out = true;
-                std::cerr << "aaaa" << std::endl;
             }
         }
         if (project_out) {

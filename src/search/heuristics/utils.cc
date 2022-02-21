@@ -9,7 +9,7 @@ datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerat
     //std::cout << std::endl << "### ACTION PREDICATES REMOVED: " << std::endl;
     dl.remove_action_predicates(annotation_generator, task);
     //dl.output_rules();
-
+    //exit(0);
     //std::cout << std::endl << "### CONVERT TO NORMAL FORM: " << std::endl;
     dl.convert_rules_to_normal_form(task);
     //dl.output_rules();
