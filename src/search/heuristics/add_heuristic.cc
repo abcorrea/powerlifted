@@ -20,14 +20,10 @@ int AdditiveHeuristic::compute_heuristic(const DBState &s, const Task &task) {
 
     std::vector<datalog::Fact> state_facts = get_datalog_facts_from_state(s, task);
 
-    std::cout << "new state " << state_counter++ << ": ";
     int h = grounder.ground(datalog, state_facts, datalog.get_goal_atom_idx());
     //grounder.print_statistics(datalog);
     datalog.reset_facts();
-    if (true) {
-        std::cout << "DUMPING STATE " << state_counter-1 << ": [" << h << "] ";
-        task.dump_state(s);
-    }
+
     for (const auto &r : datalog.get_rules())
         r->clean_up();
     if (h == std::numeric_limits<int>::max())
