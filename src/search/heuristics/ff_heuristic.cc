@@ -55,7 +55,7 @@ int FFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     for (const auto &action : pi_ff) {
         ff_cost += task.get_action_schema_by_index(action.first).get_cost();
     }
-    
+
     datalog.reset_facts();
     for (const auto &r : datalog.get_rules())
         r->clean_up();

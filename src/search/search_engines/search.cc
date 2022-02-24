@@ -15,7 +15,11 @@ bool SearchBase::is_useful_operator(const Task &task, const DBState &state,
         if (task.predicates[pred_idx].isStaticPredicate()) continue;
 
         if (task.nullary_predicates.count(pred_idx) > 0) {
-            if (state.get_nullary_atoms()[pred_idx])
+            // This is a bit of a hack. To save time, we only check if there is at least one tuple
+            // considered useful for a nullary relation. As the relation is nullary, the only tuple
+            // that can instantiate it is the empty one, so we know that if
+            // useful_atoms[pred_idx].size() > 0, then this is the one instantiating it.
+            if (useful_atoms[pred_idx].size() > 0 and state.get_nullary_atoms()[pred_idx])
                 return true;
         }
         else {
