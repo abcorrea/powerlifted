@@ -57,6 +57,9 @@ void Datalog::generate_action_rule(const ActionSchema &schema,
     predicate_names.push_back(action_predicate);
     DatalogAtom eff(schema, idx);
     vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
+    // We reverse the body because this apparently has an affect in performance for some domains
+    // (e.g., logistics). This was already done in the previous implementation.
+    std::reverse(body.begin(), body.end());
     std::unique_ptr<Annotation> ann = annotation_generator(schema.get_index(), task);
     rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body), move(ann), schema.get_index()));
 }
