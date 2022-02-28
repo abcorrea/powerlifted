@@ -1,5 +1,7 @@
 #include "rff_heuristic.h"
 
+#include "utils.h"
+
 #include "../datalog/datalog.h"
 
 #include "../datalog/annotations/annotation.h"
@@ -26,13 +28,37 @@ public:
 };
 
 
+RFFHeuristic::RFFHeuristic(const Task &task) : datalog(std::move(initialize_datalog(task, get_annotation_generator()))),
+                                             grounder(datalog, datalog::H_ADD) {}
 
-RFFHeuristic::RFFHeuristic(const Task &task) {
-    datalog::AnnotationGenerator ann = [&](int action_schema_id, const Task &task) -> unique_ptr<datalog::Annotation> {
+int RFFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
+    if (task.is_goal((s))) return 0;
+
+    rff_cost = 0; // resets rff_cost
+
+    std::vector<datalog::Fact> state_facts = get_datalog_facts_from_state(s, task);
+
+    int h_add = grounder.ground(datalog, state_facts, datalog.get_goal_atom_idx());
+
+    datalog.reset_facts();
+    for (const auto &r : datalog.get_rules())
+        r->clean_up();
+    if (h_add == std::numeric_limits<int>::max())
+        return UNSOLVABLE_STATE;
+
+    useful_atoms = datalog.get_useful_atoms();
+
+    return rff_cost;
+
+}
+
+datalog::AnnotationGenerator RFFHeuristic::get_annotation_generator() {
+    datalog::AnnotationGenerator annotation_generator = [&](int action_schema_id, const Task &task) -> unique_ptr<datalog::Annotation> {
         if (action_schema_id < 0)
             return nullptr;
         int cost = task.get_action_schema_by_index(action_schema_id).get_cost();
         return make_unique<RFFAnnotation>(cost, rff_cost);
     };
-    datalog::Datalog dl(task, ann);
+    return annotation_generator;
 }
+

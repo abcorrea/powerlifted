@@ -4,6 +4,7 @@
 #include "add_heuristic.h"
 #include "ff_heuristic.h"
 #include "goalcount.h"
+#include "rff_heuristic.h"
 
 #include <iostream>
 #include <fstream>
@@ -26,6 +27,9 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
     }
     else if (boost::iequals(method, "ff")) {
         return new FFHeuristic(task);
+    }
+    else if (boost::iequals(method, "rff")) {
+        return new RFFHeuristic(task);
     }
     else {
         std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;

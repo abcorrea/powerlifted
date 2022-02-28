@@ -3,16 +3,23 @@
 
 #include "heuristic.h"
 
+#include "../datalog/grounder/weighted_grounder.h"
+
+
 class RFFHeuristic : public Heuristic {
+
+    datalog::Datalog datalog;
+    datalog::WeightedGrounder grounder;
+
     int rff_cost;
+
+    datalog::AnnotationGenerator get_annotation_generator();
+
 
 public:
     RFFHeuristic(const Task &task);
 
-    int compute_heuristic(const DBState &s, const Task &task) override {
-        if (task.is_goal(s)) return 0;
-        return 1;
-    }
+    int compute_heuristic(const DBState &s, const Task &task) override;
 };
 
 #endif //SEARCH_HEURISTICS_RFF_HEURISTIC_H_

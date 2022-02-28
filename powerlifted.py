@@ -27,7 +27,7 @@ def parse_options():
                         default=None, help='Search algorithm', choices=("naive", "bfs", "gbfs", "lazy", "lazy-po", "lazy-prune"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
-                        default=None, choices=("blind", "goalcount", "add", "hmax", "ff"),
+                        default=None, choices=("blind", "goalcount", "add", "hmax", "ff", "rff"),
                         help='Heuristic to guide the search (ignore in case of blind search)',
                         required=True)
     parser.add_argument('-g', '--generator', dest='generator', action='store',
