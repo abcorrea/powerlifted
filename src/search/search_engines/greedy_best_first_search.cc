@@ -80,17 +80,20 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
-
+                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
                 int dist = g + action.get_cost();
                 int new_h = heuristic.compute_heuristic(s, task);
                 statistics.inc_evaluations();
                 if (new_h == UNSOLVABLE_STATE) {
-                    statistics.inc_dead_ends();
-                    statistics.inc_pruned_states();
+                    if (child_node.status == SearchNode::Status::NEW) {
+                        // Only increase statistics for new dead-ends
+                        child_node.open(dist, new_h);
+                        statistics.inc_dead_ends();
+                        statistics.inc_pruned_states();
+                    }
                     continue;
                 }
 
-                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
                 if (child_node.status == SearchNode::Status::NEW) {
                     // Inserted for the first time in the map
                     child_node.open(dist, new_h);
