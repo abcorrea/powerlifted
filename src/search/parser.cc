@@ -154,7 +154,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                     }
                 }
             }
-            preconditions.emplace_back(move(precond_name), index, move(arguments), negated);
+            preconditions.emplace_back(move(arguments), move(precond_name), index, negated);
         }
         for (int j = 0; j < eff_size; ++j) {
             string eff_name;
@@ -189,7 +189,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                     exit(-1);
                 }
             }
-            effects.emplace_back(move(eff_name), index, move(arguments), negated);
+            effects.emplace_back(move(arguments), move(eff_name), index, negated);
         }
         ActionSchema a(name,
                        i,
@@ -233,6 +233,7 @@ void parse_goal(Task &task, int goal_size)
 
 void parse_initial_state(Task &task, int initial_state_size)
 {
+    //StaticInformation static_info(task.predicates.size());
     for (int i = 0; i < initial_state_size; ++i) {
         string name;
         int index;
@@ -253,6 +254,7 @@ void parse_initial_state(Task &task, int initial_state_size)
                 task.static_info.add_tuple(predicate_index, args);
         }
     }
+    //task.set_static_info(static_info);
 }
 
 void parse_objects(Task &task, int number_objects)

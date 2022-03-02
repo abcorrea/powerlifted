@@ -9,6 +9,9 @@
 #include "successor_generators/successor_generator.h"
 #include "successor_generators/successor_generator_factory.h"
 
+// TODO This should be included in the heuristic, not here. Right now it is here for testing
+#include "heuristics/ff_heuristic.h"
+
 #include <iostream>
 #include <memory>
 

@@ -8,7 +8,7 @@
 
 #include "../open_lists/tiebreaking_open_list.h"
 
-#include "../lifted_heuristic/lifted_heuristic.h"
+#include "../heuristics/ff_heuristic.h"
 
 #include "../novelty/standard_novelty.h"
 #include "../novelty/atom_counter.h"
@@ -60,7 +60,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
 
     Goalcount gc;
 
-    size_t number_goal_conditions = task.goal.goal.size() + task.goal.positive_nullary_goals.size() + task.goal.negative_nullary_goals.size();
+    size_t number_goal_conditions = task.get_goal().goal.size() + task.get_goal().positive_nullary_goals.size() + task.get_goal().negative_nullary_goals.size();
     size_t number_relevant_atoms;
 
     if (method == StandardNovelty::R_X) {
@@ -124,7 +124,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
         int unsatisfied_goal_parent = map_state_to_evaluators.at(sid.id()).unsatisfied_goals;
         int unsatisfied_relevant_atoms_parent = map_state_to_evaluators.at(sid.id()).unsatisfied_relevant_atoms;
 
-        for (const auto& action:task.actions) {
+        for (const auto& action:task.get_action_schemas()) {
             auto applicable = generator.get_applicable_actions(action, state);
             statistics.inc_generated(applicable.size());
 
@@ -192,14 +192,14 @@ void BreadthFirstWidthSearch<PackedStateT>::print_statistics() const {
 template<class PackedStateT>
 AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_gc(const Task &task) {
     std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
-    std::unordered_set<int> positive = task.goal.positive_nullary_goals;
-    std::unordered_set<int> negative = task.goal.negative_nullary_goals;
+    std::unordered_set<int> positive = task.get_goal().positive_nullary_goals;
+    std::unordered_set<int> negative = task.get_goal().negative_nullary_goals;
 
-     for (const AtomicGoal &atomic_goal : task.goal.goal) {
-         size_t pred_idx = atomic_goal.predicate;
+     for (const AtomicGoal &atomic_goal : task.get_goal().goal) {
+         size_t pred_idx = atomic_goal.get_predicate_index();
          if (task.predicates[pred_idx].isStaticPredicate())
              continue;
-         atoms[pred_idx].push_back(atomic_goal.args);
+         atoms[pred_idx].push_back(atomic_goal.get_arguments());
      }
 
     return AtomCounter(atoms, positive, negative);
@@ -209,8 +209,8 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_gc(co
 template<class PackedStateT>
 AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_useful_atoms(const Task &task) {
     std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
-    std::unordered_set<int> positive = task.goal.positive_nullary_goals;
-    std::unordered_set<int> negative = task.goal.negative_nullary_goals;
+    std::unordered_set<int> positive = task.get_goal().positive_nullary_goals;
+    std::unordered_set<int> negative = task.get_goal().negative_nullary_goals;
 
     std::ifstream datalog_file(datalog_file_name);
     if (!datalog_file) {
@@ -218,7 +218,7 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_usefu
         exit(-1);
     }
 
-    LiftedHeuristic delete_free_h(task, datalog_file, lifted_heuristic::H_ADD);
+    FFHeuristic delete_free_h(task);
 
     int h = delete_free_h.compute_heuristic(task.initial_state, task);
     std::cout << "Initial h-add value of the task: " << h << std::endl;
@@ -230,14 +230,17 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_usefu
         }
     }
 
-    const map<int, std::vector<GroundAtom>> &useful_atoms = delete_free_h.get_useful_atoms();
+    const std::vector<std::vector<GroundAtom>> &useful_atoms = delete_free_h.get_useful_atoms();
+    int pred_idx = 0;
     for (const auto &entry : useful_atoms) {
-        int pred_idx = entry.first;
-        if (task.predicates[pred_idx].isStaticPredicate())
+        if (task.predicates[pred_idx].isStaticPredicate()) {
+            ++pred_idx;
             continue;
-        for (const GroundAtom &atom : entry.second) {
+        }
+        for (const GroundAtom &atom : entry) {
             atoms[pred_idx].push_back(atom);
         }
+        ++pred_idx;
     }
 
     return AtomCounter(atoms, positive, negative);

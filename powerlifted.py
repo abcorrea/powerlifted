@@ -44,7 +44,7 @@ def parse_options():
                                                                         "lazy-prune"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
-                        default=None, choices=("blind", "goalcount", "add", "hmax"),
+                        default=None, choices=("blind", "goalcount", "add", "hmax", "ff", "rff"),
                         help='Heuristic to guide the search (ignore in case of blind search)',
                         required=True)
     parser.add_argument('-g', '--generator', dest='generator', action='store',

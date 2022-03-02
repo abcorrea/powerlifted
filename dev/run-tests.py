@@ -25,7 +25,7 @@ OPTIMAL_PLAN_COSTS = {'domains/airport/p05-airport2-p1.pddl': 21,
                       'domains/blocks/probBLOCKS-4-0.pddl': 6,
                       'domains/gripper/prob01.pddl': 11,
                       'domains/movie/prob30.pddl': 7,
-                      'domains/openstacks/p01.pddl': 17,
+                      'domains/openstacks/p01.pddl': 2,
                       'domains/organic-synthesis/p05.pddl': 2}
 SEARCH_CONFIGS = ['bfs', 'gbfs']
 HEURISTIC_CONFIGS = ['blind']

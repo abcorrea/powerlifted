@@ -15,12 +15,26 @@
  * goal.
  *
  */
-struct AtomicGoal {
-  int predicate;
-  std::vector<int> args;
-  bool negated;
-  AtomicGoal(int predicate, std::vector<int> args, bool negated)
-      : predicate(predicate), args(std::move(args)), negated(negated) {}
+class AtomicGoal {
+    int predicate;
+    std::vector<int> args;
+    bool negated;
+
+public:
+    AtomicGoal(int predicate, std::vector<int> args, bool negated)
+        : predicate(predicate), args(std::move(args)), negated(negated) {}
+
+    int get_predicate_index() const {
+        return predicate;
+    }
+
+    const std::vector<int> &get_arguments() const {
+        return args;
+    }
+
+    bool is_negated() const {
+        return negated;
+    }
 };
 
 /**
@@ -36,18 +50,18 @@ struct AtomicGoal {
  */
 class GoalCondition {
 public:
-  std::vector<AtomicGoal> goal;
-  std::unordered_set<int> positive_nullary_goals;
-  std::unordered_set<int> negative_nullary_goals;
+    std::vector<AtomicGoal> goal;
+    std::unordered_set<int> positive_nullary_goals;
+    std::unordered_set<int> negative_nullary_goals;
 
-  GoalCondition() = default;
+    GoalCondition() = default;
 
-  explicit GoalCondition(std::vector<AtomicGoal> goal,
-                         std::unordered_set<int> positive_nullary_goals,
-                         std::unordered_set<int> negative_nullary_goals)
-      : goal(std::move(goal)),
-        positive_nullary_goals(std::move(positive_nullary_goals)),
-        negative_nullary_goals(std::move(negative_nullary_goals)) {}
+    explicit GoalCondition(std::vector<AtomicGoal> goal,
+                           std::unordered_set<int> positive_nullary_goals,
+                           std::unordered_set<int> negative_nullary_goals)
+        : goal(std::move(goal)),
+          positive_nullary_goals(std::move(positive_nullary_goals)),
+          negative_nullary_goals(std::move(negative_nullary_goals)) {}
 };
 
 #endif // SEARCH_GOAL_CONDITION_H

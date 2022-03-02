@@ -87,7 +87,7 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 
         // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
         // performance, we could implement some form of std iterator
-        for (const auto& action:task.actions) {
+        for (const auto& action:task.get_action_schemas()) {
             auto applicable = generator.get_applicable_actions(action, state);
             statistics.inc_generated(applicable.size());
 
@@ -96,7 +96,7 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
                 int dist = g + action.get_cost();
                 auto &child_node =
                     space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                bool is_preferred = is_useful_operator(task, s, heuristic.get_useful_atoms(), heuristic.get_useful_nullary_atoms());
+                bool is_preferred = is_useful_operator(task, s, heuristic.get_useful_atoms());
                 if (child_node.status==SearchNode::Status::NEW) {
                     // Inserted for the first time in the map
                     child_node.open(dist, h);

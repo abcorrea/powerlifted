@@ -9,23 +9,26 @@
 using namespace std;
 
 bool SearchBase::is_useful_operator(const Task &task, const DBState &state,
-                                    const map<int, std::vector<GroundAtom>> &useful_atoms,
-                                    const vector<bool> &useful_nullary_atoms) {
-    for (size_t j = 0; j < useful_nullary_atoms.size(); ++j) {
-        if (useful_nullary_atoms[j] and state.get_nullary_atoms()[j]) {
-            return true;
-        }
-    }
-    for (auto &entry : useful_atoms) {
-        size_t relation = entry.first;
-        if (task.predicates[relation].isStaticPredicate())
-            continue;
-        for (auto &tuple : entry.second) {
-            if (state.get_tuples_of_relation(relation).count(tuple) > 0)
+                                    const vector<vector<GroundAtom>> &useful_atoms) {
+
+    for (size_t pred_idx = 0; pred_idx < useful_atoms.size(); ++pred_idx) {
+        if (task.predicates[pred_idx].isStaticPredicate()) continue;
+
+        if (task.nullary_predicates.count(pred_idx) > 0) {
+            // This is a bit of a hack. To save time, we only check if there is at least one tuple
+            // considered useful for a nullary relation. As the relation is nullary, the only tuple
+            // that can instantiate it is the empty one, so we know that if
+            // useful_atoms[pred_idx].size() > 0, then this is the one instantiating it.
+            if (useful_atoms[pred_idx].size() > 0 and state.get_nullary_atoms()[pred_idx])
                 return true;
         }
+        else {
+            for (const auto &tuple: useful_atoms[pred_idx])
+                if (state.get_tuples_of_relation(pred_idx).count(tuple) > 0)
+                    return true;
+        }
     }
-    //cerr << "not useful" << endl;
+
     return false;
 }
 

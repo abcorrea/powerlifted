@@ -4,7 +4,7 @@
 #include "search.h"
 #include "search_space.h"
 
-#include "../lifted_heuristic/lifted_heuristic.h"
+#include "../heuristics/ff_heuristic.h"
 
 #include "../novelty/atom_counter.h"
 #include "../novelty/node_novelty.h"
@@ -39,7 +39,7 @@ public:
 
     utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
     void print_statistics() const override;
-    AtomCounter initialize_counter_with_useful_atoms(const Task &task, LiftedHeuristic &delete_free_h) const;
+    AtomCounter initialize_counter_with_useful_atoms(const Task &task, FFHeuristic &delete_free_h) const;
 };
 
 
