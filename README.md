@@ -19,6 +19,7 @@ Use the `build.py` script to build the planner first.
 - `bfs`: Breadth-First Search (This option was previously called `naive`. You
   can still use `naive` with the `powerlifted.py` script but the planner will internally
   use the new keyword `bfs`.)
+- `astar`: A* Search
 - `gbfs`: Greedy Best-First Search
 - `lazy`: Lazy Best-First Search
 - `lazy-po`: Lazy Best-First Search with Boosted Dual-Queue
@@ -29,7 +30,7 @@ non-preferred operators
 - `add`: The additive heuristic
 - `blind`: No Heuristic
 - `goalcount`: The goal-count/STRIPS heuristic
-- `hmax`: The hmax heuristic (Note that A* search is not implemented)
+- `hmax`: The hmax heuristic
 
 ### Available Options for `GENERATOR`:
 - `join`: Join program using the predicate order given in the PDDL file
