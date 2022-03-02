@@ -1,6 +1,7 @@
 
 #include "search_factory.h"
 
+#include "astar_search.h"
 #include "breadth_first_search.h"
 #include "greedy_best_first_search.h"
 #include "lazy_search.h"
@@ -25,7 +26,10 @@ SearchFactory::create(const std::string& method, const std::string& state_type) 
         if (using_ext_state) return new BreadthFirstSearch<ExtensionalPackedState>();
         else return new BreadthFirstSearch<SparsePackedState>();
     }
-
+    else if (boost::iequals(method, "astar")) {
+        if (using_ext_state) return new AStarSearch<ExtensionalPackedState>();
+        else return new AStarSearch<SparsePackedState>();
+    }
     else if (boost::iequals(method, "gbfs")) {
         if (using_ext_state) return new GreedyBestFirstSearch<ExtensionalPackedState>();
         else return new GreedyBestFirstSearch<SparsePackedState>();
