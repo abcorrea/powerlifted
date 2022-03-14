@@ -36,3 +36,20 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
         exit(-1);
     }
 }
+
+Heuristic *HeuristicFactory::create_delete_free_heuristic(const std::string &method, const Task &task)
+{
+    if (boost::iequals(method, "add")) {
+        return new AdditiveHeuristic(task);
+    }
+    else if (boost::iequals(method, "ff")) {
+        return new FFHeuristic(task);
+    }
+    else if (boost::iequals(method, "rff")) {
+        return new RFFHeuristic(task);
+    }
+    else {
+        std::cerr << "Invalid delete-free heuristic \"" << method << "\"" << std::endl;
+        exit(-1);
+    }
+}

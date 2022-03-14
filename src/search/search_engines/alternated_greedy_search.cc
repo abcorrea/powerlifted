@@ -3,6 +3,8 @@
 #include "search.h"
 #include "utils.h"
 
+#include "../heuristics/heuristic_factory.h"
+
 #include "../successor_generators/successor_generator.h"
 
 #include "../states/extensional_states.h"
@@ -87,15 +89,9 @@ utils::ExitCode AlternatedGreedySearch<PackedStateT>::search(const Task &task,
     size_t number_goal_conditions = task.get_goal().goal.size() + task.get_goal().positive_nullary_goals.size() + task.get_goal().negative_nullary_goals.size();
     size_t number_relevant_atoms;
 
-    std::ifstream datalog_file(datalog_file_name);
-    if (!datalog_file) {
-        std::cerr << "Error opening the Datalog model file: " << datalog_file_name << std::endl;
-        exit(-1);
-    }
+    std::unique_ptr<Heuristic> delete_free_h(HeuristicFactory::create_delete_free_heuristic(heuristic_type, task));
 
-    FFHeuristic delete_free_h(task);
-
-    atom_counter = initialize_counter_with_useful_atoms(task, delete_free_h);
+    atom_counter = initialize_counter_with_useful_atoms(task, *delete_free_h);
     number_relevant_atoms = atom_counter.get_total_number_of_atoms();
 
     AlternatedOpenListManager open_list;
@@ -115,7 +111,7 @@ utils::ExitCode AlternatedGreedySearch<PackedStateT>::search(const Task &task,
 
     statistics.inc_evaluations();
     cout << "Initial heuristic value " << heuristic_layer << endl;
-    int initial_h = delete_free_h.compute_heuristic(task.initial_state, task);
+    int initial_h = delete_free_h->compute_heuristic(task.initial_state, task);
 
     statistics.report_f_value_progress(initial_h);
     root_node.open(0, initial_h);
@@ -144,7 +140,7 @@ utils::ExitCode AlternatedGreedySearch<PackedStateT>::search(const Task &task,
         assert(sid.id() >= 0 && (unsigned) sid.id() < space.size());
         DBState state = packer.unpack(space.get_state(sid));
 
-        int h = delete_free_h.compute_heuristic(state, task);
+        int h = delete_free_h->compute_heuristic(state, task);
         statistics.report_f_value_progress(g+h);
         node.update_h(h);
 
@@ -168,7 +164,7 @@ utils::ExitCode AlternatedGreedySearch<PackedStateT>::search(const Task &task,
             for (const LiftedOperatorId& op_id:applicable) {
                 DBState s = generator.generate_successor(op_id, action, state);
 
-                bool is_preferred = is_useful_operator(task, s, delete_free_h.get_useful_atoms());
+                bool is_preferred = is_useful_operator(task, s, delete_free_h->get_useful_atoms());
                 int dist = g + action.get_cost();
                 int unsatisfied_goals = gc.compute_heuristic(s, task);
                 int unsatisfied_relevant_atoms = 0;
@@ -254,7 +250,7 @@ AtomCounter AlternatedGreedySearch<PackedStateT>::initialize_counter_with_gc(con
 
 template<class PackedStateT>
 AtomCounter AlternatedGreedySearch<PackedStateT>::initialize_counter_with_useful_atoms(const Task &task,
-                                                                              FFHeuristic &delete_free_h) const {
+                                                                              Heuristic &delete_free_h) const {
     std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
     std::unordered_set<int> positive = task.get_goal().positive_nullary_goals;
     std::unordered_set<int> negative = task.get_goal().negative_nullary_goals;

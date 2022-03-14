@@ -20,7 +20,8 @@ class AlternatedGreedySearch : public SearchBase {
     AtomCounter atom_counter;
     int width;
     bool only_effects_opt;
-    std::string datalog_file_name;
+
+    std::string heuristic_type;
 
 protected:
     SearchSpace<PackedStateT> space;
@@ -32,14 +33,15 @@ protected:
 public:
     explicit AlternatedGreedySearch(int width, const Options &opt) : width(width) {
         std::cout << "Using Dual-Queue BFWS" << std::endl;
-        datalog_file_name = opt.get_datalog_file();
+        // By default we use h-add as heuristic, unless explicitly asked to use FF
+        heuristic_type = opt.get_evaluator();
     }
 
     using StatePackerT = typename PackedStateT::StatePackerT;
 
     utils::ExitCode search(const Task &task, SuccessorGenerator &generator, Heuristic &heuristic) override;
     void print_statistics() const override;
-    AtomCounter initialize_counter_with_useful_atoms(const Task &task, FFHeuristic &delete_free_h) const;
+    AtomCounter initialize_counter_with_useful_atoms(const Task &task, Heuristic &delete_free_h) const;
 };
 
 

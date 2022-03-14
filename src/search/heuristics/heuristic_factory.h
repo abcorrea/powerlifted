@@ -14,6 +14,8 @@ class Heuristic;
 class HeuristicFactory {
 public:
     static Heuristic *create(const Options &opt, const Task &task);
+
+    static Heuristic *create_delete_free_heuristic(const std::string &method, const Task &task);
 };
 
 #endif //SEARCH_HEURISTIC_FACTORY_H
