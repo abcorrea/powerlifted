@@ -202,13 +202,13 @@ std::vector<int> Datalog::extract_variable_instantiation_from_rule(int head) con
     return instantiation;
 }
 
-void Datalog::backchain_from_goal(const Fact &goal_fact, const std::unordered_set<int> &initial_facts) {
+void Datalog::backchain_from_goal(const Fact &goal_fact, const absl::flat_hash_set<int> &initial_facts) {
 
     for (auto &relation : useful_atoms) {
         relation.clear();
     }
 
-    std::unordered_set<int> achieved_atoms;
+    absl::flat_hash_set<int> achieved_atoms;
     std::queue<int> queue;
 
     // TODO Isn't this redundant?

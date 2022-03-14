@@ -13,6 +13,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <absl/container/flat_hash_set.h>
+
 namespace datalog {
 
 class RuleBase;
@@ -23,12 +25,12 @@ enum {H_ADD, H_MAX};
 
 class WeightedGrounder : public Grounder {
     int is_cheapest_path_to_achieve_fact(Fact &new_fact,
-                                         std::unordered_set<Fact> &reached_facts,
+                                         absl::flat_hash_set<Fact> &reached_facts,
                                          Datalog &lp);
 
     priority_queues::AdaptiveQueue<int> q;
 
-    std::unordered_set<int> initial_facts;
+    absl::flat_hash_set<int> initial_facts;
     std::vector<int> best_achievers;
 
     int queue_pushes;

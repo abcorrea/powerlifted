@@ -11,6 +11,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <absl/container/flat_hash_map.h>
+#include <absl/container/flat_hash_set.h>
 #include <boost/functional/hash.hpp>
 
 namespace datalog {
@@ -18,7 +20,8 @@ namespace datalog {
 typedef std::vector<int> JoinHashKey;
 
 class JoinHashEntry {
-    std::unordered_set<Fact> entry;
+
+    absl::flat_hash_set<Fact> entry;
 
 public:
     JoinHashEntry() = default;
@@ -27,20 +30,20 @@ public:
         entry.insert(f);
     }
 
-    std::unordered_set<Fact>::const_iterator begin() const {
+    absl::flat_hash_set<Fact>::const_iterator begin() const {
         return entry.begin();
     }
 
-    std::unordered_set<Fact>::const_iterator end() const {
+    absl::flat_hash_set<Fact>::const_iterator end() const {
         return entry.end();
     }
 
 };
 
 class JoinHashTable {
-    std::unordered_map<JoinHashKey, JoinHashEntry, boost::hash<JoinHashKey>>
+    absl::flat_hash_map<JoinHashKey, JoinHashEntry, boost::hash<JoinHashKey>>
         hash_table_1;
-    std::unordered_map<JoinHashKey, JoinHashEntry, boost::hash<JoinHashKey>>
+    absl::flat_hash_map<JoinHashKey, JoinHashEntry, boost::hash<JoinHashKey>>
         hash_table_2;
 
     static bool valid_position(size_t i) {
