@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include <absl/container/flat_hash_map.h>
+
 namespace datalog {
 
 class Match {
@@ -49,7 +51,7 @@ class RuleMatcher {
     /*
      Map index of an atom to a vector rule matches
     */
-    std::unordered_map<int, Matches> rule_matcher;
+    absl::flat_hash_map<int, Matches> rule_matcher;
 
     static const Matches empty_matches;
 
