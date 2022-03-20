@@ -1,43 +1,29 @@
 #include "utils.h"
 
-datalog::Datalog initialize_datalog(const Task &task, datalog::AnnotationGenerator annotation_generator) {
+datalog::Datalog initialize_datalog(const Task &task,
+                                    datalog::AnnotationGenerator annotation_generator,
+                                    const DatalogTransformationOptions &opts) {
     datalog::Datalog dl(task, annotation_generator);
 
-    //std::cout << "@@@ ORIGINAL RULES: " << std::endl;
-    //dl.output_rules();
+    if (opts.get_remove_action_predicates())
+        dl.remove_action_predicates(annotation_generator, task);
 
-    //std::cout << std::endl << "### ACTION PREDICATES REMOVED: " << std::endl;
-    dl.remove_action_predicates(annotation_generator, task);
-    //dl.output_rules();
-    //exit(0);
-    //std::cout << std::endl << "### CONVERT TO NORMAL FORM: " << std::endl;
+    // These transformations are always done.
     dl.convert_rules_to_normal_form(task);
-    //dl.output_rules();
-    //exit(0);
-
-    //std::cout << std::endl << "### INTRODUCE GOAL RULE: " << std::endl;
     dl.add_goal_rule(task, annotation_generator);
-    //dl.output_rules();
 
-    //std::cout << std::endl << "### RENAME VARIABLES: " << std::endl;
-    dl.rename_variables();
-    //dl.output_rules();
+    if (opts.get_rename_vars())
+        dl.rename_variables();
 
+    if (opts.get_collapse_predicates())
+        while (dl.remove_duplicate_rules());
 
-    //std::cout << std::endl << "### REMOVE EQUIVALENT RULES: " << std::endl;
-    while (dl.remove_duplicate_rules());
-    //dl.output_rules();
-
-    //std::cout << "### PERMANENT EDB: " << std::endl;
+    // These transformations are always done too.
     dl.set_permanent_edb(task.get_static_info());
-    //dl.output_permanent_edb();
-
     dl.update_rule_indices();
 
     dl.print_statistics();
 
-    //std::cout << std::endl << "@@@ FINAL RULES: " << std::endl;
-    //dl.output_rules();
     return std::move(dl);
 }
 

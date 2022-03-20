@@ -2,6 +2,7 @@
 #define SEARCH_HEURISTICS_RFF_HEURISTIC_H_
 
 #include "heuristic.h"
+#include "datalog_transformation_options.h"
 
 #include "../datalog/grounder/weighted_grounder.h"
 
@@ -17,7 +18,7 @@ class RFFHeuristic : public Heuristic {
 
 
 public:
-    RFFHeuristic(const Task &task);
+    RFFHeuristic(const Task &task, DatalogTransformationOptions opts);
 
     int compute_heuristic(const DBState &s, const Task &task) override;
 };

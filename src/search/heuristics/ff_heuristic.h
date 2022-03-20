@@ -2,6 +2,7 @@
 #define SEARCH_HEURISTICS_FF_HEURISTIC_H_
 
 #include "heuristic.h"
+#include "datalog_transformation_options.h"
 
 #include "../action.h"
 #include "../task.h"
@@ -21,7 +22,7 @@ class FFHeuristic : public Heuristic{
     datalog::AnnotationGenerator get_annotation_generator();
 
 public:
-    FFHeuristic(const Task &task);
+    FFHeuristic(const Task &task, DatalogTransformationOptions opts);
 
     int compute_heuristic(const DBState &s, const Task &task) override;
 };

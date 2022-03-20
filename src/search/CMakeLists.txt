@@ -105,6 +105,7 @@ add_executable(search
         heuristics/ff_heuristic.cc
         heuristics/rff_heuristic.cc
         heuristics/rff_heuristic.h
+        heuristics/datalog_transformation_options.h
         datalog/achievers.h
         datalog/transformations/action_predicate_removal.h
         datalog/transformations/normal_form.h
@@ -114,6 +115,9 @@ add_executable(search
         datalog/grounder/grounder.h
         datalog/grounder/weighted_grounder.cc datalog/grounder/weighted_grounder.h
         datalog/rule_matcher.cc datalog/rule_matcher.h heuristics/add_heuristic.cc
-        heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h)
+        heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc
+        datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h
+        datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h
+        )
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES} absl::flat_hash_map)

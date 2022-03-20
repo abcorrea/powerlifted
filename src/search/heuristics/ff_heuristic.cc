@@ -34,8 +34,9 @@ public:
 
 
 
-FFHeuristic::FFHeuristic(const Task &task) : datalog(std::move(initialize_datalog(task, get_annotation_generator()))),
-                                             grounder(datalog, datalog::H_ADD) {}
+FFHeuristic::FFHeuristic(const Task &task, DatalogTransformationOptions opts) :
+    datalog(std::move(initialize_datalog(task, get_annotation_generator(), opts))),
+    grounder(datalog, datalog::H_ADD) {}
 
 int FFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     pi_ff.clear();

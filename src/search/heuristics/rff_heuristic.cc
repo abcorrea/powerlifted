@@ -28,8 +28,9 @@ public:
 };
 
 
-RFFHeuristic::RFFHeuristic(const Task &task) : datalog(std::move(initialize_datalog(task, get_annotation_generator()))),
-                                             grounder(datalog, datalog::H_ADD) {}
+RFFHeuristic::RFFHeuristic(const Task &task, DatalogTransformationOptions opts) :
+    datalog(std::move(initialize_datalog(task, get_annotation_generator(), opts))),
+    grounder(datalog, datalog::H_ADD) {}
 
 int RFFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     if (task.is_goal((s))) return 0;
