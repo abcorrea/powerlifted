@@ -19,6 +19,11 @@ Use the `build.py` script to build the planner first.
 - `bfs`: Breadth-First Search (This option was previously called `naive`. You
   can still use `naive` with the `powerlifted.py` script but the planner will internally
   use the new keyword `bfs`.)
+- `bfws1` and `bfws2`: Best-First Width Search with w=1 and w=2, respectively.
+- `bfws1-rx` and `bfws2-rx`: BFWS(R_x) with w=1 and w=2, respectively. (See Corrêa and Seipp 2022.)
+- `dq-bfws1-rx` and `dq-bfws2-rx`: DQ(R_x) with w=1 and w=2, respectively. (See Corrêa and Seipp 2022.)
+- `alt1` and `alt2`: [R_x, h] with w=1 and w=2, respectively. The choice of h is
+  given the `HEURISTIC` option. (See Corrêa and Seipp 2022.)
 - `gbfs`: Greedy Best-First Search
 - `lazy`: Lazy Best-First Search
 - `lazy-po`: Lazy Best-First Search with Boosted Dual-Queue
@@ -27,9 +32,11 @@ non-preferred operators
 
 ### Available Options for `HEURISTIC`:
 - `add`: The additive heuristic
+- `ff`: The FF heuristic
 - `blind`: No Heuristic
 - `goalcount`: The goal-count/STRIPS heuristic
 - `hmax`: The hmax heuristic (Note that A* search is not implemented)
+- `rff`: The rule-based FF heuristic
 
 ### Available Options for `GENERATOR`:
 - `join`: Join program using the predicate order given in the PDDL file
@@ -102,5 +109,6 @@ how to run the planner with the Singularity image:
  ## References
 
  1. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2020. Lifted Successor Generation using Query Optimization Techniques. In Proc. ICAPS 2020, pp. 80-89. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2020.pdf)
- 2. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2020. Code from the paper "Lifted Successor Generationusing Query Optimization Techniques".  https://doi.org/10.5281/zenodo.3687008
- 3. Corrêa, A. B.; Francès, G.; Pommerening, F.; and Helmert, M. 2021. Delete-Relaxation Heuristics for Lifted Classical Planning. In Proc. ICAPS 2021. (To appear)
+ 2. Corrêa, A. B.; Francès, G.; Pommerening, F.; and Helmert, M. 2021. Delete-Relaxation Heuristics for Lifted Classical Planning. In Proc. ICAPS 2021, pp. 94-102. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2021.pdf)
+ 3. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2022. The FF Heuristic for Lifted Classical Planning. In Proc. AAAI 2022. (To Appear)
+ 4. Corrêa, A. B.; and Seipp, J. 2022. Best-First Width Search for Lifted Classical Planning. In Proc. ICAPS 2022. (To Appear)
