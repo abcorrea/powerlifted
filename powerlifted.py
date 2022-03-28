@@ -24,7 +24,25 @@ def parse_options():
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Run planner in debug mode.')
     parser.add_argument('-s', '--search', dest='search', action='store',
-                        default=None, help='Search algorithm', choices=("naive", "astar", "bfs", "gbfs", "lazy", "lazy-po", "lazy-prune"),
+                        default=None, help='Search algorithm', choices=("naive",
+                                                                        "astar",
+                                                                        "bfs",
+                                                                        "bfws1",
+                                                                        "bfws2",
+                                                                        "bfws1-rx",
+                                                                        "bfws2-rx",
+                                                                        "dq-bfws1-rx",
+                                                                        "dq-bfws2-rx",
+                                                                        "alt-bfws1",
+                                                                        "alt-bfws2",
+                                                                        "gbfs",
+                                                                        "iw1",
+                                                                        "iw2",
+                                                                        "iw1gc",
+                                                                        "iw2gc",
+                                                                        "lazy",
+                                                                        "lazy-po",
+                                                                        "lazy-prune"),
                         required=True)
     parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
                         default=None,
@@ -64,6 +82,10 @@ def parse_options():
                         help="flag if the Datalog model should keep duplicated auxiliary rules")
     parser.add_argument("--add-inequalities", action="store_true",
                         help="flag if the Datalog model should add inequalities to rules")
+    parser.add_argument("--only-effects-novelty-check", action="store_true",
+                        help="flag if the novelty evaluation of a state should only consider atoms in the applied action effect")
+    parser.add_argument("--novelty-early-stop", action="store_true",
+                        help="flag if the novelty evaluation of a state should stop as soon as the w-value is defined")
     parser.add_argument("--unit-cost", action="store_true",
                            help="flag if the actions should be treated as unit-cost actions")
     parser.add_argument("--validate", action="store_true",
@@ -139,7 +161,7 @@ def main():
         raise OSError("Planner not built!")
 
     # If it is the lifted heuristic, we need to obtain the Datalog model
-    if options.heuristic == 'add' or options.heuristic == 'hmax':
+    if options.heuristic in ['add', 'hmax'] or options.search in ['bfws1-rx', 'bfws2-rx', 'dq-bfws1-rx', 'dq-bfws2-rx', 'alt1', 'alt2']:
        PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
        if options.keep_action_predicates:
            PYTHON_EXTRA_OPTIONS.append('--keep-action-predicates')
@@ -148,6 +170,13 @@ def main():
        if options.add_inequalities:
            PYTHON_EXTRA_OPTIONS.append('--add-inequalities')
        CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
+
+
+    # If it is a width-based search, we might need to pass more flags
+    if options.only_effects_novelty_check:
+        CPP_EXTRA_OPTIONS += ['--only-effects-novelty-check', str(1)]
+    if options.novelty_early_stop:
+        CPP_EXTRA_OPTIONS += ['--novelty-early-stop', str(1)]
 
 
     # Checks if unit-cost flag is true

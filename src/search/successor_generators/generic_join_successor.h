@@ -30,6 +30,8 @@ class Table;
  * @see database/join.cc
  */
 class GenericJoinSuccessor : public SuccessorGenerator {
+
+
 public:
     explicit GenericJoinSuccessor(const Task &task);
 
@@ -67,6 +69,9 @@ public:
     const std::unordered_set<GroundAtom, TupleHash>
     &get_tuples_from_static_relation(size_t i) const;
 
+    const std::vector<std::pair<int, GroundAtom>> &get_added_atoms() const {
+        return added_atoms;
+    }
 
 protected:
     const StaticInformation& static_information;
@@ -110,10 +115,10 @@ protected:
 
     static bool is_trivially_inapplicable(const DBState &state, const ActionSchema &action) ;
 
-    static void apply_nullary_effects(const ActionSchema &action,
+    void apply_nullary_effects(const ActionSchema &action,
                                       std::vector<bool> &new_nullary_atoms) ;
 
-    static void apply_ground_action_effects(const ActionSchema &action,
+    void apply_ground_action_effects(const ActionSchema &action,
                                             std::vector<Relation> &new_relation) ;
 
     void apply_lifted_action_effects(const ActionSchema &action,

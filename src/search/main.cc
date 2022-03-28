@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
             "(This is guaranteed by the default translator.)" << endl;
 
     // Let's create a couple unique_ptr's that deal with mem allocation themselves
-    std::unique_ptr<SearchBase> search(SearchFactory::create(opt.get_search_engine(), opt.get_state_representation()));
+    std::unique_ptr<SearchBase> search(SearchFactory::create(opt, opt.get_search_engine(), opt.get_state_representation()));
     std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt, task));
     std::unique_ptr<SuccessorGenerator> sgen(SuccessorGeneratorFactory::create(opt.get_successor_generator(),
                                                                                opt.get_seed(),

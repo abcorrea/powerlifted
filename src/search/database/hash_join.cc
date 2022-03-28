@@ -25,7 +25,7 @@ void hash_join(Table &t1, const Table &t2) {
     /*
      * This function implements a hash join as follows
      *
-     * 1. Star by checking which indexes have the same argument
+     * 1. Start by checking which indexes have the same argument
      * 2. If there is no match, we perform a cartesian product
      * 3. Otherwise, we loop over the first table, create a hash over the
      *    matching keys. Then, loop over the second table searching for hits

@@ -19,6 +19,8 @@ class AdditiveHeuristic : public Heuristic{
     int state_counter;
 
 public:
+    AdditiveHeuristic(const Task &task) : AdditiveHeuristic(task, DatalogTransformationOptions()){};
+
     AdditiveHeuristic(const Task &task, DatalogTransformationOptions opts);
 
     int compute_heuristic(const DBState &s, const Task &task) override;

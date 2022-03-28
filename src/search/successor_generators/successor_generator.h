@@ -19,8 +19,11 @@ typedef DBState StaticInformation;
  *
  */
 class SuccessorGenerator {
+
 public:
     virtual ~SuccessorGenerator() = default;
+
+    std::vector<std::pair<int, std::vector<int>>> added_atoms;
 
     /**
      * Compute the instantiations of the given action schema that are applicable in
@@ -40,6 +43,15 @@ public:
     virtual DBState generate_successor(const LiftedOperatorId &op,
                                const ActionSchema& action,
                                const DBState &state) = 0;
+
+    void add_to_added_atoms(int i, const std::vector<int> & atom) {
+        added_atoms.emplace_back(i, atom);
+    }
+
+    virtual const std::vector<std::pair<int, std::vector<int>>> &get_added_atoms() {
+        return added_atoms;
+    }
+
 };
 
 #endif //SEARCH_SUCCESSOR_GENERATOR_H

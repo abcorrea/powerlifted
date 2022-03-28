@@ -22,6 +22,8 @@ class FFHeuristic : public Heuristic{
     datalog::AnnotationGenerator get_annotation_generator();
 
 public:
+    FFHeuristic(const Task &task) : FFHeuristic(task, DatalogTransformationOptions()) {}
+
     FFHeuristic(const Task &task, DatalogTransformationOptions opts);
 
     int compute_heuristic(const DBState &s, const Task &task) override;

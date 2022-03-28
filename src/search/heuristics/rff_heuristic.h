@@ -18,6 +18,8 @@ class RFFHeuristic : public Heuristic {
 
 
 public:
+    RFFHeuristic(const Task &task) : RFFHeuristic(task, DatalogTransformationOptions()){};
+
     RFFHeuristic(const Task &task, DatalogTransformationOptions opts);
 
     int compute_heuristic(const DBState &s, const Task &task) override;

@@ -3,7 +3,6 @@
 #include "utils.h"
 
 #include "../action.h"
-#include "../task.h"
 
 #include "../heuristics/heuristic.h"
 #include "../open_lists/greedy_open_list.h"

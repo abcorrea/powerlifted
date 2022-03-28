@@ -16,10 +16,15 @@ parameters:
 Use the `build.py` script to build the planner first.
 
 ### Available Options for `SEARCH`:
+- `astar`: A* Search
 - `bfs`: Breadth-First Search (This option was previously called `naive`. You
   can still use `naive` with the `powerlifted.py` script but the planner will internally
   use the new keyword `bfs`.)
-- `astar`: A* Search
+- `bfws1` and `bfws2`: Best-First Width Search with w=1 and w=2, respectively.
+- `bfws1-rx` and `bfws2-rx`: BFWS(R_x) with w=1 and w=2, respectively. (See Corrêa and Seipp 2022.)
+- `dq-bfws1-rx` and `dq-bfws2-rx`: DQ(R_x) with w=1 and w=2, respectively. (See Corrêa and Seipp 2022.)
+- `alt1` and `alt2`: [R_x, h] with w=1 and w=2, respectively. The choice of h is
+  given the `HEURISTIC` option. (See Corrêa and Seipp 2022.)
 - `gbfs`: Greedy Best-First Search
 - `lazy`: Lazy Best-First Search
 - `lazy-po`: Lazy Best-First Search with Boosted Dual-Queue
@@ -28,6 +33,7 @@ non-preferred operators
 
 ### Available Options for `HEURISTIC`:
 - `add`: The additive heuristic
+- `ff`: The FF heuristic
 - `blind`: No Heuristic
 - `ff`: The FF heuristic. You can run run `ff` using different options for the Datalog program:
   - `ff-norename`: `ff` without renaming variables in the logical program
