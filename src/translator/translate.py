@@ -74,6 +74,7 @@ def main():
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
+    
 
     with timers.timing("Checking static predicates"):
         static_pred = static_predicates.check(task)

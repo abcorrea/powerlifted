@@ -87,6 +87,8 @@ add_executable(search
         search_statistics
         options.h open_lists/greedy_open_list.h
         search_engines/lazy_search.cc search_engines/lazy_search.h
+        search_engines/lazy_search.cc search_engines/lazy_search.h
+        search_engines/astar_search.cc search_engines/astar_search.h
         datalog/datalog.cc datalog/datalog.h
         datalog/arguments.h
         datalog/datalog_atom.cc datalog/datalog_atom.h
@@ -117,7 +119,6 @@ add_executable(search
         datalog/rule_matcher.cc datalog/rule_matcher.h heuristics/add_heuristic.cc
         heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc
         datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h
-        datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h
-        )
+        datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES} absl::flat_hash_map)
