@@ -11,7 +11,7 @@ The `powerlifted.py` script solves a PDDL task provided as input. It also builds
 the planner if the `--build` parameter is passed. The script has the following
 parameters:
 
-```$ ./powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e HEURISTIC -g GENERATOR [--state STATE REPR.] [ADDITIONAL OPTIONS] [--seed RANDOM SEED] [--build]```
+```$ ./powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e HEURISTIC -g GENERATOR [--state STATE REPR.] [ADDITIONAL OPTIONS] [--build]```
 
 Use the `build.py` script to build the planner first.
 
@@ -33,13 +33,8 @@ non-preferred operators
 
 ### Available Options for `HEURISTIC`:
 - `add`: The additive heuristic
-- `ff`: The FF heuristic
 - `blind`: No Heuristic
-- `ff`: The FF heuristic. You can run run `ff` using different options for the Datalog program:
-  - `ff-norename`: `ff` without renaming variables in the logical program
-  - `ff-nocollapse`: `ff` without collapsing temporary predicates
-  - `ff-noremove`: `ff` without removing action predicates from the Datalog program
-  - Combinations of the options above: `ff-norename-nocollapse`, `ff-norename-noremove`, `ff-nocollapse-noremove`, `ff-noremove-nocollapse-noremove`
+- `ff`: The FF heuristic
 - `goalcount`: The goal-count/STRIPS heuristic
 - `hmax`: The hmax heuristic
 - `rff`: The rule-based FF heuristic
@@ -61,10 +56,17 @@ non-preferred operators
 - `extensional`: Use the extensional representation where a state is a bitset
   where the ith-bit is true if the fact associated to it is true in this
   state. This representation requires the grounding of facts (but not of
-  actions) which, right now, is performed in the search component.
+  actions) which, right now, is performed in the search component. *Warning*:
+  this options does not support all `HEURISTIC` options.
+
 
 ### Available `ADDITIONAL OPTIONS`:
-- `[--translator-output-file TRANSLATOR_FILE]`: Output of the intermediate representation to be parsed by the search component will be saved into `TRANSLATOR_FILE`. (Default: `output.lifted`)
+- `[--seed RANDOM SEED]`: Random seed for the random number generator.
+- `[--translator-output-file TRANSLATOR_FILE]`: Output of the intermediate
+  representation to be parsed by the search component will be saved into
+  `TRANSLATOR_FILE`. (Default: `output.lifted`)
+- `[--unit-cost]`: Use unit cost  (i.e., all costs are equal to 1) instead of
+  the costs specified in the domain file.
 - `[--validate]`: Runs VAL after a plan is found to validate it. This requires
   [VAL](https://github.com/KCL-Planning/VAL) to be added as `validate` to the `PATH`.
 
@@ -95,10 +97,12 @@ how to run the planner with the Singularity image:
  - Python 3.5+
  - Boost
 
+The planner also uses data-structures from [Abseil](https://abseil.io/). The
+source code of Abseil is contained in the `src/search/abseil-cpp` directory
+
 ## Limitations
  - **Axioms**: not supported
  - **Conditional effects**: not supported
- - **Costs**: ignored
  - **Negated preconditions**: only inequality
  - **Quantifiers**: not supported
 
@@ -106,5 +110,7 @@ how to run the planner with the Singularity image:
 
  1. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2020. Lifted Successor Generation using Query Optimization Techniques. In Proc. ICAPS 2020, pp. 80-89. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2020.pdf)
  2. Corrêa, A. B.; Francès, G.; Pommerening, F.; and Helmert, M. 2021. Delete-Relaxation Heuristics for Lifted Classical Planning. In Proc. ICAPS 2021, pp. 94-102. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2021.pdf)
- 3. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2022. The FF Heuristic for Lifted Classical Planning. In Proc. AAAI 2022. (To Appear)
- 4. Corrêa, A. B.; and Seipp, J. 2022. Best-First Width Search for Lifted Classical Planning. In Proc. ICAPS 2022. (To Appear)
+ 3. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2022. The
+    FF Heuristic for Lifted Classical Planning. In Proc. AAAI 2022. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-aaai2022.pdf)
+ 4. Corrêa, A. B.; and Seipp, J. 2022. Best-First Width Search for Lifted
+    Classical Planning. In Proc. ICAPS 2022. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-seipp-icaps2022.pdf)
