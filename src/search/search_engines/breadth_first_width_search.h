@@ -18,7 +18,6 @@ class BreadthFirstWidthSearch : public SearchBase {
     bool prune_states;
     bool only_effects_opt;
     bool early_stop;
-    std::string datalog_file_name;
 
 protected:
     SearchSpace<PackedStateT> space;

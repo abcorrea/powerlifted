@@ -29,12 +29,6 @@ utils::ExitCode DualQueueBFWS<PackedStateT>::search(const Task &task,
     size_t number_goal_conditions = task.get_goal().goal.size() + task.get_goal().positive_nullary_goals.size() + task.get_goal().negative_nullary_goals.size();
     size_t number_relevant_atoms;
 
-    std::ifstream datalog_file(datalog_file_name);
-    if (!datalog_file) {
-        std::cerr << "Error opening the Datalog model file: " << datalog_file_name << std::endl;
-        exit(-1);
-    }
-
     FFHeuristic delete_free_h(task);
 
     atom_counter = initialize_counter_with_useful_atoms(task, delete_free_h);

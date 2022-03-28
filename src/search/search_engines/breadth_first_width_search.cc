@@ -44,7 +44,6 @@ BreadthFirstWidthSearch<PackedStateT>::BreadthFirstWidthSearch(int width,
     }
     if (method == StandardNovelty::R_X) {
         std::cout << "Using version with R-X" << std::endl;
-        datalog_file_name = opt.get_datalog_file();
     }
 }
 

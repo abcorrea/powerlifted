@@ -20,7 +20,6 @@ class DualQueueBFWS : public SearchBase {
     AtomCounter atom_counter;
     int width;
     bool only_effects_opt;
-    std::string datalog_file_name;
 
     int priority_preferred;
     int priority_regular;
@@ -48,7 +47,6 @@ protected:
 public:
     explicit DualQueueBFWS(int width, const Options &opt) : width(width) {
         std::cout << "Using Dual-Queue BFWS" << std::endl;
-        datalog_file_name = opt.get_datalog_file();
         priority_preferred = BOOST_PREF_OPEN_LIST;
         priority_regular = 0;
     }
