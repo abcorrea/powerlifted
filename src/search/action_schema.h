@@ -1,6 +1,7 @@
 #ifndef SEARCH_ACTION_SCHEMA_H
 #define SEARCH_ACTION_SCHEMA_H
 
+#include "atom.h"
 #include "structures.h"
 
 #include <string>

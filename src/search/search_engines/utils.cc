@@ -51,11 +51,12 @@ void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
     int total_plan_length = 0;
     std::ofstream plan_file("sas_plan");
     for (const LiftedOperatorId &a:plan) {
-        total_plan_cost += task.actions[a.get_index()].get_cost();
+        const ActionSchema &action = task.get_action_schema_by_index(a.get_index());
+        total_plan_cost += action.get_cost();
         total_plan_length += 1;
-        plan_file << total_plan_length << ": (" << task.actions[a.get_index()].get_name() << " ";
+        plan_file << total_plan_length << ": (" << action.get_name() << " ";
         for (const int obj : a.get_instantiation()) {
-            plan_file << task.objects[obj].getName() << " ";
+            plan_file << task.objects[obj].get_name() << " ";
         }
         plan_file << ")\n";
     }

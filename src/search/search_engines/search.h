@@ -44,8 +44,7 @@ protected:
     static bool is_useful_operator(
         const Task &task,
         const DBState &state,
-        const std::map<int, std::vector<GroundAtom>> &useful_atoms,
-        const std::vector<bool> &useful_nullary_atoms);
+        const std::vector<std::vector<GroundAtom>> &useful_atoms);
 
 };
 

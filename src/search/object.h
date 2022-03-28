@@ -6,20 +6,21 @@
 #include <vector>
 
 class Object {
+
+    std::string name;
+    int index;
+    std::vector<int> types;
+
 public:
-  Object(std::string name, int index, std::vector<int> types)
-      : name(std::move(name)), index(index), types(std::move(types)) {}
+    Object(std::string name, int index, std::vector<int> types)
+        : name(std::move(name)), index(index), types(std::move(types)) {}
 
-  const std::string &getName() const { return name; }
+    const std::string &get_name() const { return name; }
 
-  int getIndex() const { return index; }
+    int get_index() const { return index; }
 
-  const std::vector<int> &getTypes() const { return types; }
+    const std::vector<int> &get_types() const { return types; }
 
-private:
-  std::string name;
-  int index;
-  std::vector<int> types;
 };
 
 #endif // SEARCH_OBJECT_H

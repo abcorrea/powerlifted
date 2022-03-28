@@ -39,11 +39,19 @@ public:
 
     StateID get_top_node(GreedyOpenList &preferred, GreedyOpenList &other) {
         if (priority_preferred >= priority_regular) {
-            if (not preferred.empty()) return preferred.remove_min();
-            else return other.remove_min();
+            if (not preferred.empty()) {
+                return preferred.remove_min();
+            }
+            else {
+                return other.remove_min();
+            }
         } else {
-            if (not other.empty()) return other.remove_min();
-            else return preferred.remove_min();
+            if (not other.empty()) {
+                return other.remove_min();
+            }
+            else {
+              return preferred.remove_min();
+            }
         }
     }
 };

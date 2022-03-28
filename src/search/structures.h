@@ -29,6 +29,10 @@ struct Parameter {
     std::string name;
     int index;
     int type;
+
+    int get_index() {
+        return index;
+    }
 };
 
 
@@ -42,10 +46,19 @@ struct Parameter {
  * @var constant: Indicates whether the argument is a constanst or not (free variable, then).
  *
  */
-struct Argument {
-    Argument(int index, bool constant) : index(index), constant(constant) {}
+class Argument {
     int index;
     bool constant;
+public:
+    Argument(int index, bool constant) : index(index), constant(constant) {}
+
+    int get_index() const {
+        return index;
+    }
+
+    bool is_constant() const {
+        return constant;
+    }
 };
 
 
@@ -74,34 +87,5 @@ struct Relation {
     int predicate_symbol{};
     std::unordered_set<GroundAtom, TupleHash> tuples;
 };
-
-
-/**
- * @brief Represent a lifted atom by its name, predicate symbol index,
- * list of arguments, and whether it is negated or not.
- *
- * @var name: String representing atom name
- * @var predicate_symbol: predicate symbol index
- * @var arguments: list of Argument objects representing the free variables
- * or constants of the atom
- * @var negated: boolean variable indicating whether the atom is negated
- * or not (in whatever context it occurs)
- *
- * @see Argument (structures.h)
- */
-struct Atom {
-    Atom(std::string &&name, int predicate_symbol,
-        std::vector<Argument> &&tuples, bool negated) :
-            name(std::move(name)),
-            predicate_symbol(predicate_symbol),
-            arguments(std::move(tuples)),
-            negated(negated) {}
-
-    std::string name;
-    int predicate_symbol;
-    std::vector<Argument> arguments;
-    bool negated;
-};
-
 
 #endif //SEARCH_STRUCTURES_H

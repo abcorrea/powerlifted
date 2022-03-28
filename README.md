@@ -29,8 +29,14 @@ non-preferred operators
 ### Available Options for `HEURISTIC`:
 - `add`: The additive heuristic
 - `blind`: No Heuristic
+- `ff`: The FF heuristic. You can run run `ff` using different options for the Datalog program:
+  - `ff-norename`: `ff` without renaming variables in the logical program
+  - `ff-nocollapse`: `ff` without collapsing temporary predicates
+  - `ff-noremove`: `ff` without removing action predicates from the Datalog program
+  - Combinations of the options above: `ff-norename-nocollapse`, `ff-norename-noremove`, `ff-nocollapse-noremove`, `ff-noremove-nocollapse-noremove`
 - `goalcount`: The goal-count/STRIPS heuristic
 - `hmax`: The hmax heuristic
+- `rff`: The rule-based FF heuristic
 
 ### Available Options for `GENERATOR`:
 - `join`: Join program using the predicate order given in the PDDL file
@@ -53,10 +59,6 @@ non-preferred operators
 
 ### Available `ADDITIONAL OPTIONS`:
 - `[--translator-output-file TRANSLATOR_FILE]`: Output of the intermediate representation to be parsed by the search component will be saved into `TRANSLATOR_FILE`. (Default: `output.lifted`)
-- `[--datalog-file DATALOG_FILE]`: Datalog program used by the h-add heuristic will be saved into `DATALOG_FILE`. (Default: `model.lp`)
-- `[--keep-action-predicates]`: Keeps action predicates in the Datalog program
-- `[--keep-duplicated-rules]`: Keep duplicated Datalog rules in the Datalog program.
-- `[--add-inequalities]`: Compile inequalities into an EDB predicate in the Datalog program and replace `(not (= ?x ?y))` atoms with this new EDB predicate in actions.
 - `[--validate]`: Runs VAL after a plan is found to validate it. This requires
   [VAL](https://github.com/KCL-Planning/VAL) to be added as `validate` to the `PATH`.
 
@@ -81,12 +83,6 @@ how to run the planner with the Singularity image:
 
 ```./powerlifted.sif -i /path/to/instance.pddl -s lazy-po -e add -g yannakakis --datalog-file model.lp --translator-output-file output.lifted```
 
-
-
-## Components
- - Translator
- - Search component
-
 ## Requirements
  - A C++17-compliant compiler
  - CMake 3.9+
@@ -103,5 +99,6 @@ how to run the planner with the Singularity image:
  ## References
 
  1. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2020. Lifted Successor Generation using Query Optimization Techniques. In Proc. ICAPS 2020, pp. 80-89. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2020.pdf)
- 2. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2020. Code from the paper "Lifted Successor Generationusing Query Optimization Techniques".  https://doi.org/10.5281/zenodo.3687008
- 3. Corrêa, A. B.; Francès, G.; Pommerening, F.; and Helmert, M. 2021. Delete-Relaxation Heuristics for Lifted Classical Planning. In Proc. ICAPS 2021. (To appear)
+ 2. Corrêa, A. B.; Francès, G.; Pommerening, F.; and Helmert, M. 2021. Delete-Relaxation Heuristics for Lifted Classical Planning. In Proc. ICAPS 2021, pp. 94-102. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2021.pdf)
+ 3. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2022. The FF Heuristic for Lifted Classical Planning. In Proc. AAAI 2022. (To Appear)
+ 4. Corrêa, A. B.; and Seipp, J. 2022. Best-First Width Search for Lifted Classical Planning. In Proc. ICAPS 2022. (To Appear)

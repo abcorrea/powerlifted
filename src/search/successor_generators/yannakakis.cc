@@ -33,16 +33,19 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
       *
       * A lot of duplication from Full reducer successor generator.
       */
-    full_reducer_order.resize(task.actions.size());
+
+    size_t number_action_schemas = task.get_number_action_schemas();
+
+    full_reducer_order.resize(number_action_schemas);
     // Join tree order is the order in which the project-join is performed in a join tree.
     // Every entry is a pair of nodes, where the first one is the child of the second.
     // The idea is that we can compute a join tree from the GYO algorithm in a bottom-up
     // style based on the ear removal order. E.g., if we remove E in favor of F, then
     // E is a child of F in the tree.
-    join_trees.reserve(task.actions.size());
-    distinguished_variables.resize(task.actions.size());
-    remaining_join.resize(task.actions.size());
-    for (const ActionSchema &action : task.actions) {
+    join_trees.reserve(number_action_schemas);
+    distinguished_variables.resize(number_action_schemas);
+    remaining_join.resize(number_action_schemas);
+    for (const ActionSchema &action : task.get_action_schemas()) {
         get_distinguished_variables(action);
         JoinTree jt;
         vector<int> hypernodes;
@@ -145,7 +148,8 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
             remaining_join[action.get_index()].reserve(
                 removed.size() + missing_precond.size());
             for (size_t k = 0; k < missing_precond.size(); ++k) {
-                q.emplace(action.get_precondition()[k].arguments.size(),
+                // TODO This is really ugly
+                q.emplace(action.get_precondition()[k].get_arguments().size(),
                           missing_precond[k]);
             }
             for (size_t k = 0; k < removed.size(); ++k) {
@@ -162,14 +166,15 @@ YannakakisSuccessorGenerator::YannakakisSuccessorGenerator(const Task &task)
 }
 
 void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchema &action) {
+    int action_index = action.get_index();
     for (const Atom &eff : action.get_effects()) {
-        for (const Argument &arg : eff.arguments) {
-            if (!arg.constant)
-                distinguished_variables[action.get_index()].insert(arg.index);
+        for (const Argument &arg : eff.get_arguments()) {
+            if (!arg.is_constant())
+                distinguished_variables[action_index].insert(arg.get_index());
         }
         for (const auto &i : action.get_inequalities()) {
-            distinguished_variables[action.get_index()].insert(i.first);
-            distinguished_variables[action.get_index()].insert(i.second);
+            distinguished_variables[action_index].insert(i.first);
+            distinguished_variables[action_index].insert(i.second);
         }
     }
 }
@@ -212,7 +217,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     assert(tables.size() == actiondata.relevant_precondition_atoms.size());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
-        size_t s = semi_join(tables[sj.first], tables[sj.second]);
+        size_t s = semi_join(tables[sj.second], tables[sj.first]);
         if (s==0) {
             return Table::EMPTY_TABLE();
         }

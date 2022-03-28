@@ -23,8 +23,11 @@ set(CMAKE_CXX_FLAGS_RELEASE
 
 # Debug and Profile
 set(CMAKE_CXX_FLAGS_DEBUG
-        "${CMAKE_CXX_FLAGS_DEBUG} -Og -pg \
+        "${CMAKE_CXX_FLAGS_DEBUG} -O0 -pg \
         -fsanitize=undefined -fno-omit-frame-pointer")
+
+# Process Abseil's CMake build system
+add_subdirectory(abseil-cpp)
 
 
 add_executable(search
@@ -35,6 +38,7 @@ add_executable(search
         states/state.cc states/state.h
         parser.cc parser.h
         goal_condition.h
+        atom.h
         action_schema.cc action_schema.h
         structures.h
         search_engines/search_factory
@@ -82,20 +86,39 @@ add_executable(search
         algorithms/dynamic_bitset.h
         search_statistics
         options.h open_lists/greedy_open_list.h
-        lifted_heuristic/lifted_heuristic.cc lifted_heuristic/lifted_heuristic.h
-        lifted_heuristic/arguments.h
-        lifted_heuristic/atom.cc lifted_heuristic/atom.h
-        lifted_heuristic/fact.cc lifted_heuristic/fact.h
-        lifted_heuristic/term.h
-        lifted_heuristic/logic_program.cc lifted_heuristic/logic_program.h
-        lifted_heuristic/object.cc lifted_heuristic/object.h
-        lifted_heuristic/rules/rule_base.cc lifted_heuristic/rules/rule_base.h
-        lifted_heuristic/parser.cc lifted_heuristic/parser.h
-        lifted_heuristic/rules/join.h lifted_heuristic/rules/product.h lifted_heuristic/rules/project.h
-        lifted_heuristic/rule_matcher.cc lifted_heuristic/rule_matcher.h
-        lifted_heuristic/grounders/grounder.h
-        lifted_heuristic/grounders/weighted_grounder.cc lifted_heuristic/grounders/weighted_grounder.h
         search_engines/lazy_search.cc search_engines/lazy_search.h
-        search_engines/astar_search.cc search_engines/astar_search.h)
+        search_engines/lazy_search.cc search_engines/lazy_search.h
+        search_engines/astar_search.cc search_engines/astar_search.h
+        datalog/datalog.cc datalog/datalog.h
+        datalog/arguments.h
+        datalog/datalog_atom.cc datalog/datalog_atom.h
+        datalog/datalog_fact.cc datalog/datalog_fact.h
+        datalog/term.h
+        datalog/object.cc datalog/object.h
+        datalog/rules/rule_base.cc datalog/rules/rule_base.h
+        delete_relaxation_heuristics/delete_relaxation_heuristic.h
+        datalog/rules/generic_rule.h
+        datalog/rules/join.h
+        datalog/rules/product.h
+        datalog/rules/project.h
+        heuristics/ff_heuristic.h
+        datalog/annotations/annotation.h
+        datalog/ground_rule.h
+        heuristics/ff_heuristic.cc
+        heuristics/rff_heuristic.cc
+        heuristics/rff_heuristic.h
+        heuristics/datalog_transformation_options.h
+        datalog/achievers.h
+        datalog/transformations/action_predicate_removal.h
+        datalog/transformations/normal_form.h
+        datalog/transformations/greedy_join.h
+        datalog/transformations/goal_rule.h
+        datalog/transformations/generate_edb.h datalog/rules/variable_source.h
+        datalog/grounder/grounder.h
+        datalog/grounder/weighted_grounder.cc datalog/grounder/weighted_grounder.h
+        datalog/rule_matcher.cc datalog/rule_matcher.h heuristics/add_heuristic.cc
+        heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc
+        datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h
+        datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h)
 
-target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES} absl::flat_hash_map)

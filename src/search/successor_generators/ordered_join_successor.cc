@@ -17,7 +17,7 @@ OrderedJoinSuccessorGenerator<OrderT>::OrderedJoinSuccessorGenerator(const Task 
     : GenericJoinSuccessor(task) {
     vector<pair<int,int>> to_sort;
     int a_idx = 0;
-    assert(action_data.size() == task.actions.size());
+    assert(action_data.size() == task.get_number_action_schemas());
     precondition_to_order.resize(action_data.size());
     for (auto &a : action_data) {
         to_sort.clear();

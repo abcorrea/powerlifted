@@ -46,16 +46,16 @@ void Task::dump_state(DBState s) const
     const auto& nullary_atoms = s.get_nullary_atoms();
     for (size_t j = 0; j < nullary_atoms.size(); ++j) {
         if (nullary_atoms[j])
-            cout << predicates[j].getName() << ", ";
+            cout << predicates[j].get_name() << ", ";
     }
     const auto& relations = s.get_relations();
     for (size_t i = 0; i < relations.size(); ++i) {
-        string relation_name = predicates[i].getName();
+        string relation_name = predicates[i].get_name();
         unordered_set<GroundAtom, TupleHash> tuples = relations[i].tuples;
         for (auto &tuple : tuples) {
             cout << relation_name << "(";
             for (auto obj : tuple) {
-                cout << objects[obj].getName() << ",";
+                cout << objects[obj].get_name() << ",";
             }
             cout << "), ";
         }
@@ -69,18 +69,18 @@ void Task::dump_goal()
      * Output goal condition in a readable format.
      */
     for (int g : goal.positive_nullary_goals) {
-        cout << predicates[g].getName() << endl;
+        cout << predicates[g].get_name() << endl;
     }
     for (int g : goal.negative_nullary_goals) {
-        cout << "Not " << predicates[g].getName() << endl;
+        cout << "Not " << predicates[g].get_name() << endl;
     }
     for (const auto &g : goal.goal) {
-        if (g.negated) {
+        if (g.is_negated()) {
             cout << "Not ";
         }
-        cout << predicates[g.predicate].getName() << " ";
-        for (int arg : g.args) {
-            cout << objects[arg].getName() << " ";
+        cout << predicates[g.get_predicate_index()].get_name() << " ";
+        for (int arg : g.get_arguments()) {
+            cout << objects[arg].get_name() << " ";
         }
         cout << endl;
     }
@@ -97,7 +97,7 @@ void Task::create_goal_condition(std::vector<AtomicGoal> goals,
 
 void Task::initialize_action_schemas(const std::vector<ActionSchema> &action_list)
 {
-    actions = action_list;
+    action_schemas = action_list;
 }
 
 bool Task::is_goal(const DBState &state) const
@@ -111,15 +111,15 @@ bool Task::is_goal(const DBState &state) const
             return false;
     }
     for (const AtomicGoal &atomicGoal : goal.goal) {
-        int goal_predicate = atomicGoal.predicate;
+        int goal_predicate = atomicGoal.get_predicate_index();
         const Relation &relation_at_goal_predicate = state.get_relations()[goal_predicate];
 
         assert(!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate());
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
 
-        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.args);
+        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.get_arguments());
         const auto end = relation_at_goal_predicate.tuples.end();
-        if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
+        if ((!atomicGoal.is_negated() && it == end) || (atomicGoal.is_negated() && it != end)) {
             return false;
         }
     }
@@ -135,15 +135,15 @@ bool Task::is_trivially_unsolvable() const
      * This should be guaranteed by the translator. Just a safety check.
      */
     for (const AtomicGoal &atomicGoal : goal.goal) {
-        int goal_predicate = atomicGoal.predicate;
+        int goal_predicate = atomicGoal.get_predicate_index();
         Relation relation_at_goal_predicate = static_info.get_relations()[goal_predicate];
         if (!predicates[relation_at_goal_predicate.predicate_symbol].isStaticPredicate())
             continue;
         assert(goal_predicate == relation_at_goal_predicate.predicate_symbol);
 
-        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.args);
+        const auto it = relation_at_goal_predicate.tuples.find(atomicGoal.get_arguments());
         const auto end = relation_at_goal_predicate.tuples.end();
-        if ((!atomicGoal.negated && it == end) || (atomicGoal.negated && it != end)) {
+        if ((!atomicGoal.is_negated() && it == end) || (atomicGoal.is_negated() && it != end)) {
             return true;
         }
     }
@@ -155,8 +155,8 @@ std::vector<std::vector<int>> Task::compute_object_index() const {
     std::vector<std::vector<int>> objects_per_type(type_names.size());
 
     for (const Object &o:objects) {
-        for (int t : o.getTypes()) {
-            objects_per_type[t].push_back(o.getIndex());
+        for (int t : o.get_types()) {
+            objects_per_type[t].push_back(o.get_index());
         }
     }
 

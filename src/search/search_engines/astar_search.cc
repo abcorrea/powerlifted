@@ -69,7 +69,7 @@ utils::ExitCode AStarSearch<PackedStateT>::search(const Task &task,
 
         // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
         // performance, we could implement some form of std iterator
-        for (const auto& action:task.actions) {
+        for (const auto& action:task.get_action_schemas()) {
             auto applicable = generator.get_applicable_actions(action, state);
             statistics.inc_generated(applicable.size());
 
