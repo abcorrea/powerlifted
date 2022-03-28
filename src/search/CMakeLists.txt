@@ -86,8 +86,10 @@ add_executable(search
         algorithms/dynamic_bitset.h
         search_statistics
         options.h open_lists/greedy_open_list.h
-        search_engines/breadth_first_width_search.cc search_engines/breadth_first_width_search.h novelty/standard_novelty.cc novelty/standard_novelty.h open_lists/tiebreaking_open_list.h novelty/achieved_ground_atoms.h novelty/atom_counter.h search_engines/dual_queue_bfws.cc search_engines/dual_queue_bfws.h novelty/node_novelty.h search_engines/alternated_greedy_search.cc search_engines/alternated_greedy_search.h
+        search_engines/breadth_first_width_search.cc search_engines/breadth_first_width_search.h novelty/standard_novelty.cc novelty/standard_novelty.h open_lists/tiebreaking_open_list.h novelty/achieved_ground_atoms.h novelty/atom_counter.h search_engines/dual_queue_bfws.cc search_engines/dual_queue_bfws.h novelty/node_novelty.h search_engines/alternated_bfws.cc search_engines/alternated_bfws.h
         search_engines/lazy_search.cc search_engines/lazy_search.h
+        search_engines/lazy_search.cc search_engines/lazy_search.h
+        search_engines/astar_search.cc search_engines/astar_search.h
         datalog/datalog.cc datalog/datalog.h
         datalog/arguments.h
         datalog/datalog_atom.cc datalog/datalog_atom.h
@@ -106,6 +108,7 @@ add_executable(search
         heuristics/ff_heuristic.cc
         heuristics/rff_heuristic.cc
         heuristics/rff_heuristic.h
+        heuristics/datalog_transformation_options.h
         datalog/achievers.h
         datalog/transformations/action_predicate_removal.h
         datalog/transformations/normal_form.h
@@ -115,6 +118,8 @@ add_executable(search
         datalog/grounder/grounder.h
         datalog/grounder/weighted_grounder.cc datalog/grounder/weighted_grounder.h
         datalog/rule_matcher.cc datalog/rule_matcher.h heuristics/add_heuristic.cc
-        heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h)
+        heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc
+        datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h
+        datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h)
 
 target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES} absl::flat_hash_map)

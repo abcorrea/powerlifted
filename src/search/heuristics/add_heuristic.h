@@ -2,6 +2,7 @@
 #define SEARCH_HEURISTICS_ADD_HEURISTIC_H_
 
 #include "heuristic.h"
+#include "datalog_transformation_options.h"
 
 #include "../action.h"
 #include "../task.h"
@@ -18,7 +19,9 @@ class AdditiveHeuristic : public Heuristic{
     int state_counter;
 
 public:
-    AdditiveHeuristic(const Task &task);
+    AdditiveHeuristic(const Task &task) : AdditiveHeuristic(task, DatalogTransformationOptions()){};
+
+    AdditiveHeuristic(const Task &task, DatalogTransformationOptions opts);
 
     int compute_heuristic(const DBState &s, const Task &task) override;
 };

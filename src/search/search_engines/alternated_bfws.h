@@ -1,5 +1,5 @@
-#ifndef SEARCH_SEARCH_ENGINES_ALTERNATED_GREEDY_SEARCH_H_
-#define SEARCH_SEARCH_ENGINES_ALTERNATED_GREEDY_SEARCH_H_
+#ifndef SEARCH_SEARCH_ENGINES_ALTERNATED_BFWS_H_
+#define SEARCH_SEARCH_ENGINES_ALTERNATED_BFWS_H_
 
 #include "search.h"
 #include "search_space.h"
@@ -16,7 +16,7 @@
 #include "../options.h"
 
 template <class PackedStateT>
-class AlternatedGreedySearch : public SearchBase {
+class AlternatedBFWS : public SearchBase {
     AtomCounter atom_counter;
     int width;
     bool only_effects_opt;
@@ -31,7 +31,7 @@ protected:
     AtomCounter initialize_counter_with_gc(const Task &task);
 
 public:
-    explicit AlternatedGreedySearch(int width, const Options &opt) : width(width) {
+    explicit AlternatedBFWS(int width, const Options &opt) : width(width) {
         std::cout << "Using Dual-Queue BFWS" << std::endl;
         // By default we use h-add as heuristic, unless explicitly asked to use FF
         heuristic_type = opt.get_evaluator();
@@ -45,4 +45,4 @@ public:
 };
 
 
-#endif //SEARCH_SEARCH_ENGINES_ALTERNATED_GREEDY_SEARCH_H_
+#endif //SEARCH_SEARCH_ENGINES_ALTERNATED_BFWS_H_

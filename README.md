@@ -16,6 +16,7 @@ parameters:
 Use the `build.py` script to build the planner first.
 
 ### Available Options for `SEARCH`:
+- `astar`: A* Search
 - `bfs`: Breadth-First Search (This option was previously called `naive`. You
   can still use `naive` with the `powerlifted.py` script but the planner will internally
   use the new keyword `bfs`.)
@@ -34,8 +35,13 @@ non-preferred operators
 - `add`: The additive heuristic
 - `ff`: The FF heuristic
 - `blind`: No Heuristic
+- `ff`: The FF heuristic. You can run run `ff` using different options for the Datalog program:
+  - `ff-norename`: `ff` without renaming variables in the logical program
+  - `ff-nocollapse`: `ff` without collapsing temporary predicates
+  - `ff-noremove`: `ff` without removing action predicates from the Datalog program
+  - Combinations of the options above: `ff-norename-nocollapse`, `ff-norename-noremove`, `ff-nocollapse-noremove`, `ff-noremove-nocollapse-noremove`
 - `goalcount`: The goal-count/STRIPS heuristic
-- `hmax`: The hmax heuristic (Note that A* search is not implemented)
+- `hmax`: The hmax heuristic
 - `rff`: The rule-based FF heuristic
 
 ### Available Options for `GENERATOR`:
@@ -59,10 +65,6 @@ non-preferred operators
 
 ### Available `ADDITIONAL OPTIONS`:
 - `[--translator-output-file TRANSLATOR_FILE]`: Output of the intermediate representation to be parsed by the search component will be saved into `TRANSLATOR_FILE`. (Default: `output.lifted`)
-- `[--datalog-file DATALOG_FILE]`: Datalog program used by the h-add heuristic will be saved into `DATALOG_FILE`. (Default: `model.lp`)
-- `[--keep-action-predicates]`: Keeps action predicates in the Datalog program
-- `[--keep-duplicated-rules]`: Keep duplicated Datalog rules in the Datalog program.
-- `[--add-inequalities]`: Compile inequalities into an EDB predicate in the Datalog program and replace `(not (= ?x ?y))` atoms with this new EDB predicate in actions.
 - `[--validate]`: Runs VAL after a plan is found to validate it. This requires
   [VAL](https://github.com/KCL-Planning/VAL) to be added as `validate` to the `PATH`.
 
@@ -86,12 +88,6 @@ the planner after the execution. The following command is a usage example on
 how to run the planner with the Singularity image:
 
 ```./powerlifted.sif -i /path/to/instance.pddl -s lazy-po -e add -g yannakakis --datalog-file model.lp --translator-output-file output.lifted```
-
-
-
-## Components
- - Translator
- - Search component
 
 ## Requirements
  - A C++17-compliant compiler

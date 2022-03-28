@@ -1,7 +1,8 @@
 
 #include "search_factory.h"
 
-#include "alternated_greedy_search.h"
+#include "astar_search.h"
+#include "alternated_bfws.h"
 #include "breadth_first_search.h"
 #include "breadth_first_width_search.h"
 #include "dual_queue_bfws.h"
@@ -23,6 +24,10 @@ SearchFactory::create(const Options &opt, const std::string& method, const std::
         std::cerr << "WARNING: The \"naive\" keyword for search engines "
           "has been replaced with \"bfs\"" << std::endl;
         exit(-1);
+    }
+    else if (boost::iequals(method, "astar")) {
+        if (using_ext_state) return new AStarSearch<ExtensionalPackedState>();
+        else return new AStarSearch<SparsePackedState>();
     }
     else if (boost::iequals(method, "bfs")) {
         if (using_ext_state) return new BreadthFirstSearch<ExtensionalPackedState>();
@@ -68,13 +73,13 @@ SearchFactory::create(const Options &opt, const std::string& method, const std::
         if (using_ext_state) return new DualQueueBFWS<ExtensionalPackedState>(2, opt);
         else return new DualQueueBFWS<SparsePackedState>(2, opt);
     }
-    else if (boost::iequals(method, "alt1")) {
-        if (using_ext_state) return new AlternatedGreedySearch<ExtensionalPackedState>(1, opt);
-        else return new AlternatedGreedySearch<SparsePackedState>(1, opt);
+    else if (boost::iequals(method, "alt-bfws1")) {
+        if (using_ext_state) return new AlternatedBFWS<ExtensionalPackedState>(1, opt);
+        else return new AlternatedBFWS<SparsePackedState>(1, opt);
     }
-    else if (boost::iequals(method, "alt2")) {
-        if (using_ext_state) return new AlternatedGreedySearch<ExtensionalPackedState>(2, opt);
-        else return new AlternatedGreedySearch<SparsePackedState>(2, opt);
+    else if (boost::iequals(method, "alt-bfws2")) {
+        if (using_ext_state) return new AlternatedBFWS<ExtensionalPackedState>(2, opt);
+        else return new AlternatedBFWS<SparsePackedState>(2, opt);
     }
     else if (boost::iequals(method, "gbfs")) {
         if (using_ext_state) return new GreedyBestFirstSearch<ExtensionalPackedState>();

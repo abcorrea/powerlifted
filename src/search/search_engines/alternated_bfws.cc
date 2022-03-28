@@ -1,4 +1,4 @@
-#include "alternated_greedy_search.h"
+#include "alternated_bfws.h"
 
 #include "search.h"
 #include "utils.h"
@@ -77,10 +77,10 @@ public:
 };
 
 template<class PackedStateT>
-utils::ExitCode AlternatedGreedySearch<PackedStateT>::search(const Task &task,
-                                                    SuccessorGenerator &generator,
-                                                    Heuristic &heuristic) {
-    cout << "Starting AlternatedGreedySearch" << endl;
+utils::ExitCode AlternatedBFWS<PackedStateT>::search(const Task &task,
+                                                     SuccessorGenerator &generator,
+                                                     Heuristic &heuristic) {
+    cout << "Starting AlternatedBFWS" << endl;
     clock_t timer_start = clock();
     StatePackerT packer(task);
 
@@ -225,14 +225,14 @@ utils::ExitCode AlternatedGreedySearch<PackedStateT>::search(const Task &task,
 }
 
 template <class PackedStateT>
-void AlternatedGreedySearch<PackedStateT>::print_statistics() const {
+void AlternatedBFWS<PackedStateT>::print_statistics() const {
     statistics.print_detailed_statistics();
     space.print_statistics();
 }
 
 
 template<class PackedStateT>
-AtomCounter AlternatedGreedySearch<PackedStateT>::initialize_counter_with_gc(const Task &task) {
+AtomCounter AlternatedBFWS<PackedStateT>::initialize_counter_with_gc(const Task &task) {
     std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
     std::unordered_set<int> positive = task.get_goal().positive_nullary_goals;
     std::unordered_set<int> negative = task.get_goal().negative_nullary_goals;
@@ -249,8 +249,8 @@ AtomCounter AlternatedGreedySearch<PackedStateT>::initialize_counter_with_gc(con
 
 
 template<class PackedStateT>
-AtomCounter AlternatedGreedySearch<PackedStateT>::initialize_counter_with_useful_atoms(const Task &task,
-                                                                              Heuristic &delete_free_h) const {
+AtomCounter AlternatedBFWS<PackedStateT>::initialize_counter_with_useful_atoms(const Task &task,
+                                                                               Heuristic &delete_free_h) const {
     std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
     std::unordered_set<int> positive = task.get_goal().positive_nullary_goals;
     std::unordered_set<int> negative = task.get_goal().negative_nullary_goals;
@@ -282,6 +282,6 @@ AtomCounter AlternatedGreedySearch<PackedStateT>::initialize_counter_with_useful
 }
 
 // explicit template instantiations
-template class AlternatedGreedySearch<SparsePackedState>;
-template class AlternatedGreedySearch<ExtensionalPackedState>;
+template class AlternatedBFWS<SparsePackedState>;
+template class AlternatedBFWS<ExtensionalPackedState>;
 

@@ -4,8 +4,8 @@
 
 using namespace std;
 
-AdditiveHeuristic::AdditiveHeuristic(const Task &task) :
-    datalog(std::move(initialize_datalog(task, get_annotation_generator()))),
+AdditiveHeuristic::AdditiveHeuristic(const Task &task, DatalogTransformationOptions opts) :
+    datalog(std::move(initialize_datalog(task, get_annotation_generator(), opts))),
     grounder(datalog, datalog::H_ADD), state_counter(0) {}
 
 datalog::AnnotationGenerator AdditiveHeuristic::get_annotation_generator() {

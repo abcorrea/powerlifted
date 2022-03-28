@@ -6,6 +6,8 @@
 #include "goalcount.h"
 #include "rff_heuristic.h"
 
+#include "datalog_transformation_options.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -23,13 +25,34 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
         return new Goalcount();
     }
     else if (boost::iequals(method, "add")) {
-        return new AdditiveHeuristic(task);
+        return new AdditiveHeuristic(task, DatalogTransformationOptions());
     }
     else if (boost::iequals(method, "ff")) {
-        return new FFHeuristic(task);
+        return new FFHeuristic(task, DatalogTransformationOptions());
+    }
+    else if (boost::iequals(method, "ff-norename")) {
+        return new FFHeuristic(task, DatalogTransformationOptions(false,true,true));
+    }
+    else if (boost::iequals(method, "ff-nocollapse")) {
+        return new FFHeuristic(task, DatalogTransformationOptions(true,false,true));
+    }
+    else if (boost::iequals(method, "ff-noremove")) {
+        return new FFHeuristic(task, DatalogTransformationOptions(true,true,false));
+    }
+    else if (boost::iequals(method, "ff-norename-nocollapse")) {
+        return new FFHeuristic(task, DatalogTransformationOptions(false,false,true));
+    }
+    else if (boost::iequals(method, "ff-norename-noremove")) {
+        return new FFHeuristic(task, DatalogTransformationOptions(false,true,false));
+    }
+    else if (boost::iequals(method, "ff-nocollapse-noremove")) {
+        return new FFHeuristic(task, DatalogTransformationOptions(true,false,false));
+    }
+    else if (boost::iequals(method, "ff-norename-nocollapse-noremove")) {
+        return new FFHeuristic(task, DatalogTransformationOptions(false,false,false));
     }
     else if (boost::iequals(method, "rff")) {
-        return new RFFHeuristic(task);
+        return new RFFHeuristic(task, DatalogTransformationOptions());
     }
     else {
         std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;
