@@ -211,12 +211,6 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_usefu
     std::unordered_set<int> positive = task.get_goal().positive_nullary_goals;
     std::unordered_set<int> negative = task.get_goal().negative_nullary_goals;
 
-    std::ifstream datalog_file(datalog_file_name);
-    if (!datalog_file) {
-        std::cerr << "Error opening the Datalog model file: " << datalog_file_name << std::endl;
-        exit(-1);
-    }
-
     FFHeuristic delete_free_h(task);
 
     int h = delete_free_h.compute_heuristic(task.initial_state, task);
