@@ -107,7 +107,7 @@ bool Task::is_goal(const DBState &state) const
             return false;
     }
     for (int pred : goal.negative_nullary_goals) {
-        if (!state.get_nullary_atoms()[pred])
+        if (state.get_nullary_atoms()[pred])
             return false;
     }
     for (const AtomicGoal &atomicGoal : goal.goal) {
