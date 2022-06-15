@@ -8,12 +8,11 @@
 #include "../rule_matcher.h"
 
 #include "../../algorithms/priority_queues.h"
+#include "../../parallel_hashmap/phmap.h"
 
 #include <iostream>
 #include <unordered_set>
 #include <vector>
-
-#include <absl/container/flat_hash_set.h>
 
 namespace datalog {
 
@@ -25,12 +24,12 @@ enum {H_ADD, H_MAX};
 
 class WeightedGrounder : public Grounder {
     int is_cheapest_path_to_achieve_fact(Fact &new_fact,
-                                         absl::flat_hash_set<Fact> &reached_facts,
+                                         phmap::flat_hash_set<Fact> &reached_facts,
                                          Datalog &lp);
 
     priority_queues::AdaptiveQueue<int> q;
 
-    absl::flat_hash_set<int> initial_facts;
+    phmap::flat_hash_set<int> initial_facts;
     std::vector<int> best_achievers;
 
     int queue_pushes;

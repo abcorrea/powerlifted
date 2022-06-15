@@ -3,8 +3,6 @@
 
 #include <utility>
 
-#include <absl/container/flat_hash_map.h>
-#include <absl/container/flat_hash_set.h>
 #include <boost/functional/hash.hpp>
 #include <boost/container/small_vector.hpp>
 
@@ -17,7 +15,10 @@
 #include "../structures.h"
 #include "../action.h"
 
-typedef absl::flat_hash_map<GroundAtom, int> NoveltySet;
+#include "../parallel_hashmap/phmap.h"
+#include "../utils/hash.h"
+
+typedef phmap::flat_hash_map<GroundAtom, int, utils::Hash<GroundAtom>> NoveltySet;
 
 /*
  *

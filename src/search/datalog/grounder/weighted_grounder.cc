@@ -15,7 +15,7 @@ using namespace std;
 namespace datalog {
 
 int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) {
-    absl::flat_hash_set<Fact> reached_facts;
+    phmap::flat_hash_set<Fact> reached_facts;
     std::vector<Fact> newfacts;
 
     queue_pushes = 0;
@@ -101,7 +101,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
 }
 
 int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
-                                                       absl::flat_hash_set<Fact> &reached_facts,
+                                                       phmap::flat_hash_set<Fact> &reached_facts,
                                                        Datalog &lp) {
     const auto& it = reached_facts.find(new_fact);
     atoms_produced++;

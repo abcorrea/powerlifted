@@ -26,10 +26,6 @@ set(CMAKE_CXX_FLAGS_DEBUG
         "${CMAKE_CXX_FLAGS_DEBUG} -O0 -pg \
         -fsanitize=undefined -fno-omit-frame-pointer")
 
-# Process Abseil's CMake build system
-add_subdirectory(abseil-cpp)
-
-
 add_executable(search
         main.cc
         task.cc task.h
@@ -127,6 +123,7 @@ add_executable(search
         datalog/rule_matcher.cc datalog/rule_matcher.h heuristics/add_heuristic.cc
         heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc
         datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h
-        datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h heuristics/hmax_heuristic.cc heuristics/hmax_heuristic.h)
+        datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h heuristics/hmax_heuristic.cc heuristics/hmax_heuristic.h
+        parallel_hashmap/phmap.h)
 
-target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES} absl::flat_hash_map)
+target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})

@@ -3,15 +3,18 @@
 
 #include "../task.h"
 
+#include "../parallel_hashmap/phmap.h"
+#include "../parallel_hashmap/phmap_utils.h"
+
 class AchievedGroundAtoms {
 
     // TODO Check small vector optimizations.
     /* TODO Check also ArrayPool class (Scorpion).
      * Use ArrayPool to store vectors and each entry could have only the index to it.
      */
-    std::vector<absl::flat_hash_set<int>> ground_atoms_k1;
+    std::vector<phmap::flat_hash_set<int>> ground_atoms_k1;
 
-    std::vector<absl::flat_hash_set<std::pair<int, int>>> ground_atoms_k2;
+    std::vector<phmap::flat_hash_set<std::pair<int, int>>> ground_atoms_k2;
 
 public:
 

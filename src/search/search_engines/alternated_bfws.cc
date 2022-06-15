@@ -10,11 +10,12 @@
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 
+#include "../parallel_hashmap/phmap.h"
+
 #include <algorithm>
 #include <iostream>
 #include <vector>
 
-#include <absl/container/flat_hash_map.h>
 
 using namespace std;
 
@@ -96,7 +97,7 @@ utils::ExitCode AlternatedBFWS<PackedStateT>::search(const Task &task,
 
     AlternatedOpenListManager open_list;
 
-    absl::flat_hash_map<int, NodeNovelty> map_state_to_evaluators;
+    phmap::flat_hash_map<int, NodeNovelty> map_state_to_evaluators;
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state),
                                                               LiftedOperatorId::no_operator, StateID::no_state);
