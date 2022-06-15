@@ -7,7 +7,7 @@
 #include <vector>
 
 
-struct AtomicGoal;
+class AtomicGoal;
 
 /**
  * @brief Compute hamming distance between goal condition and state s.

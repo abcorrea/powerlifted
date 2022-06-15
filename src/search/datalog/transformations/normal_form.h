@@ -48,7 +48,7 @@ void add_missing_entries_to_source_table(int position, std::vector<std::unique_p
 std::unique_ptr<RuleBase> Datalog::convert_into_project_rule(const std::unique_ptr<RuleBase> &rule,
                                                     const Task &task) {
     VariableSource old_source = rule->get_variable_source_object();
-    std::unique_ptr<RuleBase> project_rule = std::make_unique<ProjectRule>(rule->get_weight(), rule->get_effect(), rule->get_conditions(),  std::move(rule->get_annotation()));
+    std::unique_ptr<RuleBase> project_rule = std::make_unique<ProjectRule>(rule->get_weight(), rule->get_effect(), rule->get_conditions(),  rule->get_annotation());
     project_rule->update_variable_source_table(std::move(old_source));
     return project_rule;
 }
@@ -59,7 +59,7 @@ std::unique_ptr<RuleBase> Datalog::convert_into_product_rule(const std::unique_p
     std::unique_ptr<RuleBase> product_rule = std::make_unique<ProductRule>(rule->get_weight(),
                                                                            rule->get_effect(),
                                                                            rule->get_conditions(),
-                                                                           std::move(rule->get_annotation()));
+                                                                           rule->get_annotation());
     product_rule->update_variable_source_table(std::move(old_source));
     return product_rule;
 }
@@ -146,7 +146,7 @@ void Datalog::convert_into_join_rules(std::vector<std::unique_ptr<RuleBase>> &jo
     std::unique_ptr<RuleBase> join_rule = std::make_unique<JoinRule>(rule->get_weight(),
                                                                      rule->get_effect(),
                                                                      rule->get_conditions(),
-                                                                     std::move(rule->get_annotation()));
+                                                                     rule->get_annotation());
 
 
     join_rule->update_variable_source_table(rule->get_variable_source_object());

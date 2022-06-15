@@ -16,8 +16,6 @@ class HMaxHeuristic : public Heuristic{
 
     datalog::AnnotationGenerator get_annotation_generator();
 
-    int state_counter;
-
 public:
     HMaxHeuristic(const Task &task) : HMaxHeuristic(task, DatalogTransformationOptions()){};
 

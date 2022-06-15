@@ -27,6 +27,10 @@ public:
 
   bool isStaticPredicate() const;
 
+  int get_index() const {
+      return index;
+  }
+
 private:
   std::string name;
   int index;

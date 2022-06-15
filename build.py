@@ -40,7 +40,8 @@ def build(debug_flag):
     create_dir(BUILD_DIR)
     create_dir(BUILD_SEARCH_DIR)
     copy_tree(TRANSLATOR_DIR, BUILD_DIR + '/translator')
-    subprocess.check_call(['cmake', SEARCH_DIR, '-DCMAKE_BUILD_TYPE='+BUILD_TYPE],
+    subprocess.check_call(['cmake', SEARCH_DIR, '-DCMAKE_BUILD_TYPE='+BUILD_TYPE,
+                           '-DCMAKE_CXX_COMPILER=/usr/bin/g++-11'],
                           cwd=BUILD_SEARCH_DIR)
     subprocess.check_call(['make', '-j5'], cwd=BUILD_SEARCH_DIR)
 

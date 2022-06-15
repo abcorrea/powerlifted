@@ -48,7 +48,7 @@ public:
         added_atoms.emplace_back(i, atom);
     }
 
-    virtual const std::vector<std::pair<int, std::vector<int>>> &get_added_atoms() {
+    virtual const std::vector<std::pair<int, std::vector<int>>> &get_added_atoms() const {
         return added_atoms;
     }
 

@@ -86,7 +86,7 @@ std::vector<std::vector<int>> get_components(std::unique_ptr<RuleBase> &rule) {
     Graph g(rule->get_conditions().size());
 
     int condition_counter = 0;
-    for (const auto conditions : rule->get_conditions()) {
+    for (const auto &conditions : rule->get_conditions()) {
         if (conditions.is_nullary() or conditions.is_ground()) {
             g.add_node(condition_counter);
         } else {

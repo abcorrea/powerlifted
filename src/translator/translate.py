@@ -74,7 +74,7 @@ def main():
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
-    
+
 
     with timers.timing("Checking static predicates"):
         static_pred = static_predicates.check(task)
@@ -290,7 +290,7 @@ def print_objects(task, object_index, type_index, types_dict):
         object_index[obj.name] = index
         print('%s %d %d' % (obj.name, index, len(types_dict[obj.type_name])),
               end=' ')
-        print(' '.join(str(type_index[t]) for t in types_dict[obj.type_name]))
+        print(' '.join(str(type_index[t]) for t in sorted(types_dict[obj.type_name])))
 
 
 def print_predicates(task, predicate_index, type_index):

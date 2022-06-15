@@ -81,7 +81,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
         LiftedOperatorId::no_operator, StateID::no_state);
     utils::Timer t;
 
-    StandardNovelty novelty_evaluator(task, number_goal_conditions, number_relevant_atoms, width, early_stop);
+    StandardNovelty novelty_evaluator(task, number_goal_conditions, number_relevant_atoms, width);
 
     int gc_h0 = gc.compute_heuristic(task.initial_state, task);
 

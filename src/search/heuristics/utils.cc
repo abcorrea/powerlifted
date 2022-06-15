@@ -24,7 +24,7 @@ datalog::Datalog initialize_datalog(const Task &task,
 
     dl.print_statistics();
 
-    return std::move(dl);
+    return dl;
 }
 
 std::vector<datalog::Fact> get_datalog_facts_from_state(const DBState &s, const Task &task) {
