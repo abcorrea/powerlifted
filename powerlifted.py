@@ -23,6 +23,8 @@ def parse_options():
                         help='Build planner before search.')
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Run planner in debug mode.')
+    parser.add_argument('--cxx-compiler',
+                        default='default', help="Path to CXX compiler used by CMake.")
     parser.add_argument('-s', '--search', dest='search', action='store',
                         default=None, help='Search algorithm', choices=("astar",
                                                                         "bfs",
@@ -143,7 +145,7 @@ def main():
     build_dir = os.path.join(PROJECT_ROOT, 'builds', 'debug' if options.debug else 'release')
 
     if options.build:
-        build(options.debug)
+        build(options.debug, options.cxx_compiler)
 
     # Create build path
     if not os.path.exists(build_dir):
