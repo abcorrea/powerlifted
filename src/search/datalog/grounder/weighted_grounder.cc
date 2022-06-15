@@ -160,7 +160,7 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vec
     }
 
     // Return a vector with one single fact
-    newfacts.emplace_back(move(new_arguments),
+    newfacts.emplace_back(std::move(new_arguments),
                           rule.get_effect().get_predicate_index(),
                           rule_.get_weight() + fact.get_cost(),
                           Achievers({fact.get_fact_index()}, rule.get_index(), rule_.get_weight()),
@@ -235,7 +235,7 @@ void WeightedGrounder::join(
         }
 
         int cost = aggregation_function(fact.get_cost(), already_achieved_fact.get_cost()) + rule_weight;
-        newfacts.emplace_back(move(new_arguments),
+        newfacts.emplace_back(std::move(new_arguments),
                            rule.get_effect().get_predicate_index(),
                            cost,Achievers(achievers_body, rule_index, rule_weight),
                            rule.get_effect().is_pred_symbol_new());

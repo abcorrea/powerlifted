@@ -179,7 +179,7 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
             return data;
         }
 
-        data.precompiled_db[i] = Table(move(tuples), move(indices));
+        data.precompiled_db[i] = Table(std::move(tuples), std::move(indices));
     }
 
     return data;
@@ -221,7 +221,7 @@ bool GenericJoinSuccessor::parse_precond_into_join_program(
 
         if (tuples.empty()) return false;
 
-        tables[i] = Table(move(tuples), move(indices));
+        tables[i] = Table(std::move(tuples), std::move(indices));
     }
 
     return true;
@@ -302,7 +302,7 @@ DBState GenericJoinSuccessor::generate_successor(
         apply_lifted_action_effects(action, op.get_instantiation(), new_relation);
     }
 
-    return DBState(move(new_relation), move(new_nullary_atoms));
+    return DBState(std::move(new_relation), std::move(new_nullary_atoms));
 }
 
 void GenericJoinSuccessor::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,
@@ -446,7 +446,7 @@ std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
         vector<int> ordered_tuple(free_var_indices.size());
         order_tuple_by_free_variable_order(
             free_var_indices, map_indices_to_position, tuple_with_const, ordered_tuple);
-        applicable.emplace_back(action.get_index(), move(ordered_tuple));
+        applicable.emplace_back(action.get_index(), std::move(ordered_tuple));
     }
     return applicable;
 }

@@ -253,7 +253,6 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
     /*
      * Last step, transform rules into product/project rules or split them into multiple join rules.
      */
-    size_t rule_counter = 0;
     for (auto &rule : rules) {
         if (rule->get_conditions().size() == 1) {
             new_rules.push_back(convert_into_project_rule(rule, task));
@@ -270,7 +269,6 @@ void Datalog::convert_rules_to_normal_form(const Task &task) {
                 }
             }
         }
-        rule_counter++;
     }
 
     rules = std::move(new_rules);
