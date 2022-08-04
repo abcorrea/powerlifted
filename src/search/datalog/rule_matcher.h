@@ -1,11 +1,11 @@
 #ifndef GROUNDER__RULE_MATCHER_H_
 #define GROUNDER__RULE_MATCHER_H_
 
+#include "../parallel_hashmap/phmap.h"
+
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include <absl/container/flat_hash_map.h>
 
 namespace datalog {
 
@@ -51,7 +51,7 @@ class RuleMatcher {
     /*
      Map index of an atom to a vector rule matches
     */
-    absl::flat_hash_map<int, Matches> rule_matcher;
+    phmap::flat_hash_map<int, Matches> rule_matcher;
 
     static const Matches empty_matches;
 

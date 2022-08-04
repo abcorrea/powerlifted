@@ -10,7 +10,7 @@ using namespace std;
 void Task::add_predicate(
     string &name, int index, int arity, bool static_predicate, vector<int> &types)
 {
-    predicates.emplace_back(move(name), index, arity, static_predicate, move(types));
+    predicates.emplace_back(std::move(name), index, arity, static_predicate, std::move(types));
 }
 
 void Task::add_object(const string &name, int index, const vector<int> &types)
@@ -34,8 +34,8 @@ void Task::create_empty_initial_state(size_t number_predicates)
         static_preds.push_back(r);
         fluents.push_back(r);
     }
-    initial_state = DBState(move(fluents), vector<bool>(predicates.size(), false));
-    static_info = StaticInformation(move(static_preds), vector<bool>(predicates.size(), false));
+    initial_state = DBState(std::move(fluents), vector<bool>(predicates.size(), false));
+    static_info = StaticInformation(std::move(static_preds), vector<bool>(predicates.size(), false));
 }
 
 void Task::dump_state(DBState s) const

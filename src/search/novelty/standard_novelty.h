@@ -3,8 +3,6 @@
 
 #include <utility>
 
-#include <absl/container/flat_hash_map.h>
-#include <absl/container/flat_hash_set.h>
 #include <boost/functional/hash.hpp>
 #include <boost/container/small_vector.hpp>
 
@@ -17,7 +15,10 @@
 #include "../structures.h"
 #include "../action.h"
 
-typedef absl::flat_hash_map<GroundAtom, int> NoveltySet;
+#include "../parallel_hashmap/phmap.h"
+#include "../utils/hash.h"
+
+typedef phmap::flat_hash_map<GroundAtom, int, utils::Hash<GroundAtom>> NoveltySet;
 
 /*
  *
@@ -31,7 +32,6 @@ class StandardNovelty {
     int number_goal_atoms;
     int number_relevant_atoms;
     int width;
-    bool early_stop;
     std::vector<AchievedGroundAtoms> achieved_atoms;
     std::vector<NoveltySet> atom_mapping;
 
@@ -89,12 +89,10 @@ public:
     StandardNovelty(const Task &task,
                     size_t number_goal_atoms,
                     size_t number_relevant_atoms,
-                    int width,
-                    bool early_stop) : atom_counter(0),
+                    int width) : atom_counter(0),
                                                     number_goal_atoms(number_goal_atoms),
                                                     number_relevant_atoms(number_relevant_atoms),
-                                                    width(width),
-                                                    early_stop(early_stop) {
+                                                    width(width) {
         std::cout << "Total number of goal atoms: " << number_goal_atoms << std::endl;
         std:: cout << "Total number of relevant atoms: " << number_relevant_atoms << std::endl;
 
@@ -117,6 +115,10 @@ public:
                                       int number_unsatisfied_goals,
                                       int number_unsatisfied_relevant_atoms,
                                       const std::vector<std::pair<int, std::vector<int>>> &added_atoms);
+
+    int get_number_relevant_atoms() const {
+        return number_relevant_atoms;
+    }
 
 };
 

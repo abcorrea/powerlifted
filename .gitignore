@@ -1,10 +1,6 @@
 # Untracked files
 *~
 *.pyc
-.idea/*
-src/translator/.idea/*
-src/search/.idea/*
-src/search/cmake-build-debug/
 src/search/config
 src/search/latex
 src/search/html

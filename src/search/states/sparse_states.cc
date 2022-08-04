@@ -116,9 +116,9 @@ DBState SparseStatePacker::unpack(const SparsePackedState &packed_state) const {
         for (const auto &r : packed_state.packed_relations[i]) {
             tuples.insert(unpack_tuple(r, packed_state.predicate_symbols[i]));
         }
-        relations.emplace_back(packed_state.predicate_symbols[i], move(tuples));
+        relations.emplace_back(packed_state.predicate_symbols[i], std::move(tuples));
     }
-    return DBState(move(relations), move(nullary_atoms));
+    return DBState(std::move(relations), std::move(nullary_atoms));
 }
 
 long SparseStatePacker::pack_tuple(const std::vector<int> &tuple, int predicate_index) const {

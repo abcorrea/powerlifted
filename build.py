@@ -12,11 +12,13 @@ TRANSLATOR_DIR = os.path.join(PROJECT_ROOT, 'src', 'translator')
 
 SEARCH_DIR = os.path.join(PROJECT_ROOT, 'src', 'search')
 
-def parse_arguments():
+def parse_options():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description='Build Power Lifted planner.')
     parser.add_argument('-d', '--debug',
                         action="store_true", help="Build in debug mode.")
+    parser.add_argument('--cxx-compiler',
+                        default='default', help="Path to CXX compiler used by CMake.")
     return parser.parse_args()
 
 def get_build_dir(debug):
@@ -30,7 +32,7 @@ def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-def build(debug_flag):
+def build(debug_flag, compiler):
     BUILD_DIR = get_build_dir(debug_flag)
     BUILD_SEARCH_DIR = os.path.join(BUILD_DIR, 'search')
     if debug_flag:
@@ -40,11 +42,17 @@ def build(debug_flag):
     create_dir(BUILD_DIR)
     create_dir(BUILD_SEARCH_DIR)
     copy_tree(TRANSLATOR_DIR, BUILD_DIR + '/translator')
-    subprocess.check_call(['cmake', SEARCH_DIR, '-DCMAKE_BUILD_TYPE='+BUILD_TYPE],
+
+    extra_options = []
+    if compiler != 'default':
+        extra_options = ['-DCMAKE_CXX_COMPILER='+compiler]
+
+    subprocess.check_call(['cmake', SEARCH_DIR,
+                           '-DCMAKE_BUILD_TYPE='+BUILD_TYPE] + extra_options,
                           cwd=BUILD_SEARCH_DIR)
     subprocess.check_call(['make', '-j5'], cwd=BUILD_SEARCH_DIR)
 
 
 if __name__ == '__main__':
-    args = parse_arguments()
-    build(args.debug)
+    options = parse_options()
+    build(options.debug, options.cxx_compiler)

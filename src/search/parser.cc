@@ -154,7 +154,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                     }
                 }
             }
-            preconditions.emplace_back(move(arguments), move(precond_name), index, negated);
+            preconditions.emplace_back(std::move(arguments), std::move(precond_name), index, negated);
         }
         for (int j = 0; j < eff_size; ++j) {
             string eff_name;
@@ -189,7 +189,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                     exit(-1);
                 }
             }
-            effects.emplace_back(move(arguments), move(eff_name), index, negated);
+            effects.emplace_back(std::move(arguments), std::move(eff_name), index, negated);
         }
         ActionSchema a(name,
                        i,

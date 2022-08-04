@@ -2,30 +2,19 @@
 #include "search.h"
 #include "utils.h"
 
-#include "../action.h"
-
-#include "../heuristics/heuristic.h"
-
 #include "../open_lists/tiebreaking_open_list.h"
 
 #include "../heuristics/ff_heuristic.h"
 
-#include "../novelty/standard_novelty.h"
-#include "../novelty/atom_counter.h"
-
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 
+#include "../parallel_hashmap/phmap.h"
 #include "../successor_generators/successor_generator.h"
 
-#include "../utils/timer.h"
-
-#include <algorithm>
 #include <iostream>
-#include <queue>
 #include <vector>
 
-#include <absl/container/flat_hash_map.h>
 
 using namespace std;
 
@@ -75,13 +64,13 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
     // search algorithm complete.
     TieBreakingOpenList queue;
 
-    absl::flat_hash_map<int, NodeNovelty> map_state_to_evaluators;
+    phmap::flat_hash_map<int, NodeNovelty> map_state_to_evaluators;
 
     SearchNode& root_node = space.insert_or_get_previous_node(packer.pack(task.initial_state),
         LiftedOperatorId::no_operator, StateID::no_state);
     utils::Timer t;
 
-    StandardNovelty novelty_evaluator(task, number_goal_conditions, number_relevant_atoms, width, early_stop);
+    StandardNovelty novelty_evaluator(task, number_goal_conditions, number_relevant_atoms, width);
 
     int gc_h0 = gc.compute_heuristic(task.initial_state, task);
 

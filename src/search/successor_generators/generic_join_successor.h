@@ -69,7 +69,7 @@ public:
     const std::unordered_set<GroundAtom, TupleHash>
     &get_tuples_from_static_relation(size_t i) const;
 
-    const std::vector<std::pair<int, GroundAtom>> &get_added_atoms() const {
+    const std::vector<std::pair<int, GroundAtom>> &get_added_atoms() const override {
         return added_atoms;
     }
 

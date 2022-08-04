@@ -6,12 +6,11 @@
 #include "../atom.h"
 #include "../task.h"
 
+#include "../parallel_hashmap/phmap.h"
 
 #include <map>
 #include <memory>
 #include <vector>
-
-#include <absl/container/flat_hash_set.h>
 
 namespace datalog {
 
@@ -162,7 +161,7 @@ public:
         return useful_atoms;
     }
 
-    void backchain_from_goal(const Fact &goal_fact, const absl::flat_hash_set<int> &state_facts);
+    void backchain_from_goal(const Fact &goal_fact, const phmap::flat_hash_set<int> &state_facts);
 
     int get_number_of_facts() const;
     void output_atom(const DatalogAtom &atom) const;

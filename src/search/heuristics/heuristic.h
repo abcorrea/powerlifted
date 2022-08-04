@@ -5,6 +5,7 @@
 #include "../task.h"
 
 #include <iostream>
+#include <limits>
 #include <map>
 
 const int UNSOLVABLE_STATE = std::numeric_limits<int>::max();

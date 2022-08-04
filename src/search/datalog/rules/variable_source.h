@@ -99,7 +99,7 @@ public:
 
     void output() const {
         int v = 0;
-        for (const std::pair<int, int> p : table) {
+        for (const std::pair<int, int> &p : table) {
             bool is_found_in_rule = (p.first < 0);
             int position_in_body = p.second;
             int body_position = get_position_of_atom_in_same_body_rule(p.first);

@@ -61,7 +61,7 @@ void Datalog::generate_action_rule(const ActionSchema &schema,
     // (e.g., logistics). This was already done in the previous implementation.
     std::reverse(body.begin(), body.end());
     std::unique_ptr<Annotation> ann = annotation_generator(schema.get_index(), task);
-    rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, move(body), move(ann), schema.get_index()));
+    rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, std::move(body), std::move(ann), schema.get_index()));
 }
 
 void Datalog::generate_action_effect_rules(const ActionSchema &schema, AnnotationGenerator &annotation_generator) {
@@ -71,7 +71,7 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
             continue;
         DatalogAtom effect(eff);
         std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, move(ann)));
+        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, std::move(ann)));
     }
     const vector<bool> &nullary_predicates_in_eff = schema.get_positive_nullary_effects();
     vector<size_t> nullary_effects;
@@ -79,7 +79,7 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
     for (size_t eff_idx : nullary_effects) {
         DatalogAtom eff(Arguments(), eff_idx, false);
         std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, move(ann), schema.get_index()));
+        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, std::move(ann), schema.get_index()));
     }
 }
 
@@ -202,13 +202,13 @@ std::vector<int> Datalog::extract_variable_instantiation_from_rule(int head) con
     return instantiation;
 }
 
-void Datalog::backchain_from_goal(const Fact &goal_fact, const absl::flat_hash_set<int> &initial_facts) {
+void Datalog::backchain_from_goal(const Fact &goal_fact, const phmap::flat_hash_set<int> &initial_facts) {
 
     for (auto &relation : useful_atoms) {
         relation.clear();
     }
 
-    absl::flat_hash_set<int> achieved_atoms;
+    phmap::flat_hash_set<int> achieved_atoms;
     std::queue<int> queue;
 
     // TODO Isn't this redundant?
@@ -265,7 +265,7 @@ void Datalog::add_useful_atom(int achiever_idx) {
     for (const Term &t : f.get_arguments()) {
         instantiation.push_back(t.get_index());
     }
-    useful_atoms[f.get_predicate_index()].push_back(move(instantiation));
+    useful_atoms[f.get_predicate_index()].push_back(std::move(instantiation));
 }
 
 
