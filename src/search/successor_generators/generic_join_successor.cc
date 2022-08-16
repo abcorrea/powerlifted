@@ -250,7 +250,8 @@ void GenericJoinSuccessor::create_hypergraph(const ActionSchema &action,
 {
     int cont = 0;
     for (const Atom &p : action.get_precondition()) {
-        if (p.is_negated() or p.is_ground()) {
+        bool is_ineq = (p.get_name() == "=");
+        if (p.is_negated() or p.is_ground() or is_ineq) {
             continue;
         }
         set<int> args;
