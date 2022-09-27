@@ -211,11 +211,9 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const phmap::flat_hash_
     phmap::flat_hash_set<int> achieved_atoms;
     std::queue<int> queue;
 
-    // TODO Isn't this redundant?
     for (int achiever_idx : goal_fact.get_achiever_body()) {
         if (initial_facts.count(achiever_idx) == 0) {
             queue.push(achiever_idx);
-            add_useful_atom(achiever_idx);
         }
     }
 
