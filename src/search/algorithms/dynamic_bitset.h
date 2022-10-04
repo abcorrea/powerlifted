@@ -21,7 +21,7 @@ class DynamicBitset {
     static_assert(!std::numeric_limits<Block>::is_signed, "Block type must be unsigned");
 
     std::vector<Block> blocks;
-    const std::size_t num_bits;
+    const size_t num_bits;
 
     static const Block zeros;
     static const Block ones;
@@ -164,8 +164,8 @@ const Block DynamicBitset<Block>::ones = Block(~Block(0));
 
 // Overload to be used by boost::hash
 template<typename Block>
-std::size_t hash_value(const dynamic_bitset::DynamicBitset<Block>& a) {
-    std::size_t res =boost::hash_value(a.num_bits);
+size_t hash_value(const dynamic_bitset::DynamicBitset<Block>& a) {
+    size_t res = boost::hash_value(a.num_bits);
     boost::hash_combine(res, a.blocks);
     return res;
 }
@@ -174,22 +174,22 @@ std::size_t hash_value(const dynamic_bitset::DynamicBitset<Block>& a) {
 
 // Overload std::hash
 namespace std {
-    template<typename Block>
-    struct hash<dynamic_bitset::DynamicBitset<Block>>
-    {
-        std::size_t operator()(const dynamic_bitset::DynamicBitset<Block>& a) const {
-            return dynamic_bitset::hash_value(a);
-        }
-    };
+template<typename Block>
+struct hash<dynamic_bitset::DynamicBitset<Block>>
+{
+    std::size_t operator()(const dynamic_bitset::DynamicBitset<Block>& a) const {
+        return dynamic_bitset::hash_value(a);
+    }
+};
 }
 
 // Overload our own utils::feed hashing
 namespace utils {
-    template<typename Block>
-    void feed(HashState &hash_state, const dynamic_bitset::DynamicBitset<Block>& a) {
-        feed(hash_state, a.num_bits);
-        feed(hash_state, a.blocks);
-    }
+template<typename Block>
+void feed(HashState &hash_state, const dynamic_bitset::DynamicBitset<Block>& a) {
+    feed(hash_state, static_cast<uint64_t>(a.num_bits));
+    feed(hash_state, a.blocks);
+}
 }
 
 /*
