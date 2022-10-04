@@ -273,6 +273,22 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
     }
 }
 
+template<>
+inline void feed(HashState &hash_state, const std::vector<unsigned long> &vec) { // unsigned long default definition of Block
+    /*
+      Feed vector size to ensure that no two different vectors of the same type
+      have the same code prefix.
+
+      Using uint64_t is wasteful on 32-bit platforms but feeding a size_t breaks
+      the build on MacOS (see msg7812).
+    */
+    std::size_t sz = vec.size();
+    feed(hash_state, static_cast<uint64_t>(sz));
+    for (unsigned i = 0; i < sz; ++i) {
+        feed(hash_state, static_cast<uint64_t>(vec[i]));
+    }
+}
+
 
 /*
   Public hash functions.
