@@ -172,10 +172,11 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
             if (!arg.is_constant())
                 distinguished_variables[action_index].insert(arg.get_index());
         }
-        for (const auto &i : action.get_inequalities()) {
-            distinguished_variables[action_index].insert(i.first);
-            distinguished_variables[action_index].insert(i.second);
-        }
+    }
+    
+    for (const auto &i : action.get_inequalities()) {
+        distinguished_variables[action_index].insert(i.first);
+        distinguished_variables[action_index].insert(i.second);
     }
 }
 
