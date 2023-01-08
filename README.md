@@ -69,7 +69,7 @@ non-preferred operators
   where the ith-bit is true if the fact associated to it is true in this
   state. This representation requires the grounding of facts (but not of
   actions) which, right now, is performed in the search component. *Warning*:
-  this options does not support all `HEURISTIC` options.
+  this setting does not support all `HEURISTIC` options.
 
 
 ### Available `ADDITIONAL OPTIONS`:
@@ -114,9 +114,6 @@ how to run the planner with the Singularity image:
  - CMake 3.9+
  - Python 3.5+
  - Boost
-
-The planner also uses data-structures from [Abseil](https://abseil.io/). The
-source code of Abseil is contained in the `src/search/abseil-cpp` directory
 
 ## Limitations
  - **Axioms**: not supported
