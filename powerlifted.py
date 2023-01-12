@@ -179,9 +179,12 @@ def main():
 
 
     # Invoke the Python preprocessor
-    subprocess.call([os.path.join(build_dir, 'translator', 'translate.py'),
-                     options.domain, options.instance, '--output-file', options.translator_file] + \
-                    PYTHON_EXTRA_OPTIONS)
+    translator = subprocess.Popen([os.path.join(build_dir, 'translator', 'translate.py'),
+                                   options.domain, options.instance, '--output-file', options.translator_file] + PYTHON_EXTRA_OPTIONS,
+                                  text=True)
+    translator.communicate()
+    if translator.returncode != 0:
+        raise RuntimeError("Error during preprocessing/translation.")
 
 
 
