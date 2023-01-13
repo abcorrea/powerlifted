@@ -134,7 +134,11 @@ def main():
 
     print_action_schemas(task, object_index, predicate_index, type_index)
 
-    test_if_experiment(options.test_experiment)
+    # Reset sys.stdout
+    sys.stdout = sys.__stdout__
+
+    print("Total translation time:", timer.get_cpu_time())
+
     return
 
 

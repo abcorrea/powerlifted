@@ -22,6 +22,9 @@ class Timer(object):
             self._clock() - self.start_clock,
             time.time() - self.start_time)
 
+    def get_cpu_time(self):
+        return "%.3fs" % (self._clock() - self.start_clock)
+
 
 @contextlib.contextmanager
 def timing(text, block=False):
