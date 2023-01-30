@@ -111,6 +111,5 @@ def main():
             if code == 0:
                 if options.validate:
                     validate(options.domain, options.instance, plan_name)
-                return code
 
     return code
