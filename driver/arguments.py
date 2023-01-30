@@ -2,6 +2,37 @@ import argparse
 import os
 import sys
 
+
+SEARCH_CHOICES = ["astar",
+                  "bfs",
+                  "bfws1",
+                  "bfws2",
+                  "bfws1-rx",
+                  "bfws2-rx",
+                  "dq-bfws1-rx",
+                  "dq-bfws2-rx",
+                  "alt-bfws1",
+                  "alt-bfws2",
+                  "gbfs",
+                  "iw1",
+                  "iw2",
+                  "lazy",
+                  "lazy-po",
+                  "lazy-prune"]
+
+EVALUATOR_CHOICES = ["blind",
+                     "goalcount",
+                     "add",
+                     "hmax",
+                     "ff",
+                     "rff"]
+
+SUCCESSOR_GENERATOR_CHOICES = ['yannakakis',
+                               'join',
+                               'random_join',
+                               'ordered_join',
+                               'full_reducer']
+
 def find_domain_filename(task_filename):
     """
     Find domain filename for the given task using automatic naming rules.
@@ -37,38 +68,18 @@ def parse_options():
     parser.add_argument('-s', '--search', dest='search', action='store',
                         default='alt-bfws1',
                         help='Search algorithm',
-                        choices=("astar",
-                                 "bfs",
-                                 "bfws1",
-                                 "bfws2",
-                                 "bfws1-rx",
-                                 "bfws2-rx",
-                                 "dq-bfws1-rx",
-                                 "dq-bfws2-rx",
-                                 "alt-bfws1",
-                                 "alt-bfws2",
-                                 "gbfs",
-                                 "iw1",
-                                 "iw2",
-                                 "lazy",
-                                 "lazy-po",
-                                 "lazy-prune"))
-    parser.add_argument('-e', '--heuristic', dest='heuristic', action='store',
+                        choices=SEARCH_CHOICES)
+    parser.add_argument('-e', '--evaluator', dest='heuristic', action='store',
                         default='ff',
-                        choices=("blind",
-                                 "goalcount",
-                                 "add",
-                                 "hmax",
-                                 "ff",
-                                 "rff"),
+                        choices=EVALUATOR_CHOICES,
                         help='Heuristic to guide the search (ignore in case of blind search)')
     parser.add_argument('-g', '--generator', dest='generator', action='store',
                         default='yannakakis', help='Successor generator method',
-                        choices=('yannakakis',
-                                 'join',
-                                 'random_join',
-                                 'ordered_join',
-                                 'full_reducer'))
+                        choices=SUCCESSOR_GENERATOR_CHOICES)
+    parser.add_argument('--iteration', action='append', default=None, type=str,
+                        help='Pass a triple S,E,G, corresponding to search ' \
+                        'algorithm, evaluator, and successor generator, respectively.' \
+                        'You can pass several "--iteration" arguments to simulate a portfolio.')
     parser.add_argument('--state', action='store', help='Successor generator method',
                         default="sparse", choices=("sparse", "extensional"))
     parser.add_argument('--seed', action='store', help='Random seed.',
@@ -98,5 +109,20 @@ def parse_options():
         args.domain = find_domain_filename(args.instance)
         if args.domain is None:
             raise RuntimeError(f'Could not find domain filename matching instance file "{args.instance}"')
+
+    if args.iteration is not None:
+        print("WARNING: You are using at least one iterated search. Values passed to '-s', '-e', and '-g' will be ignored.")
+        for it in args.iteration:
+            print(it)
+            search, evaluator, generator = it.split(',')
+            if search not in SEARCH_CHOICES:
+                print(f"{search} is an invalid search choice.")
+                sys.exit(-1)
+            if evaluator not in EVALUATOR_CHOICES:
+                print(f"{evaluator} is an invalid evaluator choice.")
+                sys.exit(-1)
+            if generator not in SUCCESSOR_GENERATOR_CHOICES:
+                print(f"{generator} is an invalid successor generator choice.")
+                sys.exit(-1)
 
     return args

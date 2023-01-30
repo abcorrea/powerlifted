@@ -74,22 +74,43 @@ def main():
         raise RuntimeError("Error during preprocessing/translation.")
 
 
+    if options.iteration is None:
+        # Invoke the C++ search component
+        cmd = [os.path.join(build_dir, 'search', 'search'),
+               '-f', options.translator_file,
+               '-s', options.search,
+               '-e', options.heuristic,
+               '-g', options.generator,
+               '-r', options.state,
+               '--seed', str(options.seed)] + \
+               CPP_EXTRA_OPTIONS
+        print(f'Executing "{" ".join(cmd)}"')
+        code = subprocess.call(cmd)
 
-    # Invoke the C++ search component
-    cmd = [os.path.join(build_dir, 'search', 'search'),
-           '-f', options.translator_file,
-           '-s', options.search,
-           '-e', options.heuristic,
-           '-g', options.generator,
-           '-r', options.state,
-           '--seed', str(options.seed)] + \
-           CPP_EXTRA_OPTIONS
+        # If we found a plan, try to validate it
+        if code == 0 and options.validate:
+            validate(options.domain, options.instance, 'plan')
+    else:
+        for count, it in enumerate(options.iteration):
+            search, evaluator, generator = it.split(',')
+            plan_name = 'plan.'+str(count+1)
+            cmd = [os.path.join(build_dir, 'search', 'search'),
+                   '-f', options.translator_file,
+                   '-s', search,
+                   '-e', evaluator,
+                   '-g', generator,
+                   '-r', options.state,
+                   '--seed', str(options.seed)] + \
+                   ['--plan-file', plan_name] +\
+                   CPP_EXTRA_OPTIONS
+            print(f'Executing "{" ".join(cmd)}"')
+            code = subprocess.call(cmd)
 
-    print(f'Executing "{" ".join(cmd)}"')
-    code = subprocess.call(cmd)
-
-    # If we found a plan, try to validate it
-    if code == 0 and options.validate:
-        validate(options.domain, options.instance, 'sas_plan')
+            # If we found a plan, check if we need to validate it
+            # and then quit iterations
+            if code == 0:
+                if options.validate:
+                    validate(options.domain, options.instance, plan_name)
+                return code
 
     return code
