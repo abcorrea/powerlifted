@@ -83,6 +83,7 @@ def main():
                '-g', options.generator,
                '-r', options.state,
                '--seed', str(options.seed)] + \
+                   ['--plan-file', 'plan'] +\
                CPP_EXTRA_OPTIONS
         print(f'Executing "{" ".join(cmd)}"')
         code = subprocess.call(cmd)
