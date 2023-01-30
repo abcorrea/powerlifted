@@ -1,9 +1,12 @@
 
 #include "utils.h"
+
 #include "../action.h"
+#include "../plan_manager.h"
+#include "../task.h"
+
 #include "../successor_generators/successor_generator.h"
 #include "../states/sparse_states.h"
-#include "../task.h"
 
 #include <algorithm>
 #include <fstream>
@@ -49,7 +52,7 @@ void extract_plan(
 void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
     int total_plan_cost = 0;
     int total_plan_length = 0;
-    std::ofstream plan_file("sas_plan");
+    std::ofstream plan_file(PlanManager::get_plan_filename());
     for (const LiftedOperatorId &a:plan) {
         const ActionSchema &action = task.get_action_schema_by_index(a.get_index());
         total_plan_cost += action.get_cost();

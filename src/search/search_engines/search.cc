@@ -55,4 +55,3 @@ template bool SearchBase::check_goal<SparsePackedState>(
 template bool SearchBase::check_goal<ExtensionalPackedState>(
         const Task &task, const SuccessorGenerator &generator, clock_t timer_start,
         const DBState &state, const SearchNode &node, const SearchSpace<ExtensionalPackedState> &space) const;
-

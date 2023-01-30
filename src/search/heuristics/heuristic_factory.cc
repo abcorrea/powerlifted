@@ -17,8 +17,9 @@
 Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
 {
     const std::string& method = opt.get_evaluator();
-    std::ifstream datalog_file(opt.get_datalog_file());
-    std::cout << "Creating search factory..." << std::endl;
+
+    std::cout << "Creating heuristic factory..." << std::endl;
+
     if (boost::iequals(method, "blind")) {
         return new BlindHeuristic();
     }
