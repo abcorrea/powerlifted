@@ -1,5 +1,6 @@
 #include "options.h"
 #include "parser.h"
+#include "plan_manager.h"
 #include "task.h"
 
 #include "heuristics/heuristic.h"
@@ -53,6 +54,8 @@ int main(int argc, char *argv[]) {
     std::unique_ptr<SuccessorGenerator> sgen(SuccessorGeneratorFactory::create(opt.get_successor_generator(),
                                                                                opt.get_seed(),
                                                                                task));
+
+    PlanManager::set_plan_filename(opt.get_plan_file());
 
     // Start search
     if (task.is_trivially_unsolvable()) {

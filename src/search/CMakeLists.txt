@@ -31,6 +31,7 @@ add_executable(search
         task.cc task.h
         predicate.cc predicate.h
         object.h
+        plan_manager.cc plan_manager.h
         states/state.cc states/state.h
         parser.cc parser.h
         goal_condition.h

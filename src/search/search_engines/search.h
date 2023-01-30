@@ -18,6 +18,7 @@ class SearchNode;
 template <typename StateT> class SearchSpace;
 
 class SearchBase {
+
 public:
     SearchBase() = default;
     virtual ~SearchBase() = default;

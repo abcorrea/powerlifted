@@ -20,12 +20,7 @@ SearchFactory::create(const Options &opt, const std::string& method, const std::
     std::cout << "Creating search factory for method " << method << "..." << std::endl;
     bool using_ext_state = boost::iequals(state_type, "extensional");
 
-    if (boost::iequals(method, "naive")) {
-        std::cerr << "WARNING: The \"naive\" keyword for search engines "
-          "has been replaced with \"bfs\"" << std::endl;
-        exit(-1);
-    }
-    else if (boost::iequals(method, "astar")) {
+    if (boost::iequals(method, "astar")) {
         if (using_ext_state) return new AStarSearch<ExtensionalPackedState>();
         else return new AStarSearch<SparsePackedState>();
     }
