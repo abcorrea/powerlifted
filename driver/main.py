@@ -27,31 +27,81 @@ def validate(domain_name, instance_name, planfile):
             logging.error(f"Error executing 'validate': {err}")
 
 
-def main():
+def run_single_search(build_dir, translator_file, search, evaluator, generator, state, seed, plan_file, extra):
+        cmd = [os.path.join(build_dir, 'search', 'search'),
+               '-f', translator_file,
+               '-s', search,
+               '-e', evaluator,
+               '-g', generator,
+               '-r', state,
+               '--seed', seed] + \
+                   ['--plan-file', plan_file] +\
+               extra
+        print(f'Executing "{" ".join(cmd)}"')
+        code = subprocess.call(cmd)
+        return code
+
+def run_search(build_dir, options, extra):
+    if options.iteration is None:
+        code = run_single_search(build_dir,
+                                 options.translator_file,
+                                 options.search,
+                                 options.heuristic,
+                                 options.generator,
+                                 options.state,
+                                 str(options.seed),
+                                 'plan',
+                                 extra)
+
+        # If we found a plan, try to validate it
+        if code == 0 and options.validate:
+            validate(options.domain, options.instance, 'plan')
+        return code
+    else:
+        has_found_plan = False
+        for count, it in enumerate(options.iteration):
+            search, evaluator, generator = it.split(',')
+            plan_name = 'plan.'+str(count+1)
+            code = run_single_search(build_dir,
+                                     options.translator_file,
+                                     search,
+                                     evaluator,
+                                     generator,
+                                     options.state,
+                                     str(options.seed),
+                                     plan_name,
+                                     extra)
+
+            # If we found a plan, check if we need to validate it
+            # and then quit iterations
+            if code == 0:
+                has_found_a_plan = True
+                if options.validate:
+                    validate(options.domain, options.instance, plan_name)
+        if has_found_plan:
+            return 0
+        else:
+            return -1
+
+def run_translator(build_dir, options, extra):
+    translator = subprocess.Popen([os.path.join(build_dir, 'translator', 'translate.py'),
+                                   options.domain, options.instance, '--output-file', options.translator_file] + extra)
+    translator.communicate()
+    if translator.returncode != 0:
+        raise RuntimeError("Error during preprocessing/translation.")
+
+
+
+def set_extra_options(options):
     CPP_EXTRA_OPTIONS = []
     PYTHON_EXTRA_OPTIONS = []
 
-    options = arguments.parse_options()
-
-    build_dir = os.path.join(PROJECT_ROOT, 'builds', 'debug' if options.debug else 'release')
-
-    if options.build:
-        build(options.debug, options.cxx_compiler)
-
-    # Create build path
-    if not os.path.exists(build_dir):
-        raise OSError("Planner not built!")
-
-    # If it is the lifted heuristic, we need to obtain the Datalog model
-    if options.heuristic in ['add', 'hmax'] or options.search in ['bfws1-rx', 'bfws2-rx', 'dq-bfws1-rx', 'dq-bfws2-rx', 'alt1', 'alt2']:
-       PYTHON_EXTRA_OPTIONS += ['--build-datalog-model', '--datalog-file', options.datalog_file]
-       if options.keep_action_predicates:
-           PYTHON_EXTRA_OPTIONS.append('--keep-action-predicates')
-       if options.keep_duplicated_rules:
-           PYTHON_EXTRA_OPTIONS.append('--keep-duplicated-rules')
-       if options.add_inequalities:
-           PYTHON_EXTRA_OPTIONS.append('--add-inequalities')
-       CPP_EXTRA_OPTIONS += ['--datalog-file', options.datalog_file]
+    if options.keep_action_predicates:
+        PYTHON_EXTRA_OPTIONS.append('--keep-action-predicates')
+    if options.keep_duplicated_rules:
+        PYTHON_EXTRA_OPTIONS.append('--keep-duplicated-rules')
+    if options.add_inequalities:
+        PYTHON_EXTRA_OPTIONS.append('--add-inequalities')
 
 
     # If it is a width-based search, we might need to pass more flags
@@ -65,52 +115,31 @@ def main():
     if options.unit_cost:
         PYTHON_EXTRA_OPTIONS += ["--unit-cost"]
 
+    return PYTHON_EXTRA_OPTIONS, CPP_EXTRA_OPTIONS
+
+
+
+
+def main():
+
+    options = arguments.parse_options()
+
+    build_dir = os.path.join(PROJECT_ROOT, 'builds', 'debug' if options.debug else 'release')
+
+    if options.build:
+        build(options.debug, options.cxx_compiler)
+
+    # Create build path
+    if not os.path.exists(build_dir):
+        raise OSError("Planner not built!")
+
+
+    PYTHON_EXTRA_OPTIONS, CPP_EXTRA_OPTIONS = set_extra_options(options)
 
     # Invoke the Python preprocessor
-    translator = subprocess.Popen([os.path.join(build_dir, 'translator', 'translate.py'),
-                                   options.domain, options.instance, '--output-file', options.translator_file] + PYTHON_EXTRA_OPTIONS)
-    translator.communicate()
-    if translator.returncode != 0:
-        raise RuntimeError("Error during preprocessing/translation.")
+    run_translator(build_dir, options, PYTHON_EXTRA_OPTIONS)
 
+    # Invoke the C++ search component
+    search_exit_code = run_search(build_dir, options, CPP_EXTRA_OPTIONS)
 
-    if options.iteration is None:
-        # Invoke the C++ search component
-        cmd = [os.path.join(build_dir, 'search', 'search'),
-               '-f', options.translator_file,
-               '-s', options.search,
-               '-e', options.heuristic,
-               '-g', options.generator,
-               '-r', options.state,
-               '--seed', str(options.seed)] + \
-                   ['--plan-file', 'plan'] +\
-               CPP_EXTRA_OPTIONS
-        print(f'Executing "{" ".join(cmd)}"')
-        code = subprocess.call(cmd)
-
-        # If we found a plan, try to validate it
-        if code == 0 and options.validate:
-            validate(options.domain, options.instance, 'plan')
-    else:
-        for count, it in enumerate(options.iteration):
-            search, evaluator, generator = it.split(',')
-            plan_name = 'plan.'+str(count+1)
-            cmd = [os.path.join(build_dir, 'search', 'search'),
-                   '-f', options.translator_file,
-                   '-s', search,
-                   '-e', evaluator,
-                   '-g', generator,
-                   '-r', options.state,
-                   '--seed', str(options.seed)] + \
-                   ['--plan-file', plan_name] +\
-                   CPP_EXTRA_OPTIONS
-            print(f'Executing "{" ".join(cmd)}"')
-            code = subprocess.call(cmd)
-
-            # If we found a plan, check if we need to validate it
-            # and then quit iterations
-            if code == 0:
-                if options.validate:
-                    validate(options.domain, options.instance, plan_name)
-
-    return code
+    return search_exit_code
