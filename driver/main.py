@@ -32,7 +32,7 @@ def run_search(build_dir, options, extra):
 
     if options.iteration is None:
         code = run_single_search(build_dir,
-                                 options.time, # hard-coded for single search for now
+                                 options.time_limit,
                                  options.translator_file,
                                  options.search,
                                  options.heuristic,
