@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 
+from .utils import find_domain_filename
 
 SEARCH_CHOICES = ["astar",
                   "bfs",
@@ -35,24 +36,6 @@ SUCCESSOR_GENERATOR_CHOICES = ['yannakakis',
                                'ordered_join',
                                'full_reducer']
 
-def find_domain_filename(task_filename):
-    """
-    Find domain filename for the given task using automatic naming rules.
-    """
-    dirname, basename = os.path.split(task_filename)
-
-    domain_basenames = [
-        "domain.pddl",
-        basename[:3] + "-domain.pddl",
-        "domain_" + basename,
-        "domain-" + basename,
-    ]
-
-    for domain_basename in domain_basenames:
-        domain_filename = os.path.join(dirname, domain_basename)
-        if os.path.exists(domain_filename):
-            return domain_filename
-
 
 def parse_options():
     parser = argparse.ArgumentParser()
@@ -79,13 +62,15 @@ def parse_options():
                         default='yannakakis', help='Successor generator method',
                         choices=SUCCESSOR_GENERATOR_CHOICES)
     parser.add_argument('--iteration', action='append', default=None, type=str,
-                        help='Pass a triple S,E,G, corresponding to search ' \
-                        'algorithm, evaluator, and successor generator, respectively.' \
+                        help='Pass a triple S,E,G,T corresponding to search ' \
+                        'algorithm, evaluator, successor generator, and relative time.' \
                         'You can pass several "--iteration" arguments to simulate a portfolio.')
     parser.add_argument('--state', action='store', help='Successor generator method',
                         default="sparse", choices=("sparse", "extensional"))
     parser.add_argument('--seed', action='store', help='Random seed.',
                         default=1)
+    parser.add_argument('--time-limit', action='store', type=int, help='Time limit in seconds.',
+                        default=1800)
     parser.add_argument('--translator-output-file', dest='translator_file',
                         default='output.lifted',
                         help='Output file of the translator')
@@ -116,7 +101,8 @@ def parse_options():
         print("WARNING: You are using at least one iterated search. Values passed to '-s', '-e', and '-g' will be ignored.")
         for it in args.iteration:
             print(it)
-            search, evaluator, generator = it.split(',')
+            search, evaluator, generator, timestr = it.split(',')
+            time = int(timestr)
             if search not in SEARCH_CHOICES:
                 print(f"{search} is an invalid search choice.")
                 sys.exit(-1)
@@ -126,5 +112,7 @@ def parse_options():
             if generator not in SUCCESSOR_GENERATOR_CHOICES:
                 print(f"{generator} is an invalid successor generator choice.")
                 sys.exit(-1)
+            if not time >= 0 and not time <= 100:
+                print(f"relative time {time} not valid (relative time should be in [0,100])")
 
     return args
