@@ -63,6 +63,7 @@ void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
         }
         plan_file << ")\n";
     }
+    plan_file << "; cost = " << total_plan_cost << '\n';
     std::cout << "Total plan cost: " << total_plan_cost << std::endl;
     std::cout << "Plan length: " << total_plan_length << " step(s)." << std::endl;
 }
