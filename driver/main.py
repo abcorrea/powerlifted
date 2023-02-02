@@ -7,8 +7,9 @@ from pathlib import Path
 
 from build import build, PROJECT_ROOT
 
-from . import arguments
-
+from . import arguments, portfolio_runner
+from .utils import get_elapsed_time
+from .single_search_runner import run_single_search
 
 def validate(domain_name, instance_name, planfile):
     plan = Path(planfile)
@@ -27,23 +28,11 @@ def validate(domain_name, instance_name, planfile):
             logging.error(f"Error executing 'validate': {err}")
 
 
-def run_single_search(build_dir, translator_file, search, evaluator, generator, state, seed, plan_file, extra):
-        cmd = [os.path.join(build_dir, 'search', 'search'),
-               '-f', translator_file,
-               '-s', search,
-               '-e', evaluator,
-               '-g', generator,
-               '-r', state,
-               '--seed', seed] + \
-                   ['--plan-file', plan_file] +\
-               extra
-        print(f'Executing "{" ".join(cmd)}"')
-        code = subprocess.call(cmd)
-        return code
-
 def run_search(build_dir, options, extra):
+
     if options.iteration is None:
         code = run_single_search(build_dir,
+                                 options.time, # hard-coded for single search for now
                                  options.translator_file,
                                  options.search,
                                  options.heuristic,
@@ -58,30 +47,7 @@ def run_search(build_dir, options, extra):
             validate(options.domain, options.instance, 'plan')
         return code
     else:
-        has_found_plan = False
-        for count, it in enumerate(options.iteration):
-            search, evaluator, generator = it.split(',')
-            plan_name = 'plan.'+str(count+1)
-            code = run_single_search(build_dir,
-                                     options.translator_file,
-                                     search,
-                                     evaluator,
-                                     generator,
-                                     options.state,
-                                     str(options.seed),
-                                     plan_name,
-                                     extra)
-
-            # If we found a plan, check if we need to validate it
-            # and then quit iterations
-            if code == 0:
-                has_found_a_plan = True
-                if options.validate:
-                    validate(options.domain, options.instance, plan_name)
-        if has_found_plan:
-            return 0
-        else:
-            return -1
+        return portfolio_runner.run(build_dir, options, extra)
 
 def run_translator(build_dir, options, extra):
     translator = subprocess.Popen([os.path.join(build_dir, 'translator', 'translate.py'),
