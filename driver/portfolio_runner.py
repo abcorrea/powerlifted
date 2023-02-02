@@ -59,6 +59,8 @@ def run(build_dir, options, extra):
             has_found_a_plan = True
             if options.validate:
                 validate(options.domain, options.instance, plan_name)
+            if options.stop_after_first_plan():
+                return code
     if has_found_plan:
         return 0
     else:
