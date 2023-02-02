@@ -77,6 +77,8 @@ def parse_options():
     parser.add_argument('--datalog-file', dest='datalog_file',
                         default='model.lp',
                         help='Datalog model for the lifted heuristic.')
+    parser.add_argument("--stop-after-first-plan", action="store_true",
+                        help="flag if planner should stop after first iteration that finds a plan")
     parser.add_argument("--keep-action-predicates", action="store_true",
                         help="flag if the Datalog model should keep action predicates")
     parser.add_argument("--keep-duplicated-rules", action="store_true",
