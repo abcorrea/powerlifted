@@ -173,10 +173,18 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
                 distinguished_variables[action_index].insert(arg.get_index());
         }
     }
-    
-    for (const auto &i : action.get_inequalities()) {
-        distinguished_variables[action_index].insert(i.first);
-        distinguished_variables[action_index].insert(i.second);
+
+    for (const Atom& atom : action.get_static_precondition()) {
+        // TODO: for now, we assume all static preconditions are
+        //       (in)equalities. This may change in future
+        const std::vector<Argument> &args = atom.get_arguments();
+        assert(args.size() == 2);
+        if (atom.is_negated()){
+          if (!args[0].is_constant())
+            distinguished_variables[action_index].insert(args[0].get_index());
+          if (!args[1].is_constant())
+            distinguished_variables[action_index].insert(args[1].get_index());
+        }
     }
 }
 
@@ -240,7 +248,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         hash_join(working_table, tables[j.first]);
         // Project must be after removal of inequality constraints, otherwise we might keep only the tuple violating
         // some inequality. Variables in inequalities are also considered distinguished.
-        filter_inequalities(action, working_table);
+        filter_static(action, working_table);
         project(working_table, project_over);
         if (working_table.tuples.empty()) {
             return working_table;
@@ -251,7 +259,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     Table &working_table = tables[remaining_join[action.get_index()][0]];
     for (size_t i = 1; i < remaining_join[action.get_index()].size(); ++i) {
         hash_join(working_table, tables[remaining_join[action.get_index()][i]]);
-        filter_inequalities(action, working_table);
+        filter_static(action, working_table);
         if (working_table.tuples.empty()) {
             return working_table;
         }

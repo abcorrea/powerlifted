@@ -67,7 +67,7 @@ Table OrderedJoinSuccessorGenerator<OrderT>::instantiate(const ActionSchema &act
     for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[order[i]]);
         // Filter out equalities
-        filter_inequalities(action, working_table);
+        filter_static(action, working_table);
         if (working_table.tuples.empty()) {
             return working_table;
         }

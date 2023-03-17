@@ -16,7 +16,7 @@ class ActionSchema {
     std::vector<Parameter> parameters;
     std::vector<Atom> precondition;
     std::vector<Atom> effects;
-    std::vector<std::pair<int, int>> inequalities;
+    std::vector<Atom> static_precondition;
 
     /*
      * Nullary predicates are represented as boolean vectors to simplify
@@ -35,7 +35,7 @@ public:
                           std::vector<Parameter> parameters,
                           std::vector<Atom> precondition,
                           std::vector<Atom> effects,
-                          std::vector<std::pair<int, int>> inequalities,
+                          std::vector<Atom> static_precondition,
                           std::vector<bool> positive_nullary_precond,
                           std::vector<bool> negative_nullary_precond,
                           std::vector<bool> positive_nullary_effects,
@@ -65,8 +65,8 @@ public:
         return effects;
     }
 
-    const std::vector<std::pair<int, int>> &get_inequalities() const {
-        return inequalities;
+    const std::vector<Atom> &get_static_precondition() const {
+        return static_precondition;
     }
 
     const std::vector<bool> &get_positive_nullary_precond() const {

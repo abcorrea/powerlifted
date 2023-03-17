@@ -93,8 +93,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
         int cost, args, precond_size, eff_size;
         cin >> name >> cost >> args >> precond_size >> eff_size;
         vector<Parameter> parameters;
-        vector<Atom> preconditions, effects;
-        vector<pair<int, int>> inequalities;
+        vector<Atom> preconditions, static_preconditions, effects;
         vector<bool> positive_nul_precond(task.predicates.size(), false),
             negative_nul_precond(task.predicates.size(), false),
             positive_nul_eff(task.predicates.size(), false),
@@ -117,24 +116,21 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                     positive_nul_precond[index] = true;
                 else
                     negative_nul_precond[index] = true;
-                continue;
-            }
-            bool is_inequality = (boost::iequals(precond_name, "=") and negated);
-            vector<Argument> arguments;
-            if (is_inequality) {
-                assert(arguments_size == 2);
-                int obj1, obj2;
+
+            }else if (boost::iequals(precond_name, "=")){
+                int id1, id2;
                 char c, d;
-                cin >> c >> obj1 >> d >> obj2;
-                arguments.emplace_back(obj1, c == 'c');
-                arguments.emplace_back(obj2, d == 'c');
-                if (find(inequalities.begin(), inequalities.end(), make_pair(obj2, obj1)) !=
-                    inequalities.end()) {
-                    continue;
-                }
-                inequalities.emplace_back(obj1, obj2);
-            }
-            else {
+                cin >> c >> id1 >> d >> id2;
+
+                vector<Argument> arguments;
+                arguments.emplace_back(id1, c == 'c');
+                arguments.emplace_back(id2, d == 'c');
+                static_preconditions.emplace_back(std::move(arguments),
+                                                  std::move(precond_name),
+                                                  index, negated);
+
+            }else{
+                vector<Argument> arguments;
                 for (int k = 0; k < arguments_size; ++k) {
                     char c;
                     int obj_index;
@@ -153,8 +149,8 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                         exit(-1);
                     }
                 }
+                preconditions.emplace_back(std::move(arguments), std::move(precond_name), index, negated);
             }
-            preconditions.emplace_back(std::move(arguments), std::move(precond_name), index, negated);
         }
         for (int j = 0; j < eff_size; ++j) {
             string eff_name;
@@ -197,7 +193,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                        parameters,
                        preconditions,
                        effects,
-                       inequalities,
+                       static_preconditions,
                        positive_nul_precond,
                        negative_nul_precond,
                        positive_nul_eff,

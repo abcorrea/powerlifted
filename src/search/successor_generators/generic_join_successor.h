@@ -92,8 +92,8 @@ protected:
                               std::vector<GroundAtom> &tuples,
                               const std::vector<int> &constants);
 
-    static void filter_inequalities(const ActionSchema &action,
-                             Table &working_table) ;
+    static void filter_static(const ActionSchema &action,
+                              Table &working_table) ;
     static void create_hypergraph(
         const ActionSchema &action,
         std::vector<int> &hypernodes,

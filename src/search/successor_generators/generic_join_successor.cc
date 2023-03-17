@@ -47,7 +47,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
         // Filter out equalities
-        filter_inequalities(action, working_table);
+        filter_static(action, working_table);
         if (working_table.tuples.empty()) {
             return working_table;
         }
@@ -56,30 +56,73 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     return working_table;
 }
 
-void GenericJoinSuccessor::filter_inequalities(const ActionSchema &action,
-                                               Table &working_table)
+void GenericJoinSuccessor::filter_static(const ActionSchema &action,
+                                         Table &working_table)
 {
     const auto& tup_idx = working_table.tuple_index;
 
-    // Loop over inequalities and remove those not consistent with the current instantiation
-    for (const pair<int, int>& ineq : action.get_inequalities()) {
-        // TODO Revise this, looks that some work could be offloaded to preprocessing so that we
-        //      do not need to do all this linear-time finds at runtime?
-        auto it_1 = find(tup_idx.begin(), tup_idx.end(), ineq.first);
-        auto it_2 = find(tup_idx.begin(), tup_idx.end(), ineq.second);
+    for (const Atom& atom : action.get_static_precondition()) {
+        const std::vector<Argument> &args = atom.get_arguments();
+        bool is_equality = true;
+        // TODO: for now, we assume all static preconditions are
+        //       (in)equalities. This may change in future
+        if (is_equality){
+            assert(args.size() == 2);
+            if (args[0].is_constant() && args[1].is_constant()){
+                bool is_equal = (args[0].get_index() == args[1].get_index());
 
-        if (it_1 != tup_idx.end() and it_2 != tup_idx.end()) {
-            int index1 = distance(tup_idx.begin(), it_1);
-            int index2 = distance(tup_idx.begin(), it_2);
+                if ((atom.is_negated() && is_equal)
+                        || (!atom.is_negated() && !is_equal)){
+                    working_table.tuples.clear();
+                    return;
+                }
 
-            vector<vector<int>> newtuples;
-            for (const auto &t : working_table.tuples) {
-                if (t[index1] != t[index2]) {
-                    newtuples.push_back(t);
+            }else if (args[0].is_constant() || args[1].is_constant()){
+                int param_idx = -1;
+                int const_idx = -1;
+                if (args[0].is_constant()){
+                    const_idx = args[0].get_index();
+                    param_idx = args[1].get_index();
+                }else{
+                    const_idx = args[1].get_index();
+                    param_idx = args[0].get_index();
+                }
+                auto it = find(tup_idx.begin(), tup_idx.end(), param_idx);
+                if (it != tup_idx.end()){
+                    int index = distance(tup_idx.begin(), it);
+
+                    vector<vector<int>> newtuples;
+                    for (const auto &t : working_table.tuples) {
+                        if ((atom.is_negated() && t[index] != const_idx)
+                                || (!atom.is_negated() && t[index] == const_idx)){
+                            newtuples.push_back(t);
+                        }
+                    }
+                    working_table.tuples = std::move(newtuples);
+                }
+
+            }else{ // !args[0].is_constant() && !args[1].is_constant()
+                // TODO Revise this, looks that some work could be offloaded to preprocessing so that we
+                //      do not need to do all this linear-time finds at runtime?
+                auto it_1 = find(tup_idx.begin(), tup_idx.end(), args[0].get_index());
+                auto it_2 = find(tup_idx.begin(), tup_idx.end(), args[1].get_index());
+
+                if (it_1 != tup_idx.end() and it_2 != tup_idx.end()) {
+                    int index1 = distance(tup_idx.begin(), it_1);
+                    int index2 = distance(tup_idx.begin(), it_2);
+
+                    vector<vector<int>> newtuples;
+                    for (const auto &t : working_table.tuples) {
+                        if ((atom.is_negated() && t[index1] != t[index2])
+                                || (!atom.is_negated() && t[index1] == t[index2])){
+                            newtuples.push_back(t);
+                        }
+                    }
+                    working_table.tuples = std::move(newtuples);
                 }
             }
-            working_table.tuples = std::move(newtuples);
         }
+
     }
 }
 
