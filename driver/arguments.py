@@ -74,7 +74,7 @@ def parse_options():
     parser.add_argument('--translator-output-file', dest='translator_file',
                         default='output.lifted',
                         help='Output file of the translator')
-    parser.add_argument('--plan-file',
+    parser.add_argument('--plan-file', dest='plan_file',
                         default='plan',
                         help='Output file of plan')
     parser.add_argument('--datalog-file', dest='datalog_file',
