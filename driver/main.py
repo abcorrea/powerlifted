@@ -39,12 +39,12 @@ def run_search(build_dir, options, extra):
                                  options.generator,
                                  options.state,
                                  str(options.seed),
-                                 'plan',
+                                 options.plan_file,
                                  extra)
 
         # If we found a plan, try to validate it
         if code == 0 and options.validate:
-            validate(options.domain, options.instance, 'plan')
+            validate(options.domain, options.instance, options.plan_file)
         return code
     else:
         return portfolio_runner.run(build_dir, options, extra)
