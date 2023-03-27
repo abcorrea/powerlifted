@@ -14,6 +14,9 @@ def parse_args():
         "--output-file", default="output.lifted",
         help="path to the output file (default: %(default)s)")
     argparser.add_argument(
+        "--plan-file", default="plan",
+        help="path to the plan file (default: %(default)s)")
+    argparser.add_argument(
         "--ground-state-representation", action="store_true",
         help="use a complete ground state representation, where each possible "
              "ground atom corresponds to a bit of the state, instead of a "
