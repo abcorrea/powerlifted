@@ -6,6 +6,7 @@
 #include "ordered_join_successor.h"
 #include "random_successor.h"
 #include "yannakakis.h"
+#include "clique_successor_generator.h"
 
 #include "../database/table.h"
 
@@ -35,6 +36,12 @@ SuccessorGenerator *SuccessorGeneratorFactory::create(const std::string &method,
     }
     else if (boost::iequals(method, "yannakakis")) {
         return new YannakakisSuccessorGenerator(task);
+    }
+    else if (boost::iequals(method, "clique_bk")) {
+        return new CliqueSuccessorGenerator(task, BronKerboschFirst);
+    }
+    else if (boost::iequals(method, "clique_kckp")) {
+        return new CliqueSuccessorGenerator(task, KCliqueKPartite);
     }
     else {
         std::cerr << "Invalid successor generator method \"" << method << "\"" << std::endl;

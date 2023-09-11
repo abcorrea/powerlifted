@@ -83,6 +83,7 @@ utils::ExitCode AlternatedBFWS<PackedStateT>::search(const Task &task,
                                                      Heuristic &heuristic) {
     cout << "Starting AlternatedBFWS" << endl;
     clock_t timer_start = clock();
+    const auto action_schemas = task.get_action_schemas();
     StatePackerT packer(task);
 
     Goalcount gc;
@@ -158,62 +159,61 @@ utils::ExitCode AlternatedBFWS<PackedStateT>::search(const Task &task,
                  << ", time: " << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << '\n';
         }
 
-        for (const auto& action:task.get_action_schemas()) {
-            auto applicable = generator.get_applicable_actions(action, state);
-            statistics.inc_generated(applicable.size());
+        const auto applicable = generator.get_applicable_actions(action_schemas, state);
+        statistics.inc_generated(applicable.size());
 
-            for (const LiftedOperatorId& op_id:applicable) {
-                DBState s = generator.generate_successor(op_id, action, state);
+        for (const LiftedOperatorId& op_id : applicable) {
+            const auto &action = action_schemas[op_id.get_index()];
+            DBState s = generator.generate_successor(op_id, action, state);
 
-                bool is_preferred = is_useful_operator(task, s, delete_free_h->get_useful_atoms());
-                int dist = g + action.get_cost();
-                int unsatisfied_goals = gc.compute_heuristic(s, task);
-                int unsatisfied_relevant_atoms = 0;
+            bool is_preferred = is_useful_operator(task, s, delete_free_h->get_useful_atoms());
+            int dist = g + action.get_cost();
+            int unsatisfied_goals = gc.compute_heuristic(s, task);
+            int unsatisfied_relevant_atoms = 0;
 
-                unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
+            unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
 
-                if (only_effects_opt and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
-                    novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
-                                                                                    s,
-                                                                                    unsatisfied_goals,
-                                                                                    unsatisfied_relevant_atoms,
-                                                                                    generator.get_added_atoms());
-                }
-                else {
-                    novelty_value = novelty_evaluator.compute_novelty(task,
-                                                                      s,
-                                                                      unsatisfied_goals,
-                                                                      unsatisfied_relevant_atoms);
+            if (only_effects_opt and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
+                novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
+                                                                                s,
+                                                                                unsatisfied_goals,
+                                                                                unsatisfied_relevant_atoms,
+                                                                                generator.get_added_atoms());
+            }
+            else {
+                novelty_value = novelty_evaluator.compute_novelty(task,
+                                                                  s,
+                                                                  unsatisfied_goals,
+                                                                  unsatisfied_relevant_atoms);
 
-                }
+            }
 
-                statistics.inc_evaluations();
-                statistics.inc_evaluated_states();
+            statistics.inc_evaluations();
+            statistics.inc_evaluated_states();
 
-                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                if (child_node.status==SearchNode::Status::NEW) {
-                    // Inserted for the first time in the map
-                    child_node.open(dist, h);
-                    if (check_goal(task, generator, timer_start, s, child_node, space))
-                        return utils::ExitCode::SUCCESS;
+            auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+            if (child_node.status==SearchNode::Status::NEW) {
+                // Inserted for the first time in the map
+                child_node.open(dist, h);
+                if (check_goal(task, generator, timer_start, s, child_node, space))
+                    return utils::ExitCode::SUCCESS;
+                open_list.do_insertion(child_node.state_id,
+                                        h,
+                                        dist,
+                                        unsatisfied_goals,
+                                        novelty_value,
+                                        is_preferred);
+                map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
+            } else {
+                if (dist < child_node.g) {
+                    child_node.open(dist, h); // Reopening
+                    statistics.inc_reopened();
                     open_list.do_insertion(child_node.state_id,
-                                           h,
-                                           dist,
-                                           unsatisfied_goals,
-                                           novelty_value,
-                                           is_preferred);
-                    map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
-                } else {
-                    if (dist < child_node.g) {
-                        child_node.open(dist, h); // Reopening
-                        statistics.inc_reopened();
-                        open_list.do_insertion(child_node.state_id,
-                                               h,
-                                               dist,
-                                               unsatisfied_goals,
-                                               novelty_value,
-                                               is_preferred);
-                    }
+                                            h,
+                                            dist,
+                                            unsatisfied_goals,
+                                            novelty_value,
+                                            is_preferred);
                 }
             }
         }
