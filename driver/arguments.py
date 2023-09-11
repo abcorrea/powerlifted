@@ -34,7 +34,9 @@ SUCCESSOR_GENERATOR_CHOICES = ['yannakakis',
                                'join',
                                'random_join',
                                'ordered_join',
-                               'full_reducer']
+                               'full_reducer',
+                               'clique_bk',
+                               'clique_kckp']
 
 
 def parse_options():

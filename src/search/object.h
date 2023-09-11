@@ -21,6 +21,26 @@ public:
 
     const std::vector<int> &get_types() const { return types; }
 
+    bool operator<(const Object& other) const {
+      return index < other.index;
+    }
+
+    bool operator==(const Object& other) const {
+      return index == other.index;
+    }
+
+    bool operator!=(const Object& other) const {
+      return index != other.index;
+    }
 };
+
+namespace std {
+template <>
+struct hash<Object> {
+    size_t operator()(const Object &object) const {
+        return hash<int>()(object.get_index());
+    }
+};
+}  // namespace std
 
 #endif // SEARCH_OBJECT_H
