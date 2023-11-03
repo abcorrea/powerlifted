@@ -39,6 +39,7 @@ public:
 
     StateID get_top_node(GreedyOpenList &preferred, GreedyOpenList &other) {
         if (priority_preferred >= priority_regular) {
+            priority_preferred = std::max(priority_preferred-1, 0);
             if (not preferred.empty()) {
                 return preferred.remove_min();
             }

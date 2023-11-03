@@ -2,7 +2,9 @@
 #include "search.h"
 #include "search_space.h"
 #include "utils.h"
+
 #include "../task.h"
+
 #include "../states/sparse_states.h"
 #include "../states/extensional_states.h"
 

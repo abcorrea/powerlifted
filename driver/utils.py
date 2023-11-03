@@ -30,3 +30,17 @@ def find_domain_filename(task_filename):
         domain_filename = os.path.join(dirname, domain_basename)
         if os.path.exists(domain_filename):
             return domain_filename
+
+def silent_remove(f):
+    try:
+        os.remove(f)
+    except OSError:
+        pass
+
+
+def remove_temporary_files(options):
+    running_dir = os.getcwd()
+    silent_remove(options.translator_file)
+    # Harcoded files for now
+    silent_remove('new-instance-file.pddl')
+    silent_remove('new-domain-file.pddl')

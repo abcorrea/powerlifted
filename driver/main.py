@@ -8,8 +8,9 @@ from pathlib import Path
 from build import build, PROJECT_ROOT
 
 from . import arguments, portfolio_runner
-from .utils import get_elapsed_time
+from .utils import get_elapsed_time, remove_temporary_files
 from .single_search_runner import run_single_search
+from .preprocessor import preprocess_cpddl
 
 def validate(domain_name, instance_name, planfile):
     plan = Path(planfile)
@@ -45,6 +46,7 @@ def run_search(build_dir, options, extra):
         # If we found a plan, try to validate it
         if code == 0 and options.validate:
             validate(options.domain, options.instance, options.plan_file)
+        remove_temporary_files(options)
         return code
     else:
         return portfolio_runner.run(build_dir, options, extra)
@@ -99,6 +101,8 @@ def main():
     if not os.path.exists(build_dir):
         raise OSError("Planner not built!")
 
+    if options.preprocess_task:
+        preprocess_cpddl(options)
 
     PYTHON_EXTRA_OPTIONS, CPP_EXTRA_OPTIONS = set_extra_options(options)
 
