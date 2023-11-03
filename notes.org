@@ -1,0 +1,10 @@
+* TODO Next Steps
+** Create small instances
+   1) Create small instances of the domains we wrote
+** Parsing
+   1) Check how we can parse these effects -- can we reuse functions from
+      other similar structures?
+   2) Add attribute to Effect class?
+   3) Check on smaller instances
+** Discussion on C++ code
+   1) Discuss with Malte state hashing & logic organization of all this info
