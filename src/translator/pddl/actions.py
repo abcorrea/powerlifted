@@ -21,7 +21,12 @@ class Action(object):
         self.precondition = precondition
         self.effects = effects
         self.cost = cost
-        self.uniquify_variables()  # TODO: uniquify variables in cost?
+
+        # TODO We are only dealing with STRIPS + object creation, so we do not uniquify variables.
+        # If we support fancier features (quantifiers, condition effects), we need to do so.
+        # However, as it is, this is not directly possible: you do not want to uniquify variables
+        # of object creation effects.
+        # self.uniquify_variables()
 
     def __repr__(self):
         return "action_%s" % (self.name)
@@ -89,12 +94,13 @@ class Action(object):
         return precond
 
     @property
-    def get_literals_in_effects(self):
+    def get_parameters_in_effects(self):
         """
-        Return set with all literals occurring in effects, but not in effect
-        conditions.
+        Return set with all parameters (i.e., arguments) occurring in effects, but not in effect
+        conditions. This *DOES NOT* return fresh variables (i.e., variables used for object
+        creation).
 
-        :return: set of literals
+        :return: set of parameters
         """
         literals = set()
         for eff in self.effects:
@@ -103,8 +109,10 @@ class Action(object):
             except AssertionError:
                 raise NotImplementedError(
                     "Conditional effects are not supported.")
+            fresh_vars = [i.name for i in eff.parameters]
             for arg in eff.literal.args:
-                literals.add(arg)
+                if arg not in fresh_vars:
+                    literals.add(arg)
         return literals
 
     def transform_precondition_into_list(self):
