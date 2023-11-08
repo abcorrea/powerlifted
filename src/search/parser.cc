@@ -90,8 +90,8 @@ void parse_action_schemas(Task &task, int number_action_schemas)
     vector<ActionSchema> actions;
     for (int i = 0; i < number_action_schemas; ++i) {
         string name;
-        int cost, args, precond_size, eff_size;
-        cin >> name >> cost >> args >> precond_size >> eff_size;
+        int cost, args, fresh_vars, precond_size, eff_size;
+        cin >> name >> cost >> args >> fresh_vars >> precond_size >> eff_size;
         vector<Parameter> parameters;
         vector<Atom> preconditions, static_preconditions, effects;
         vector<bool> positive_nul_precond(task.predicates.size(), false),

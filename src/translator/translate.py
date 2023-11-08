@@ -202,6 +202,8 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
         for eff in action.effects:
             for v in eff.parameters:
                 fresh_vars.add(v)
+        fresh_vars = list(fresh_vars)
+        fresh_vars.sort()
 
         print(action.name, action.cost, len(list(action.parameters)), len(fresh_vars),
               len(precond), len(list(action.effects)), file=output)
