@@ -154,12 +154,17 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
     #    - action name
     #    - action cost
     #    - number of action parameters
+    #    - number of fresh variables (i.e., variables that will be instantiated by new objects)
     #    - size of precondition
     #    - size of effect
     # - Then we list all parameters, one in each line, containing
     #    - parameter name
     #    - parameter index
     #    - index of the parameter type
+    # - Next we list all fresh variables, one in each line, containing
+    #    - fresh variable name
+    #    - index
+    #    - index of its type
     # - We then list all precondition of the action schema. one in each line
     # printing the following attributes
     #    - predicate name
@@ -192,11 +197,21 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
                 action.cost = 1
         precond = action.get_action_preconditions
         assert isinstance(action.effects, list)
-        print(action.name, action.cost, len(list(action.parameters)),
+
+        fresh_vars = set()
+        for eff in action.effects:
+            for v in eff.parameters:
+                fresh_vars.add(v)
+
+        print(action.name, action.cost, len(list(action.parameters)), len(fresh_vars),
               len(precond), len(list(action.effects)), file=output)
         for index, par in enumerate(action.parameters):
             parameter_index[par.name] = index
             print(par.name, index, type_index[par.type_name], file=output)
+        for v in fresh_vars:
+            index = len(parameter_index)
+            parameter_index[v.name] = index
+            print(v.name, index, type_index[v.type_name], file=output)
         for cond in sorted(precond):
             assert isinstance(cond, pddl.Literal)
             args_list = []
