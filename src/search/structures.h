@@ -38,7 +38,8 @@ struct Parameter {
 
 /**
  * @brief Implements an argument composing an atom. It can be a free
- * variable or a constant.
+ * variable or a constant. If it is a variable, it can either be a fresh variable or
+ * a state variable.
  *
  * @var index: If the argument is a constant, then it represents the index of the object,
  * otherwise it represents the index of the free variable in the parameters of the action
@@ -49,8 +50,11 @@ struct Parameter {
 class Argument {
     int index;
     bool constant;
+    bool is_fresh;
 public:
-    Argument(int index, bool constant) : index(index), constant(constant) {}
+    Argument(int index, bool constant, bool is_fresh) : index(index),
+                                                        constant(constant),
+                                                        is_fresh(is_fresh) {}
 
     int get_index() const {
         return index;
@@ -59,6 +63,11 @@ public:
     bool is_constant() const {
         return constant;
     }
+
+    bool is_fresh_var() const {
+        return is_fresh;
+    }
+
 };
 
 

@@ -180,8 +180,8 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
     #    - boolean variable saying if its negated or not
     #    - number of predicate arguments
     #    - list of pairs in the format (O, i), where O is 'c' if it is a
-    # constant and 'p' if it is a parameter. In the case it is a constant, 'i'
-    # is its object index; otherwise it is the parameter index
+    # constant, O is 'p' if it is a parameter, and O is 'f' if it is a fresh variable.
+    # In the case it is a constant, 'i' is its object index; otherwise it is the variable index.
 
     task.actions = list(task.actions)
     task.actions.sort(key=lambda ac: ac.name)
@@ -199,9 +199,11 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
         assert isinstance(action.effects, list)
 
         fresh_vars = set()
+        fresh_var_names = set() # set like the one above to make output code easier
         for eff in action.effects:
             for v in eff.parameters:
                 fresh_vars.add(v)
+                fresh_var_names.add(v.name)
         fresh_vars = list(fresh_vars)
         fresh_vars.sort()
 
@@ -236,8 +238,12 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
             args_list = []
             for x in eff.literal.args:
                 if x in parameter_index:
-                    # If it is a parameter
-                    args_list += ['p', str(parameter_index[x])]
+                    if x in fresh_var_names:
+                        # If it is a fresh variable
+                        args_list += ['f', str(parameter_index[x])]
+                    else:
+                        # If it is a parameter
+                        args_list += ['p', str(parameter_index[x])]
                 else:
                     # Otherwise, it is a constant
                     args_list += ['c', str(object_index[x])]
