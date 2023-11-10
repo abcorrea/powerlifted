@@ -40,7 +40,8 @@ def silent_remove(f):
 
 def remove_temporary_files(options):
     running_dir = os.getcwd()
-    silent_remove(options.translator_file)
+    if not options.keep_translator_file:
+        silent_remove(options.translator_file)
     # Harcoded files for now
     silent_remove('new-instance-file.pddl')
     silent_remove('new-domain-file.pddl')
