@@ -65,8 +65,6 @@ def parse_options():
                         help='Pass a triple S,E,G,T corresponding to search ' \
                         'algorithm, evaluator, successor generator, and relative time.' \
                         'You can pass several "--iteration" arguments to simulate a portfolio.')
-    parser.add_argument('--state', action='store', help='Successor generator method',
-                        default="sparse", choices=("sparse", "extensional"))
     parser.add_argument('--seed', action='store', help='Random seed.',
                         default=1)
     parser.add_argument('--time-limit', action='store', type=int, help='Time limit in seconds.',

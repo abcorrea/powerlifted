@@ -7,7 +7,6 @@
 
 #include "../successor_generators/successor_generator.h"
 
-#include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 
 #include <algorithm>
@@ -207,4 +206,3 @@ void DualQueueBFWS<PackedStateT>::boost_priority_queue() {
 
 // explicit template instantiations
 template class DualQueueBFWS<SparsePackedState>;
-template class DualQueueBFWS<ExtensionalPackedState>;//

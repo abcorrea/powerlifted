@@ -1,6 +1,6 @@
 
 #include "breadth_first_search.h"
-#include "../states/extensional_states.h"
+
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
 #include "../task.h"
@@ -79,4 +79,3 @@ void BreadthFirstSearch<PackedStateT>::print_statistics() const {
 
 // explicit template instantiations
 template class BreadthFirstSearch<SparsePackedState>;
-template class BreadthFirstSearch<ExtensionalPackedState>;

@@ -28,7 +28,6 @@ public:
             ("evaluator,e", po::value<std::string>()->required(), "Heuristic evaluator.")
             ("generator,g", po::value<std::string>()->required(), "Successor generator method.")
             ("search,s", po::value<std::string>()->required(), "Search engine.")
-            ("state-representation,r", po::value<std::string>()->default_value("sparse"), "State representation.")
             ("plan-file", po::value<std::string>()->default_value("FilePathUndefined"), "Plan file.")
             ("only-effects-novelty-check", po::value<bool>()->default_value(false), "Check only effects of applied actions when evaluation novelty of a state.")
             ("novelty-early-stop", po::value<bool>()->default_value(false), "Stop evaluating novelty as soon as w-value is defined.")
@@ -54,7 +53,6 @@ public:
         generator = vm["generator"].as<std::string>();
         evaluator = vm["evaluator"].as<std::string>();
         search_engine = vm["search"].as<std::string>();
-        state_representation = vm["state-representation"].as<std::string>();
         plan_file = vm["plan-file"].as<std::string>();
         only_effects_opt = vm["only-effects-novelty-check"].as<bool>();
         novelty_early_stop = vm["novelty-early-stop"].as<bool>();
@@ -76,10 +74,6 @@ public:
 
     const std::string &get_evaluator() const {
         return evaluator;
-    }
-
-    const std::string &get_state_representation() const {
-        return state_representation;
     }
 
     const std::string &get_plan_file() const {

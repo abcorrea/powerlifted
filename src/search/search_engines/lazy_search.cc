@@ -8,7 +8,6 @@
 
 #include "../heuristics/heuristic.h"
 #include "../open_lists/greedy_open_list.h"
-#include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 
 #include "../successor_generators/successor_generator.h"
@@ -137,4 +136,3 @@ void LazySearch<PackedStateT>::print_statistics() const {
 
 // explicit template instantiations
 template class LazySearch<SparsePackedState>;
-template class LazySearch<ExtensionalPackedState>;

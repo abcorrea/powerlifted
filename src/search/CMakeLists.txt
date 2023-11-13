@@ -68,7 +68,6 @@ add_executable(search
         successor_generators/yannakakis.cc successor_generators/yannakakis.h
         database/project.cc database/project.h
         utils/segmented_vector.h
-        states/extensional_states.cc states/extensional_states.h
         states/sparse_states.cc states/sparse_states.h
         utils/hash.h
         algorithms/cartesian_iterator.h

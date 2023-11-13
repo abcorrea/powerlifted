@@ -38,7 +38,6 @@ def run_search(build_dir, options, extra):
                                  options.search,
                                  options.heuristic,
                                  options.generator,
-                                 options.state,
                                  str(options.seed),
                                  options.plan_file,
                                  extra)
