@@ -77,12 +77,23 @@ non-preferred operators
 
 
 ### Available `ADDITIONAL OPTIONS`:
+- `[--novelty-early-stop]`: Flag if the novelty evaluation of a state should
+  stop as soon as the return value is defined. (See Corrêa and Seipp 2022.)
 - `[--only-effects-novelty-check]`: Flag if the novelty evaluation of a state
   should only consider atoms in the applied action effect. *Warning*: for
   state-of-the-art performance, you must use this option when running BFWS-based
   search engines. (See Corrêa and Seipp 2022.)
-- `[--novelty-early-stop]`: Flag if the novelty evaluation of a state should
-  stop as soon as the return value is defined. (See Corrêa and Seipp 2022.)
+- `[--plan-file]`: Name of the file used to output the plan(s) found. If you are
+  using sequential iterations, the plan found at the x-th iteration will have
+  `.x` appended to its name.
+- `[--preprocess-task]`: Preprocess domain and problem PDDL files so it is
+  translated into a fragment supported by Powerlifted. You need to have
+  [CPDDL](https://gitlab.com/danfis/cpddl) installed, and an environment
+  variable `CPDDL_BIN` pointing to the `cpddl/bin` directory after it is locally
+  compiled. *Note*: This is still not fully functional. CPDDL still leaves
+  negated static precondition on the PDDL file, which Powerlifted does not
+  support. Also, it produces two new intermediate files, which now have
+  hardcoded names.
 - `[--seed RANDOM SEED]`: Random seed for the random number generator.
 - `[--translator-output-file TRANSLATOR_FILE]`: Output of the intermediate
   representation to be parsed by the search component will be saved into

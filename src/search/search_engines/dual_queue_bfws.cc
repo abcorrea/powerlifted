@@ -4,7 +4,9 @@
 #include "utils.h"
 
 #include "../parallel_hashmap/phmap.h"
+
 #include "../successor_generators/successor_generator.h"
+
 #include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 

@@ -50,31 +50,24 @@ def perform_sanity_checks(task):
 
 def main():
     timer = timers.Timer()
+
     with timers.timing("Parsing", True):
         task = pddl_parser.open(
             domain_filename=options.domain, task_filename=options.task)
+
     print('Processing task', task.task_name)
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
 
     if options.unit_cost:
-        transform_into_unit_cost(task)
+        with timers.timing("Transforming into unit cost task"):
+            transform_into_unit_cost(task)
 
-    perform_sanity_checks(task)
-
-    if options.build_datalog_model:
-        print("Building Datalog model...")
-        prog = pddl_to_prolog.translate(task, options.keep_action_predicates, options.add_inequalities)
-        prog.rename_free_variables()
-        if not options.keep_duplicated_rules:
-            prog.remove_duplicated_rules()
-        with open(options.datalog_file, 'w') as f:
-            #prog.dump(f)
-            prog.dump(f)
+    with timers.timing("Performing sanity checks..."):
+        perform_sanity_checks(task)
 
     with timers.timing("Compiling types into unary predicates"):
         g = compile_types.compile_types(task)
-
 
     with timers.timing("Checking static predicates"):
         static_pred = static_predicates.check(task)
@@ -97,45 +90,52 @@ def main():
     test_if_experiment(options.test_experiment)
 
     # Preprocess a dict of supertypes for every type from the TypeGraph
-    types_dict = get_types_dict(g)
+    with timers.timing("Getting dictionary of types"):
+        types_dict = get_types_dict(g)
 
     # Sets output file from options
     if os.path.isfile(options.output_file):
-        print(
-            "WARNING: file %s already exists, it will be overwritten" %
-            options.output_file)
+        print("WARNING: file %s already exists, it will be overwritten" %
+              options.output_file)
     output = open(options.output_file, "w")
-    sys.stdout = output
 
-    remove_functions_from_initial_state(task)
-    remove_predicates.remove_unused_predicate_symbols(task)
+    with timers.timing("Removing function symbols from initial state"):
+        remove_functions_from_initial_state(task)
+
+    with timers.timing("Removing unused predicate symbols"):
+        remove_predicates.remove_unused_predicate_symbols(task)
 
     if is_trivially_unsolvable(task, static_pred):
         output_trivially_unsolvable_task()
         sys.exit(0)
 
-    remove_static_predicates_from_goal(task, static_pred)
+    with timers.timing("Removing unused predicate symbols"):
+        remove_static_predicates_from_goal(task, static_pred)
 
-    print_names_and_representation(task.domain_name, task.task_name)
+    with timers.timing("Printing names and representation type"):
+        print_names_and_representation(output, task.domain_name, task.task_name)
 
-    type_index = {}
-    print_types(task, type_index)
+    with timers.timing("Printing types"):
+        type_index = {}
+        print_types(output, task, type_index)
 
-    predicate_index = {}
-    print_predicates(task, predicate_index, type_index)
+    with timers.timing("Printing predicates"):
+        predicate_index = {}
+        print_predicates(output, task, predicate_index, type_index)
 
-    object_index = {}
-    print_objects(task, object_index, type_index, types_dict)
+    with timers.timing("Printing objects (i.e., constants)"):
+        object_index = {}
+        print_objects(output, task, object_index, type_index, types_dict)
 
-    atom_index = {}
-    print_initial_state(task, atom_index, object_index, predicate_index)
+    with timers.timing("Printing initial state"):
+        atom_index = {}
+        print_initial_state(output, task, atom_index, object_index, predicate_index)
 
-    print_goal(task, atom_index, object_index, predicate_index)
+    with timers.timing("Printing goal"):
+        print_goal(output, task, atom_index, object_index, predicate_index)
 
-    print_action_schemas(task, object_index, predicate_index, type_index)
-
-    # Reset sys.stdout
-    sys.stdout = sys.__stdout__
+    with timers.timing("Printing action schemas"):
+        print_action_schemas(output, task, object_index, predicate_index, type_index)
 
     print("Total translation time:", timer.get_cpu_time())
 
@@ -147,7 +147,7 @@ def transform_into_unit_cost(task):
         action.cost = 1
 
 
-def print_action_schemas(task, object_index, predicate_index, type_index):
+def print_action_schemas(output, task, object_index, predicate_index, type_index):
     # Action schemas are defined as follow
     # - First, a canary and the number of action schemas
     # - Then a list of action schemas, each one having
@@ -180,7 +180,7 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
 
     task.actions = list(task.actions)
     task.actions.sort(key=lambda ac: ac.name)
-    print("ACTION-SCHEMAS %d" % len(task.actions))
+    print("ACTION-SCHEMAS %d" % len(task.actions), file=output)
     for action in task.actions:
         parameter_index = {}
         if action.cost is None:
@@ -193,10 +193,10 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
         precond = action.get_action_preconditions
         assert isinstance(action.effects, list)
         print(action.name, action.cost, len(list(action.parameters)),
-              len(precond), len(list(action.effects)))
+              len(precond), len(list(action.effects)), file=output)
         for index, par in enumerate(action.parameters):
             parameter_index[par.name] = index
-            print(par.name, index, type_index[par.type_name])
+            print(par.name, index, type_index[par.type_name], file=output)
         for cond in sorted(precond):
             assert isinstance(cond, pddl.Literal)
             args_list = []
@@ -210,7 +210,8 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
             print(cond.predicate, predicate_index[cond.predicate],
                   int(cond.negated),
                   len(cond.args),
-                  ' '.join(i for i in args_list))
+                  ' '.join(i for i in args_list),
+                  file=output)
         # Delete effects first to guarantee add-after-delete semantics
         action.effects.sort(key=lambda x: int(x.literal.negated), reverse=True)
         for eff in action.effects:
@@ -227,23 +228,24 @@ def print_action_schemas(task, object_index, predicate_index, type_index):
                   predicate_index[eff.literal.predicate],
                   int(eff.literal.negated),
                   len(eff.literal.args),
-                  ' '.join(i for i in args_list))
+                  ' '.join(i for i in args_list),
+                  file=output)
 
 
-def print_goal(task, atom_index, object_index, predicate_index):
+def print_goal(output, task, atom_index, object_index, predicate_index):
     # Print canary and the number of atoms in the goal, the output of each
     # individual goal atom depends on the representation we are using. See below
     if isinstance(task.goal, pddl.Conjunction):
         goal_list = task.goal.parts
     else:
         goal_list = [task.goal]
-    print("GOAL %d" % len(goal_list))
+    print("GOAL %d" % len(goal_list), file=output)
     for index, atom in enumerate(goal_list):
         if options.ground_state_representation:
             # If we use ground state representation, we simply output the
             # atom name, followed by its atom index and whether it is negated
             # or not in the goal.
-            print(atom, atom_index[str(atom)], int(atom.negated))
+            print(atom, atom_index[str(atom)], int(atom.negated), file=output)
         else:
             # If we use sparse state representation, we output the atom name,
             # its predicate index, a boolean flag indicating whether it is
@@ -252,10 +254,11 @@ def print_goal(task, atom_index, object_index, predicate_index):
             # the arguments.
             print(atom, predicate_index[atom.predicate], int(atom.negated),
                   len(atom.args),
-                  ' '.join(str(object_index[o]) for o in atom.args))
+                  ' '.join(str(object_index[o]) for o in atom.args),
+                  file=output)
 
 
-def print_initial_state(task, atom_index, object_index, predicate_index):
+def print_initial_state(output, task, atom_index, object_index, predicate_index):
     # Print canary and the number N of ground atoms in the initial
     # state. It is followed by a list of N lines, where each line has the name
     # of the atom, its index, the index of its predicate, a boolean number
@@ -271,7 +274,7 @@ def print_initial_state(task, atom_index, object_index, predicate_index):
         if isinstance(a, pddl.conditions.Atom):
             new_s0.append(a)
     task.init = sorted(new_s0)
-    print("INITIAL-STATE %d" % len(task.init))
+    print("INITIAL-STATE %d" % len(task.init), file=output)
     for index, atom in enumerate(task.init):
         atom_index[str(atom)] = index
         # TODO what to do with functions?
@@ -280,24 +283,26 @@ def print_initial_state(task, atom_index, object_index, predicate_index):
         print(atom, '%d %d %d %d' % (
             index, predicate_index[atom.predicate], atom.negated,
             len(atom.args)),
-              ' '.join(str(object_index[o]) for o in atom.args))
+              ' '.join(str(object_index[o]) for o in atom.args),
+              file=output)
 
 
-def print_objects(task, object_index, type_index, types_dict):
+def print_objects(output, task, object_index, type_index, types_dict):
     # Print a canary and the number of objects, followed by a list of
     # objects. Also updates object_index strucutre
     # Each object has a name, an index, and the number of
     # types/supertypes.  It is then followed by a line containing every
     # supertype and type that the object belongs to.
-    print("OBJECTS %d" % len(task.objects))
+    print("OBJECTS %d" % len(task.objects), file=output)
     for index, obj in enumerate(task.objects):
         object_index[obj.name] = index
         print('%s %d %d' % (obj.name, index, len(types_dict[obj.type_name])),
-              end=' ')
-        print(' '.join(str(type_index[t]) for t in sorted(types_dict[obj.type_name])))
+              end=' ', file=output)
+        print(' '.join(str(type_index[t]) for t in sorted(types_dict[obj.type_name])),
+              file=output)
 
 
-def print_predicates(task, predicate_index, type_index):
+def print_predicates(output, task, predicate_index, type_index):
     # Print canary and number of predicates, followed by list of
     # predicates. Also updated predicate_index structure.
     # Each predicate number is followed by:
@@ -306,10 +311,10 @@ def print_predicates(task, predicate_index, type_index):
     #      - S, a boolean value indicating if the predicate is static or not
     #      - (if it is not static) a sequence of N type indices,
     # corresponding to the indices of the predicate arguments
-    print("PREDICATES %d" % len(task.predicates))
+    print("PREDICATES %d" % len(task.predicates), file=output)
     for index, p in enumerate(task.predicates):
         predicate_index[p.name] = index
-        print("%s %d %d %d" % (p.name, index, len(p.arguments), p.static))
+        print("%s %d %d %d" % (p.name, index, len(p.arguments), p.static), file=output)
         if not p.static:
             # If p is fluent, then we care about the types of its parameters
             args = []
@@ -322,33 +327,33 @@ def print_predicates(task, predicate_index, type_index):
                                               "'either'-typed predicate, "
                                               "which is not implemented.")
                 args.append(str(type_index[arg.type_name]))
-            print(' '.join(args))
+            print(' '.join(args), file=output)
         else:
             # If it is static, we can assume that all its parameters are of
             # type object, since we cannot generate new atoms of this predicate
             # we cannot mess up it with static predicates. (Assuming everything
             # done before is correct.
-            print(
-                ' '.join(str(type_index['object']) for arg in p.arguments))
+            print(' '.join(str(type_index['object']) for arg in p.arguments),
+                  file=output)
 
 
-def print_types(task, type_index):
+def print_types(output, task, type_index):
     #  Print canary and number of types, followed by type names and their
     #  type indexes. Also update type_index structure
-    print("TYPES %d" % len(task.types))
+    print("TYPES %d" % len(task.types), file=output)
     for index, t in enumerate(task.types):
         type_index[t.name] = index
-        print("%s %d" % (t.name, index))
+        print("%s %d" % (t.name, index), file=output)
 
 
-def print_names_and_representation(domain, inst):
+def print_names_and_representation(output, domain, inst):
     # Print domain and instance names and which kind of state
     # representation we are using.
-    print("{} {}".format(domain, inst))
+    print("{} {}".format(domain, inst), file=output)
     if options.ground_state_representation:
-        print("GROUND-REPRESENTATION")
+        print("GROUND-REPRESENTATION", file=output)
     else:
-        print("SPARSE-REPRESENTATION")
+        print("SPARSE-REPRESENTATION", file=output)
 
 
 def get_types_dict(g):

@@ -7,6 +7,22 @@ import sys
 import graph
 import pddl
 
+# Note on unsupported features:
+# This parser is a simple modification of the one used in Fast Downward.
+# It simply raises an error and exits  when parsing something not
+# supported by Powerlifted, but technically the code to parse all PDDL
+# features is still present. This was done in purpose so we can modify
+# the parser more easily in case such features are added in the future.
+
+UNSUPPORTED_FEATURES = ["imply",
+                        "forall",
+                        "exists",
+                        "when"]
+
+def is_tag_supported(tag):
+    if tag in UNSUPPORTED_FEATURES:
+        print('ERROR: PDDL feature "%s" not supported yet.' % tag, file=sys.stderr)
+        sys.exit(-1)
 
 def parse_typed_list(alist, only_variables=False,
                      constructor=pddl.TypedObject,
@@ -66,6 +82,7 @@ def parse_condition(alist, type_dict, predicate_dict):
 def parse_condition_aux(alist, negated, type_dict, predicate_dict):
     """Parse a PDDL condition. The condition is translated into NNF on the fly."""
     tag = alist[0]
+    is_tag_supported(tag)
     if tag in ("and", "or", "not", "imply"):
         args = alist[1:]
         if tag == "imply":
@@ -194,6 +211,7 @@ def add_effect(tmp_effect, result):
 
 def parse_effect(alist, type_dict, predicate_dict):
     tag = alist[0]
+    is_tag_supported(tag)
     if tag == "and":
         return pddl.ConjunctiveEffect(
             [parse_effect(eff, type_dict, predicate_dict) for eff in alist[1:]])
@@ -363,6 +381,7 @@ def parse_domain_pddl(domain_pddl):
                                  [pddl.TypedObject("?x", "object"),
                                   pddl.TypedObject("?y", "object")])]
         elif field == ":functions":
+            print("WARNING: Your PDDL domain file probably uses functions for action costs. These are parsed but ignored.")
             the_functions = parse_typed_list(
                 opt[1:],
                 constructor=parse_function,
@@ -387,8 +406,10 @@ def parse_domain_pddl(domain_pddl):
     the_actions = []
     for entry in entries:
         if entry[0] == ":derived":
-            axiom = parse_axiom(entry, type_dict, predicate_dict)
-            the_axioms.append(axiom)
+            #axiom = parse_axiom(entry, type_dict, predicate_dict)
+            #the_axioms.append(axiom)
+            print("ERROR: Derived predicates are not supported.", file=sys.stderr)
+            sys.exit(-1)
         else:
             action = parse_action(entry, type_dict, predicate_dict)
             if action is not None:

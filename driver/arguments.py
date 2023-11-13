@@ -78,12 +78,14 @@ def parse_options():
                         help='Output file of the translator')
     parser.add_argument('--plan-file', dest='plan_file',
                         default='plan',
-                        help='Output file of plan')
+                        help='name of plan file')
     parser.add_argument('--datalog-file', dest='datalog_file',
                         default='model.lp',
                         help='Datalog model for the lifted heuristic.')
     parser.add_argument("--stop-after-first-plan", action="store_true",
                         help="flag if planner should stop after first iteration that finds a plan")
+    parser.add_argument("--preprocess-task", action="store_true",
+                        help="flag if PDDL task should be preprocessed into a STRIPS-like task")
     parser.add_argument("--keep-action-predicates", action="store_true",
                         help="flag if the Datalog model should keep action predicates")
     parser.add_argument("--keep-duplicated-rules", action="store_true",
