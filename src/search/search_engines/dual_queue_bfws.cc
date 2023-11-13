@@ -22,6 +22,7 @@ utils::ExitCode DualQueueBFWS<PackedStateT>::search(const Task &task,
                                                     Heuristic &heuristic) {
     cout << "Starting Dual-Queue BFWS" << endl;
     clock_t timer_start = clock();
+    const auto action_schemas = task.get_action_schemas();
     StatePackerT packer(task);
 
     Goalcount gc;
@@ -33,7 +34,7 @@ utils::ExitCode DualQueueBFWS<PackedStateT>::search(const Task &task,
 
     atom_counter = initialize_counter_with_useful_atoms(task, delete_free_h);
     number_relevant_atoms = atom_counter.get_total_number_of_atoms();
-    
+
     // We use a GreedyOpenList (ordered by the novelty value) for now. This is done to make the
     // search algorithm complete.
     TieBreakingOpenList regular_open_list;
@@ -89,51 +90,50 @@ utils::ExitCode DualQueueBFWS<PackedStateT>::search(const Task &task,
             boost_priority_queue();
         }
 
-        for (const auto& action:task.get_action_schemas()) {
-            auto applicable = generator.get_applicable_actions(action, state);
-            statistics.inc_generated(applicable.size());
+        const auto applicable = generator.get_applicable_actions(action_schemas, state);
+        statistics.inc_generated(applicable.size());
 
-            for (const LiftedOperatorId& op_id:applicable) {
-                DBState s = generator.generate_successor(op_id, action, state);
-                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                if (child_node.status != SearchNode::Status::NEW)
-                    continue;
-                bool is_preferred = is_useful_operator(task, s, delete_free_h.get_useful_atoms());
-                int dist = g + action.get_cost();
-                int unsatisfied_goals = gc.compute_heuristic(s, task);
-                int unsatisfied_relevant_atoms = 0;
+        for (const LiftedOperatorId& op_id:applicable) {
+            const auto &action = action_schemas[op_id.get_index()];
+            DBState s = generator.generate_successor(op_id, action, state);
+            auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+            if (child_node.status != SearchNode::Status::NEW)
+                continue;
+            bool is_preferred = is_useful_operator(task, s, delete_free_h.get_useful_atoms());
+            int dist = g + action.get_cost();
+            int unsatisfied_goals = gc.compute_heuristic(s, task);
+            int unsatisfied_relevant_atoms = 0;
 
-                unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
+            unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
 
-                if (only_effects_opt and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
-                    novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
-                                                                                    s,
-                                                                                    unsatisfied_goals,
-                                                                                    unsatisfied_relevant_atoms,
-                                                                                    generator.get_added_atoms());
-                }
-                else {
-                    novelty_value = novelty_evaluator.compute_novelty(task,
-                                                                      s,
-                                                                      unsatisfied_goals,
-                                                                      unsatisfied_relevant_atoms);
-
-                }
-
-                statistics.inc_evaluations();
-                statistics.inc_evaluated_states();
-
-                child_node.open(dist, novelty_value);
-                if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
-                if (is_preferred) {
-                    preferred_open_list.do_insertion(child_node.state_id,
-                                                     {novelty_value, unsatisfied_goals, dist});
-                }
-                // Using a boosted dual queue, it is needed to insert every node in the regular
-                // open list for completeness.
-                regular_open_list.do_insertion(child_node.state_id,{novelty_value, unsatisfied_goals, dist});
-                map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
+            if (only_effects_opt and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
+                novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
+                                                                                s,
+                                                                                unsatisfied_goals,
+                                                                                unsatisfied_relevant_atoms,
+                                                                                generator.get_added_atoms());
             }
+            else {
+                novelty_value = novelty_evaluator.compute_novelty(task,
+                                                                  s,
+                                                                  unsatisfied_goals,
+                                                                  unsatisfied_relevant_atoms);
+
+            }
+
+            statistics.inc_evaluations();
+            statistics.inc_evaluated_states();
+
+            child_node.open(dist, novelty_value);
+            if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
+            if (is_preferred) {
+                preferred_open_list.do_insertion(child_node.state_id,
+                                                    {novelty_value, unsatisfied_goals, dist});
+            }
+            // Using a boosted dual queue, it is needed to insert every node in the regular
+            // open list for completeness.
+            regular_open_list.do_insertion(child_node.state_id,{novelty_value, unsatisfied_goals, dist});
+            map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
         }
     }
 

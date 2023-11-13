@@ -30,11 +30,31 @@ struct Parameter {
     int index;
     int type;
 
-    int get_index() {
+    int get_index() const {
         return index;
+    }
+
+    bool operator<(const Parameter& other) const {
+        return index < other.index;
+    }
+
+    bool operator==(const Parameter& other) const {
+        return index == other.index;
+    }
+
+    bool operator!=(const Parameter& other) const {
+        return index != other.index;
     }
 };
 
+namespace std {
+template <>
+struct hash<Parameter> {
+    size_t operator()(const Parameter &parameter) const {
+        return hash<int>()(parameter.get_index());
+    }
+};
+}  // namespace std
 
 /**
  * @brief Implements an argument composing an atom. It can be a free

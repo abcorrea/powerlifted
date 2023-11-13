@@ -38,6 +38,18 @@ public:
             const ActionSchema &action, const DBState &state) = 0;
 
     /**
+     * Compute the instantiations of the given action schemas that are applicable in
+     * the given state.
+     *
+     * @param actions: The action schemas
+     * @param state: The state on which we want to compute applicability
+     * @return A vector of IDs representing each of them a single applicable
+     * instantiation of an action schema.
+     */
+    virtual std::vector<LiftedOperatorId> get_applicable_actions(
+            const std::vector<ActionSchema> &actions, const DBState &state) = 0;
+
+    /**
      * Generate the state that results from applying the given action to the given state.
      */
     virtual DBState generate_successor(const LiftedOperatorId &op,

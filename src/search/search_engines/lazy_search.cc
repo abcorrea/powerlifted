@@ -28,6 +28,7 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 {
     cout << "Starting greedy best first search" << endl;
     clock_t timer_start = clock();
+    const auto action_schemas = task.get_action_schemas();
     StatePackerT packer(task);
 
     GreedyOpenList preferred_open_list;
@@ -85,38 +86,35 @@ utils::ExitCode LazySearch<PackedStateT>::search(const Task &task,
 
         if (check_goal(task, generator, timer_start, state, node, space)) return utils::ExitCode::SUCCESS;
 
-        // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
-        // performance, we could implement some form of std iterator
-        for (const auto& action:task.get_action_schemas()) {
-            auto applicable = generator.get_applicable_actions(action, state);
-            statistics.inc_generated(applicable.size());
+        const auto applicable = generator.get_applicable_actions(action_schemas, state);
+        statistics.inc_generated(applicable.size());
 
-            for (const LiftedOperatorId& op_id:applicable) {
-                DBState s = generator.generate_successor(op_id, action, state);
-                int dist = g + action.get_cost();
-                auto &child_node =
-                    space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                bool is_preferred = is_useful_operator(task, s, heuristic.get_useful_atoms());
-                if (child_node.status==SearchNode::Status::NEW) {
-                    // Inserted for the first time in the map
-                    child_node.open(dist, h);
-                    if (check_goal(task, generator, timer_start, state, node, space))
-                        return utils::ExitCode::SUCCESS;
+        for (const LiftedOperatorId& op_id:applicable) {
+            const auto &action = action_schemas[op_id.get_index()];
+            DBState s = generator.generate_successor(op_id, action, state);
+            int dist = g + action.get_cost();
+            auto &child_node =
+                space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+            bool is_preferred = is_useful_operator(task, s, heuristic.get_useful_atoms());
+            if (child_node.status==SearchNode::Status::NEW) {
+                // Inserted for the first time in the map
+                child_node.open(dist, h);
+                if (check_goal(task, generator, timer_start, state, node, space))
+                    return utils::ExitCode::SUCCESS;
 
+                if (all_operators_preferred or is_preferred) {
+                    preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
+                } else if (not is_preferred and not prune_relaxed_useless_operators) {
+                    regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
+                }
+            } else {
+                if (dist < child_node.g) {
+                    child_node.open(dist, h); // Reopening
+                    statistics.inc_reopened();
                     if (all_operators_preferred or is_preferred) {
                         preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
                     } else if (not is_preferred and not prune_relaxed_useless_operators) {
                         regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
-                    }
-                } else {
-                    if (dist < child_node.g) {
-                        child_node.open(dist, h); // Reopening
-                        statistics.inc_reopened();
-                        if (all_operators_preferred or is_preferred) {
-                            preferred_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
-                        } else if (not is_preferred and not prune_relaxed_useless_operators) {
-                            regular_open_list.do_insertion(child_node.state_id, make_pair(h, dist));
-                        }
                     }
                 }
             }

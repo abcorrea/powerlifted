@@ -66,6 +66,9 @@ add_executable(search
         utils.cc utils.h
         successor_generators/random_successor.h successor_generators/random_successor.cc
         successor_generators/yannakakis.cc successor_generators/yannakakis.h
+        successor_generators/clique_successor_generator.cc successor_generators/clique_successor_generator_apply.cc successor_generators/clique_successor_generator.h
+        successor_generators/clique_bron_kerbosch.cc successor_generators/clique_bron_kerbosch.h
+        successor_generators/clique_help_functions.cc successor_generators/clique_help_functions.h
         database/project.cc database/project.h
         utils/segmented_vector.h
         states/extensional_states.cc states/extensional_states.h
@@ -81,6 +84,7 @@ add_executable(search
         utils/timer.cc utils/timer.h
         algorithms/int_hash_set.h
         algorithms/dynamic_bitset.h
+        algorithms/kpkc.cc algorithms/kpkc.h
         search_statistics.cc search_statistics.h
         options.h open_lists/greedy_open_list.h
         search_engines/breadth_first_width_search.cc search_engines/breadth_first_width_search.h
