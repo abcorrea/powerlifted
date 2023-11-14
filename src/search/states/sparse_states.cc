@@ -45,7 +45,7 @@ SparseStatePacker::SparseStatePacker(const Task &task) :
     num_predicates(task.predicates.size()) {}
 
 SparsePackedState SparseStatePacker::pack(const DBState &state) {
-    SparsePackedState packed_state;
+    SparsePackedState packed_state(state.get_number_objects());
     const auto &relations = state.get_relations();
     packed_state.packed_relations.reserve(num_predicates);
     packed_state.nullary_atoms = state.get_nullary_atoms();
@@ -73,7 +73,7 @@ DBState SparseStatePacker::unpack(const SparsePackedState &packed_state) const {
     for (size_t i = 0; i < tuples.size(); ++i) {
         relations.emplace_back(i, std::move(tuples[i]));
     }
-    return DBState(std::move(relations), std::move(nullary_atoms));
+    return DBState(std::move(relations), std::move(nullary_atoms), packed_state.get_number_objects());
 }
 
 int SparseStatePacker::pack_tuple(const std::vector<int> &tuple, int predicate_index) {

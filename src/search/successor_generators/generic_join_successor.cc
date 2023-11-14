@@ -346,7 +346,7 @@ DBState GenericJoinSuccessor::generate_successor(
         apply_lifted_action_effects(action, op.get_instantiation(), new_relation);
     }
 
-    return DBState(std::move(new_relation), std::move(new_nullary_atoms));
+    return DBState(std::move(new_relation), std::move(new_nullary_atoms), state.get_number_objects());
 }
 
 void GenericJoinSuccessor::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,

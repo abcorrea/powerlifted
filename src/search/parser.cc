@@ -61,7 +61,7 @@ bool parse(Task &task, const ifstream &in)
         return false;
     }
     cout << "Total number of atoms in the initial state: " << initial_state_size << endl;
-    task.create_empty_initial_state(task.predicates.size());
+    task.create_empty_initial_state(task.predicates.size(), number_objects);
     parse_initial_state(task, initial_state_size);
 
 
@@ -266,6 +266,9 @@ void parse_initial_state(Task &task, int initial_state_size)
 
 void parse_objects(Task &task, int number_objects)
 {
+    // Set number of objects
+    task.initial_state.set_number_objects(number_objects);
+
     for (int i = 0; i < number_objects; ++i) {
         string name;
         int index;

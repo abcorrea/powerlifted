@@ -25,12 +25,19 @@ class SparseStatePacker;
 class PackedStateHash;
 
 class SparsePackedState {
+    int num_objects;
+
 public:
     using StatePackerT = SparseStatePacker;
+
+    SparsePackedState(int num_objects) : num_objects(num_objects) {}
 
     std::vector<int> packed_relations;
     std::vector<bool> nullary_atoms;
 
+    int get_number_objects() const {
+        return num_objects;
+    }
 
     bool operator==(const SparsePackedState &b) const;
 
