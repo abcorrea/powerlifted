@@ -28,7 +28,7 @@ class SparsePackedState {
 public:
     using StatePackerT = SparseStatePacker;
 
-    std::vector<std::vector<int>> packed_relations;
+    std::vector<int> packed_relations;
     std::vector<bool> nullary_atoms;
 
 
@@ -55,14 +55,16 @@ public:
     SparsePackedState pack(const DBState &state);
     DBState unpack(const SparsePackedState &packed_state) const;
 
-    std::vector<std::unordered_map<GroundAtom, int, utils::Hash<GroundAtom>>> atom_index;
-    std::vector<std::unordered_map<int, GroundAtom>> index_to_atom;
+    phmap::flat_hash_map<std::pair<int, GroundAtom>, int, utils::Hash<std::pair<int, GroundAtom>>> atom_index;
+    phmap::flat_hash_map<int, std::pair<int, GroundAtom>> index_to_atom;
     int next_idx;
 
 private:
-    long pack_tuple(const std::vector<int> &tuple, int predicate_index);
+    int pack_tuple(const std::vector<int> &tuple, int predicate_index);
 
-    std::vector<int> unpack_tuple(long tuple, int predicate_index) const;
+    std::pair<int, GroundAtom> unpack_tuple(int index) const;
+
+    int num_predicates;
 
 };
 
