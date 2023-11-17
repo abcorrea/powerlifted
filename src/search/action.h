@@ -1,6 +1,8 @@
 #ifndef SEARCH_ACTION_H
 #define SEARCH_ACTION_H
 
+#include <cassert>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 #include <ostream>
@@ -15,12 +17,13 @@
 class LiftedOperatorId {
     int index;
     std::vector<int> instantiation;
+    std::unordered_map<int, int> fresh_vars;
 
 public:
     static const LiftedOperatorId no_operator;
 
-    LiftedOperatorId(int index, std::vector<int> &&instantiation)
-        : index(index), instantiation(std::move(instantiation))
+    LiftedOperatorId(int index, std::vector<int> &&instantiation, std::unordered_map<int, int> fresh_vars)
+        : index(index), instantiation(std::move(instantiation)), fresh_vars(fresh_vars)
     {}
 
     LiftedOperatorId() = delete;
@@ -32,6 +35,15 @@ public:
 
     const std::vector<int>& get_instantiation() const {
         return instantiation;
+    }
+
+    int get_fresh_var_instantiation(int i) const {
+        assert(fresh_vars.count(i) > 0);
+        return fresh_vars.at(i);
+    }
+
+    const std::unordered_map<int, int> get_fresh_vars_mapping() const {
+        return fresh_vars;
     }
 
     bool operator==(const LiftedOperatorId &other) const { return index == other.index; }

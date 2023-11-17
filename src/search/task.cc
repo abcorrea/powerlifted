@@ -59,7 +59,8 @@ void Task::dump_state(DBState s) const
         for (auto &tuple : tuples) {
             cout << relation_name << "(";
             for (auto obj : tuple) {
-                cout << objects[obj].get_name() << ",";
+                cout << obj << ',';
+                //cout << objects[obj].get_name() << ",";
             }
             cout << "), ";
         }

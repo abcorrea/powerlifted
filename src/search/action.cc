@@ -10,4 +10,4 @@ ostream &operator<<(ostream &os, const LiftedOperatorId& id) {
     return os;
 }
 
-const LiftedOperatorId LiftedOperatorId::no_operator = LiftedOperatorId(-1, {});
+const LiftedOperatorId LiftedOperatorId::no_operator = LiftedOperatorId(-1, {}, {});

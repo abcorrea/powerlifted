@@ -93,7 +93,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
         int cost, args, num_fresh_vars, precond_size, eff_size;
         cin >> name >> cost >> args >> num_fresh_vars >> precond_size >> eff_size;
         vector<Parameter> parameters;
-        vector<Argument> fresh_vars;
+        vector<FreshVariable> fresh_vars;
         vector<Atom> preconditions, static_preconditions, effects;
         vector<bool> positive_nul_precond(task.predicates.size(), false),
             negative_nul_precond(task.predicates.size(), false),
@@ -109,7 +109,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
             string var_name;
             int index, type;
             cin >> var_name >> index >> type;
-            fresh_vars.emplace_back(index, false, true);
+            fresh_vars.emplace_back(var_name, index, false);
         }
         for (int j = 0; j < precond_size; ++j) {
             string precond_name;
