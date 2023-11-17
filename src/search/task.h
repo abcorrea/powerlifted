@@ -57,7 +57,7 @@ public:
         return objects[index].get_name();
     }
 
-    void create_empty_initial_state(size_t number_predicates);
+    void create_empty_initial_state(size_t number_predicates, int num_objects);
 
     void create_goal_condition(std::vector<AtomicGoal> goals,
                                std::unordered_set<int> nullary_goals,

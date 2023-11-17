@@ -4,7 +4,7 @@
 
 ActionSchema::ActionSchema(std::string name, int index, int cost,
                            std::vector<Parameter> parameters,
-                           std::vector<Argument> fresh_variables,
+                           std::vector<FreshVariable> fresh_variables,
                            std::vector<Atom> precondition,
                            std::vector<Atom> effects,
                            std::vector<Atom> static_precondition,

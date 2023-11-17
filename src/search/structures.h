@@ -51,10 +51,12 @@ class Argument {
     int index;
     bool constant;
     bool is_fresh;
+    std::string name;
 public:
-    Argument(int index, bool constant, bool is_fresh) : index(index),
-                                                        constant(constant),
-                                                        is_fresh(is_fresh) {}
+    Argument(int index, bool constant, bool is_fresh) :
+        index(index),
+        constant(constant),
+        is_fresh(is_fresh) {}
 
     int get_index() const {
         return index;
@@ -70,6 +72,22 @@ public:
 
 };
 
+class FreshVariable : public Argument {
+    std::string name;
+public:
+    FreshVariable(std::string name, int index, bool constant) :
+        Argument(index, constant, true),
+        name(name){}
+
+    const std::string &get_name() const {
+        return name;
+    }
+
+    bool is_fresh_var() const {
+        return true;
+    }
+
+};
 
 /**
  * @brief A relation is a "table" with set of tuples corresponding to some

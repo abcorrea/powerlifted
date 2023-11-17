@@ -111,6 +111,10 @@ def add_effects_to_actions(task, graph):
             while type_name != 'object':
                 types.add(type_name)
                 type_name = graph.edges[type_name]
+            if type_name == 'object' and typed_obj not in action.parameters:
+                # If this is a fresh variable, we need to add it to the type-object
+                # predicate in its effect.
+                types.add(type_name)
             for t in types:
                 atom = pddl.Atom(_get_type_predicate_name(t), [name])
                 new_eff.append(pddl.Effect([], pddl.Truth, atom))
