@@ -240,7 +240,7 @@ def parse_effect(alist, type_dict, predicate_dict, fresh_var_set):
         # We rename all fresh variables to avoid shadowing.
         map_fresh_var = dict()
         for p in parameters:
-            map_fresh_var[p.name] = '?v'+str(next(uniq_fresh_var_id))
+            map_fresh_var[p.name] = '?v.'+str(next(uniq_fresh_var_id))
             p.name = map_fresh_var[p.name]
         if isinstance(effect, pddl.SimpleEffect):
             new_args = []
