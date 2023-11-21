@@ -188,7 +188,7 @@ def add_effect(tmp_effect, result):
     elif isinstance(tmp_effect, pddl.ObjectCreationEffect):
         condition = pddl.Truth()
         assert isinstance(tmp_effect.effect, pddl.SimpleEffect)
-        assert isinstance(tmp_effect.effect.effect, pddl.Atom)
+        assert isinstance(tmp_effect.effect.effect, pddl.Atom) or isinstance(tmp_effect.effect.effect, pddl.NegatedAtom)
         effect = tmp_effect.effect.effect
         parameters = tmp_effect.parameters
         new_effect = pddl.Effect(parameters, condition, effect)
