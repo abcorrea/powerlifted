@@ -46,9 +46,15 @@ bool StandardNovelty::compute_k1_novelty_of_nullary_atoms(const DBState &state,
 bool StandardNovelty::compute_k1_novelty_of_n_ary_atoms(const DBState &state,
                                                         AchievedGroundAtoms &achieved_atoms_in_layer) {
     bool has_novel_atom = false;
+    bool has_new_object;
     for (const Relation &relation : state.get_relations()) {
         int pred_symbol_idx = relation.predicate_symbol;
         for (const GroundAtom& tuple : relation.tuples) {
+            has_new_object = false;
+            for (int e : tuple) {
+                if (e > original_number_objects) has_new_object = true;
+            }
+            if (has_new_object) continue;
             auto it = atom_mapping[pred_symbol_idx].insert({tuple, atom_counter + 1});
             if (it.second) atom_counter++;
             bool is_new = achieved_atoms_in_layer.try_to_insert_atom_in_k1(pred_symbol_idx, it.first->second);
@@ -90,6 +96,7 @@ int StandardNovelty::compute_k2_novelty_of_nullary_atoms(const DBState &state,
                                                          bool has_k1_novelty,
                                                          AchievedGroundAtoms &achieved_atoms_in_layer) {
     int novelty = NOVELTY_GREATER_THAN_TWO;
+    bool has_new_object;
     const vector<bool>& nullary_atoms = state.get_nullary_atoms();
     for (size_t i = 0; i < nullary_atoms.size(); ++i) {
         if (nullary_atoms[i]) {
@@ -99,6 +106,11 @@ int StandardNovelty::compute_k2_novelty_of_nullary_atoms(const DBState &state,
                 int pred_symbol_idx2 = r2.predicate_symbol;
                 if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
+                    has_new_object = false;
+                    for (int e : t2) {
+                        if (e > original_number_objects) has_new_object = true;
+                    }
+                    if (has_new_object) continue;
                     int t2_idx = atom_mapping[pred_symbol_idx2][t2];
                     // We do not have the check if pred_symbol_idx2 == pred_symbol_idx1 because we always
                     // use the same empty tuple GroundAtom() for the nullary atoms.
@@ -135,15 +147,26 @@ int StandardNovelty::compute_k2_novelty_of_n_ary_atoms(const DBState &state,
                                                        bool has_k1_novelty,
                                                        AchievedGroundAtoms &achieved_atoms_in_layer) {
     int novelty = NOVELTY_GREATER_THAN_TWO;
+    bool has_new_objects;
     for (const Relation &r1 : state.get_relations()) {
         int pred_symbol_idx1 = r1.predicate_symbol;
         for (const GroundAtom &t1 : r1.tuples) {
+            has_new_objects = false;
+            for (int e : t1) {
+                if (e > original_number_objects) has_new_objects = true;
+            }
+            if (has_new_objects) continue;
             int t1_idx = atom_mapping[pred_symbol_idx1][t1];
             for (const Relation &r2 : state.get_relations()) {
                 int pred_symbol_idx2 = r2.predicate_symbol;
                 // We do this check so we do not insert each atom 2x in the set.
                 if (pred_symbol_idx2 > pred_symbol_idx1) continue;
                 for (const GroundAtom &t2 : r2.tuples) {
+                    has_new_objects = false;
+                    for (int e : t2) {
+                        if (e > original_number_objects) has_new_objects = true;
+                    }
+                    if (has_new_objects) continue;
                     int t2_idx = atom_mapping[pred_symbol_idx2][t2];
                     bool is_new = false;
                     // This case split exists so we always check things in a given cannonical order.
