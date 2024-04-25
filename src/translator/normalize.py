@@ -151,11 +151,29 @@ def all_conditions(task):
     yield GoalConditionProxy(task)
 
 
+def preprocess_types(task):
+    # Makes sure that 'object' is the supertype of types
+    # in the top of hierarchy
+    types = set()
+    basetypes = set()
+    for t in task.types:
+        types.add(t.name)
+        basetypes.add(t.basetype_name)
+
+    leftovers = basetypes - types
+    for t in leftovers:
+        if t is None: continue
+        task.types.append(pddl.Type(t, 'object'))
+
+
 # [0a] Remove actions that can never instantiated.
 #
 #  Remove actions where a parameter has a given type T but there is
 #  no object with such type in the object list.
 def remove_trivially_inapplicable_actions(task):
+
+    preprocess_types(task)
+
     graph = TypesGraph(task.types)
     object_types_in_task = set()
     for obj in task.objects:
