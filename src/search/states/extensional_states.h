@@ -57,8 +57,8 @@ protected:
     std::size_t npreds;
 
     using args_t = std::vector<int>;
-    std::vector<std::unordered_map<args_t, unsigned, boost::hash<args_t>>> args_to_index;
-    std::vector<std::pair<int, args_t>> index_to_args;
+    std::vector<std::unordered_map<args_t, long unsigned int, boost::hash<args_t>>> args_to_index;
+    std::vector<std::pair<long unsigned int, args_t>> index_to_args;
 
     //! A state placeholder for faster creation of states in ExtensionalStatePacker::pack
     DBState blank_state;
