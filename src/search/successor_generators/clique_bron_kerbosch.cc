@@ -169,7 +169,7 @@ struct MaxNeighborhoodPivot {
 
         bool initialized = false;
         uint32_t best_vertex = p[0];
-        size_t best_score;
+        size_t best_score = 0;
 
         for (const auto v : p) {
             const auto score = adjacency_list[v].size();
