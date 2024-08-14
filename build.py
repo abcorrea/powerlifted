@@ -4,7 +4,6 @@ import argparse
 import os
 import subprocess
 
-from distutils.dir_util import copy_tree
 from shutil import copytree
 
 PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -41,7 +40,7 @@ def build(debug_flag, compiler):
         BUILD_TYPE = 'Release'
     create_dir(BUILD_DIR)
     create_dir(BUILD_SEARCH_DIR)
-    copy_tree(TRANSLATOR_DIR, BUILD_DIR + '/translator')
+    copytree(TRANSLATOR_DIR, BUILD_DIR + '/translator')
 
     extra_options = []
     if compiler != 'default':
