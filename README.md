@@ -122,26 +122,29 @@ The plan founds are then numbered based on its iterations. If the first iteratio
 Unfortunately, the planner has the limitation that additional options are set
 _for all the iterations_.
 
-## Running Powerlifted as a Singularity container
+## Running Powerlifted as a Apptainer container
 
-You can also build a Singularity image to run the planner. This might be useful
+You can also build an Apptainer image to run the planner. This might be useful
 in the case where you are not able to compile the planner locally, for
-example. To do so, first remove the `builds/` directory, in case you have any
-builds already in your system. Then, you can run the following command to create
-the planner image:
+example. You can run the following command to create the planner image:
 
 
-``` sudo singularity build powerlifted.sif Singularity```
+```apptainer build powerlifted.sif Apptainer.powerlifted```
 
 Be aware that this might take a while. Once the image `powerlifted.sif` is
 created, you can run it with the same parameters as the `powerlifted.py`
-script. The only exception is that, by default, VAL is not installed in the
-container, so it is not possible to use the `--validate` flag with the
-Singularity image. However, you can run VAL with the `sas_plan` file created by
-the planner after the execution. The following command is a usage example on
-how to run the planner with the Singularity image:
+script.
 
-```./powerlifted.sif -i /path/to/instance.pddl -s lazy-po -e add -g yannakakis --datalog-file model.lp --translator-output-file output.lifted```
+Note that VAL and CPDDL are not installed in the container, so it is not
+possible to use the `--validate` flag with the image, or to use the CPDDL
+preprocessor (`--preprocess-task`). However, you can run VAL with the `plan`
+file created by the planner after the execution, and use CPDDL as a standalone
+to preprocess the task beforehand.
+
+The following command is a usage example on how to run the planner with the
+Apptainer image:
+
+```./powerlifted.sif -i /path/to/instance.pddl```
 
 ## Requirements
  - A C++17-compliant compiler
