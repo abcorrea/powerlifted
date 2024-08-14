@@ -40,7 +40,7 @@ def build(debug_flag, compiler):
         BUILD_TYPE = 'Release'
     create_dir(BUILD_DIR)
     create_dir(BUILD_SEARCH_DIR)
-    copytree(TRANSLATOR_DIR, BUILD_DIR + '/translator')
+    copytree(TRANSLATOR_DIR, BUILD_DIR + '/translator', dirs_exist_ok=True)
 
     extra_options = []
     if compiler != 'default':
