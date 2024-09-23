@@ -71,7 +71,7 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
             continue;
         DatalogAtom effect(eff);
         std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, std::move(ann)));
+        rules.emplace_back(make_unique<GenericRule>(0, eff, body, std::move(ann)));
     }
     const vector<bool> &nullary_predicates_in_eff = schema.get_positive_nullary_effects();
     vector<size_t> nullary_effects;
@@ -79,7 +79,7 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
     for (size_t eff_idx : nullary_effects) {
         DatalogAtom eff(Arguments(), eff_idx, false);
         std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
-        rules.emplace_back(make_unique<GenericRule>(schema.get_cost(), eff, body, std::move(ann), schema.get_index()));
+        rules.emplace_back(make_unique<GenericRule>(0, eff, body, std::move(ann), schema.get_index()));
     }
 }
 
