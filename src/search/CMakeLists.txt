@@ -8,9 +8,8 @@ if (CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES Debug Release)
 endif ()
 
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Boost COMPONENTS program_options REQUIRED CONFIG)
 if (Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
     add_definitions( "-DHAS_BOOST" )
 endif()
 
