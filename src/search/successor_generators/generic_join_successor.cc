@@ -339,8 +339,6 @@ DBState GenericJoinSuccessor::generate_successor(
     vector<Relation> new_relation(state.get_relations());
     apply_nullary_effects(action, new_nullary_atoms);
 
-    std::unordered_map<int, int> new_objs;
-
     if (action.is_ground()) {
         apply_ground_action_effects(action, new_relation, op.get_fresh_vars_mapping());
     }
@@ -444,7 +442,6 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
                      new_relation[predicate_symbol_idx].tuples.end(),
                      ga) == new_relation[predicate_symbol_idx].tuples.end()) {
                 // If ground atom is not in the state, we add it
-
                 new_relation[eff.get_predicate_symbol_idx()].tuples.insert(ga);
                 add_to_added_atoms(eff.get_predicate_symbol_idx(), ga);
 
@@ -507,6 +504,19 @@ std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
     return applicable;
 }
 
+std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
+            const std::vector<ActionSchema> &actions, const DBState &state)
+{
+    std::vector<LiftedOperatorId> all_applicable_actions;
+
+    for (const auto& action : actions) {
+        const auto applicable_actions = get_applicable_actions(action, state);
+        all_applicable_actions.reserve(all_applicable_actions.size() + applicable_actions.size());
+        all_applicable_actions.insert(all_applicable_actions.end(), applicable_actions.cbegin(), applicable_actions.cend());
+    }
+
+    return all_applicable_actions;
+}
 
 /**
  *    This action generates the ground atom produced by an atomic effect given an instantiation of

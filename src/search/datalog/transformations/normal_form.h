@@ -16,6 +16,7 @@
 
 #include <limits>
 #include <queue>
+#include <set>
 
 /*
  * Implement rule-splitting by Helmert (AIJ 2009).

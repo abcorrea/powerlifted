@@ -95,6 +95,26 @@ public:
         return parameters.empty();
     }
 
+    bool operator<(const ActionSchema& other) const {
+        return index < other.index;
+    }
+
+    bool operator==(const ActionSchema& other) const {
+        return index == other.index;
+    }
+
+    bool operator!=(const ActionSchema& other) const {
+        return index != other.index;
+    }
 };
+
+namespace std {
+template <>
+struct hash<ActionSchema> {
+    size_t operator()(const ActionSchema &action) const {
+        return hash<int>()(action.get_index());
+    }
+};
+}  // namespace std
 
 #endif //SEARCH_ACTION_SCHEMA_H

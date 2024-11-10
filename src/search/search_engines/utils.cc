@@ -64,7 +64,7 @@ void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
             else
                 plan_file << "@NEW-OBJ-" << obj << " ";
         }
-        plan_file << ") [created objects: ";
+        plan_file << ") ;[created objects: ";
         for (auto p : action.get_fresh_variables()) {
             plan_file << p.get_name() << " -> " << "@NEW-OBJ-" << a.get_fresh_var_instantiation(p.get_index()) << ", ";
         }

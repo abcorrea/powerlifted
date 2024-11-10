@@ -43,6 +43,7 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
 {
     cout << "Starting BFWS" << endl;
     clock_t timer_start = clock();
+    const auto action_schemas = task.get_action_schemas();
     StatePackerT packer(task);
 
     Goalcount gc;
@@ -111,55 +112,54 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
         int unsatisfied_goal_parent = map_state_to_evaluators.at(sid.id()).unsatisfied_goals;
         int unsatisfied_relevant_atoms_parent = map_state_to_evaluators.at(sid.id()).unsatisfied_relevant_atoms;
 
-        for (const auto& action:task.get_action_schemas()) {
-            auto applicable = generator.get_applicable_actions(action, state);
-            statistics.inc_generated(applicable.size());
+        const auto applicable = generator.get_applicable_actions(action_schemas, state);
+        statistics.inc_generated(applicable.size());
 
-            for (const LiftedOperatorId& op_id:applicable) {
-                DBState s = generator.generate_successor(op_id, action, state);
-                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                if (child_node.status != SearchNode::Status::NEW)
-                    continue;
+        for (const LiftedOperatorId& op_id:applicable) {
+            const auto &action = action_schemas[op_id.get_index()];
+            DBState s = generator.generate_successor(op_id, action, state);
+            auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+            if (child_node.status != SearchNode::Status::NEW)
+                continue;
 
-                int dist = g + action.get_cost();
-                int unsatisfied_goals = gc.compute_heuristic(s, task);
-                int unsatisfied_relevant_atoms = 0;
+            int dist = g + action.get_cost();
+            int unsatisfied_goals = gc.compute_heuristic(s, task);
+            int unsatisfied_relevant_atoms = 0;
 
-                if (method == StandardNovelty::IW) {
-                    unsatisfied_relevant_atoms = 0;
-                    // Important is to make it constant different than 0, otherwise the novelty will
-                    // be 0 because of the goal detection in the evaluator.
-                    unsatisfied_goals = 1;
-                }
-                if (method == StandardNovelty::R_X)
-                    unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
-
-                if (only_effects_opt and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
-                    novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
-                                                                                    s,
-                                                                                    unsatisfied_goals,
-                                                                                    unsatisfied_relevant_atoms,
-                                                                                    generator.get_added_atoms());
-                }
-                else {
-                    novelty_value = novelty_evaluator.compute_novelty(task,
-                                                                      s,
-                                                                      unsatisfied_goals,
-                                                                      unsatisfied_relevant_atoms);
-
-                }
-
-                statistics.inc_evaluations();
-                statistics.inc_evaluated_states();
-
-                if ((prune_states) and (novelty_value == StandardNovelty::NOVELTY_GREATER_THAN_TWO))
-                    continue;
-
-                child_node.open(dist, novelty_value);
-                if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
-                queue.do_insertion(child_node.state_id, {novelty_value, unsatisfied_goals, dist});
-                map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
+            if (method == StandardNovelty::IW) {
+                unsatisfied_relevant_atoms = 0;
+                // Important is to make it constant different than 0, otherwise the novelty will
+                // be 0 because of the goal detection in the evaluator.
+                unsatisfied_goals = 1;
             }
+            if (method == StandardNovelty::R_X)
+                unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
+
+            if (only_effects_opt and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
+                novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
+                                                                                s,
+                                                                                unsatisfied_goals,
+                                                                                unsatisfied_relevant_atoms,
+                                                                                generator.get_added_atoms());
+            }
+            else {
+                novelty_value = novelty_evaluator.compute_novelty(task,
+                                                                  s,
+                                                                  unsatisfied_goals,
+                                                                  unsatisfied_relevant_atoms);
+
+            }
+
+            statistics.inc_evaluations();
+            statistics.inc_evaluated_states();
+
+            if ((prune_states) and (novelty_value == StandardNovelty::NOVELTY_GREATER_THAN_TWO))
+                continue;
+
+            child_node.open(dist, novelty_value);
+            if (check_goal(task, generator, timer_start, s, child_node, space)) return utils::ExitCode::SUCCESS;
+            queue.do_insertion(child_node.state_id, {novelty_value, unsatisfied_goals, dist});
+            map_state_to_evaluators.insert({child_node.state_id.id(), NodeNovelty(unsatisfied_goals, unsatisfied_relevant_atoms)});
         }
     }
 

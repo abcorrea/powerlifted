@@ -12,6 +12,7 @@
  * The attribute index is the action schema index, from where we can retrieve its name and number of
  * parameters. The attribute instantiation is a list of object indices that instantiate each
  * argument of the corresponding action schema, in order as they appear in the action schema.
+ * The attribute fresh_vars is a map that assigns new objects to the fresh variables.
  */
 
 class LiftedOperatorId {

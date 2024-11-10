@@ -8,7 +8,6 @@ src/search/html
 builds/
 output.lifted
 model.lp
-plan*
 sas_plan
 powerlifted.img
 powerlifted.sif

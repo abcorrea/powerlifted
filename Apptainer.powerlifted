@@ -1,0 +1,51 @@
+# Stage 1: Compile
+Bootstrap: docker
+From: ubuntu:22.04
+Stage: build
+
+%files
+    . /powerlifted
+
+%post
+    ## Install all necessary dependencies.
+    apt-get update
+    apt-get -y install --no-install-recommends \
+               cmake \
+               g++ \
+               make \
+               build-essential \
+               python3-dev \
+               autotools-dev \
+               libboost-all-dev=1.74.0.3ubuntu7 \
+               libboost-program-options1.74-dev
+
+    ## Clear build directory.
+    rm -rf /powerlifted/builds
+
+    cd /powerlifted
+    python3 build.py
+    strip --strip-all /powerlifted/builds/release/search/search
+
+# Stage 2: Run
+Bootstrap: docker
+From: ubuntu:22.04
+Stage: run
+
+%files from build
+    /powerlifted
+
+%post
+    apt-get update
+    apt-get -y install --no-install-recommends python3 libboost-program-options1.74-dev
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export POWERLIFTED=/powerlifted
+
+# The runscript is called whenever the container is used to solve an instance.
+%runscript
+    DOMAINFILE="$1"
+    PROBLEMFILE="$2"
+    PLANFILE="$3"
+
+    python3 /powerlifted/powerlifted.py $@

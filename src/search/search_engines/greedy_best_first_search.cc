@@ -24,6 +24,7 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
 {
     cout << "Starting greedy best first search" << endl;
     clock_t timer_start = clock();
+    const auto action_schemas = task.get_action_schemas();
     StatePackerT packer(task);
 
     GreedyOpenList queue;
@@ -70,40 +71,37 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
         DBState state = packer.unpack(space.get_state(sid));
         if (check_goal(task, generator, timer_start, state, node, space)) return utils::ExitCode::SUCCESS;
 
-        // Let's expand the state, one schema at a time. If necessary, i.e. if it really helps
-        // performance, we could implement some form of std iterator
-        for (const auto& action:task.get_action_schemas()) {
-            auto applicable = generator.get_applicable_actions(action, state);
-            statistics.inc_generated(applicable.size());
+        const auto applicable = generator.get_applicable_actions(action_schemas, state);
+        statistics.inc_generated(applicable.size());
 
-            for (LiftedOperatorId& op_id:applicable) {
-                DBState s = generator.generate_successor(op_id, action, state);
-                auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
-                int dist = g + action.get_cost();
-                int new_h = heuristic.compute_heuristic(s, task);
-                statistics.inc_evaluations();
-                if (new_h == UNSOLVABLE_STATE) {
-                    if (child_node.status == SearchNode::Status::NEW) {
-                        // Only increase statistics for new dead-ends
-                        child_node.open(dist, new_h);
-                        statistics.inc_dead_ends();
-                        statistics.inc_pruned_states();
-                    }
-                    continue;
-                }
-
+        for (const LiftedOperatorId& op_id:applicable) {
+            const auto &action = action_schemas[op_id.get_index()];
+            DBState s = generator.generate_successor(op_id, action, state);
+            auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
+            int dist = g + action.get_cost();
+            int new_h = heuristic.compute_heuristic(s, task);
+            statistics.inc_evaluations();
+            if (new_h == UNSOLVABLE_STATE) {
                 if (child_node.status == SearchNode::Status::NEW) {
-                    // Inserted for the first time in the map
+                    // Only increase statistics for new dead-ends
                     child_node.open(dist, new_h);
-                    statistics.inc_evaluated_states();
-                    queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
+                    statistics.inc_dead_ends();
+                    statistics.inc_pruned_states();
                 }
-                else {
-                    if (dist < child_node.g) {
-                        child_node.open(dist, new_h); // Reopening
-                        statistics.inc_reopened();
-                        queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
-                    }
+                continue;
+            }
+
+            if (child_node.status == SearchNode::Status::NEW) {
+                // Inserted for the first time in the map
+                child_node.open(dist, new_h);
+                statistics.inc_evaluated_states();
+                queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
+            }
+            else {
+                if (dist < child_node.g) {
+                    child_node.open(dist, new_h); // Reopening
+                    statistics.inc_reopened();
+                    queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
                 }
             }
         }
