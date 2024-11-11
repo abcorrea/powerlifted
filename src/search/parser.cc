@@ -105,6 +105,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
             cin >> param_name >> index >> type;
             parameters.emplace_back(param_name, index, type);
         }
+        if (num_fresh_vars > 0) task.flag_object_creation();
         for (int j = 0; j < num_fresh_vars; ++j) {
             string var_name;
             int index, type;

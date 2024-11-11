@@ -27,6 +27,7 @@ class Task {
 
     std::vector<ActionSchema> action_schemas;
     GoalCondition goal;
+    bool object_creation;
 
 public:
     std::vector<Predicate> predicates;
@@ -76,6 +77,14 @@ public:
     void dump_state(DBState s) const;
 
     void dump_goal();
+
+    void flag_object_creation() {
+        object_creation  = true;
+    }
+
+    bool has_object_creation() {
+        return object_creation;
+    }
 
     bool is_goal(const DBState &state) const;
 

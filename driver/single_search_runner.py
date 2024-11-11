@@ -13,7 +13,10 @@ def run_single_search(build_dir, time, translator_file, search, evaluator, gener
         print(f'Executing "{" ".join(cmd)}"')
         try:
             code = subprocess.call(cmd, timeout=time)
-            print("Iteration finished correctly.")
+            if code == 0:
+                print("Iteration finished correctly.")
+            else:
+                print(f"Iteration finished with error code {code}.")
         except subprocess.TimeoutExpired as e:
             print(f"Iteration ran out of time: {e}")
             return -1
