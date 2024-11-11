@@ -85,7 +85,7 @@ add_executable(search
         algorithms/kpkc.cc algorithms/kpkc.h
         search_statistics.cc search_statistics.h
         options.h open_lists/greedy_open_list.h
-        search_engines/breadth_first_width_search.cc search_engines/breadth_first_width_search.h
+        search_engines/best_first_width_search.cc search_engines/best_first_width_search.h
         novelty/standard_novelty.cc novelty/standard_novelty.h
         open_lists/tiebreaking_open_list.h
         novelty/achieved_ground_atoms.h
