@@ -4,7 +4,7 @@
 #include "astar_search.h"
 #include "alternated_bfws.h"
 #include "breadth_first_search.h"
-#include "breadth_first_width_search.h"
+#include "best_first_width_search.h"
 #include "dual_queue_bfws.h"
 #include "greedy_best_first_search.h"
 #include "lazy_search.h"
@@ -25,28 +25,28 @@ SearchFactory::create(const Options &opt, const std::string& method) {
         return new BreadthFirstSearch<SparsePackedState>();
     }
     else if (boost::iequals(method, "bfws1")) {
-        return new BreadthFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::R_0);
+        return new BestFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::R_0);
     }
     else if (boost::iequals(method, "bfws2")) {
-        return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::R_0);
+        return new BestFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::R_0);
     }
     else if (boost::iequals(method, "bfws1-rx")) {
-        return new BreadthFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::R_X);
+        return new BestFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::R_X);
     }
     else if (boost::iequals(method, "bfws2-rx")) {
-        return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::R_X);
+        return new BestFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::R_X);
     }
     else if (boost::iequals(method, "iw1")) {
-        return new BreadthFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::IW);
+        return new BestFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::IW);
     }
     else if (boost::iequals(method, "iw2")) {
-        return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::IW);
+        return new BestFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::IW);
     }
     else if (boost::iequals(method, "iw1gc")) {
-        return new BreadthFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::IW_G);
+        return new BestFirstWidthSearch<SparsePackedState>(1, opt, StandardNovelty::IW_G);
     }
     else if (boost::iequals(method, "iw2gc")) {
-        return new BreadthFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::IW_G);
+        return new BestFirstWidthSearch<SparsePackedState>(2, opt, StandardNovelty::IW_G);
     }
     else if (boost::iequals(method, "dq-bfws1-rx")) {
         return new DualQueueBFWS<SparsePackedState>(1, opt);

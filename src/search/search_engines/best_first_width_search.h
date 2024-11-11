@@ -1,5 +1,5 @@
-#ifndef SEARCH_SEARCH_ENGINES_BREADTH_FIRST_WIDTH_SEARCH_H_
-#define SEARCH_SEARCH_ENGINES_BREADTH_FIRST_WIDTH_SEARCH_H_
+#ifndef SEARCH_SEARCH_ENGINES_BEST_FIRST_WIDTH_SEARCH_H_
+#define SEARCH_SEARCH_ENGINES_BEST_FIRST_WIDTH_SEARCH_H_
 
 #include "search.h"
 #include "search_space.h"
@@ -11,7 +11,7 @@
 #include "../options.h"
 
 template <class PackedStateT>
-class BreadthFirstWidthSearch : public SearchBase {
+class BestFirstWidthSearch : public SearchBase {
     AtomCounter atom_counter;
     int width;
     int method;
@@ -28,7 +28,7 @@ protected:
 
 public:
 
-    explicit BreadthFirstWidthSearch(int width, const Options &opt, int method);
+    explicit BestFirstWidthSearch(int width, const Options &opt, int method);
 
     using StatePackerT = typename PackedStateT::StatePackerT;
 
@@ -38,4 +38,4 @@ public:
     AtomCounter initialize_counter_with_useful_atoms(const Task &task);
 };
 
-#endif //SEARCH_SEARCH_ENGINES_BREADTH_FIRST_WIDTH_SEARCH_H_
+#endif //SEARCH_SEARCH_ENGINES_BEST_FIRST_WIDTH_SEARCH_H_

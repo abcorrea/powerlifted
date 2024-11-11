@@ -1,4 +1,4 @@
-#include "breadth_first_width_search.h"
+#include "best_first_width_search.h"
 #include "search.h"
 #include "utils.h"
 
@@ -18,9 +18,9 @@
 using namespace std;
 
 template<class PackedStateT>
-BreadthFirstWidthSearch<PackedStateT>::BreadthFirstWidthSearch(int width,
-                                                               const Options &opt,
-                                                               int method) : width(width),
+BestFirstWidthSearch<PackedStateT>::BestFirstWidthSearch(int width,
+                                                         const Options &opt,
+                                                         int method) : width(width),
                                                                              method(method),
                                                                              only_effects_opt(opt.get_only_effects_opt()),
                                                                              early_stop(opt.get_novelty_early_stop()) {
@@ -37,9 +37,9 @@ BreadthFirstWidthSearch<PackedStateT>::BreadthFirstWidthSearch(int width,
 
 
 template <class PackedStateT>
-utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
-                                                            SuccessorGenerator &generator,
-                                                            Heuristic &heuristic)
+utils::ExitCode BestFirstWidthSearch<PackedStateT>::search(const Task &task,
+                                                           SuccessorGenerator &generator,
+                                                           Heuristic &heuristic)
 {
     cout << "Starting BFWS" << endl;
     clock_t timer_start = clock();
@@ -171,13 +171,13 @@ utils::ExitCode BreadthFirstWidthSearch<PackedStateT>::search(const Task &task,
 }
 
 template <class PackedStateT>
-void BreadthFirstWidthSearch<PackedStateT>::print_statistics() const {
+void BestFirstWidthSearch<PackedStateT>::print_statistics() const {
     statistics.print_detailed_statistics();
     space.print_statistics();
 }
 
 template<class PackedStateT>
-AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_gc(const Task &task) {
+AtomCounter BestFirstWidthSearch<PackedStateT>::initialize_counter_with_gc(const Task &task) {
     std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
     std::unordered_set<int> positive = task.get_goal().positive_nullary_goals;
     std::unordered_set<int> negative = task.get_goal().negative_nullary_goals;
@@ -194,7 +194,7 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_gc(co
 
 
 template<class PackedStateT>
-AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_useful_atoms(const Task &task) {
+AtomCounter BestFirstWidthSearch<PackedStateT>::initialize_counter_with_useful_atoms(const Task &task) {
     std::vector<std::vector<GroundAtom>> atoms(task.initial_state.get_relations().size(), std::vector<GroundAtom>());
     std::unordered_set<int> positive = task.get_goal().positive_nullary_goals;
     std::unordered_set<int> negative = task.get_goal().negative_nullary_goals;
@@ -228,4 +228,4 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_usefu
 }
 
 // explicit template instantiations
-template class BreadthFirstWidthSearch<SparsePackedState>;
+template class BestFirstWidthSearch<SparsePackedState>;
