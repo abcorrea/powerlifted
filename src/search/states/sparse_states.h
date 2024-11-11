@@ -5,25 +5,17 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
-#include <unordered_map>
-
 #include <boost/functional/hash/hash.hpp>
 
+#include "../structures.h"
+
+#include "../parallel_hashmap/phmap.h"
+#include "../utils/hash.h"
+
 /**
- * @brief The packed state representation is a more concise representation of states,
- * based on the Fast Downward source code.
- *
- * @details We represent a state as a vector of relations and a vector of
- * nullary atoms. Each relation is a set of tuples, which can be interpreted as a 'table'.
- * In order to make the representation more concise, we first order the tuples in the
- * sets corresponding to each relation in a deterministic way. We then hash these sets
- * in a well-defined order (by the predicate symbol of the corresponding relation).
- * Last, we combine all these hash values together and also combine with a hash over
- * the predicate symbols and the truth value of the nullary relations
- * (i.e., predicates) of the state.
- * This packed state representation is loosely based on the PDB storage system used
- * by Fast Downward.
- *
+ * @brief The packed state representation is a more concise representation of states.
+ * Each time we see a new atom, we give it a fresh index. To pack a state, we just compute the
+ * indices of its atoms.
  */
 
 class Task;
@@ -33,13 +25,19 @@ class SparseStatePacker;
 class PackedStateHash;
 
 class SparsePackedState {
+    int num_objects;
+
 public:
     using StatePackerT = SparseStatePacker;
 
-    std::vector<std::vector<long>> packed_relations;
-    std::vector<int> predicate_symbols;
+    SparsePackedState(int num_objects) : num_objects(num_objects) {}
+
+    std::vector<int> packed_relations;
     std::vector<bool> nullary_atoms;
 
+    int get_number_objects() const {
+        return num_objects;
+    }
 
     bool operator==(const SparsePackedState &b) const;
 
@@ -61,23 +59,20 @@ class SparseStatePacker {
 public:
     SparseStatePacker(const Task &task);
 
-    SparsePackedState pack(const DBState &state) const;
-
+    SparsePackedState pack(const DBState &state);
     DBState unpack(const SparsePackedState &packed_state) const;
 
+    phmap::flat_hash_map<std::pair<int, GroundAtom>, int, utils::Hash<std::pair<int, GroundAtom>>> atom_index;
+    phmap::flat_hash_map<int, std::pair<int, GroundAtom>> index_to_atom;
+    int next_idx;
+
 private:
-    long pack_tuple(const std::vector<int> &tuple, int predicate_index) const;
+    int pack_tuple(const std::vector<int> &tuple, int predicate_index);
 
-    std::vector<int> unpack_tuple(long tuple, int predicate_index) const;
+    std::pair<int, GroundAtom> unpack_tuple(int index) const;
 
-    int get_index_given_predicate_and_param(int pred, int param, int element) const;
+    int num_predicates;
 
-    int get_obj_given_predicate_and_param(int pred, int param, int element) const;
-
-
-    std::vector<std::vector<long>> hash_multipliers;
-    std::vector<std::vector<std::unordered_map<int, int>>> obj_to_hash_index;
-    std::vector<std::vector<std::unordered_map<int, int>>> hash_index_to_obj;
 };
 
 

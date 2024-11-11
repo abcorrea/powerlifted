@@ -11,7 +11,7 @@ bool literal_holds(const LiftedOperatorId &op,
     for (const auto &literal : literals) {
         if (literal.get_arguments().size() >= min_test_arity) {
             GroundAtom relation_instance;
-            for (const auto argument : literal.get_arguments()) {
+            for (const auto &argument : literal.get_arguments()) {
                 if (argument.is_constant()) {
                     relation_instance.push_back(argument.get_index());
                 }

@@ -1,4 +1,5 @@
 # Untracked files
+/*pddl
 *~
 *.pyc
 src/search/config

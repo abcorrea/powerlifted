@@ -27,6 +27,7 @@ class Task {
 
     std::vector<ActionSchema> action_schemas;
     GoalCondition goal;
+    bool object_creation;
 
 public:
     std::vector<Predicate> predicates;
@@ -57,7 +58,7 @@ public:
         return objects[index].get_name();
     }
 
-    void create_empty_initial_state(size_t number_predicates);
+    void create_empty_initial_state(size_t number_predicates, int num_objects);
 
     void create_goal_condition(std::vector<AtomicGoal> goals,
                                std::unordered_set<int> nullary_goals,
@@ -76,6 +77,14 @@ public:
     void dump_state(DBState s) const;
 
     void dump_goal();
+
+    void flag_object_creation() {
+        object_creation  = true;
+    }
+
+    bool has_object_creation() {
+        return object_creation;
+    }
 
     bool is_goal(const DBState &state) const;
 

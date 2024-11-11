@@ -7,7 +7,6 @@
 
 #include "../successor_generators/successor_generator.h"
 
-#include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 
 #include "../parallel_hashmap/phmap.h"
@@ -284,5 +283,3 @@ AtomCounter AlternatedBFWS<PackedStateT>::initialize_counter_with_useful_atoms(c
 
 // explicit template instantiations
 template class AlternatedBFWS<SparsePackedState>;
-template class AlternatedBFWS<ExtensionalPackedState>;
-

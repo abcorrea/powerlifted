@@ -9,7 +9,7 @@ class SearchBase;
 
 class SearchFactory {
 public:
-    static SearchBase*create(const Options &opt, const std::string& method, const std::string& state_type);
+    static SearchBase*create(const Options &opt, const std::string& method);
 };
 
 #endif //SEARCH_SEARCH_FACTORY_H

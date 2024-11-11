@@ -54,6 +54,9 @@ class TypedObject(object):
     def __repr__(self):
         return "<TypedObject %s: %s>" % (self.name, self.type_name)
 
+    def __lt__(self, other):
+        return self.name < other.name
+
     def get_type(self):
         return self.type_name
 

@@ -14,6 +14,7 @@ class ActionSchema {
     int index;
     int cost;
     std::vector<Parameter> parameters;
+    std::vector<FreshVariable> fresh_variables;
     std::vector<Atom> precondition;
     std::vector<Atom> effects;
     std::vector<Atom> static_precondition;
@@ -33,6 +34,7 @@ public:
                           int index,
                           int cost,
                           std::vector<Parameter> parameters,
+                          std::vector<FreshVariable> fresh_variables,
                           std::vector<Atom> precondition,
                           std::vector<Atom> effects,
                           std::vector<Atom> static_precondition,
@@ -55,6 +57,10 @@ public:
 
     const std::vector<Parameter> &get_parameters() const {
         return parameters;
+    }
+
+    const std::vector<FreshVariable> &get_fresh_variables() const {
+        return fresh_variables;
     }
 
     const std::vector<Atom> &get_precondition() const {

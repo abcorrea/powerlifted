@@ -6,7 +6,6 @@
 #include "../task.h"
 
 #include "../states/sparse_states.h"
-#include "../states/extensional_states.h"
 
 using namespace std;
 
@@ -53,7 +52,3 @@ bool SearchBase::check_goal(const Task &task,
 template bool SearchBase::check_goal<SparsePackedState>(
         const Task &task, const SuccessorGenerator &generator, clock_t timer_start,
         const DBState &state, const SearchNode &node, const SearchSpace<SparsePackedState> &space) const;
-
-template bool SearchBase::check_goal<ExtensionalPackedState>(
-        const Task &task, const SuccessorGenerator &generator, clock_t timer_start,
-        const DBState &state, const SearchNode &node, const SearchSpace<ExtensionalPackedState> &space) const;

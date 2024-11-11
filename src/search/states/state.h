@@ -28,6 +28,7 @@ class DBState {
 
     std::vector<Relation> relations;
     std::vector<bool> nullary_atoms;
+    int num_objects;
 
 public:
 
@@ -35,8 +36,10 @@ public:
     explicit DBState(unsigned num_predicates) :
         relations(num_predicates), nullary_atoms(num_predicates, false) {}
 
-    DBState(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms) :
-        relations(std::move(relations)), nullary_atoms(std::move(nullary_atoms)) {
+    DBState(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms, int num_objects) :
+        relations(std::move(relations)),
+        nullary_atoms(std::move(nullary_atoms)),
+        num_objects(num_objects) {
         // Explicit state constructor
     }
 
@@ -52,6 +55,10 @@ public:
         return relations[i].tuples;
     }
 
+    int get_number_objects() const {
+        return num_objects;
+    }
+
     void set_nullary_atom(size_t index, bool v) {
         nullary_atoms[index] = v;
     }
@@ -62,6 +69,10 @@ public:
 
     void insert_tuple_in_relation(GroundAtom ga, int id) {
         relations[id].tuples.insert(ga);
+    }
+
+    void set_number_objects(int n) {
+        num_objects = n;
     }
 
     void add_tuple(int relation, const GroundAtom &args);

@@ -67,8 +67,6 @@ def parse_options():
                         help='Pass a triple S,E,G,T corresponding to search ' \
                         'algorithm, evaluator, successor generator, and relative time.' \
                         'You can pass several "--iteration" arguments to simulate a portfolio.')
-    parser.add_argument('--state', action='store', help='Successor generator method',
-                        default="sparse", choices=("sparse", "extensional"))
     parser.add_argument('--seed', action='store', help='Random seed.',
                         default=1)
     parser.add_argument('--time-limit', action='store', type=int, help='Time limit in seconds.',
@@ -98,6 +96,8 @@ def parse_options():
                         help="flag if the novelty evaluation of a state should stop as soon as the w-value is defined")
     parser.add_argument("--unit-cost", action="store_true",
                            help="flag if the actions should be treated as unit-cost actions")
+    parser.add_argument("--keep-translator-file", action="store_true",
+                        help="flag if the translator file should be kept")
     parser.add_argument("--validate", action="store_true",
                         help="flag if VAL should be called to validate the plan found")
     args = parser.parse_args()

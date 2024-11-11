@@ -154,12 +154,17 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
     #    - action name
     #    - action cost
     #    - number of action parameters
+    #    - number of fresh variables (i.e., variables that will be instantiated by new objects)
     #    - size of precondition
     #    - size of effect
     # - Then we list all parameters, one in each line, containing
     #    - parameter name
     #    - parameter index
     #    - index of the parameter type
+    # - Next we list all fresh variables, one in each line, containing
+    #    - fresh variable name
+    #    - index
+    #    - index of its type
     # - We then list all precondition of the action schema. one in each line
     # printing the following attributes
     #    - predicate name
@@ -175,8 +180,8 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
     #    - boolean variable saying if its negated or not
     #    - number of predicate arguments
     #    - list of pairs in the format (O, i), where O is 'c' if it is a
-    # constant and 'p' if it is a parameter. In the case it is a constant, 'i'
-    # is its object index; otherwise it is the parameter index
+    # constant, O is 'p' if it is a parameter, and O is 'f' if it is a fresh variable.
+    # In the case it is a constant, 'i' is its object index; otherwise it is the variable index.
 
     task.actions = list(task.actions)
     task.actions.sort(key=lambda ac: ac.name)
@@ -192,11 +197,25 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
                 action.cost = 1
         precond = action.get_action_preconditions
         assert isinstance(action.effects, list)
-        print(action.name, action.cost, len(list(action.parameters)),
+
+        fresh_vars = set()
+        fresh_var_names = set() # set like the one above to make output code easier
+        for eff in action.effects:
+            for v in eff.parameters:
+                fresh_vars.add(v)
+                fresh_var_names.add(v.name)
+        fresh_vars = list(fresh_vars)
+        fresh_vars.sort()
+
+        print(action.name, action.cost, len(list(action.parameters)), len(fresh_vars),
               len(precond), len(list(action.effects)), file=output)
         for index, par in enumerate(action.parameters):
             parameter_index[par.name] = index
             print(par.name, index, type_index[par.type_name], file=output)
+        for v in fresh_vars:
+            index = len(parameter_index)
+            parameter_index[v.name] = index
+            print(v.name, index, type_index[v.type_name], file=output)
         for cond in sorted(precond):
             assert isinstance(cond, pddl.Literal)
             args_list = []
@@ -219,8 +238,12 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
             args_list = []
             for x in eff.literal.args:
                 if x in parameter_index:
-                    # If it is a parameter
-                    args_list += ['p', str(parameter_index[x])]
+                    if x in fresh_var_names:
+                        # If it is a fresh variable
+                        args_list += ['f', str(parameter_index[x])]
+                    else:
+                        # If it is a parameter
+                        args_list += ['p', str(parameter_index[x])]
                 else:
                     # Otherwise, it is a constant
                     args_list += ['c', str(object_index[x])]

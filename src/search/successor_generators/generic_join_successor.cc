@@ -340,13 +340,14 @@ DBState GenericJoinSuccessor::generate_successor(
     apply_nullary_effects(action, new_nullary_atoms);
 
     if (action.is_ground()) {
-        apply_ground_action_effects(action, new_relation);
+        apply_ground_action_effects(action, new_relation, op.get_fresh_vars_mapping());
     }
     else {
-        apply_lifted_action_effects(action, op.get_instantiation(), new_relation);
+        apply_lifted_action_effects(action, op.get_instantiation(),
+                                    new_relation, op.get_fresh_vars_mapping());
     }
 
-    return DBState(std::move(new_relation), std::move(new_nullary_atoms));
+    return DBState(std::move(new_relation), std::move(new_nullary_atoms), state.get_number_objects()+action.get_fresh_variables().size());
 }
 
 void GenericJoinSuccessor::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,
@@ -398,14 +399,17 @@ void GenericJoinSuccessor::apply_nullary_effects(const ActionSchema &action,
     }
 }
 void GenericJoinSuccessor::apply_ground_action_effects(const ActionSchema &action,
-                                                     vector<Relation> &new_relation)
+                                                       vector<Relation> &new_relation,
+                                                       std::unordered_map<int, int> new_objs)
 {
     for (const Atom &eff : action.get_effects()) {
         GroundAtom ga;
         for (const Argument &a : eff.get_arguments()) {
             // Create ground atom for each effect given the instantiation
-            assert(a.is_constant());
-            ga.push_back(a.get_index());
+            if (a.is_constant())
+                ga.push_back(a.get_index());
+            else
+                ga.push_back(new_objs.at(a.get_index()));
         }
         assert(eff.get_predicate_symbol_idx() == new_relation[eff.get_predicate_symbol_idx()].predicate_symbol);
         if (eff.is_negated()) {
@@ -414,7 +418,6 @@ void GenericJoinSuccessor::apply_ground_action_effects(const ActionSchema &actio
         }
         else {
             // If ground effect is not in the state, we add it
-
             new_relation[eff.get_predicate_symbol_idx()].tuples.insert(ga);
             add_to_added_atoms(eff.get_predicate_symbol_idx(), ga);
 
@@ -422,11 +425,12 @@ void GenericJoinSuccessor::apply_ground_action_effects(const ActionSchema &actio
     }
 }
 void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &action,
-                                                     const vector<int> &tuple,
-                                                     vector<Relation> &new_relation)
+                                                       const vector<int> &tuple,
+                                                       vector<Relation> &new_relation,
+                                                       unordered_map<int, int> new_objs)
 {
     for (const Atom &eff : action.get_effects()) {
-        GroundAtom ga = GenericJoinSuccessor::tuple_to_atom(tuple, eff);
+        GroundAtom ga = GenericJoinSuccessor::tuple_to_atom(tuple, eff, new_objs);
         assert(eff.get_predicate_symbol_idx() == new_relation[eff.get_predicate_symbol_idx()].predicate_symbol);
         if (eff.is_negated()) {
             // Remove from relation
@@ -438,7 +442,6 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
                      new_relation[predicate_symbol_idx].tuples.end(),
                      ga) == new_relation[predicate_symbol_idx].tuples.end()) {
                 // If ground atom is not in the state, we add it
-
                 new_relation[eff.get_predicate_symbol_idx()].tuples.insert(ga);
                 add_to_added_atoms(eff.get_predicate_symbol_idx(), ga);
 
@@ -464,6 +467,12 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
 std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
         const ActionSchema &action, const DBState &state)
 {
+    std::unordered_map<int, int> new_objs;
+    int new_obj_idx = state.get_number_objects();
+    for (const FreshVariable &arg : action.get_fresh_variables()) {
+        new_objs[arg.get_index()] = new_obj_idx++;
+    }
+
     std::vector<LiftedOperatorId> applicable;
     if (is_trivially_inapplicable(state, action)) {
         return applicable;
@@ -471,7 +480,7 @@ std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
 
     if (action.is_ground()) {
         if (is_ground_action_applicable(action, state)) {
-            applicable.emplace_back(action.get_index(), vector<int>());
+            applicable.emplace_back(action.get_index(), vector<int>(), new_objs);
         }
         return applicable;
     }
@@ -490,7 +499,7 @@ std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
         vector<int> ordered_tuple(free_var_indices.size());
         order_tuple_by_free_variable_order(
             free_var_indices, map_indices_to_position, tuple_with_const, ordered_tuple);
-        applicable.emplace_back(action.get_index(), std::move(ordered_tuple));
+        applicable.emplace_back(action.get_index(), std::move(ordered_tuple), new_objs);
     }
     return applicable;
 }
@@ -517,13 +526,20 @@ std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
  * argument is a constant or not. If it is, then we simply pass the constant value; otherwise we use
  *    the instantiation that we found.
  */
-const GroundAtom GenericJoinSuccessor::tuple_to_atom(const vector<int> &tuple, const Atom &eff)
+const GroundAtom GenericJoinSuccessor::tuple_to_atom(const vector<int> &tuple,
+                                                     const Atom &eff,
+                                                     const unordered_map<int, int> &new_objs)
 {
     GroundAtom ground_atom;
     ground_atom.reserve(eff.get_arguments().size());
     for (auto argument : eff.get_arguments()) {
         if (!argument.is_constant())
-            ground_atom.push_back(tuple[argument.get_index()]);
+            if (!argument.is_fresh_var())
+                ground_atom.push_back(tuple[argument.get_index()]);
+            else {
+                assert(new_objs.count(argument.get_index()) > 0);
+                ground_atom.push_back(new_objs.at(argument.get_index()));
+            }
         else
             ground_atom.push_back(argument.get_index());
     }

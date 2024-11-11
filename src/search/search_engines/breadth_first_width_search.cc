@@ -6,7 +6,6 @@
 
 #include "../heuristics/ff_heuristic.h"
 
-#include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 
 #include "../parallel_hashmap/phmap.h"
@@ -230,4 +229,3 @@ AtomCounter BreadthFirstWidthSearch<PackedStateT>::initialize_counter_with_usefu
 
 // explicit template instantiations
 template class BreadthFirstWidthSearch<SparsePackedState>;
-template class BreadthFirstWidthSearch<ExtensionalPackedState>;//

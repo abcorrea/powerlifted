@@ -59,9 +59,16 @@ void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
         total_plan_length += 1;
         plan_file << total_plan_length << ": (" << action.get_name() << " ";
         for (const int obj : a.get_instantiation()) {
-            plan_file << task.objects[obj].get_name() << " ";
+            if (obj < int(task.objects.size()))
+                plan_file << task.objects[obj].get_name() << " ";
+            else
+                plan_file << "@NEW-OBJ-" << obj << " ";
         }
-        plan_file << ")\n";
+        plan_file << ") ;[created objects: ";
+        for (auto p : action.get_fresh_variables()) {
+            plan_file << p.get_name() << " -> " << "@NEW-OBJ-" << a.get_fresh_var_instantiation(p.get_index()) << ", ";
+        }
+        plan_file << "]\n";
     }
     plan_file << "; cost = " << total_plan_cost << '\n';
     std::cout << "Total plan cost: " << total_plan_cost << std::endl;

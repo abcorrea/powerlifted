@@ -3,6 +3,10 @@
 Powerlifted is a domain-independent classical planner that uses only lifted
 representations.
 
+The planner supports the STRIPS formalism, but extended with inequalities (e.g.,
+`(not (= ?x ?y))`), types (e.g., `?b - block`), and object creation (e.g., `:new
+?b - block`).
+
 (See [References](#references) for more details.)
 
 ## Usage
@@ -11,20 +15,25 @@ The `powerlifted.py` script solves a PDDL task provided as input. It also builds
 the planner if the `--build` parameter is passed. To run a single search, you
 can use the following algorithms:
 
-```$ ./powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e EVALUATOR -g GENERATOR [--state STATE REPR.] [ADDITIONAL OPTIONS] [--build]```
+```$ ./powerlifted.py [-d DOMAIN] -i INSTANCE -s SEARCH -e EVALUATOR -g GENERATOR [ADDITIONAL OPTIONS] [--build]```
 
-The options for each parameter are described below. If you do not pass any value for `SEARCH`, `EVALUATOR`, and `GENERATOR`, the planner will use the best (known) configuration for _satisficing_ planning (i.e., no optimality guaranteed). (See next section for more details.)
+The options for each parameter are described below. If you do not pass any value
+for `SEARCH`, `EVALUATOR`, and `GENERATOR`, the planner will use the best
+(known) configuration for _satisficing_ planning (i.e., no optimality
+guaranteed). (See next section for more details.)
 
-It is also possible to perform multiple search algorithms on the same task iteratively. See the section "Multiple Search Algorithms" below.
+It is also possible to perform multiple search algorithms on the same task
+iteratively. See the section "Multiple Search Algorithms" below.
 
-You can either use the `build.py` script to build the planner first, or pass the `--build` flag to build the planner prior to the search execution.
+You can either use the `build.py` script to build the planner first, or pass the
+`--build` flag to build the planner prior to the search execution.
 
 ### Best Configuration for Satisficing Planning
 
 Currently, the best configuration for satisficing planning (with respect to
 total coverage) is the following:
 
-```$ ./powerlifted.py [-d DOMAIN] -i INSTANCE -s alt-bfws1 -e ff -g yannakakis [ADDITIONAL OPTIONS] [--build]```
+```$ ./powerlifted.py [-d DOMAIN] -i INSTANCE -s alt-bfws1 -e ff -g yannakakis [ADDITIONAL OPTIONS] --only-effects-novelty-check```
 
 These are also the default values for `-s`, `-e`, and `-g`. To maximize
 coverage, we also recommend adding `--unit-cost` (see below) to the `ADDITIONAL
@@ -64,17 +73,6 @@ non-preferred operators
   program.
 - `yannakakis`: Same as above but replaces the final join of the full
       reducer method by the Yannakakis' project-join program.
-
-### Available Options for `STATE REPR.`:
-
-- `sparse`: Use the sparse state representation where a state is only
-  represented by the facts that are true in this state.
-- `extensional`: Use the extensional representation where a state is a bitset
-  where the ith-bit is true if the fact associated to it is true in this
-  state. This representation requires the grounding of facts (but not of
-  actions) which, right now, is performed in the search component. *Warning*:
-  this setting does not support all `EVALUATOR` options.
-
 
 ### Available `ADDITIONAL OPTIONS`:
 - `[--novelty-early-stop]`: Flag if the novelty evaluation of a state should
@@ -122,6 +120,32 @@ The plan founds are then numbered based on its iterations. If the first iteratio
 Unfortunately, the planner has the limitation that additional options are set
 _for all the iterations_.
 
+
+## Object Creation
+
+Powerlifted supports **object creation** as part of object effects. The precise
+semantics are described in [5]. Currently, Powerlifted only supports a
+STRIPS-like fragment of the problem where action effects can have the following
+form:
+
+```
+:effect (:new (?o - some-type) (CONJ-EFFECT))
+```
+
+where `CONJ-EFFECT` is a conjunctive PDDL effect (e.g., `(and (p ?x ?y) (p ?y
+?o))`) where `?o` occurs. The basic semantics is that variable `?o` must be
+instantiated with a fresh object that does not exist on the state the the
+(ground) action is applied.
+
+Unfortunately, not all features of the planner support object creation. Here is
+a list of features that do support it:
+- search engines:
+- evaluators:
+- successor generators:
+
+See [this repository](https://github.com/abcorrea/object-creation-benchmarks)
+for domain examples.
+
 ## Running Powerlifted as a Apptainer container
 
 You can also build an Apptainer image to run the planner. This might be useful
@@ -160,9 +184,14 @@ Apptainer image:
 
  ## References
 
- 1. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2020. Lifted Successor Generation using Query Optimization Techniques. In Proc. ICAPS 2020, pp. 80-89. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2020.pdf)
- 2. Corrêa, A. B.; Francès, G.; Pommerening, F.; and Helmert, M. 2021. Delete-Relaxation Heuristics for Lifted Classical Planning. In Proc. ICAPS 2021, pp. 94-102. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-icaps2021.pdf)
+ 1. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2020. Lifted Successor Generation using Query Optimization Techniques.
+    In Proc. ICAPS 2020, pp. 80-89. [[pdf]](https://abcorrea.github.io/assets/pdf/correa-et-al-icaps2020.pdf)
+ 2. Corrêa, A. B.; Francès, G.; Pommerening, F.; and Helmert, M. 2021. Delete-Relaxation Heuristics for Lifted Classical Planning.
+    In Proc. ICAPS 2021, pp. 94-102. [[pdf]](https://abcorrea.github.io/assets/pdf/correa-et-al-icaps2021.pdf)
  3. Corrêa, A. B.; Pommerening, F.; Helmert, M.; and Francès, G. 2022. The
-    FF Heuristic for Lifted Classical Planning. In Proc. AAAI 2022. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-et-al-aaai2022.pdf)
+    FF Heuristic for Lifted Classical Planning.
+    In Proc. AAAI 2022. [[pdf]](https://abcorrea.github.io/assets/pdf/correa-et-al-aaai2022.pdf)
  4. Corrêa, A. B.; and Seipp, J. 2022. Best-First Width Search for Lifted
-    Classical Planning. In Proc. ICAPS 2022. [[pdf]](https://ai.dmi.unibas.ch/papers/correa-seipp-icaps2022.pdf)
+    Classical Planning. In Proc. ICAPS 2022. [[pdf]](https://abcorrea.github.io/assets/pdf/correa-seipp-icaps2022.pdf)
+ 5. Corrêa, A. B.; De Giacomo, G.; Helmert, M.; and Rubin, S. 2024. Planning with Object Creation.
+    In Proc. ICAPS 2024. [[pdf]](https://abcorrea.github.io/assets/pdf/correa-et-al-icaps2024.pdf)

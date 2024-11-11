@@ -8,6 +8,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -65,9 +66,11 @@ public:
             const ActionSchema &action, const DBState &state) override;
 
     std::vector<LiftedOperatorId> get_applicable_actions(
-            const std::vector<ActionSchema> &actions, const DBState &state) override;
+            const std::vector<ActionSchema> &action, const DBState &state) override;
 
-    const GroundAtom tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
+    const GroundAtom tuple_to_atom(const std::vector<int> &tuple,
+                                   const Atom &eff,
+                                   const std::unordered_map<int, int> &new_objs);
 
     const std::unordered_set<GroundAtom, TupleHash>
     &get_tuples_from_static_relation(size_t i) const;
@@ -122,11 +125,13 @@ protected:
                                       std::vector<bool> &new_nullary_atoms) ;
 
     void apply_ground_action_effects(const ActionSchema &action,
-                                            std::vector<Relation> &new_relation) ;
+                                     std::vector<Relation> &new_relation,
+                                     std::unordered_map<int, int> new_objs) ;
 
     void apply_lifted_action_effects(const ActionSchema &action,
                                      const std::vector<int> &tuple,
-                                     std::vector<Relation> &new_relation);
+                                     std::vector<Relation> &new_relation,
+                                     std::unordered_map<int, int> new_objs);
 
     bool is_ground_action_applicable(const ActionSchema &action,
                                      const DBState &state) const;

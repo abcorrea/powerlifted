@@ -3,7 +3,6 @@
 #include "utils.h"
 
 #include "../open_lists/greedy_open_list.h"
-#include "../states/extensional_states.h"
 #include "../states/sparse_states.h"
 #include "../successor_generators/successor_generator.h"
 #include "../utils/timer.h"
@@ -114,4 +113,3 @@ void AStarSearch<PackedStateT>::print_statistics() const {
 
 // explicit template instantiations
 template class AStarSearch<SparsePackedState>;
-template class AStarSearch<ExtensionalPackedState>;

@@ -168,8 +168,9 @@ def preprocess_types(task):
 
 # [0a] Remove actions that can never instantiated.
 #
-#  Remove actions where a parameter has a given type T but there is
-#  no object with such type in the object list.
+#  Remove actions where a parameter has a given type T but (i) there is
+#  no object with such type in the object list and (ii) there is no object creation effect
+#  that introduces an object with type T.
 def remove_trivially_inapplicable_actions(task):
 
     preprocess_types(task)
@@ -184,6 +185,14 @@ def remove_trivially_inapplicable_actions(task):
             # appearing in any object of the task
             object_types_in_task.add(type_name)
             type_name = graph.edges[type_name]
+    for action in task.actions:
+        for eff in action.effects:
+            for par in eff.parameters:
+                type_name = par.type_name
+                object_types_in_task.add(type_name)
+                while type_name != 'object':
+                    object_types_in_task.add(type_name)
+                    type_name = graph.edges[type_name]
 
     new_actions = set()
     number_removals = 0
@@ -417,6 +426,8 @@ def sort_actions(task):
 # that the task makes sense.
 
 def normalize(task):
+    # Note: Many of these functions are kept here in the hope one day we will deal with full
+    # PDDL syntax. They are originally from Fast Downward -- as most of the translator.
     remove_trivially_inapplicable_actions(task)
     remove_duplicated_preconditions(task)
     remove_universal_quantifiers(task)

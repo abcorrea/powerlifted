@@ -30,7 +30,6 @@ OPTIMAL_PLAN_COSTS = {'domains/airport/p05-airport2-p1.pddl': 21,
 SEARCH_CONFIGS = ['bfs', 'gbfs']
 HEURISTIC_CONFIGS = ['blind']
 GENERATOR_CONFIGS = ['full_reducer', 'join', 'yannakakis']
-STATE_REPR_CONFIGS = ['sparse', 'extensional']
 
 
 class TestRun:
@@ -39,13 +38,11 @@ class TestRun:
         self.search = config[0]
         self.heuristic = config[1]
         self.generator = config[2]
-        self.state_representation = config[3]
 
     def get_config(self):
-        return "{}, {}, {}, and {}".format(self.search,
+        return "{}, {}, and {}".format(self.search,
                                            self.heuristic,
-                                           self.generator,
-                                           self.state_representation)
+                                           self.generator)
 
     def __str__(self):
         return "{} with {}".format(self.instance, self.get_config())
@@ -57,7 +54,6 @@ class TestRun:
                                           '-s', self.search,
                                           '-e', self.heuristic,
                                           '-g', self.generator,
-                                          '--state', self.state_representation,
                                           '--validate'])
         return output
 
@@ -114,13 +110,12 @@ if __name__ == '__main__':
         SEARCH_CONFIGS = ['bfs', 'gbfs']
         HEURISTIC_CONFIGS = ['blind']
         GENERATOR_CONFIGS = ['full_reducer', 'yannakakis']
-        STATE_REPR_CONFIGS = ['sparse', 'extensional']
 
     start = timeit.default_timer()
     failures = 0
     passes = 0
     for instance, cost in OPTIMAL_PLAN_COSTS.items():
-        for config in product(SEARCH_CONFIGS, HEURISTIC_CONFIGS, GENERATOR_CONFIGS, STATE_REPR_CONFIGS):
+        for config in product(SEARCH_CONFIGS, HEURISTIC_CONFIGS, GENERATOR_CONFIGS):
             test = TestRun(instance, config)
             output = test.run()
             passed = test.evaluate(output, cost)

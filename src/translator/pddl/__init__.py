@@ -27,6 +27,7 @@ from .effects import ConditionalEffect
 from .effects import ConjunctiveEffect
 from .effects import CostEffect
 from .effects import Effect
+from .effects import ObjectCreationEffect
 from .effects import SimpleEffect
 from .effects import UniversalEffect
 

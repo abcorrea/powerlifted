@@ -38,8 +38,9 @@ class TypesGraph(object):
 def compile_into_unary_predicates(task):
     """Create one new unary predicate for each object type."""
     for t in task.types:
-        pred_name = _get_type_predicate_name(str(t))
-        task.predicates.append(pddl.Predicate(pred_name, ['?x']))
+        type = str(t)
+        pred_name = _get_type_predicate_name(type)
+        task.predicates.append(pddl.Predicate(pred_name, [pddl.TypedObject('?x', type)]))
         name_to_type_pred[pred_name] = task.predicates[-1]
     return
 
@@ -73,14 +74,14 @@ def add_conditions_to_actions(task, graph):
                         (x.type_name for x in task.objects if x.name == arg),
                         None)
                 obj_in_action.add((param_type, name))
-        literals_in_effects = action.get_literals_in_effects
+        literals_in_effects = action.get_parameters_in_effects
         for l in literals_in_effects:
             name = l
             param_type = next(
                 (x.type_name for x in action.parameters if x.name == l), None)
             if param_type is None:
                 # If the type is none, then it is not a parameter and
-                # it must be constant.  THus, we search for its type in the
+                # it must be constant.  Thus, we search for its type in the
                 # obj list.
                 param_type = next(
                     (x.type_name for x in task.objects if x.name == l), None)
@@ -93,6 +94,31 @@ def add_conditions_to_actions(task, graph):
             action.precondition.add_condition(
                 pddl.Atom(_get_type_predicate_name(param_type), [name]))
     return
+
+def add_effects_to_actions(task, graph):
+    """
+    Add type predicates to effect of actions with object creation effects.
+    """
+    for action in task.actions:
+        new_eff = action.effects
+        new_vars = set()
+        for effect in action.effects:
+            new_vars = new_vars.union(set(effect.parameters))
+        types = set()
+        for typed_obj in new_vars:
+            name = typed_obj.name
+            type_name = typed_obj.type_name
+            while type_name != 'object':
+                types.add(type_name)
+                type_name = graph.edges[type_name]
+            if type_name == 'object' and typed_obj not in action.parameters:
+                # If this is a fresh variable, we need to add it to the type-object
+                # predicate in its effect.
+                types.add(type_name)
+            for t in types:
+                atom = pddl.Atom(_get_type_predicate_name(t), [name])
+                new_eff.append(pddl.Effect([], pddl.Truth, atom))
+        action.effects = new_eff
 
 
 def adjust_initial_state(task, graph):
@@ -164,6 +190,6 @@ def compile_types(task):
     graph = TypesGraph(task.types)
     compile_into_unary_predicates(task)
     add_conditions_to_actions(task, graph)
+    add_effects_to_actions(task, graph)
     adjust_initial_state(task, graph)
-    remove_trivially_inapplicable_actions(task, graph)
     return graph

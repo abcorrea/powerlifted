@@ -3,6 +3,12 @@
 #include "clique_help_functions.h"
 #include "clique_successor_generator.h"
 
+#include "../action.h"
+#include "../database/hash_join.h"
+#include "../database/semi_join.h"
+#include "../database/table.h"
+#include "../task.h"
+
 #include <cassert>
 #include <limits>
 #include <unordered_map>
@@ -194,7 +200,7 @@ void CliqueSuccessorGenerator::build_assignment_sets(const DBState &atoms) {
 }
 
 CliqueSuccessorGenerator::CliqueSuccessorGenerator(const Task &task, const CliquePivot &pivot)
-    : task(task), pivot(pivot) {
+    : GenericJoinSuccessor(task), task(task), pivot(pivot) {
     // Types are static information, precompute the set of object that
     // can be assigned to each parameter based on type information.
 
@@ -303,7 +309,7 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_nullary_ca
     const auto &static_preconds = preconds.static_preconds;
     const auto &dynamic_preconds = preconds.dynamic_preconds;
     const auto &static_info = task.get_static_info();
-    const LiftedOperatorId op(action.get_index(), GroundAtom());
+    const LiftedOperatorId op(action.get_index(), GroundAtom(), unordered_map<int, int>());
 
     if (literal_holds(op, dynamic_preconds, static_preconds, state, static_info, 1)) {
         applicable_actions.push_back(op);
@@ -326,7 +332,7 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_unary_case
     const auto &objects_with_correct_type = objects_by_parameter_type.at(parameter);
 
     for (const auto &object : objects_with_correct_type) {
-        const LiftedOperatorId op(action.get_index(), {object.get_index()});
+        const LiftedOperatorId op(action.get_index(), {object.get_index()}, unordered_map<int, int>());
 
         if (literal_holds(op, dynamic_preconds, static_preconds, state, static_info, 1)) {
             applicable_actions.push_back(op);
@@ -503,7 +509,7 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_general_ca
         }
 
         const auto action_index = action.get_index();
-        const LiftedOperatorId op(action_index, move(assignments));
+        const LiftedOperatorId op(action_index, move(assignments), unordered_map<int,int>());
 
         // We do not have to check unary and binary relations, however, if the precondition
         // contains relations of higher arity then we need to check if they hold in the state.

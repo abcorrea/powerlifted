@@ -122,10 +122,30 @@ class UniversalEffect(object):
             for effect in norm_effect.effects:
                 assert isinstance(effect, SimpleEffect) or isinstance(effect, ConditionalEffect)\
                        or isinstance(effect, UniversalEffect)
+                assert not isinstance(effect, ObjectCreationEffect), "Nested ObjectCreationEffect not supported yet."
                 new_effects.append(UniversalEffect(self.parameters, effect))
             return ConjunctiveEffect(new_effects)
         else:
             return UniversalEffect(self.parameters, norm_effect)
+    def extract_cost(self):
+        return None, self
+
+class ObjectCreationEffect(object):
+    def __init__(self, parameters, effect):
+            self.parameters = parameters
+            self.effect = effect
+    def dump(self, indent="  "):
+        print("%s:new %s" % (indent, ", ".join(map(str, self.parameters))))
+        self.effect.dump(indent + "  ")
+    def normalize(self):
+        assert isinstance(self.effect, SimpleEffect) or isinstance(self.effect, ConjunctiveEffect), \
+            "ObjectCreationEffect only supports SimpleEffect or ConjunctiveEffects."
+        if isinstance(self.effect, SimpleEffect):
+            return ObjectCreationEffect(self.parameters, self.effect)
+        new_effects = []
+        for effect in self.effect.effects:
+            new_effects.append(ObjectCreationEffect(self.parameters, effect))
+        return ConjunctiveEffect(new_effects)
     def extract_cost(self):
         return None, self
 

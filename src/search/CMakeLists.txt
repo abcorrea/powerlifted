@@ -70,7 +70,6 @@ add_executable(search
         successor_generators/clique_help_functions.cc successor_generators/clique_help_functions.h
         database/project.cc database/project.h
         utils/segmented_vector.h
-        states/extensional_states.cc states/extensional_states.h
         states/sparse_states.cc states/sparse_states.h
         utils/hash.h
         algorithms/cartesian_iterator.h

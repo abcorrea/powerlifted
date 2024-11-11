@@ -51,7 +51,6 @@ def run(build_dir, options, extra):
                                  search,
                                  evaluator,
                                  generator,
-                                 options.state,
                                  str(options.seed),
                                  plan_name,
                                  extra)

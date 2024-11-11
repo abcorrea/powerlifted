@@ -1,7 +1,7 @@
 #ifndef SEARCH_CLIQUE_H
 #define SEARCH_CLIQUE_H
 
-#include "successor_generator.h"
+#include "generic_join_successor.h"
 
 #include "../action.h"
 #include "../action_schema.h"
@@ -16,6 +16,7 @@
 #include <vector>
 
 class Task;
+class Table;
 
 struct Assignment {
     int parameter_index;
@@ -97,7 +98,16 @@ enum CliquePivot {
     KCliqueKPartite,
 };
 
-class CliqueSuccessorGenerator : public SuccessorGenerator {
+/*
+* This inheritance is a bit unfortunate, and the original code
+* inherited from SuccessorGenerator. However, this caused a huge
+* amount of duplicated code (~200 lines) to apply the effects
+* of an action after instantiated.
+* Because the object creation support makes this part of the code
+* more relevant, we want to avoid this duplication, as we expect
+* it will be more prone to changes in the future.
+*/
+class CliqueSuccessorGenerator : public GenericJoinSuccessor {
 private:
     const Task &task;
     const CliquePivot pivot;
@@ -150,20 +160,20 @@ public:
     std::vector<LiftedOperatorId> get_applicable_actions(const ActionSchema &action,
                                                          const DBState &state) override;
 
-    const GroundAtom tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
+    //const GroundAtom tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
 
-    void apply_nullary_effects(const ActionSchema &action, std::vector<bool> &new_nullary_atoms);
+    // void apply_nullary_effects(const ActionSchema &action, std::vector<bool> &new_nullary_atoms);
 
-    void apply_ground_action_effects(const ActionSchema &action,
-                                     std::vector<Relation> &new_relation);
+    // void apply_ground_action_effects(const ActionSchema &action,
+    //                                  std::vector<Relation> &new_relation);
 
-    void apply_lifted_action_effects(const ActionSchema &action,
-                                     const std::vector<int> &tuple,
-                                     std::vector<Relation> &new_relation);
+    // void apply_lifted_action_effects(const ActionSchema &action,
+    //                                  const std::vector<int> &tuple,
+    //                                  std::vector<Relation> &new_relation);
 
-    DBState generate_successor(const LiftedOperatorId &op,
-                               const ActionSchema &action,
-                               const DBState &state) override;
+    // DBState generate_successor(const LiftedOperatorId &op,
+    //                            const ActionSchema &action,
+    //                            const DBState &state) override;
 };
 
 #endif  // SEARCH_CLIQUE_H

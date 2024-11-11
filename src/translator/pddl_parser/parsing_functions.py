@@ -18,6 +18,14 @@ UNSUPPORTED_FEATURES = ["imply",
                         "forall",
                         "exists",
                         "when"]
+def naturals_iterator():
+    n = 0
+    while True:
+        yield n
+        n += 1
+
+uniq_fresh_var_id = naturals_iterator()
+
 
 def is_tag_supported(tag):
     if tag in UNSUPPORTED_FEATURES:
@@ -160,7 +168,7 @@ def _get_predicate_id_and_arity(text, type_dict, predicate_dict):
 
 def parse_effects(alist, result, type_dict, predicate_dict):
     """Parse a PDDL effect (any combination of simple, conjunctive, conditional, and universal)."""
-    tmp_effect = parse_effect(alist, type_dict, predicate_dict)
+    tmp_effect = parse_effect(alist, type_dict, predicate_dict, set())
     normalized = tmp_effect.normalize()
     cost_eff, rest_effect = normalized.extract_cost()
     add_effect(rest_effect, result)
@@ -177,6 +185,14 @@ def add_effect(tmp_effect, result):
         for effect in tmp_effect.effects:
             add_effect(effect, result)
         return
+    elif isinstance(tmp_effect, pddl.ObjectCreationEffect):
+        condition = pddl.Truth()
+        assert isinstance(tmp_effect.effect, pddl.SimpleEffect)
+        assert isinstance(tmp_effect.effect.effect, pddl.Atom) or isinstance(tmp_effect.effect.effect, pddl.NegatedAtom)
+        effect = tmp_effect.effect.effect
+        parameters = tmp_effect.parameters
+        new_effect = pddl.Effect(parameters, condition, effect)
+        result.append(new_effect)
     else:
         parameters = []
         condition = pddl.Truth()
@@ -209,22 +225,53 @@ def add_effect(tmp_effect, result):
                 result.remove(contradiction)
                 result.append(new_effect)
 
-def parse_effect(alist, type_dict, predicate_dict):
+def parse_effect(alist, type_dict, predicate_dict, fresh_var_set):
     tag = alist[0]
     is_tag_supported(tag)
     if tag == "and":
         return pddl.ConjunctiveEffect(
-            [parse_effect(eff, type_dict, predicate_dict) for eff in alist[1:]])
+            [parse_effect(eff, type_dict, predicate_dict, fresh_var_set) for eff in alist[1:]])
+    elif tag == ":new":
+        global uniq_fresh_var_id
+        assert len(alist) == 3
+        parameters = parse_typed_list(alist[1])
+        effect = parse_effect(alist[2], type_dict, predicate_dict, fresh_var_set)
+        assert isinstance(effect, pddl.SimpleEffect) or isinstance(effect, pddl.ConjunctiveEffect)
+        # We rename all fresh variables to avoid shadowing.
+        map_fresh_var = dict()
+        for p in parameters:
+            map_fresh_var[p.name] = '?v.'+str(next(uniq_fresh_var_id))
+            p.name = map_fresh_var[p.name]
+        if isinstance(effect, pddl.SimpleEffect):
+            new_args = []
+            for arg in effect.effect.args:
+                if arg in map_fresh_var.keys():
+                    new_args.append(map_fresh_var[arg])
+                else:
+                    new_args.append(arg)
+            assert len(effect.effect.args) == len(new_args)
+            effect.effect.args = tuple(new_args)
+        elif isinstance(effect, pddl.ConjunctiveEffect):
+            for eff in effect.effects:
+                new_args = []
+                for arg in eff.effect.args:
+                    if arg in map_fresh_var.keys():
+                        new_args.append(map_fresh_var[arg])
+                    else:
+                        new_args.append(arg)
+                assert len(eff.effect.args) == len(new_args)
+                eff.effect.args = tuple(new_args)
+        return pddl.ObjectCreationEffect(parameters, effect)
     elif tag == "forall":
         assert len(alist) == 3
         parameters = parse_typed_list(alist[1])
-        effect = parse_effect(alist[2], type_dict, predicate_dict)
+        effect = parse_effect(alist[2], type_dict, predicate_dict, fresh_var_set)
         return pddl.UniversalEffect(parameters, effect)
     elif tag == "when":
         assert len(alist) == 3
         condition = parse_condition(
             alist[1], type_dict, predicate_dict)
-        effect = parse_effect(alist[2], type_dict, predicate_dict)
+        effect = parse_effect(alist[2], type_dict, predicate_dict, fresh_var_set)
         return pddl.ConditionalEffect(condition, effect)
     elif tag == "increase":
         assert len(alist) == 3
@@ -259,7 +306,6 @@ def parse_assignment(alist):
         return pddl.Increase(head, exp)
     else:
         assert False, "Assignment operator not supported."
-
 
 def parse_action(alist, type_dict, predicate_dict):
     iterator = iter(alist)

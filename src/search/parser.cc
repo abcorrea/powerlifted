@@ -61,7 +61,7 @@ bool parse(Task &task, const ifstream &in)
         return false;
     }
     cout << "Total number of atoms in the initial state: " << initial_state_size << endl;
-    task.create_empty_initial_state(task.predicates.size());
+    task.create_empty_initial_state(task.predicates.size(), number_objects);
     parse_initial_state(task, initial_state_size);
 
 
@@ -90,9 +90,10 @@ void parse_action_schemas(Task &task, int number_action_schemas)
     vector<ActionSchema> actions;
     for (int i = 0; i < number_action_schemas; ++i) {
         string name;
-        int cost, args, precond_size, eff_size;
-        cin >> name >> cost >> args >> precond_size >> eff_size;
+        int cost, args, num_fresh_vars, precond_size, eff_size;
+        cin >> name >> cost >> args >> num_fresh_vars >> precond_size >> eff_size;
         vector<Parameter> parameters;
+        vector<FreshVariable> fresh_vars;
         vector<Atom> preconditions, static_preconditions, effects;
         vector<bool> positive_nul_precond(task.predicates.size(), false),
             negative_nul_precond(task.predicates.size(), false),
@@ -103,6 +104,13 @@ void parse_action_schemas(Task &task, int number_action_schemas)
             int index, type;
             cin >> param_name >> index >> type;
             parameters.emplace_back(param_name, index, type);
+        }
+        if (num_fresh_vars > 0) task.flag_object_creation();
+        for (int j = 0; j < num_fresh_vars; ++j) {
+            string var_name;
+            int index, type;
+            cin >> var_name >> index >> type;
+            fresh_vars.emplace_back(var_name, index, false);
         }
         for (int j = 0; j < precond_size; ++j) {
             string precond_name;
@@ -123,8 +131,8 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                 cin >> c >> id1 >> d >> id2;
 
                 vector<Argument> arguments;
-                arguments.emplace_back(id1, c == 'c');
-                arguments.emplace_back(id2, d == 'c');
+                arguments.emplace_back(id1, c == 'c', false);
+                arguments.emplace_back(id2, d == 'c', false);
                 static_preconditions.emplace_back(std::move(arguments),
                                                   std::move(precond_name),
                                                   index, negated);
@@ -136,10 +144,10 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                     int obj_index;
                     cin >> c >> obj_index;
                     if (c == 'c') {
-                        arguments.emplace_back(obj_index, true);
+                        arguments.emplace_back(obj_index, true, false);
                     }
                     else if (c == 'p') {
-                        arguments.emplace_back(obj_index, false);
+                        arguments.emplace_back(obj_index, false, false);
                     }
                     else {
                         cerr << "Error while reading action schema " << name
@@ -172,10 +180,13 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                 int obj_index;
                 cin >> c >> obj_index;
                 if (c == 'c') {
-                    arguments.emplace_back(obj_index, true);
+                    arguments.emplace_back(obj_index, true, false);
                 }
                 else if (c == 'p') {
-                    arguments.emplace_back(obj_index, false);
+                    arguments.emplace_back(obj_index, false, false);
+                }
+                else if (c == 'f') {
+                    arguments.emplace_back(obj_index, false, true);
                 }
                 else {
                     cerr << "Error while reading action schema " << name
@@ -191,6 +202,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                        i,
                        cost,
                        parameters,
+                       fresh_vars,
                        preconditions,
                        effects,
                        static_preconditions,
@@ -255,6 +267,9 @@ void parse_initial_state(Task &task, int initial_state_size)
 
 void parse_objects(Task &task, int number_objects)
 {
+    // Set number of objects
+    task.initial_state.set_number_objects(number_objects);
+
     for (int i = 0; i < number_objects; ++i) {
         string name;
         int index;
