@@ -27,7 +27,7 @@ class Task {
 
     std::vector<ActionSchema> action_schemas;
     GoalCondition goal;
-    bool object_creation;
+    bool object_creation = false;
 
 public:
     std::vector<Predicate> predicates;
