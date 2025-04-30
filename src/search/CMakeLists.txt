@@ -7,18 +7,20 @@ set(CMAKE_CXX_STANDARD 17)
 if (CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES Debug Release)
 endif ()
-
+set(BOOST_ROOT "/opt/homebrew/Cellar/boost/1.86.0_2")
+set(Boost_INCLUDE_DIR "/opt/homebrew/Cellar/boost/1.86.0_2/include")
+set(Boost_NO_SYSTEM_PATHS ON)
 find_package(Boost COMPONENTS program_options REQUIRED CONFIG)
 if (Boost_FOUND)
     add_definitions( "-DHAS_BOOST" )
 endif()
 
 
-set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor")
+set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-error=deprecated-declarations -Wno-error=deprecated-builtins -Wno-error=unqualified-std-cast-call")
 
 # Release
 set(CMAKE_CXX_FLAGS_RELEASE
-        "-O3 -g -DNDEBUG -fomit-frame-pointer -Werror")
+        "-O3 -g -DNDEBUG -fomit-frame-pointer -Werror -Wno-error=deprecated-declarations -Wno-error=deprecated-builtins -Wno-error=unqualified-std-cast-call")
 
 # Debug and Profile
 set(CMAKE_CXX_FLAGS_DEBUG
