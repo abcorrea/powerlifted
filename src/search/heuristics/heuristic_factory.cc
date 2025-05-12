@@ -6,7 +6,7 @@
 #include "goalcount.h"
 #include "hmax_heuristic.h"
 #include "rff_heuristic.h"
-
+#include "random_heuristic.h"
 #include "datalog_transformation_options.h"
 
 #include <iostream>
@@ -37,6 +37,9 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
     }
     else if (boost::iequals(method, "rff")) {
         return new RFFHeuristic(task, DatalogTransformationOptions());
+    }
+    else if (boost::iequals(method, "rdm")) {
+        return new RandomHeuristic();
     }
     else {
         std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;

@@ -28,7 +28,8 @@ EVALUATOR_CHOICES = ["blind",
                      "add",
                      "hmax",
                      "ff",
-                     "rff"]
+                     "rff",
+                     "rdm"]
 
 SUCCESSOR_GENERATOR_CHOICES = ['yannakakis',
                                'join',

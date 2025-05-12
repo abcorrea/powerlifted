@@ -14,3 +14,6 @@ powerlifted.sif
 reports/
 local-tests/
 *.out
+src/search/.DS_Store
+plan
+.vscode/c_cpp_properties.json
