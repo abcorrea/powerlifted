@@ -1,0 +1,45 @@
+# ---------------------------
+# Stage 1: Compile
+# ---------------------------
+FROM ubuntu:22.04 AS build
+
+WORKDIR /powerlifted
+COPY . /powerlifted
+
+RUN apt-get update && \
+    apt-get -y install --no-install-recommends \
+        cmake \
+        g++ \
+        make \
+        build-essential \
+        python3-dev \
+        autotools-dev \
+        libboost-all-dev=1.74.0.3ubuntu7 \
+        libboost-program-options1.74-dev
+
+
+# Install Powerlifted
+RUN rm -rf /powerlifted/builds && \
+    python3 build.py && \
+    strip --strip-all /powerlifted/builds/release/search/search
+
+
+# ---------------------------
+# Stage 2: Runtime
+# ---------------------------
+FROM ubuntu:22.04 AS run
+
+
+WORKDIR /powerlifted
+
+RUN apt-get update && \
+    apt-get -y install --no-install-recommends \
+        python3 \
+        libboost-program-options1.74-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /powerlifted /powerlifted
+
+ENV POWERLIFTED=/powerlifted
+
+ENTRYPOINT ["python3", "/powerlifted/powerlifted.py"]
