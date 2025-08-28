@@ -19,6 +19,8 @@ class Datalog {
     std::vector<Fact> facts;
     std::vector<Fact> permanent_edb;
     std::vector<std::unique_ptr<RuleBase>> rules;
+    std::vector<std::string> predicate_names;
+    
 
     // Is this what we want?
     const Task &task;
@@ -84,7 +86,7 @@ class Datalog {
 
 public:
     Datalog(const Task &task, AnnotationGenerator annotation_generator);
-    std::vector<std::string> predicate_names;
+
 
 
     std::vector<std::unique_ptr<RuleBase>> &get_rules() {
