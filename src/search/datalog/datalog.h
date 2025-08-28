@@ -25,7 +25,7 @@ class Datalog {
 
     int goal_atom_idx;
 
-    std::vector<std::string> predicate_names;
+
     std::unordered_map<std::string, int> map_new_predicates_to_idx;
 
     std::vector<std::vector<GroundAtom>> useful_atoms;
@@ -84,14 +84,25 @@ class Datalog {
 
 public:
     Datalog(const Task &task, AnnotationGenerator annotation_generator);
+    std::vector<std::string> predicate_names;
 
 
     std::vector<std::unique_ptr<RuleBase>> &get_rules() {
         return rules;
     }
-
     const std::vector<std::unique_ptr<RuleBase>> &get_rules() const {
         return rules;
+    }
+    
+    std::string get_predicate_name_by_idx(int idx) const {
+        if (idx < 0 || idx >= static_cast<int>(predicate_names.size())) {
+            throw std::out_of_range("Predicate index " + std::to_string(idx) + 
+                               " out of range [0, " + std::to_string(predicate_names.size()) + ")");
+    }
+    return predicate_names[idx];}
+
+    const std::vector<::Object>  &get_objects() const{
+        return task.objects;
     }
 
     void remove_action_predicates(AnnotationGenerator &annotation_generator, const Task &task);
@@ -112,13 +123,13 @@ public:
         for (const auto &rule : rules) output_rule(rule);
     }
 
-    int get_goal_atom_idx() {
+    int get_goal_atom_idx() const{
         return goal_atom_idx;
     }
 
     const std::vector<Fact> &get_permanent_edb();
 
-    const std::vector<Fact> &get_facts();
+    const std::vector<Fact> &get_facts() const;
 
     const Fact &get_fact_by_index(int i) const {
         return facts[i];

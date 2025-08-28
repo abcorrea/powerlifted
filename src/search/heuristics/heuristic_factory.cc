@@ -39,7 +39,7 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
         return new RFFHeuristic(task, DatalogTransformationOptions());
     }
     else if (boost::iequals(method, "rdm")) {
-        return new RandomHeuristic();
+        return new RandomHeuristic(task,DatalogTransformationOptions());
     }
     else {
         std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;

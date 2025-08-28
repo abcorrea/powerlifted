@@ -31,7 +31,7 @@ class Task {
 
 public:
     std::vector<Predicate> predicates;
-    std::vector<Object> objects;
+    std::vector<::Object> objects;
     std::vector<std::string> type_names;
     DBState initial_state;
     std::unordered_set<int> nullary_predicates;
@@ -56,6 +56,16 @@ public:
 
     const std::string &get_object_name(int index) const {
         return objects[index].get_name();
+    }
+
+    int get_predicate_index(const std::string &pred)const{
+        
+        for (size_t i=0; i<predicates.size();++i){
+            if(predicates[i].get_name() == pred){
+                return i;
+            }
+        }
+        return -1;
     }
 
     void create_empty_initial_state(size_t number_predicates, int num_objects);

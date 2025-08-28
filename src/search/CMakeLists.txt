@@ -37,6 +37,8 @@ add_executable(search
         parser.cc parser.h
         goal_condition.h
         atom.h
+        dump_task_to_PDDL.h
+        dump_task_to_PDDL.cc
         action_schema.cc action_schema.h
         structures.h
         search_engines/search_factory.cc search_engines/search_factory.h
@@ -102,6 +104,7 @@ add_executable(search
         datalog/arguments.h
         datalog/datalog_atom.cc datalog/datalog_atom.h
         datalog/datalog_fact.cc datalog/datalog_fact.h
+        datalog/datalog_to_task.h
         datalog/term.h
         datalog/object.cc datalog/object.h
         datalog/rules/rule_base.cc datalog/rules/rule_base.h
@@ -114,6 +117,8 @@ add_executable(search
         datalog/annotations/annotation.h
         datalog/ground_rule.h
         heuristics/ff_heuristic.cc
+	heuristics/random_heuristic.h		
+	heuristics/random_heuristic.cc
         heuristics/rff_heuristic.cc
         heuristics/rff_heuristic.h
         heuristics/datalog_transformation_options.h
