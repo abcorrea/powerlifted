@@ -16,6 +16,15 @@ endif()
 
 set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor")
 
+if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(STATUS "Applying macOS/Clang-specific compiler options")
+    add_compile_options(-Wno-deprecated-declarations)
+    add_compile_options(-Wno-error=deprecated-builtins)
+    add_compile_options(-Wno-deprecated-builtins)
+    add_compile_options(-std=gnu++17 -Wno-error=deprecated-builtins -Wno-vla)
+endif()
+
+
 # Release
 set(CMAKE_CXX_FLAGS_RELEASE
         "-O3 -g -DNDEBUG -fomit-frame-pointer -Werror")

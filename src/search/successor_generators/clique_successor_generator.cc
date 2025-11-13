@@ -509,7 +509,7 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_general_ca
         }
 
         const auto action_index = action.get_index();
-        const LiftedOperatorId op(action_index, move(assignments), unordered_map<int,int>());
+        const LiftedOperatorId op(action_index, std::move(assignments), unordered_map<int,int>());
 
         // We do not have to check unary and binary relations, however, if the precondition
         // contains relations of higher arity then we need to check if they hold in the state.
