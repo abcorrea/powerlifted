@@ -87,7 +87,8 @@ namespace utils {
 /*
   Circular rotation (http://stackoverflow.com/a/31488147/224132).
 */
-inline uint32_t rotate(uint32_t value, uint32_t offset) {
+inline uint32_t rotate(uint32_t value, uint32_t offset)
+{
     return (value << offset) | (value >> (32 - offset));
 }
 
@@ -107,7 +108,8 @@ class HashState {
       Any information in (a, b, c) before mix() is still in (a, b, c) after
       mix().
     */
-    void mix() {
+    void mix()
+    {
         a -= c;
         a ^= rotate(c, 4);
         c += b;
@@ -134,7 +136,8 @@ class HashState {
       Triples of (a, b, c) differing in only a few bits will usually produce
       values of c that look totally different.
     */
-    void final_mix() {
+    void final_mix()
+    {
         c ^= b;
         c -= rotate(b, 14);
         a ^= c;
@@ -152,14 +155,10 @@ class HashState {
     }
 
 public:
-    HashState()
-        : a(0xdeadbeef),
-          b(a),
-          c(a),
-          pending_values(0) {
-    }
+    HashState() : a(0xdeadbeef), b(a), c(a), pending_values(0) {}
 
-    void feed(std::uint32_t value) {
+    void feed(std::uint32_t value)
+    {
         assert(pending_values != -1);
         if (pending_values == 3) {
             mix();
@@ -168,10 +167,12 @@ public:
         if (pending_values == 0) {
             a += value;
             ++pending_values;
-        } else if (pending_values == 1) {
+        }
+        else if (pending_values == 1) {
             b += value;
             ++pending_values;
-        } else if (pending_values == 2) {
+        }
+        else if (pending_values == 2) {
             c += value;
             ++pending_values;
         }
@@ -182,7 +183,8 @@ public:
       further, i.e., make further calls to feed, get_hash32 or get_hash64. We
       set pending_values = -1 to catch such illegal usage in debug mode.
     */
-    std::uint32_t get_hash32() {
+    std::uint32_t get_hash32()
+    {
         assert(pending_values != -1);
         if (pending_values) {
             /*
@@ -200,7 +202,8 @@ public:
     /*
       See comment for get_hash32.
     */
-    std::uint64_t get_hash64() {
+    std::uint64_t get_hash64()
+    {
         assert(pending_values != -1);
         if (pending_values) {
             // See comment for get_hash32.
@@ -218,47 +221,51 @@ public:
   To add hashing support for a user type X, provide an override
   for utils::feed(HashState &hash_state, const X &value).
 */
-static_assert(
-    sizeof(int) == sizeof(std::uint32_t),
-    "int and uint32_t have different sizes");
-inline void feed(HashState &hash_state, int value) {
+static_assert(sizeof(int) == sizeof(std::uint32_t), "int and uint32_t have different sizes");
+inline void feed(HashState &hash_state, int value)
+{
     hash_state.feed(static_cast<std::uint32_t>(value));
 }
 
-static_assert(
-    sizeof(unsigned int) == sizeof(std::uint32_t),
-    "unsigned int and uint32_t have different sizes");
-inline void feed(HashState &hash_state, unsigned int value) {
+static_assert(sizeof(unsigned int) == sizeof(std::uint32_t),
+              "unsigned int and uint32_t have different sizes");
+inline void feed(HashState &hash_state, unsigned int value)
+{
     hash_state.feed(static_cast<std::uint32_t>(value));
 }
 
-inline void feed(HashState &hash_state, std::uint64_t value) {
+inline void feed(HashState &hash_state, std::uint64_t value)
+{
     hash_state.feed(static_cast<std::uint32_t>(value));
     value >>= 32;
     hash_state.feed(static_cast<std::uint32_t>(value));
 }
 
-inline void feed(HashState &hash_state, long value) {
+inline void feed(HashState &hash_state, long value)
+{
     hash_state.feed(static_cast<std::uint32_t>(value));
     value >>= 32;
     hash_state.feed(static_cast<std::uint32_t>(value));
 }
 
 
-template<typename T>
-void feed(HashState &hash_state, const T *p) {
+template <typename T>
+void feed(HashState &hash_state, const T *p)
+{
     // This is wasteful in 32-bit mode, but we plan to discontinue 32-bit compiles anyway.
     feed(hash_state, reinterpret_cast<std::uint64_t>(p));
 }
 
-template<typename T1, typename T2>
-void feed(HashState &hash_state, const std::pair<T1, T2> &p) {
+template <typename T1, typename T2>
+void feed(HashState &hash_state, const std::pair<T1, T2> &p)
+{
     feed(hash_state, p.first);
     feed(hash_state, p.second);
 }
 
-template<typename T>
-void feed(HashState &hash_state, const std::vector<T> &vec) {
+template <typename T>
+void feed(HashState &hash_state, const std::vector<T> &vec)
+{
     /*
       Feed vector size to ensure that no two different vectors of the same type
       have the same code prefix.
@@ -273,8 +280,9 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
     }
 }
 
-template<>
-inline void feed(HashState &hash_state, const std::vector<unsigned long> &vec) { // unsigned long default definition of Block
+template <>
+inline void feed(HashState &hash_state, const std::vector<unsigned long> &vec)
+{  // unsigned long default definition of Block
     /*
       Feed vector size to ensure that no two different vectors of the same type
       have the same code prefix.
@@ -297,32 +305,75 @@ inline void feed(HashState &hash_state, const std::vector<unsigned long> &vec) {
   more exotic use cases, such as implementing a custom hash table, you can also
   use `get_hash32()`, `get_hash64()` and `get_hash()` directly.
 */
-template<typename T>
-std::uint32_t get_hash32(const T &value) {
+template <typename T>
+std::uint32_t get_hash32(const T &value)
+{
     HashState hash_state;
     feed(hash_state, value);
     return hash_state.get_hash32();
 }
 
-template<typename T>
-std::uint64_t get_hash64(const T &value) {
+template <typename T>
+std::uint64_t get_hash64(const T &value)
+{
     HashState hash_state;
     feed(hash_state, value);
     return hash_state.get_hash64();
 }
 
-template<typename T>
-std::size_t get_hash(const T &value) {
+template <typename T>
+std::size_t get_hash(const T &value)
+{
     return static_cast<std::size_t>(get_hash64(value));
 }
 
 
-// This struct should only be used by HashMap and HashSet below.
-template<typename T>
-struct Hash {
-    std::size_t operator()(const T &val) const {
-        return get_hash(val);
+/*
+  Standalone hash_combine and hash_range functions, replacing the
+  equivalent Boost utilities.
+
+  The constant 0x9e3779b9 is the integer part of 2^32 / phi, where
+  phi = (1 + sqrt(5)) / 2 is the golden ratio. This technique originates
+  from Knuth's multiplicative hashing (TAOCP Vol. 3, Sec. 6.4) and was
+  popularized by boost::hash_combine. The golden ratio ensures that
+  consecutive keys are spread as uniformly as possible across the hash
+  space. The additional shifts mix in high and low bits of the seed to
+  improve avalanche behavior.
+*/
+inline void hash_combine(std::size_t &seed, std::size_t value)
+{
+    seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+template <typename T>
+inline void hash_combine_value(std::size_t &seed, const T &value)
+{
+    hash_combine(seed, std::hash<T>{}(value));
+}
+
+template <typename It>
+inline std::size_t hash_range(It first, It last)
+{
+    std::size_t seed = 0;
+    for (; first != last; ++first) {
+        hash_combine(seed, std::hash<typename std::iterator_traits<It>::value_type>{}(*first));
     }
+    return seed;
+}
+
+// This struct should only be used by HashMap and HashSet below.
+template <typename T>
+struct Hash {
+    std::size_t operator()(const T &val) const { return get_hash(val); }
+};
+
+/*
+  Generic hasher that calls utils::hash_range on containers (e.g. vector<int>).
+  Use as a drop-in replacement for boost::hash<std::vector<T>>.
+*/
+template <typename T>
+struct VectorHash {
+    std::size_t operator()(const std::vector<T> &v) const { return hash_range(v.begin(), v.end()); }
 };
 
 /*
@@ -333,12 +384,12 @@ struct Hash {
 
   To hash types that are not supported out of the box, implement utils::feed.
 */
-template<typename T1, typename T2>
+template <typename T1, typename T2>
 using HashMap = std::unordered_map<T1, T2, Hash<T1>>;
 
-template<typename T>
+template <typename T>
 using HashSet = std::unordered_set<T, Hash<T>>;
-}
+}  // namespace utils
 
 
-#endif //SEARCH_HASH_H
+#endif  // SEARCH_HASH_H

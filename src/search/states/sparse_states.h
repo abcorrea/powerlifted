@@ -1,13 +1,11 @@
 #ifndef SEARCH_SPARSE_STATES_H
 #define SEARCH_SPARSE_STATES_H
 
+#include "../structures.h"
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <vector>
-#include <boost/functional/hash/hash.hpp>
-
-#include "../structures.h"
 
 #include "../parallel_hashmap/phmap.h"
 #include "../utils/hash.h"
@@ -35,19 +33,16 @@ public:
     std::vector<int> packed_relations;
     std::vector<bool> nullary_atoms;
 
-    int get_number_objects() const {
-        return num_objects;
-    }
+    int get_number_objects() const { return num_objects; }
 
     bool operator==(const SparsePackedState &b) const;
 
     using HashT = PackedStateHash;
-
 };
 
 class PackedStateHash {
 public:
-    unsigned operator() (const SparsePackedState &s) const;
+    unsigned operator()(const SparsePackedState &s) const;
 };
 
 
@@ -62,7 +57,8 @@ public:
     SparsePackedState pack(const DBState &state);
     DBState unpack(const SparsePackedState &packed_state) const;
 
-    phmap::flat_hash_map<std::pair<int, GroundAtom>, int, utils::Hash<std::pair<int, GroundAtom>>> atom_index;
+    phmap::flat_hash_map<std::pair<int, GroundAtom>, int, utils::Hash<std::pair<int, GroundAtom>>>
+        atom_index;
     phmap::flat_hash_map<int, std::pair<int, GroundAtom>> index_to_atom;
     int next_idx;
 
@@ -72,8 +68,7 @@ private:
     std::pair<int, GroundAtom> unpack_tuple(int index) const;
 
     int num_predicates;
-
 };
 
 
-#endif //SEARCH_SPARSE_STATES_H
+#endif  // SEARCH_SPARSE_STATES_H

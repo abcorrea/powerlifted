@@ -1,8 +1,6 @@
 #ifndef ALGORITHMS_DYNAMIC_BITSET_H
 #define ALGORITHMS_DYNAMIC_BITSET_H
 
-#include <boost/functional/hash.hpp>
-
 #include "../utils/hash.h"
 #include <cassert>
 #include <functional>
@@ -16,7 +14,7 @@
 
 namespace dynamic_bitset {
 
-template<typename Block = unsigned long>
+template <typename Block = unsigned long>
 class DynamicBitset {
     static_assert(!std::numeric_limits<Block>::is_signed, "Block type must be unsigned");
 
@@ -28,27 +26,21 @@ class DynamicBitset {
 
     static const int bits_per_block = std::numeric_limits<Block>::digits;
 
-    static int compute_num_blocks(std::size_t num_bits) {
+    static int compute_num_blocks(std::size_t num_bits)
+    {
         return num_bits / bits_per_block + static_cast<int>(num_bits % bits_per_block != 0);
     }
 
-    static std::size_t block_index(std::size_t pos) {
-        return pos / bits_per_block;
-    }
+    static std::size_t block_index(std::size_t pos) { return pos / bits_per_block; }
 
-    static std::size_t bit_index(std::size_t pos) {
-        return pos % bits_per_block;
-    }
+    static std::size_t bit_index(std::size_t pos) { return pos % bits_per_block; }
 
-    static Block bit_mask(std::size_t pos) {
-        return Block(1) << bit_index(pos);
-    }
+    static Block bit_mask(std::size_t pos) { return Block(1) << bit_index(pos); }
 
-    int count_bits_in_last_block() const {
-        return bit_index(num_bits);
-    }
+    int count_bits_in_last_block() const { return bit_index(num_bits); }
 
-    void zero_unused_bits() {
+    void zero_unused_bits()
+    {
         const int bits_in_last_block = count_bits_in_last_block();
 
         if (bits_in_last_block != 0) {
@@ -59,13 +51,11 @@ class DynamicBitset {
 
 public:
     explicit DynamicBitset(std::size_t num_bits)
-        : blocks(compute_num_blocks(num_bits), zeros),
-          num_bits(num_bits) {
+        : blocks(compute_num_blocks(num_bits), zeros), num_bits(num_bits)
+    {
     }
 
-    std::size_t size() const {
-        return num_bits;
-    }
+    std::size_t size() const { return num_bits; }
 
     /*
       Count the number of set bits.
@@ -73,43 +63,45 @@ public:
       The computation could be made faster by using a more sophisticated
       algorithm (see https://en.wikipedia.org/wiki/Hamming_weight).
     */
-    int count() const {
-        int result = 0;
+    std::size_t count() const
+    {
+        std::size_t result = 0;
         for (std::size_t pos = 0; pos < num_bits; ++pos) {
-            result += static_cast<int>(test(pos));
+            result += static_cast<std::size_t>(test(pos));
         }
         return result;
     }
 
-    void set() {
+    void set()
+    {
         std::fill(blocks.begin(), blocks.end(), ones);
         zero_unused_bits();
     }
 
-    void reset() {
-        std::fill(blocks.begin(), blocks.end(), zeros);
-    }
+    void reset() { std::fill(blocks.begin(), blocks.end(), zeros); }
 
-    void set(std::size_t pos) {
+    void set(std::size_t pos)
+    {
         assert(pos < num_bits);
         blocks[block_index(pos)] |= bit_mask(pos);
     }
 
-    void reset(std::size_t pos) {
+    void reset(std::size_t pos)
+    {
         assert(pos < num_bits);
         blocks[block_index(pos)] &= ~bit_mask(pos);
     }
 
-    bool test(std::size_t pos) const {
+    bool test(std::size_t pos) const
+    {
         assert(pos < num_bits);
         return (blocks[block_index(pos)] & bit_mask(pos)) != 0;
     }
 
-    bool operator[](std::size_t pos) const {
-        return test(pos);
-    }
+    bool operator[](std::size_t pos) const { return test(pos); }
 
-    bool intersects(const DynamicBitset &other) const {
+    bool intersects(const DynamicBitset &other) const
+    {
         assert(size() == other.size());
         for (std::size_t i = 0; i < blocks.size(); ++i) {
             if (blocks[i] & other.blocks[i])
@@ -118,7 +110,8 @@ public:
         return false;
     }
 
-    bool is_subset_of(const DynamicBitset &other) const {
+    bool is_subset_of(const DynamicBitset &other) const
+    {
         assert(size() == other.size());
         for (std::size_t i = 0; i < blocks.size(); ++i) {
             if (blocks[i] & ~other.blocks[i])
@@ -127,70 +120,133 @@ public:
         return true;
     }
 
-    template<typename B>
-    friend bool operator==(
-        const dynamic_bitset::DynamicBitset<B>& a,
-        const dynamic_bitset::DynamicBitset<B>& b);
+    bool any() const
+    {
+        for (const Block &b : blocks) {
+            if (b != zeros)
+                return true;
+        }
+        return false;
+    }
 
-    template<typename B>
-    friend void utils::feed(utils::HashState &hash_state, const dynamic_bitset::DynamicBitset<B>& a);
+    std::size_t find_first() const
+    {
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+            if (blocks[i] != zeros) {
+                std::size_t pos = i * bits_per_block;
+                Block b = blocks[i];
+                while (!(b & Block(1))) {
+                    b >>= 1;
+                    ++pos;
+                }
+                return pos < num_bits ? pos : num_bits;
+            }
+        }
+        return num_bits;
+    }
 
-    template<typename B>
-    friend std::size_t hash_value(const dynamic_bitset::DynamicBitset<B>& a);
+    std::size_t find_next(std::size_t prev) const
+    {
+        if (prev + 1 >= num_bits)
+            return num_bits;
+        std::size_t pos = prev + 1;
+        std::size_t bi = block_index(pos);
+        // Check remaining bits in the current block
+        Block b = blocks[bi] >> bit_index(pos);
+        if (b != zeros) {
+            while (!(b & Block(1))) {
+                b >>= 1;
+                ++pos;
+            }
+            return pos < num_bits ? pos : num_bits;
+        }
+        // Scan subsequent blocks
+        for (std::size_t i = bi + 1; i < blocks.size(); ++i) {
+            if (blocks[i] != zeros) {
+                pos = i * bits_per_block;
+                Block blk = blocks[i];
+                while (!(blk & Block(1))) {
+                    blk >>= 1;
+                    ++pos;
+                }
+                return pos < num_bits ? pos : num_bits;
+            }
+        }
+        return num_bits;
+    }
+
+    DynamicBitset &operator&=(const DynamicBitset &other)
+    {
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+            blocks[i] &= other.blocks[i];
+        }
+        return *this;
+    }
+
+    template <typename B>
+    friend bool operator==(const dynamic_bitset::DynamicBitset<B> &a,
+                           const dynamic_bitset::DynamicBitset<B> &b);
+
+    template <typename B>
+    friend void utils::feed(utils::HashState &hash_state,
+                            const dynamic_bitset::DynamicBitset<B> &a);
+
+    template <typename B>
+    friend std::size_t hash_value(const dynamic_bitset::DynamicBitset<B> &a);
 };
 
-template<typename Block>
-inline bool operator==(
-    const dynamic_bitset::DynamicBitset<Block>& a,
-    const dynamic_bitset::DynamicBitset<Block>& b)
+template <typename Block>
+inline bool operator==(const dynamic_bitset::DynamicBitset<Block> &a,
+                       const dynamic_bitset::DynamicBitset<Block> &b)
 {
     return a.num_bits == b.num_bits && a.blocks == b.blocks;
 }
 
-template<typename Block>
-inline bool operator!=(
-    const dynamic_bitset::DynamicBitset<Block>& a,
-    const dynamic_bitset::DynamicBitset<Block>& b)
+template <typename Block>
+inline bool operator!=(const dynamic_bitset::DynamicBitset<Block> &a,
+                       const dynamic_bitset::DynamicBitset<Block> &b)
 {
     return !operator==(a, b);
 }
 
-template<typename Block>
+template <typename Block>
 const Block DynamicBitset<Block>::zeros = Block(0);
 
-template<typename Block>
+template <typename Block>
 // MSVC's bitwise negation always returns a signed type.
 const Block DynamicBitset<Block>::ones = Block(~Block(0));
 
-// Overload to be used by boost::hash
-template<typename Block>
-size_t hash_value(const dynamic_bitset::DynamicBitset<Block>& a) {
-    size_t res = boost::hash_value(a.num_bits);
-    boost::hash_combine(res, a.blocks);
+template <typename Block>
+size_t hash_value(const dynamic_bitset::DynamicBitset<Block> &a)
+{
+    size_t res = std::hash<size_t>{}(a.num_bits);
+    utils::hash_combine(res, utils::hash_range(a.blocks.begin(), a.blocks.end()));
     return res;
 }
-}
+}  // namespace dynamic_bitset
 
 
 // Overload std::hash
 namespace std {
-template<typename Block>
-struct hash<dynamic_bitset::DynamicBitset<Block>>
-{
-    std::size_t operator()(const dynamic_bitset::DynamicBitset<Block>& a) const {
+template <typename Block>
+struct hash<dynamic_bitset::DynamicBitset<Block>> {
+    std::size_t operator()(const dynamic_bitset::DynamicBitset<Block> &a) const
+    {
         return dynamic_bitset::hash_value(a);
     }
 };
-}
+}  // namespace std
 
 // Overload our own utils::feed hashing
 namespace utils {
-template<typename Block>
-void feed(HashState &hash_state, const dynamic_bitset::DynamicBitset<Block>& a) {
+template <typename Block>
+void feed(HashState &hash_state, const dynamic_bitset::DynamicBitset<Block> &a)
+{
     feed(hash_state, static_cast<uint64_t>(a.num_bits));
     feed(hash_state, a.blocks);
 }
-}
+}  // namespace utils
 
 /*
 This source file was derived from the boost::dynamic_bitset library

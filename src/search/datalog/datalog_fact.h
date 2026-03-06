@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include <boost/functional/hash.hpp>
+#include "../utils/hash.h"
 
-namespace  datalog {
+namespace datalog {
 
 /*
  *
@@ -29,87 +29,70 @@ class Fact : public DatalogAtom {
     int fact_index;
     int cost;
     Achievers achievers;
-public:
 
+public:
     static int next_fact_index;
 
-    Fact(Arguments arguments, int predicate_index, bool new_pred) :
-        DatalogAtom(std::move(arguments), predicate_index, new_pred) {
+    Fact(Arguments arguments, int predicate_index, bool new_pred)
+        : DatalogAtom(std::move(arguments), predicate_index, new_pred)
+    {
         // Every fact starts with a fact of -1 and then we set it to a proper value
         // if the fact was not previously reached.
         fact_index = -1;
         cost = 0;
     }
 
-    Fact(Arguments arguments, int predicate_index, int cost, bool new_pred) :
-        DatalogAtom(std::move(arguments), predicate_index, new_pred), cost(cost) {
+    Fact(Arguments arguments, int predicate_index, int cost, bool new_pred)
+        : DatalogAtom(std::move(arguments), predicate_index, new_pred), cost(cost)
+    {
         // See comment in constructor above
         fact_index = -1;
     }
 
-    Fact(Arguments arguments, int predicate_index, int cost, Achievers achievers, bool new_pred) :
-        DatalogAtom(std::move(arguments), predicate_index, new_pred), cost(cost), achievers(std::move(achievers)) {
+    Fact(Arguments arguments, int predicate_index, int cost, Achievers achievers, bool new_pred)
+        : DatalogAtom(std::move(arguments), predicate_index, new_pred),
+          cost(cost),
+          achievers(std::move(achievers))
+    {
         // See comment in constructor above
         fact_index = -1;
     }
-
 
 
     /*
      * The function below compares if two facts are equal. We do not care about
      * fact_index because they are not set in the point of comparison.
      */
-    friend bool operator==(const Fact &a, const Fact &b) {
-        return a.get_predicate_index() == b.get_predicate_index() && a.get_arguments() == b.get_arguments();
+    friend bool operator==(const Fact &a, const Fact &b)
+    {
+        return a.get_predicate_index() == b.get_predicate_index() &&
+               a.get_arguments() == b.get_arguments();
     }
 
-    void set_fact_index() {
-        fact_index = next_fact_index++;
-    }
+    void set_fact_index() { fact_index = next_fact_index++; }
 
-    void update_fact_index(int i) {
-        fact_index = i;
-    }
+    void update_fact_index(int i) { fact_index = i; }
 
-    int get_fact_index() const {
-        return fact_index;
-    }
+    int get_fact_index() const { return fact_index; }
 
-    static int get_next_fact_index() {
-        return next_fact_index;
-    }
+    static int get_next_fact_index() { return next_fact_index; }
 
-    static void reset_global_fact_index(int j) {
-        next_fact_index = j;
-    }
+    static void reset_global_fact_index(int j) { next_fact_index = j; }
 
-    int get_cost() const {
-        return cost;
-    }
+    int get_cost() const { return cost; }
 
-    const Achievers &get_achievers() const {
-        return achievers;
-    }
+    const Achievers &get_achievers() const { return achievers; }
 
-    void update_achievers(Achievers a) {
-        achievers = std::move(a);
-    }
+    void update_achievers(Achievers a) { achievers = std::move(a); }
 
-    const Achievers &get_achiever_body() const {
-        return achievers;
-    }
+    const Achievers &get_achiever_body() const { return achievers; }
 
-    int get_achiever_rule_index() const {
-        return achievers.get_achiever_rule_index();
-    }
+    int get_achiever_rule_index() const { return achievers.get_achiever_rule_index(); }
 
-    void set_cost(int new_cost) {
-        cost = new_cost;
-    }
-
+    void set_cost(int new_cost) { cost = new_cost; }
 };
 
-}
+}  // namespace datalog
 
 
 /*
@@ -117,14 +100,15 @@ public:
  *
  * TODO maybe change it for hash of atoms?
  */
-template<>
+template <>
 struct std::hash<datalog::Fact> {
     // See comment of operator==
-    std::size_t operator()(const datalog::Fact &f) const {
-        std::size_t seed = boost::hash_range(f.get_arguments().begin(), f.get_arguments().end());
-        boost::hash_combine(seed, f.get_predicate_index());
+    std::size_t operator()(const datalog::Fact &f) const
+    {
+        std::size_t seed = utils::hash_range(f.get_arguments().begin(), f.get_arguments().end());
+        utils::hash_combine(seed, std::hash<int>{}(f.get_predicate_index()));
         return seed;
     }
 };
 
-#endif //GROUNDER__FACT_H_
+#endif  // GROUNDER__FACT_H_

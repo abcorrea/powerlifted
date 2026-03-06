@@ -9,33 +9,33 @@
 
 #include "datalog_transformation_options.h"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
-#include <boost/algorithm/string.hpp>
+#include "../utils/string_utils.h"
 
 Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
 {
-    const std::string& method = opt.get_evaluator();
+    const std::string &method = opt.get_evaluator();
 
     std::cout << "Creating heuristic factory..." << std::endl;
 
-    if (boost::iequals(method, "blind")) {
+    if (utils::iequals(method, "blind")) {
         return new BlindHeuristic();
     }
-    else if (boost::iequals(method, "add")) {
+    else if (utils::iequals(method, "add")) {
         return new AdditiveHeuristic(task, DatalogTransformationOptions());
     }
-    else if (boost::iequals(method, "ff")) {
+    else if (utils::iequals(method, "ff")) {
         return new FFHeuristic(task, DatalogTransformationOptions());
     }
-    else if (boost::iequals(method, "goalcount")) {
+    else if (utils::iequals(method, "goalcount")) {
         return new Goalcount();
     }
-    else if (boost::iequals(method, "hmax")) {
+    else if (utils::iequals(method, "hmax")) {
         return new HMaxHeuristic(task, DatalogTransformationOptions());
     }
-    else if (boost::iequals(method, "rff")) {
+    else if (utils::iequals(method, "rff")) {
         return new RFFHeuristic(task, DatalogTransformationOptions());
     }
     else {
@@ -44,18 +44,19 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
     }
 }
 
-Heuristic *HeuristicFactory::create_delete_free_heuristic(const std::string &method, const Task &task)
+Heuristic *HeuristicFactory::create_delete_free_heuristic(const std::string &method,
+                                                          const Task &task)
 {
-    if (boost::iequals(method, "add")) {
+    if (utils::iequals(method, "add")) {
         return new AdditiveHeuristic(task);
     }
-    else if (boost::iequals(method, "ff")) {
+    else if (utils::iequals(method, "ff")) {
         return new FFHeuristic(task);
     }
-    else if (boost::iequals(method, "hmax")) {
+    else if (utils::iequals(method, "hmax")) {
         return new HMaxHeuristic(task, DatalogTransformationOptions());
     }
-    else if (boost::iequals(method, "rff")) {
+    else if (utils::iequals(method, "rff")) {
         return new RFFHeuristic(task);
     }
     else {

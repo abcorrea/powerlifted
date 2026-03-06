@@ -8,8 +8,8 @@
 #include "../states/state.h"
 #include "../task.h"
 
+#include "../algorithms/dynamic_bitset.h"
 #include <algorithm>
-#include <boost/dynamic_bitset.hpp>
 #include <map>
 #include <set>
 #include <unordered_map>
@@ -23,7 +23,8 @@ struct Assignment {
     int object_index;
 
     Assignment(int parameter_index, int object_index)
-        : parameter_index(parameter_index), object_index(object_index) {
+        : parameter_index(parameter_index), object_index(object_index)
+    {
     }
 };
 
@@ -40,7 +41,8 @@ struct AssignmentPair {
         : first_position(first_position),
           second_position(second_position),
           first_assignment(first_assignment),
-          second_assignment(second_assignment) {
+          second_assignment(second_assignment)
+    {
     }
 };
 
@@ -53,7 +55,8 @@ struct Precondition {
                  const std::vector<Atom> &dynamic_preconds)
         : static_preconds(static_preconds),
           dynamic_preconds(dynamic_preconds),
-          dynamic_preconds_with_constants() {
+          dynamic_preconds_with_constants()
+    {
         std::sort(this->dynamic_preconds.begin(),
                   this->dynamic_preconds.end(),
                   [](const Atom &lhs, const Atom &rhs) -> bool {
@@ -99,22 +102,24 @@ enum CliquePivot {
 };
 
 /*
-* This inheritance is a bit unfortunate, and the original code
-* inherited from SuccessorGenerator. However, this caused a huge
-* amount of duplicated code (~200 lines) to apply the effects
-* of an action after instantiated.
-* Because the object creation support makes this part of the code
-* more relevant, we want to avoid this duplication, as we expect
-* it will be more prone to changes in the future.
-*/
+ * This inheritance is a bit unfortunate, and the original code
+ * inherited from SuccessorGenerator. However, this caused a huge
+ * amount of duplicated code (~200 lines) to apply the effects
+ * of an action after instantiated.
+ * Because the object creation support makes this part of the code
+ * more relevant, we want to avoid this duplication, as we expect
+ * it will be more prone to changes in the future.
+ */
 class CliqueSuccessorGenerator : public GenericJoinSuccessor {
 private:
     const Task &task;
     const CliquePivot pivot;
-    std::unordered_map<ActionSchema, std::unordered_map<Parameter, std::set<Object>>> action_objects_by_parameter_type;
+    std::unordered_map<ActionSchema, std::unordered_map<Parameter, std::set<Object>>>
+        action_objects_by_parameter_type;
     std::unordered_map<ActionSchema, std::vector<Assignment>> action_to_vertex_assignment;
     std::unordered_map<ActionSchema, std::vector<std::vector<std::size_t>>> action_partitions;
-    std::unordered_map<ActionSchema, std::vector<AssignmentPair>> action_statically_consistent_assignments;
+    std::unordered_map<ActionSchema, std::vector<AssignmentPair>>
+        action_statically_consistent_assignments;
     std::unordered_map<ActionSchema, Precondition> action_precondition;
 
     // Cache certain data-structures to avoid dynamic allocations
@@ -130,17 +135,19 @@ private:
 
     bool test_nullary_preconditions(const ActionSchema &action, const DBState &state);
 
-    std::vector<uint32_t> create_adjacency_list(const Precondition &preconds,
-                                                const std::vector<AssignmentPair> &statically_consistent_assignments,
-                                                std::size_t num_parameters,
-                                                std::vector<uint32_t> *adjacency_list,
-                                                std::size_t num_vertices);
+    std::vector<uint32_t>
+    create_adjacency_list(const Precondition &preconds,
+                          const std::vector<AssignmentPair> &statically_consistent_assignments,
+                          std::size_t num_parameters,
+                          std::vector<uint32_t> *adjacency_list,
+                          std::size_t num_vertices);
 
-    void create_adjacency_matrix(const Precondition &preconds,
-                                 const std::vector<AssignmentPair> &statically_consistent_assignments,
-                                 std::size_t num_parameters,
-                                 std::size_t num_vertices,
-                                 std::vector<boost::dynamic_bitset<>> &adjacency_matrix);
+    void
+    create_adjacency_matrix(const Precondition &preconds,
+                            const std::vector<AssignmentPair> &statically_consistent_assignments,
+                            std::size_t num_parameters,
+                            std::size_t num_vertices,
+                            std::vector<dynamic_bitset::DynamicBitset<>> &adjacency_matrix);
 
     std::vector<LiftedOperatorId> applicable_actions_nullary_case(const ActionSchema &action,
                                                                   const DBState &state);
@@ -160,7 +167,7 @@ public:
     std::vector<LiftedOperatorId> get_applicable_actions(const ActionSchema &action,
                                                          const DBState &state) override;
 
-    //const GroundAtom tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
+    // const GroundAtom tuple_to_atom(const std::vector<int> &tuple, const Atom &eff);
 
     // void apply_nullary_effects(const ActionSchema &action, std::vector<bool> &new_nullary_atoms);
 

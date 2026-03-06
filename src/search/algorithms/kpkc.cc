@@ -2,13 +2,15 @@
 
 namespace algorithms {
 
-bool find_all_k_cliques_in_k_partite_graph_helper(const std::vector<boost::dynamic_bitset<>> &adjacency_matrix,
-                                                  const std::vector<std::vector<size_t>> &partitions,
-                                                  std::vector<boost::dynamic_bitset<>> &compatible_vertices,
-                                                  boost::dynamic_bitset<> &partition_bits,
-                                                  boost::dynamic_bitset<> &not_partition_bits,
-                                                  std::vector<uint32_t> &partial_solution,
-                                                  std::vector<std::vector<uint32_t>> &out_cliques) {
+bool find_all_k_cliques_in_k_partite_graph_helper(
+    const std::vector<DynBitset> &adjacency_matrix,
+    const std::vector<std::vector<size_t>> &partitions,
+    std::vector<DynBitset> &compatible_vertices,
+    DynBitset &partition_bits,
+    DynBitset &not_partition_bits,
+    std::vector<uint32_t> &partial_solution,
+    std::vector<std::vector<uint32_t>> &out_cliques)
+{
     size_t k = partitions.size();
     size_t best_set_bits = std::numeric_limits<size_t>::max();
     size_t best_partition = std::numeric_limits<size_t>::max();
@@ -28,7 +30,7 @@ bool find_all_k_cliques_in_k_partite_graph_helper(const std::vector<boost::dynam
     // Iterate through compatible vertices in the best partition
     while (adjacent_index < compatible_vertices[best_partition].size()) {
         size_t vertex = partitions[best_partition][adjacent_index];
-        compatible_vertices[best_partition][adjacent_index] = 0;
+        compatible_vertices[best_partition].reset(adjacent_index);
         partial_solution.push_back(static_cast<uint32_t>(vertex));
 
         if (partial_solution.size() == k) {
@@ -36,21 +38,22 @@ bool find_all_k_cliques_in_k_partite_graph_helper(const std::vector<boost::dynam
         }
         else {
             // Update compatible vertices for the next recursion
-            std::vector<boost::dynamic_bitset<>> compatible_vertices_next = compatible_vertices;
+            std::vector<DynBitset> compatible_vertices_next = compatible_vertices;
             size_t offset = 0;
             for (size_t partition = 0; partition < k; ++partition) {
                 const auto partition_size = compatible_vertices_next[partition].size();
                 if (not_partition_bits[partition]) {
                     for (size_t index = 0; index < partition_size; ++index) {
-                        compatible_vertices_next[partition][index] &=
-                            adjacency_matrix[vertex][index + offset];
+                        if (!adjacency_matrix[vertex][index + offset]) {
+                            compatible_vertices_next[partition].reset(index);
+                        }
                     }
                 }
                 offset += partition_size;
             }
 
-            partition_bits[best_partition] = 1;
-            not_partition_bits[best_partition] = 0;
+            partition_bits.set(best_partition);
+            not_partition_bits.reset(best_partition);
 
             size_t possible_additions = 0;
             for (size_t partition = 0; partition < k; ++partition) {
@@ -71,8 +74,8 @@ bool find_all_k_cliques_in_k_partite_graph_helper(const std::vector<boost::dynam
                 }
             }
 
-            partition_bits[best_partition] = 0;
-            not_partition_bits[best_partition] = 1;
+            partition_bits.reset(best_partition);
+            not_partition_bits.set(best_partition);
         }
 
         partial_solution.pop_back();
@@ -82,20 +85,21 @@ bool find_all_k_cliques_in_k_partite_graph_helper(const std::vector<boost::dynam
     return true;
 }
 
-bool find_all_k_cliques_in_k_partite_graph(const std::vector<boost::dynamic_bitset<>> &adjacency_matrix,
+bool find_all_k_cliques_in_k_partite_graph(const std::vector<DynBitset> &adjacency_matrix,
                                            const std::vector<std::vector<size_t>> &partitions,
-                                           std::vector<std::vector<uint32_t>> &out_cliques) {
-    std::vector<boost::dynamic_bitset<>> compatible_vertices;
+                                           std::vector<std::vector<uint32_t>> &out_cliques)
+{
+    std::vector<DynBitset> compatible_vertices;
 
     for (std::size_t index = 0; index < partitions.size(); ++index) {
-        boost::dynamic_bitset<> bitset(partitions[index].size());
+        DynBitset bitset(partitions[index].size());
         bitset.set();
         compatible_vertices.push_back(std::move(bitset));
     }
 
     const size_t k = partitions.size();
-    boost::dynamic_bitset<> partition_bits(k);
-    boost::dynamic_bitset<> not_partition_bits(k);
+    DynBitset partition_bits(k);
+    DynBitset not_partition_bits(k);
     partition_bits.reset();
     not_partition_bits.set();
     std::vector<uint32_t> partial_solution;

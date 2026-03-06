@@ -174,7 +174,6 @@ Apptainer image:
  - A C++17-compliant compiler
  - CMake 3.9+
  - Python 3.5+
- - Boost
 
 ## Limitations
  - **Axioms**: not supported

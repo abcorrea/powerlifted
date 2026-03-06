@@ -13,9 +13,7 @@ RUN apt-get update && \
         make \
         build-essential \
         python3-dev \
-        autotools-dev \
-        libboost-all-dev=1.74.0.3ubuntu7 \
-        libboost-program-options1.74-dev
+        autotools-dev
 
 
 # Install Powerlifted
@@ -34,8 +32,7 @@ WORKDIR /powerlifted
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
-        python3 \
-        libboost-program-options1.74-dev && \
+        python3 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /powerlifted /powerlifted

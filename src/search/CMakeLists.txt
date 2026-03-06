@@ -8,12 +8,6 @@ if (CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES Debug Release)
 endif ()
 
-find_package(Boost COMPONENTS program_options REQUIRED CONFIG)
-if (Boost_FOUND)
-    add_definitions( "-DHAS_BOOST" )
-endif()
-
-
 set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor")
 
 if (APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -136,6 +130,5 @@ add_executable(search
         heuristics/add_heuristic.h heuristics/utils.h heuristics/utils.cc
         datalog/transformations/remove_equivalent_rules.h datalog/transformations/connected_components.h
         datalog/transformations/variable_projection.h datalog/transformations/variable_renaming.h heuristics/hmax_heuristic.cc heuristics/hmax_heuristic.h
-        parallel_hashmap/phmap.h)
-
-target_link_libraries(search LINK_PUBLIC ${Boost_LIBRARIES})
+        parallel_hashmap/phmap.h
+        utils/string_utils.h)

@@ -1,9 +1,10 @@
 #ifndef GROUNDER_TERM_H
 #define GROUNDER_TERM_H
 
-#include <boost/functional/hash.hpp>
+#include <cstddef>
+#include <functional>
 
-namespace  datalog {
+namespace datalog {
 
 enum TERM_TYPES { OBJECT, VARIABLE };
 
@@ -16,36 +17,35 @@ public:
 
     Term(int i, int t) : index(i), type(t) {}
 
-    int get_index() const {
-        return index;
-    }
+    int get_index() const { return index; }
 
-    bool is_object() const {
-        return (type==OBJECT);
-    }
+    bool is_object() const { return (type == OBJECT); }
 
-    void set_term_to_object(int j) {
+    void set_term_to_object(int j)
+    {
         index = j;
         type = OBJECT;
     }
 
-    friend std::size_t hash_value(const Term &t) {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, t.get_index());
-        boost::hash_combine(seed, t.is_object());
-        return seed;
+    friend bool operator==(const Term &lhs, const Term &rhs)
+    {
+        return ((lhs.get_index() == rhs.get_index()) and (lhs.is_object() == rhs.is_object()));
     }
 
-    friend bool operator==(const Term &lhs, const Term &rhs) {
-        return ((lhs.get_index()==rhs.get_index()) and (lhs.is_object()==rhs.is_object()));
-    }
-
-    friend bool operator!=(const Term &lhs, const Term &rhs) {
-        return (!(lhs==rhs));
-    }
-
+    friend bool operator!=(const Term &lhs, const Term &rhs) { return (!(lhs == rhs)); }
 };
 
-}
+}  // namespace datalog
 
-#endif //GROUNDER_TERM_H
+template <>
+struct std::hash<datalog::Term> {
+    std::size_t operator()(const datalog::Term &t) const
+    {
+        std::size_t seed = std::hash<int>{}(t.get_index());
+        // 0x9e3779b9 = 2^32 / phi (golden ratio); see Knuth TAOCP Vol. 3, Sec. 6.4
+        seed ^= std::hash<bool>{}(t.is_object()) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+};
+
+#endif  // GROUNDER_TERM_H

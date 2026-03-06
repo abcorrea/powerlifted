@@ -3,6 +3,7 @@
 
 #include "term.h"
 
+#include <cassert>
 #include <vector>
 
 namespace datalog {
@@ -13,8 +14,8 @@ class Arguments {
 public:
     Arguments() = default;
 
-    explicit
-    Arguments(const std::vector<std::pair<int, int>> &args) {
+    explicit Arguments(const std::vector<std::pair<int, int>> &args)
+    {
         for (const auto &p : args) {
             arguments.emplace_back(p.first, p.second);
         }
@@ -22,52 +23,42 @@ public:
 
     explicit Arguments(std::vector<Term> &&args) : arguments(args) {}
 
-    Term operator[](size_t i) const {
+    Term operator[](size_t i) const
+    {
         assert(i < arguments.size());
         return arguments[i];
     }
 
-    std::vector<Term>::const_iterator begin() const {
-        return arguments.begin();
-    }
+    std::vector<Term>::const_iterator begin() const { return arguments.begin(); }
 
-    std::vector<Term>::const_iterator end() const {
-        return arguments.end();
-    }
+    std::vector<Term>::const_iterator end() const { return arguments.end(); }
 
-    size_t size() const {
-        return arguments.size();
-    }
+    size_t size() const { return arguments.size(); }
 
-    void push_back(int i, int j) {
-        arguments.emplace_back(i, j);
-    };
+    void push_back(int i, int j) { arguments.emplace_back(i, j); };
 
-    void set_term_to_object(int i, int j) {
-        arguments[i].set_term_to_object(j);
-    }
+    void set_term_to_object(int i, int j) { arguments[i].set_term_to_object(j); }
 
-    bool is_object(std::size_t i) const {
-        return arguments[i].is_object();
-    }
+    bool is_object(std::size_t i) const { return arguments[i].is_object(); }
 
-    bool operator==(const Arguments &b) const {
-        return arguments == b.arguments;
-    }
+    bool operator==(const Arguments &b) const { return arguments == b.arguments; }
 
-    bool operator!=(const Arguments &b) const {
-        return not (arguments == b.arguments);
-    }
-
+    bool operator!=(const Arguments &b) const { return not(arguments == b.arguments); }
 };
 
 class HashArguments {
 public:
-    std::size_t operator()(const Arguments &f) const {
-        return boost::hash_range(f.begin(), f.end());
+    std::size_t operator()(const Arguments &f) const
+    {
+        // 0x9e3779b9 = 2^32 / phi (golden ratio); see Knuth TAOCP Vol. 3, Sec. 6.4
+        std::size_t seed = 0;
+        for (auto it = f.begin(); it != f.end(); ++it) {
+            seed ^= std::hash<Term>{}(*it) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        return seed;
     }
 };
 
-}
+}  // namespace datalog
 
-#endif //GROUNDER_ARGUMENTS_H
+#endif  // GROUNDER_ARGUMENTS_H
