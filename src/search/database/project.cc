@@ -25,16 +25,15 @@ void project(Table &t, const std::unordered_set<int> &over) {
     unordered_set<vector<int>, TupleHash> keys;
     vector<vector<int>> new_tuples;
 
-    for (const vector<int> &tuple : t.tuples) {
-        vector<int> key(matches.size());
-        for (size_t i = 0; i < matches.size(); i++) {
+    vector<int> key(matches.size());
+    for (const auto &tuple : t.tuples) {
+        for (size_t i = 0; i < matches.size(); ++i) {
             key[i] = tuple[matches[i]];
         }
-        if (keys.count(key) == 0) {
-            keys.insert(key);
+        if (keys.insert(key).second) {
             new_tuples.push_back(tuple);
         }
     }
 
-    t.tuples = new_tuples;
+    t.tuples = std::move(new_tuples);
 }
