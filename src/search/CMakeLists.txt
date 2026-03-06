@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.14)
 project(search LANGUAGES CXX)
 
+# --- ccache support ---
+
+find_program(CCACHE_PROGRAM ccache)
+if (CCACHE_PROGRAM)
+    message(STATUS "Found ccache: ${CCACHE_PROGRAM}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
 # --- Source files ---
 
 set(CORE_SOURCES
