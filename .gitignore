@@ -2,6 +2,7 @@
 /*pddl
 *~
 *.pyc
+dev/*json
 src/search/config
 src/search/latex
 src/search/html
