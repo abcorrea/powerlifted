@@ -50,7 +50,6 @@ add_executable(search
         action.cc action.h
         successor_generators/successor_generator.h
         database/table.cc database/table.h
-        database/join.cc database/join.h
         database/utils.cc database/utils.h
         heuristics/goalcount.cc  heuristics/goalcount.h
         heuristics/heuristic.h
