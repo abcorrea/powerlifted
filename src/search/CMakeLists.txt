@@ -27,7 +27,6 @@ set(DATABASE_SOURCES
         database/hash_join.cc
         database/hash_semi_join.cc
         database/project.cc
-        database/semi_join.cc
         database/table.cc
         database/utils.cc)
 

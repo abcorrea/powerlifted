@@ -4,7 +4,6 @@
 
 #include "../action_schema.h"
 #include "../database/hash_join.h"
-#include "../database/semi_join.h"
 #include "../database/table.h"
 #include "../states/state.h"
 #include "../task.h"
