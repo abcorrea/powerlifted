@@ -2,7 +2,7 @@
 #include "yannakakis.h"
 #include "../database/hash_join.h"
 #include "../database/project.h"
-#include "../database/semi_join.h"
+#include "../database/hash_semi_join.h"
 #include "../database/table.h"
 #include "../task.h"
 
@@ -201,7 +201,7 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
  * book or Correa et al. ICAPS 2020 for details.
  *
  * @see database/hash_join.h
- * @see database/semi_join.h
+ * @see database/hash_semi_join.h
  * @see full_reducer_successor_generator.cc
  *
  * @param action Action schema currently being isntantiated
@@ -226,7 +226,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     assert(tables.size() == actiondata.relevant_precondition_atoms.size());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
-        size_t s = semi_join(tables[sj.second], tables[sj.first]);
+        size_t s = hash_semi_join(tables[sj.second], tables[sj.first]);
         if (s==0) {
             return Table::EMPTY_TABLE();
         }
