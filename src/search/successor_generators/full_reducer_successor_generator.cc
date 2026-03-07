@@ -1,7 +1,7 @@
 #include "full_reducer_successor_generator.h"
 #include "../action.h"
 #include "../database/hash_join.h"
-#include "../database/semi_join.h"
+#include "../database/hash_semi_join.h"
 #include "../database/table.h"
 #include "../task.h"
 
@@ -162,7 +162,7 @@ FullReducerSuccessorGenerator::FullReducerSuccessorGenerator(const Task &task)
  * tuples violating these constraints.
  *
  * @see database/hash_join.h
- * @see database/semi_join.h
+ * @see database/hash_semi_join.h
  *
  * @param action Action schema currently being isntantiated
  * @param state State used as database
@@ -189,7 +189,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     assert(!tables.empty());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
-        size_t s = semi_join(tables[sj.second], tables[sj.first]);
+        size_t s = hash_semi_join(tables[sj.second], tables[sj.first]);
         if (s==0) {
             return Table::EMPTY_TABLE();
         }
