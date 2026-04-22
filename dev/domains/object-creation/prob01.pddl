@@ -1,0 +1,5 @@
+(define (problem object-creation-smoke-prob01)
+  (:domain object-creation-smoke)
+  (:objects)
+  (:init (ready))
+  (:goal (created)))

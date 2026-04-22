@@ -8,6 +8,7 @@ import subprocess
 import sys
 import timeit
 from dataclasses import dataclass
+from typing import Optional
 
 from itertools import product
 from pathlib import Path
@@ -33,6 +34,50 @@ SEARCH_CONFIGS = ['bfs', 'gbfs']
 HEURISTIC_CONFIGS = ['blind']
 GENERATOR_CONFIGS = ['full_reducer', 'join', 'yannakakis']
 
+SPECIAL_PLAN_TESTS = [
+    {
+        'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
+        'label': 'probBLOCKS-4-0-clique',
+        'cost': 6,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'clique_bk'),
+                    ('bfs', 'blind', 'clique_kckp')],
+    },
+    {
+        'instance': 'domains/object-creation/prob01.pddl',
+        'label': 'object-creation-prob01',
+        'cost': 1,
+        'validate': False,
+        'configs': [('bfs', 'blind', 'full_reducer')],
+    },
+]
+
+CLI_OPTION_TESTS = [
+    {
+        'name': 'invalid-option',
+        'args': ['--foo', 'bar', '-s', 'bfs', '-e', 'blind', '-g', 'join', '-f', 'missing'],
+        'expected_code': 1,
+        'expected_text': "Unknown option '--foo'.",
+    },
+    {
+        'name': 'invalid-seed',
+        'args': ['--seed', 'foo', '-s', 'bfs', '-e', 'blind', '-g', 'join', '-f', 'missing'],
+        'expected_code': 1,
+        'expected_text': "Invalid unsigned integer value 'foo' for option --seed.",
+    },
+    {
+        'name': 'bool-inline-value',
+        'args': ['--only-effects-novelty-check=0',
+                 '--novelty-early-stop=false',
+                 '-s', 'bfs',
+                 '-e', 'blind',
+                 '-g', 'join',
+                 '-f', 'missing'],
+        'expected_code': 255,
+        'expected_text': 'Error opening the task file: missing',
+    },
+]
+
 
 @dataclass
 class TestResult:
@@ -42,18 +87,20 @@ class TestResult:
     config: str
     passed: bool
     wall_time: float
-    peak_memory_kb: int | None
-    expected_cost: int
-    found_cost: int | None
-    plan_valid: bool | None
+    peak_memory_kb: Optional[int]
+    expected_cost: Optional[int]
+    found_cost: Optional[int]
+    plan_valid: Optional[bool]
 
 
 class TestRun:
-    def __init__(self, instance, config):
+    def __init__(self, instance, config, validate=True, label=None):
         self.instance = instance
         self.search = config[0]
         self.heuristic = config[1]
         self.generator = config[2]
+        self.validate = validate
+        self.label = label
 
     def get_config(self):
         return "{}, {}, and {}".format(self.search,
@@ -62,7 +109,10 @@ class TestRun:
 
     @property
     def name(self):
-        instance_short = Path(self.instance).stem
+        if self.label is not None:
+            instance_short = self.label
+        else:
+            instance_short = Path(self.instance).stem
         return "{}[{},{},{}]".format(instance_short, self.search,
                                      self.heuristic, self.generator)
 
@@ -89,6 +139,8 @@ class TestRun:
                '-s', self.search,
                '-e', self.heuristic,
                '-g', self.generator]
+        if self.validate:
+            cmd.append('--validate')
 
         start = timeit.default_timer()
         # Use GNU time to capture peak RSS if available
@@ -123,8 +175,9 @@ class TestRun:
                 plan_valid = True
 
         passed = (plan_length_found == optimal_cost)
-        # plan_valid may be None if --validate was not used; that's OK
-        if plan_valid is False:
+        if self.validate and not plan_valid:
+            passed = False
+        elif plan_valid is False:
             passed = False
 
         status = "PASSED" if passed else "FAILED"
@@ -133,7 +186,9 @@ class TestRun:
             if plan_length_found != optimal_cost:
                 details += " [expected: {}, found: {}]".format(
                     optimal_cost, plan_length_found)
-            if plan_valid is False:
+            if self.validate and not plan_valid:
+                details += " [plan was not validated]"
+            elif plan_valid is False:
                 details += " [VAL did not validate the plan]"
 
         time_str = "{:.2f}s".format(wall_time)
@@ -155,9 +210,46 @@ class TestRun:
         )
 
     def remove_plan_file(self):
-        plan_file = 'sas_plan'
-        if os.path.isfile(plan_file):
-            os.remove(plan_file)
+        for plan_file in ('sas_plan', 'plan'):
+            if os.path.isfile(plan_file):
+                os.remove(plan_file)
+        for plan_path in Path('.').glob('plan.*'):
+            if plan_path.is_file():
+                plan_path.unlink()
+
+
+def run_cli_option_test(test):
+    search_binary = BASEDIR / 'builds' / 'release' / 'search' / 'search'
+    cmd = [str(search_binary)] + test['args']
+    start = timeit.default_timer()
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False)
+    wall_time = timeit.default_timer() - start
+    output = proc.stdout.decode('utf-8', errors='replace')
+
+    passed = proc.returncode == test['expected_code'] and test['expected_text'] in output
+    status = 'PASSED' if passed else 'FAILED'
+    details = ''
+    if proc.returncode != test['expected_code']:
+        details += ' [expected exit: {}, found: {}]'.format(
+            test['expected_code'], proc.returncode)
+    if test['expected_text'] not in output:
+        details += " [missing output: '{}']".format(test['expected_text'])
+
+    print("{} cli option test '{}' (time: {:.2f}s){}".format(
+        status, test['name'], wall_time, details))
+
+    return TestResult(
+        name='cli-option-{}'.format(test['name']),
+        domain='cli',
+        instance_name=test['name'],
+        config='search-options',
+        passed=passed,
+        wall_time=wall_time,
+        peak_memory_kb=None,
+        expected_cost=None,
+        found_cost=None,
+        plan_valid=None,
+    )
 
 
 def print_summary_table(results, total_time):
@@ -300,6 +392,35 @@ if __name__ == '__main__':
                     expected_cost=cost, found_cost=None, plan_valid=None)
             results.append(result)
             test.remove_plan_file()
+
+    for test_case in SPECIAL_PLAN_TESTS:
+        for config in test_case['configs']:
+            test = TestRun(test_case['instance'],
+                           config,
+                           validate=test_case['validate'],
+                           label=test_case['label'])
+            try:
+                output, wall_time, peak_kb = test.run()
+                result = test.evaluate(output, test_case['cost'], wall_time, peak_kb)
+            except subprocess.CalledProcessError as e:
+                print("FAILED {} (process exited with code {})".format(
+                    test, e.returncode))
+                result = TestResult(
+                    name=test.name,
+                    domain=test.domain,
+                    instance_name=test.instance_name,
+                    config=test.config,
+                    passed=False,
+                    wall_time=0,
+                    peak_memory_kb=None,
+                    expected_cost=test_case['cost'],
+                    found_cost=None,
+                    plan_valid=None)
+            results.append(result)
+            test.remove_plan_file()
+
+    for cli_test in CLI_OPTION_TESTS:
+        results.append(run_cli_option_test(cli_test))
 
     total_time = timeit.default_timer() - start
     print_summary_table(results, total_time)
