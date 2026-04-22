@@ -1,8 +1,10 @@
 #ifndef SEARCH_OPTIONS_H
 #define SEARCH_OPTIONS_H
 
-#include <algorithm>
+#include <cstddef>
 #include <iostream>
+#include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -17,75 +19,177 @@ class Options {
     bool novelty_early_stop;
     unsigned seed;
 
-    static std::string find_arg(const std::vector<std::string> &args,
+    static void print_help()
+    {
+        std::cout << "Allowed options:\n"
+                  << "  -f, --filename       Lifted task file name (default: output.lifted)\n"
+                  << "  -h, --help           Display this help message\n"
+                  << "  --seed               Random seed (default: 1)\n"
+                  << "  -e, --evaluator      Heuristic evaluator (required)\n"
+                  << "  -g, --generator      Successor generator method (required)\n"
+                  << "  -s, --search         Search engine (required)\n"
+                  << "  --plan-file          Plan file (default: FilePathUndefined)\n"
+                  << "  --only-effects-novelty-check[=BOOL]  Check only effects for novelty "
+                     "(default: false)\n"
+                  << "  --novelty-early-stop[=BOOL] Stop evaluating novelty early "
+                     "(default: false)\n";
+    }
+
+    static bool is_option_name(const std::string &arg)
+    {
+        return !arg.empty() && arg[0] == '-';
+    }
+
+    static bool is_named_option(const std::string &arg,
                                 const std::string &long_opt,
                                 const std::string &short_opt = "")
     {
-        for (size_t i = 0; i < args.size(); ++i) {
-            if (args[i] == long_opt || (!short_opt.empty() && args[i] == short_opt)) {
-                if (i + 1 < args.size())
-                    return args[i + 1];
-            }
-            // Handle --key=value syntax
-            if (args[i].rfind(long_opt + "=", 0) == 0) {
-                return args[i].substr(long_opt.size() + 1);
-            }
-        }
-        return "";
+        return arg == long_opt || (!short_opt.empty() && arg == short_opt);
     }
 
-    static bool has_flag(const std::vector<std::string> &args,
-                         const std::string &long_opt,
-                         const std::string &short_opt = "")
+    static bool has_inline_value(const std::string &arg, const std::string &opt)
     {
-        return std::find(args.begin(), args.end(), long_opt) != args.end() ||
-               (!short_opt.empty() && std::find(args.begin(), args.end(), short_opt) != args.end());
+        return arg.rfind(opt + "=", 0) == 0;
+    }
+
+    static std::string take_required_value(const std::vector<std::string> &args,
+                                           std::size_t &i,
+                                           const std::string &long_opt,
+                                           const std::string &short_opt = "")
+    {
+        const std::string &arg = args[i];
+        if (has_inline_value(arg, long_opt)) {
+            return arg.substr(long_opt.size() + 1);
+        }
+        if (!short_opt.empty() && has_inline_value(arg, short_opt)) {
+            return arg.substr(short_opt.size() + 1);
+        }
+        if (i + 1 >= args.size()) {
+            throw std::runtime_error("Missing value for option " + long_opt + ".");
+        }
+        if (is_option_name(args[i + 1])) {
+            throw std::runtime_error("Missing value for option " + long_opt + ".");
+        }
+        ++i;
+        return args[i];
+    }
+
+    static bool parse_bool_value(const std::string &value, const std::string &opt_name)
+    {
+        if (value == "1" || value == "true" || value == "True" || value == "yes" ||
+            value == "on") {
+            return true;
+        }
+        if (value == "0" || value == "false" || value == "False" || value == "no" ||
+            value == "off") {
+            return false;
+        }
+        throw std::runtime_error("Invalid boolean value '" + value + "' for option " + opt_name +
+                                 ".");
+    }
+
+    static bool take_bool_value(const std::vector<std::string> &args,
+                                std::size_t &i,
+                                const std::string &long_opt)
+    {
+        const std::string &arg = args[i];
+        if (has_inline_value(arg, long_opt)) {
+            return parse_bool_value(arg.substr(long_opt.size() + 1), long_opt);
+        }
+        if (i + 1 < args.size() && !is_option_name(args[i + 1])) {
+            ++i;
+            return parse_bool_value(args[i], long_opt);
+        }
+        return true;
+    }
+
+    static unsigned parse_unsigned_value(const std::string &value, const std::string &opt_name)
+    {
+        try {
+            std::size_t parsed = 0;
+            unsigned long result = std::stoul(value, &parsed);
+            if (parsed != value.size()) {
+                throw std::runtime_error("");
+            }
+            if (result > std::numeric_limits<unsigned>::max()) {
+                throw std::runtime_error("");
+            }
+            return static_cast<unsigned>(result);
+        } catch (const std::exception &) {
+            throw std::runtime_error("Invalid unsigned integer value '" + value +
+                                     "' for option " + opt_name + ".");
+        }
+    }
+
+    [[noreturn]] static void exit_with_option_error(const std::string &message)
+    {
+        std::cerr << "Error with command-line options: " << message << std::endl << std::endl;
+        print_help();
+        exit(1);
     }
 
 public:
     Options(int argc, char **argv)
+        : filename("output.lifted"),
+          plan_file("FilePathUndefined"),
+          only_effects_opt(false),
+          novelty_early_stop(false),
+          seed(1)
     {
         std::vector<std::string> args(argv + 1, argv + argc);
 
-        if (has_flag(args, "--help", "-h")) {
-            std::cout << "Allowed options:\n"
-                      << "  -f, --filename       Lifted task file name (default: output.lifted)\n"
-                      << "  -h, --help           Display this help message\n"
-                      << "  --seed               Random seed (default: 1)\n"
-                      << "  -e, --evaluator      Heuristic evaluator (required)\n"
-                      << "  -g, --generator      Successor generator method (required)\n"
-                      << "  -s, --search         Search engine (required)\n"
-                      << "  --plan-file          Plan file (default: FilePathUndefined)\n"
-                      << "  --only-effects-novelty-check  Check only effects for novelty (default: "
-                         "false)\n"
-                      << "  --novelty-early-stop Stop evaluating novelty early (default: false)\n";
-            exit(0);
+        try {
+            for (std::size_t i = 0; i < args.size(); ++i) {
+                const std::string &arg = args[i];
+                if (is_named_option(arg, "--help", "-h")) {
+                    print_help();
+                    exit(0);
+                }
+                else if (is_named_option(arg, "--filename", "-f") ||
+                         has_inline_value(arg, "--filename") || has_inline_value(arg, "-f")) {
+                    filename = take_required_value(args, i, "--filename", "-f");
+                }
+                else if (is_named_option(arg, "--evaluator", "-e") ||
+                         has_inline_value(arg, "--evaluator") || has_inline_value(arg, "-e")) {
+                    evaluator = take_required_value(args, i, "--evaluator", "-e");
+                }
+                else if (is_named_option(arg, "--generator", "-g") ||
+                         has_inline_value(arg, "--generator") || has_inline_value(arg, "-g")) {
+                    generator = take_required_value(args, i, "--generator", "-g");
+                }
+                else if (is_named_option(arg, "--search", "-s") ||
+                         has_inline_value(arg, "--search") || has_inline_value(arg, "-s")) {
+                    search_engine = take_required_value(args, i, "--search", "-s");
+                }
+                else if (is_named_option(arg, "--plan-file") || has_inline_value(arg, "--plan-file")) {
+                    plan_file = take_required_value(args, i, "--plan-file");
+                }
+                else if (is_named_option(arg, "--seed") || has_inline_value(arg, "--seed")) {
+                    seed = parse_unsigned_value(take_required_value(args, i, "--seed"), "--seed");
+                }
+                else if (is_named_option(arg, "--only-effects-novelty-check") ||
+                         has_inline_value(arg, "--only-effects-novelty-check")) {
+                    only_effects_opt = take_bool_value(args, i, "--only-effects-novelty-check");
+                }
+                else if (is_named_option(arg, "--novelty-early-stop") ||
+                         has_inline_value(arg, "--novelty-early-stop")) {
+                    novelty_early_stop = take_bool_value(args, i, "--novelty-early-stop");
+                }
+                else if (is_option_name(arg)) {
+                    throw std::runtime_error("Unknown option '" + arg + "'.");
+                }
+                else {
+                    throw std::runtime_error("Unexpected positional argument '" + arg + "'.");
+                }
+            }
+        } catch (const std::exception &ex) {
+            exit_with_option_error(ex.what());
         }
-
-        filename = find_arg(args, "--filename", "-f");
-        if (filename.empty())
-            filename = "output.lifted";
-
-        evaluator = find_arg(args, "--evaluator", "-e");
-        generator = find_arg(args, "--generator", "-g");
-        search_engine = find_arg(args, "--search", "-s");
 
         if (evaluator.empty() || generator.empty() || search_engine.empty()) {
-            std::cerr
-                << "Error: --evaluator (-e), --generator (-g), and --search (-s) are required."
-                << std::endl;
-            exit(1);
+            exit_with_option_error(
+                "--evaluator (-e), --generator (-g), and --search (-s) are required.");
         }
-
-        plan_file = find_arg(args, "--plan-file");
-        if (plan_file.empty())
-            plan_file = "FilePathUndefined";
-
-        std::string seed_str = find_arg(args, "--seed");
-        seed = seed_str.empty() ? 1 : static_cast<unsigned>(std::stoul(seed_str));
-
-        only_effects_opt = has_flag(args, "--only-effects-novelty-check");
-        novelty_early_stop = has_flag(args, "--novelty-early-stop");
     }
 
     const std::string &get_filename() const { return filename; }
