@@ -15,7 +15,7 @@ class Options {
     std::string evaluator;
     std::string state_representation;
     std::string plan_file;
-    bool only_effects_opt;
+    bool full_novelty_check;
     bool novelty_early_stop;
     unsigned seed;
 
@@ -29,7 +29,7 @@ class Options {
                   << "  -g, --generator      Successor generator method (required)\n"
                   << "  -s, --search         Search engine (required)\n"
                   << "  --plan-file          Plan file (default: FilePathUndefined)\n"
-                  << "  --only-effects-novelty-check[=BOOL]  Check only effects for novelty "
+                  << "  --full-novelty-check[=BOOL] Use full-state novelty checking "
                      "(default: false)\n"
                   << "  --novelty-early-stop[=BOOL] Stop evaluating novelty early "
                      "(default: false)\n";
@@ -132,7 +132,7 @@ public:
     Options(int argc, char **argv)
         : filename("output.lifted"),
           plan_file("FilePathUndefined"),
-          only_effects_opt(false),
+          full_novelty_check(false),
           novelty_early_stop(false),
           seed(1)
     {
@@ -167,9 +167,9 @@ public:
                 else if (is_named_option(arg, "--seed") || has_inline_value(arg, "--seed")) {
                     seed = parse_unsigned_value(take_required_value(args, i, "--seed"), "--seed");
                 }
-                else if (is_named_option(arg, "--only-effects-novelty-check") ||
-                         has_inline_value(arg, "--only-effects-novelty-check")) {
-                    only_effects_opt = take_bool_value(args, i, "--only-effects-novelty-check");
+                else if (is_named_option(arg, "--full-novelty-check") ||
+                         has_inline_value(arg, "--full-novelty-check")) {
+                    full_novelty_check = take_bool_value(args, i, "--full-novelty-check");
                 }
                 else if (is_named_option(arg, "--novelty-early-stop") ||
                          has_inline_value(arg, "--novelty-early-stop")) {
@@ -202,7 +202,7 @@ public:
 
     const std::string &get_plan_file() const { return plan_file; }
 
-    bool get_only_effects_opt() const { return only_effects_opt; }
+    bool use_full_novelty_check() const { return full_novelty_check; }
 
     bool get_novelty_early_stop() const { return novelty_early_stop; }
 
