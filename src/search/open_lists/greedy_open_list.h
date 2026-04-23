@@ -14,7 +14,7 @@ struct CompareGBFSEntries {
 };
 
 class GreedyOpenList {
-    typedef std::deque<StateID> Bucket;
+    using Bucket = std::deque<StateID>;
 
     std::map<std::pair<int, int>, Bucket, CompareGBFSEntries> buckets;
     int size;

@@ -31,7 +31,7 @@ namespace priority_queues {
 template<typename Value>
 class AbstractQueue {
 public:
-    typedef std::pair<int, Value> Entry;
+    using Entry = std::pair<int, Value>;
 
     AbstractQueue() {}
     virtual ~AbstractQueue() {}
@@ -69,7 +69,7 @@ public:
 
 template<typename Value>
 class HeapQueue : public AbstractQueue<Value> {
-    typedef typename AbstractQueue<Value>::Entry Entry;
+    using Entry = typename AbstractQueue<Value>::Entry;
 
     bool is_valid_key(int key) const {
         int infinity = std::numeric_limits<int>::max();
@@ -137,9 +137,9 @@ class BucketQueue : public AbstractQueue<Value> {
     static const int MIN_BUCKETS_BEFORE_SWITCH = 100;
     static const bool DEBUG = false;
 
-    typedef typename AbstractQueue<Value>::Entry Entry;
+    using Entry = typename AbstractQueue<Value>::Entry;
 
-    typedef std::vector<Value> Bucket;
+    using Bucket = std::vector<Value>;
     std::vector<Bucket> buckets;
     mutable int current_bucket_no;
     int num_entries;
@@ -248,7 +248,7 @@ class AdaptiveQueue {
     AdaptiveQueue &operator=(const AdaptiveQueue<Value> &);
     AdaptiveQueue(const AdaptiveQueue<Value> &);
 public:
-    typedef std::pair<int, Value> Entry;
+    using Entry = std::pair<int, Value>;
 
     AdaptiveQueue() : wrapped_queue(new BucketQueue<Value>) {
     }

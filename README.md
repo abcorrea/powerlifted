@@ -1,11 +1,14 @@
-# Powerlifted Planner
+<h1 align="center">Powerlifted</h1>
 
-Powerlifted is a domain-independent classical planner that uses only lifted
-representations.
+Powerlifted is a domain-independent classical planner for lifted planning. It
+solves tasks without grounding the full state space and instead reasons over
+relations, action schemas, and objects directly.
 
-The planner supports the STRIPS formalism, extended with inequalities (e.g.,
-`(not (= ?x ?y))`), types (e.g., `?b - block`), and object creation (e.g.,
-`:new ?b - block`).
+The planner supports STRIPS with inequalities (for example,
+`(not (= ?x ?y))`), typed objects (for example, `?b - block`), and object
+creation effects (for example, `:new ?b - block`). It combines lifted
+successor generation, delete-relaxation heuristics, and width-based search in a
+single code base for research and practical experiments.
 
 See [References](#references) for more details.
 

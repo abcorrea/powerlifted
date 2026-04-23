@@ -23,7 +23,7 @@ public:
         }
     }
 
-    explicit Arguments(std::vector<Term> &&args) : arguments(args) {}
+    explicit Arguments(std::vector<Term> &&args) : arguments(std::move(args)) {}
 
     Term operator[](size_t i) const
     {
