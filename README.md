@@ -29,6 +29,9 @@ or pass the `--build` flag when running the planner:
 ./powerlifted.py -i INSTANCE --build
 ```
 
+For local development notes and the small regression suite under `dev/`, see
+[dev/README.md](dev/README.md).
+
 ### ccache
 
 The build system automatically detects and uses
