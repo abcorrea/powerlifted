@@ -1,13 +1,13 @@
 # Development Notes
 
-This directory contains the local development assets for Powerlifted. Its main
-purpose is to support fast regression checks while working on the planner.
+This directory contains the local development tests for Powerlifted. Its main
+purpose is to support fast correctness checks while working on the planner.
 
 ## Contents
 
-- `domains/`: small benchmark tasks used by the local regression suite
-- `run-tests.py`: local regression runner
-- `results.json`: sample timing baseline for comparison runs
+- `domains/`: small benchmark tasks used by the local test suite
+- `run-tests.py`: local test runner
+- `results.json`: sample timing baseline for comparison runs (machine dependent)
 
 The local suite is intentionally small. It is meant to catch obvious
 correctness regressions quickly before running larger experiments elsewhere.
@@ -22,14 +22,14 @@ correctness regressions quickly before running larger experiments elsewhere.
 2. Special-case planner paths.
    These include `clique_bk`, `clique_kckp`, and a small object-creation task.
 3. Heuristic smoke tests.
-   These exercise `goalcount`, `add`, `hmax`, `ff`, and `rff` through `gbfs`
-   and require heuristic-evaluation output plus a validated plan.
+   These tests evaluate `goalcount`, `add`, `hmax`, `ff`, and `rff` through `gbfs`
+   and require heuristic-evaluation output plus a valid plan.
 4. Novelty / width-based smoke tests.
-   These exercise `bfws1`, `bfws1-rx`, `alt-bfws1`, and `dq-bfws1-rx`,
-   including the novelty-related command-line flags used in practice.
+   These tests evaluate `bfws1`, `bfws1-rx`, `alt-bfws1`, and `dq-bfws1-rx`,
+   including the novelty-related command-line flags.
 
-The local suite does not try to be exhaustive. It favors short runs with real
-end-to-end coverage over large benchmark sweeps.
+The local suite does not try to be exhaustive. The tests are also quite superficial,
+and full experiments should be always used.
 
 ## Running The Local Suite
 
@@ -63,14 +63,13 @@ Compare the current run against a stored baseline:
 python dev/run-tests.py --compare-results dev/results.json
 ```
 
-If you prefer `uv`, the same commands can be run with `uv run`.
-
 ## Important Caveats
 
-- Run the regression suite serially. The planner writes an intermediate
+- Run the test suite serially. The planner writes an intermediate
   translator file named `output.lifted` by default, so concurrent runs in the
   same working directory can clobber each other.
-- Validation requires `validate` from VAL to be available on `PATH`.
+- Validation requires `validate` from [VAL](https://github.com/KCL-Planning/VAL)
+  to be available on `PATH`.
 - The suite is correctness-first, but some cases are still useful as rough
   performance sentinels. In particular, `join` on `organic-synthesis` is known
   to be much slower and more memory-hungry than the other local cases.
