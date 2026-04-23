@@ -52,6 +52,75 @@ SPECIAL_PLAN_TESTS = [
     },
 ]
 
+HEURISTIC_PLAN_TESTS = [
+    {
+        'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
+        'label': 'probBLOCKS-4-0-heuristics',
+        'cost': None,
+        'validate': True,
+        'required_output': ['Time to evaluate initial state:', 'Initial heuristic value '],
+        'configs': [('gbfs', 'goalcount', 'full_reducer'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'hmax', 'full_reducer'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'rff', 'full_reducer')],
+    },
+    {
+        'instance': 'domains/gripper/prob01.pddl',
+        'label': 'prob01-heuristics',
+        'cost': None,
+        'validate': True,
+        'required_output': ['Time to evaluate initial state:', 'Initial heuristic value '],
+        'configs': [('gbfs', 'goalcount', 'full_reducer'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'hmax', 'full_reducer'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'rff', 'full_reducer')],
+    },
+    {
+        'instance': 'domains/movie/prob30.pddl',
+        'label': 'prob30-heuristics',
+        'cost': None,
+        'validate': True,
+        'required_output': ['Time to evaluate initial state:', 'Initial heuristic value '],
+        'configs': [('gbfs', 'goalcount', 'full_reducer'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'hmax', 'full_reducer'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'rff', 'full_reducer')],
+    },
+]
+
+NOVELTY_PLAN_TESTS = [
+    {
+        'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
+        'label': 'probBLOCKS-4-0-novelty',
+        'cost': None,
+        'validate': True,
+        'configs': [('bfws1', 'blind', 'full_reducer'),
+                    ('bfws1-rx', 'blind', 'full_reducer'),
+                    ('alt-bfws1', 'ff', 'full_reducer'),
+                    ('dq-bfws1-rx', 'ff', 'full_reducer')],
+        'required_output': ['Total number of goal atoms:', 'Initial heuristic value '],
+        'extra_args_by_config': {
+            ('bfws1-rx', 'blind', 'full_reducer'): ['--only-effects-novelty-check',
+                                                    '--novelty-early-stop'],
+            ('alt-bfws1', 'ff', 'full_reducer'): ['--only-effects-novelty-check'],
+            ('dq-bfws1-rx', 'ff', 'full_reducer'): ['--only-effects-novelty-check'],
+        },
+        'required_output_by_config': {
+            ('bfws1', 'blind', 'full_reducer'): ['Starting BFWS'],
+            ('bfws1-rx', 'blind', 'full_reducer'): ['Starting BFWS',
+                                                    'Using version with R-X',
+                                                    'Initial h-add value of the task:'],
+            ('alt-bfws1', 'ff', 'full_reducer'): ['Starting AlternatedBFWS',
+                                                  'Initial h-add value of the task:'],
+            ('dq-bfws1-rx', 'ff', 'full_reducer'): ['Starting Dual-Queue BFWS',
+                                                    'Initial h-add value of the task:'],
+        },
+    },
+]
+
 CLI_OPTION_TESTS = [
     {
         'name': 'invalid-option',
@@ -94,13 +163,21 @@ class TestResult:
 
 
 class TestRun:
-    def __init__(self, instance, config, validate=True, label=None):
+    def __init__(self,
+                 instance,
+                 config,
+                 validate=True,
+                 label=None,
+                 required_output=None,
+                 extra_args=None):
         self.instance = instance
         self.search = config[0]
         self.heuristic = config[1]
         self.generator = config[2]
         self.validate = validate
         self.label = label
+        self.required_output = required_output or []
+        self.extra_args = extra_args or []
 
     def get_config(self):
         return "{}, {}, and {}".format(self.search,
@@ -141,6 +218,7 @@ class TestRun:
                '-g', self.generator]
         if self.validate:
             cmd.append('--validate')
+        cmd.extend(self.extra_args)
 
         start = timeit.default_timer()
         # Use GNU time to capture peak RSS if available
@@ -168,28 +246,41 @@ class TestRun:
         """Evaluate output and return a TestResult."""
         plan_length_found = None
         plan_valid = None
+        decoded_output = output.decode('utf-8', errors='replace')
         for line in output.splitlines():
             if b'Total plan cost:' in line:
                 plan_length_found = int(line.split()[3])
             if b'Plan valid' in line:
                 plan_valid = True
 
-        passed = (plan_length_found == optimal_cost)
+        passed = True
+        if optimal_cost is not None:
+            passed = (plan_length_found == optimal_cost)
+        elif plan_length_found is None:
+            passed = False
         if self.validate and not plan_valid:
             passed = False
         elif plan_valid is False:
             passed = False
+        for marker in self.required_output:
+            if marker not in decoded_output:
+                passed = False
 
         status = "PASSED" if passed else "FAILED"
         details = ""
         if not passed:
-            if plan_length_found != optimal_cost:
+            if optimal_cost is not None and plan_length_found != optimal_cost:
                 details += " [expected: {}, found: {}]".format(
                     optimal_cost, plan_length_found)
+            elif optimal_cost is None and plan_length_found is None:
+                details += " [plan cost not reported]"
             if self.validate and not plan_valid:
                 details += " [plan was not validated]"
             elif plan_valid is False:
                 details += " [VAL did not validate the plan]"
+            for marker in self.required_output:
+                if marker not in decoded_output:
+                    details += " [missing output: '{}']".format(marker)
 
         time_str = "{:.2f}s".format(wall_time)
         mem_str = "{:.1f}MB".format(peak_kb / 1024) if peak_kb else "N/A"
@@ -250,6 +341,38 @@ def run_cli_option_test(test):
         found_cost=None,
         plan_valid=None,
     )
+
+
+def run_plan_test_cases(results, test_cases):
+    for test_case in test_cases:
+        for config in test_case['configs']:
+            required_output = list(test_case.get('required_output', []))
+            required_output.extend(test_case.get('required_output_by_config', {}).get(config, []))
+            test = TestRun(test_case['instance'],
+                           config,
+                           validate=test_case['validate'],
+                           label=test_case['label'],
+                           required_output=required_output,
+                           extra_args=test_case.get('extra_args_by_config', {}).get(config, []))
+            try:
+                output, wall_time, peak_kb = test.run()
+                result = test.evaluate(output, test_case['cost'], wall_time, peak_kb)
+            except subprocess.CalledProcessError as e:
+                print("FAILED {} (process exited with code {})".format(
+                    test, e.returncode))
+                result = TestResult(
+                    name=test.name,
+                    domain=test.domain,
+                    instance_name=test.instance_name,
+                    config=test.config,
+                    passed=False,
+                    wall_time=0,
+                    peak_memory_kb=None,
+                    expected_cost=test_case['cost'],
+                    found_cost=None,
+                    plan_valid=None)
+            results.append(result)
+            test.remove_plan_file()
 
 
 def print_summary_table(results, total_time):
@@ -364,6 +487,8 @@ if __name__ == '__main__':
     search_configs = list(SEARCH_CONFIGS)
     heuristic_configs = list(HEURISTIC_CONFIGS)
     generator_configs = list(GENERATOR_CONFIGS)
+    heuristic_plan_tests = list(HEURISTIC_PLAN_TESTS)
+    novelty_plan_tests = list(NOVELTY_PLAN_TESTS)
 
     if args.minimal:
         plan_costs = {'domains/blocks/probBLOCKS-4-0.pddl': 6,
@@ -393,31 +518,9 @@ if __name__ == '__main__':
             results.append(result)
             test.remove_plan_file()
 
-    for test_case in SPECIAL_PLAN_TESTS:
-        for config in test_case['configs']:
-            test = TestRun(test_case['instance'],
-                           config,
-                           validate=test_case['validate'],
-                           label=test_case['label'])
-            try:
-                output, wall_time, peak_kb = test.run()
-                result = test.evaluate(output, test_case['cost'], wall_time, peak_kb)
-            except subprocess.CalledProcessError as e:
-                print("FAILED {} (process exited with code {})".format(
-                    test, e.returncode))
-                result = TestResult(
-                    name=test.name,
-                    domain=test.domain,
-                    instance_name=test.instance_name,
-                    config=test.config,
-                    passed=False,
-                    wall_time=0,
-                    peak_memory_kb=None,
-                    expected_cost=test_case['cost'],
-                    found_cost=None,
-                    plan_valid=None)
-            results.append(result)
-            test.remove_plan_file()
+    run_plan_test_cases(results, SPECIAL_PLAN_TESTS)
+    run_plan_test_cases(results, heuristic_plan_tests)
+    run_plan_test_cases(results, novelty_plan_tests)
 
     for cli_test in CLI_OPTION_TESTS:
         results.append(run_cli_option_test(cli_test))
