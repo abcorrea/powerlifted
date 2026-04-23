@@ -12,6 +12,7 @@
 
 #include <iostream>
 
+#include "../utils/system.h"
 #include "../utils/string_utils.h"
 
 SuccessorGenerator *
@@ -44,6 +45,6 @@ SuccessorGeneratorFactory::create(const std::string &method, unsigned seed, Task
     }
     else {
         std::cerr << "Invalid successor generator method \"" << method << "\"" << std::endl;
-        exit(-1);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }

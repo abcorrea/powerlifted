@@ -12,7 +12,7 @@
  * @brief GroundAtom is an alias for vector of integers. It is represented
  * as a list of object indices.
  */
-typedef std::vector<int> GroundAtom;
+using GroundAtom = std::vector<int>;
 
 
 /**

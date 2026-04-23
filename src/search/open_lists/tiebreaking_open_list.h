@@ -19,7 +19,7 @@ struct CompareTieBreakingEntries {
 };
 
 class TieBreakingOpenList {
-    typedef std::deque<StateID> Bucket;
+    using Bucket = std::deque<StateID>;
 
     std::map<std::vector<int>, Bucket, CompareTieBreakingEntries> buckets;
     int size;

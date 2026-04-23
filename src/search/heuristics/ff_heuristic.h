@@ -9,7 +9,7 @@
 
 #include "../datalog/grounder/weighted_grounder.h"
 
-typedef std::pair<int, std::vector<int>> GroundAction;
+using GroundAction = std::pair<int, std::vector<int>>;
 
 
 class FFHeuristic : public Heuristic{

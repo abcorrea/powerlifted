@@ -8,7 +8,7 @@ class ActionSchema;
 class DBState;
 class LiftedOperatorId;
 
-typedef DBState StaticInformation;
+using StaticInformation = DBState;
 
 /**
  * This base class implements a join-successor using the join of all positive preconditions in the

@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "../utils/system.h"
 #include "../utils/string_utils.h"
 
 Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
@@ -40,7 +41,7 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
     }
     else {
         std::cerr << "Invalid heuristic \"" << method << "\"" << std::endl;
-        exit(-1);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
@@ -61,6 +62,6 @@ Heuristic *HeuristicFactory::create_delete_free_heuristic(const std::string &met
     }
     else {
         std::cerr << "Invalid delete-free heuristic \"" << method << "\"" << std::endl;
-        exit(-1);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }

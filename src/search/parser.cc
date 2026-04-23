@@ -3,6 +3,7 @@
 #include "goal_condition.h"
 #include "task.h"
 
+#include "utils/system.h"
 #include "utils/string_utils.h"
 
 #include <cassert>
@@ -155,7 +156,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                              << ". Argument is neither constant or "
                                 "object"
                              << endl;
-                        exit(-1);
+                        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
                     }
                 }
                 preconditions.emplace_back(
@@ -195,7 +196,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                          << ". Argument is neither constant or "
                             "object"
                          << endl;
-                    exit(-1);
+                    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
                 }
             }
             effects.emplace_back(std::move(arguments), std::move(eff_name), index, negated);

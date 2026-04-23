@@ -44,7 +44,7 @@ namespace segmented_vector {
 
 template<class Entry, class Allocator = std::allocator<Entry>>
 class SegmentedVector {
-    typedef typename Allocator::template rebind<Entry>::other EntryAllocator;
+    using EntryAllocator = typename Allocator::template rebind<Entry>::other;
     // TODO: Try to find a good value for SEGMENT_BYTES.
     static const size_t SEGMENT_BYTES = 8192;
 
@@ -146,7 +146,7 @@ public:
 
 template<class Element, class Allocator = std::allocator<Element>>
 class SegmentedArrayVector {
-    typedef typename Allocator::template rebind<Element>::other ElementAllocator;
+    using ElementAllocator = typename Allocator::template rebind<Element>::other;
     // TODO: Try to find a good value for SEGMENT_BYTES.
     static const size_t SEGMENT_BYTES = 8192;
 

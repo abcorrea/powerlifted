@@ -15,7 +15,7 @@
 #include "../parallel_hashmap/phmap.h"
 #include "../utils/hash.h"
 
-typedef phmap::flat_hash_map<GroundAtom, int, utils::Hash<GroundAtom>> NoveltySet;
+using NoveltySet = phmap::flat_hash_map<GroundAtom, int, utils::Hash<GroundAtom>>;
 
 /*
  *
