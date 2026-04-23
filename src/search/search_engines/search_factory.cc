@@ -12,6 +12,7 @@
 
 #include "../states/sparse_states.h"
 
+#include "../utils/system.h"
 #include "../utils/string_utils.h"
 
 SearchBase *SearchFactory::create(const Options &opt, const std::string &method)
@@ -74,6 +75,6 @@ SearchBase *SearchFactory::create(const Options &opt, const std::string &method)
     }
     else {
         std::cerr << "Invalid search method \"" << method << "\"" << std::endl;
-        exit(-1);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }

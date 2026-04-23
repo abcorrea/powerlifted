@@ -3,6 +3,6 @@
 
 #include "generic_join_successor.h"
 
-typedef GenericJoinSuccessor NaiveSuccessorGenerator;
+using NaiveSuccessorGenerator = GenericJoinSuccessor;
 
 #endif //SEARCH_NAIVE_SUCCESSOR_H

@@ -7,6 +7,7 @@
 #include "../rules/product.h"
 #include "../rules/project.h"
 #include "../rules/rule_base.h"
+#include "../../utils/system.h"
 
 namespace datalog {
 
@@ -36,7 +37,7 @@ public:
         }
         else {
             std::cerr << "Using undefined JoinCost." << std::endl;
-            exit(-1);
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
     }
 

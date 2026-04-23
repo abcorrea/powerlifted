@@ -88,6 +88,6 @@ public:
  * @brief Syntatic sugar to avoid passing the static predicated to
  * every single successor.
  */
-typedef DBState StaticInformation;
+using StaticInformation = DBState;
 
 #endif //SEARCH_STATE_H

@@ -9,6 +9,7 @@
 #include "search_engines/search_factory.h"
 #include "successor_generators/successor_generator.h"
 #include "successor_generators/successor_generator_factory.h"
+#include "utils/system.h"
 
 #include <iostream>
 #include <memory>
@@ -26,7 +27,7 @@ int main(int argc, char *argv[])
     ifstream task_file(opt.get_filename());
     if (!task_file) {
         cerr << "Error opening the task file: " << opt.get_filename() << endl;
-        exit(-1);
+        exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 
     cout << "Reading task description file." << endl;
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
     bool parsed = parse(task, task_file);
     if (!parsed) {
         cerr << "Parser failed." << endl;
-        exit(-1);
+        exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 
     /*
@@ -88,7 +89,7 @@ int main(int argc, char *argv[])
         if (unsupported_features) {
             std::cerr << "ABORTING: Some of the used features do not support object creation."
                       << std::endl;
-            exit(-1);
+            exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
         }
     }
 

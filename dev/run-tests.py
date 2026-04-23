@@ -155,7 +155,7 @@ CLI_OPTION_TESTS = [
                  '-e', 'blind',
                  '-g', 'join',
                  '-f', 'missing'],
-        'expected_code': 255,
+        'expected_code': 33,
         'expected_text': 'Error opening the task file: missing',
     },
 ]

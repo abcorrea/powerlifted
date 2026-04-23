@@ -17,7 +17,7 @@
 
 namespace datalog {
 
-typedef std::vector<int> JoinHashKey;
+using JoinHashKey = std::vector<int>;
 
 class JoinHashEntry {
 
