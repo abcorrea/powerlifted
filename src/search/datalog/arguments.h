@@ -3,6 +3,8 @@
 
 #include "term.h"
 
+#include "../utils/hash.h"
+
 #include <cassert>
 #include <vector>
 
@@ -50,12 +52,7 @@ class HashArguments {
 public:
     std::size_t operator()(const Arguments &f) const
     {
-        // 0x9e3779b9 = 2^32 / phi (golden ratio); see Knuth TAOCP Vol. 3, Sec. 6.4
-        std::size_t seed = 0;
-        for (auto it = f.begin(); it != f.end(); ++it) {
-            seed ^= std::hash<Term>{}(*it) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        }
-        return seed;
+        return utils::hash_range(f.begin(), f.end());
     }
 };
 
