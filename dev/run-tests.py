@@ -50,6 +50,22 @@ SPECIAL_PLAN_TESTS = [
         'validate': False,
         'configs': [('bfs', 'blind', 'full_reducer')],
     },
+    {
+        'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
+        'label': 'probBLOCKS-4-0-full-novelty',
+        'cost': None,
+        'validate': True,
+        'required_output': ['--full-novelty-check',
+                            'Total number of goal atoms:',
+                            'Initial heuristic value ',
+                            'Starting BFWS',
+                            'Using version with R-X',
+                            'Initial h-add value of the task:'],
+        'configs': [('bfws1-rx', 'blind', 'full_reducer')],
+        'extra_args_by_config': {
+            ('bfws1-rx', 'blind', 'full_reducer'): ['--full-novelty-check'],
+        },
+    },
 ]
 
 HEURISTIC_PLAN_TESTS = [
@@ -103,10 +119,7 @@ NOVELTY_PLAN_TESTS = [
                     ('dq-bfws1-rx', 'ff', 'full_reducer')],
         'required_output': ['Total number of goal atoms:', 'Initial heuristic value '],
         'extra_args_by_config': {
-            ('bfws1-rx', 'blind', 'full_reducer'): ['--only-effects-novelty-check',
-                                                    '--novelty-early-stop'],
-            ('alt-bfws1', 'ff', 'full_reducer'): ['--only-effects-novelty-check'],
-            ('dq-bfws1-rx', 'ff', 'full_reducer'): ['--only-effects-novelty-check'],
+            ('bfws1-rx', 'blind', 'full_reducer'): ['--novelty-early-stop'],
         },
         'required_output_by_config': {
             ('bfws1', 'blind', 'full_reducer'): ['Starting BFWS'],
@@ -136,7 +149,7 @@ CLI_OPTION_TESTS = [
     },
     {
         'name': 'bool-inline-value',
-        'args': ['--only-effects-novelty-check=0',
+        'args': ['--full-novelty-check=0',
                  '--novelty-early-stop=false',
                  '-s', 'bfs',
                  '-e', 'blind',

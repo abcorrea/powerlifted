@@ -19,7 +19,7 @@ template <class PackedStateT>
 class DualQueueBFWS : public SearchBase {
     AtomCounter atom_counter;
     int width;
-    bool only_effects_opt;
+    bool full_novelty_check;
 
     int priority_preferred;
     int priority_regular;
@@ -45,7 +45,8 @@ protected:
     AtomCounter initialize_counter_with_gc(const Task &task);
 
 public:
-    explicit DualQueueBFWS(int width, const Options &opt) : width(width) {
+    explicit DualQueueBFWS(int width, const Options &opt)
+        : width(width), full_novelty_check(opt.use_full_novelty_check()) {
         std::cout << "Using Dual-Queue BFWS" << std::endl;
         priority_preferred = BOOST_PREF_OPEN_LIST;
         priority_regular = 0;

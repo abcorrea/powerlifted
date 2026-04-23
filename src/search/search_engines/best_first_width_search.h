@@ -16,7 +16,7 @@ class BestFirstWidthSearch : public SearchBase {
     int width;
     int method;
     bool prune_states;
-    bool only_effects_opt;
+    bool full_novelty_check;
     bool early_stop;
 
 protected:

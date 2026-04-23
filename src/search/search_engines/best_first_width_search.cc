@@ -22,7 +22,7 @@ BestFirstWidthSearch<PackedStateT>::BestFirstWidthSearch(int width,
                                                          const Options &opt,
                                                          int method) : width(width),
                                                                              method(method),
-                                                                             only_effects_opt(opt.get_only_effects_opt()),
+                                                                             full_novelty_check(opt.use_full_novelty_check()),
                                                                              early_stop(opt.get_novelty_early_stop()) {
     if ((method == StandardNovelty::IW) || (method == StandardNovelty::IW_G)) {
         prune_states = true;
@@ -135,7 +135,7 @@ utils::ExitCode BestFirstWidthSearch<PackedStateT>::search(const Task &task,
             if (method == StandardNovelty::R_X)
                 unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
 
-            if (only_effects_opt and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
+            if (!full_novelty_check and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
                 novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
                                                                                 s,
                                                                                 unsatisfied_goals,
