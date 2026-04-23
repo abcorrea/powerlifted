@@ -72,8 +72,8 @@ def set_extra_options(options):
 
 
     # If it is a width-based search, we might need to pass more flags
-    if options.only_effects_novelty_check:
-        CPP_EXTRA_OPTIONS += ['--only-effects-novelty-check', str(1)]
+    if options.full_novelty_check:
+        CPP_EXTRA_OPTIONS.append('--full-novelty-check')
     if options.novelty_early_stop:
         CPP_EXTRA_OPTIONS += ['--novelty-early-stop', str(1)]
 

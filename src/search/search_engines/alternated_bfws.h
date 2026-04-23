@@ -19,7 +19,7 @@ template <class PackedStateT>
 class AlternatedBFWS : public SearchBase {
     AtomCounter atom_counter;
     int width;
-    bool only_effects_opt;
+    bool full_novelty_check;
 
     std::string heuristic_type;
 
@@ -31,7 +31,8 @@ protected:
     AtomCounter initialize_counter_with_gc(const Task &task);
 
 public:
-    explicit AlternatedBFWS(int width, const Options &opt) : width(width) {
+    explicit AlternatedBFWS(int width, const Options &opt)
+        : width(width), full_novelty_check(opt.use_full_novelty_check()) {
         std::cout << "Using Dual-Queue BFWS" << std::endl;
         // By default we use h-add as heuristic, unless explicitly asked to use FF
         heuristic_type = opt.get_evaluator();

@@ -90,8 +90,11 @@ def parse_options():
                         help="flag if the Datalog model should keep duplicated auxiliary rules")
     parser.add_argument("--add-inequalities", action="store_true",
                         help="flag if the Datalog model should add inequalities to rules")
-    parser.add_argument("--only-effects-novelty-check", action="store_true",
-                        help="flag if the novelty evaluation of a state should only consider atoms in the applied action effect")
+    parser.set_defaults(full_novelty_check=False)
+    parser.add_argument("--full-novelty-check",
+                        dest="full_novelty_check",
+                        action="store_true",
+                        help="use full-state novelty checking instead of the default lazy effects-only check")
     parser.add_argument("--novelty-early-stop", action="store_true",
                         help="flag if the novelty evaluation of a state should stop as soon as the w-value is defined")
     parser.add_argument("--unit-cost", action="store_true",

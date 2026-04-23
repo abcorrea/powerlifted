@@ -66,11 +66,13 @@ Currently, the best configuration for satisficing planning (with respect to
 total coverage) is:
 
 ```bash
-./powerlifted.py [-d DOMAIN] -i INSTANCE -s alt-bfws1 -e ff -g yannakakis --only-effects-novelty-check
+./powerlifted.py [-d DOMAIN] -i INSTANCE -s alt-bfws1 -e ff -g yannakakis
 ```
 
-These are also the default values for `-s`, `-e`, and `-g`. To maximize
-coverage, we also recommend adding `--unit-cost` (see below).
+These are also the default values for `-s`, `-e`, and `-g`. By default,
+Powerlifted uses the lazy effects-only novelty check from Corrêa and Seipp
+(2022). To maximize coverage, we also recommend adding `--unit-cost` (see
+below).
 
 ### Search Algorithms (`-s`)
 
@@ -114,7 +116,7 @@ coverage, we also recommend adding `--unit-cost` (see below).
 | Option                          | Description                                                                                                                                                                                                                                            |
 |---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--novelty-early-stop`          | Stop novelty evaluation as soon as the return value is defined. (See Corrêa and Seipp 2022.)                                                                                                                                                           |
-| `--only-effects-novelty-check`  | Only consider atoms in the applied action effect for novelty evaluation. Required for state-of-the-art BFWS performance. (See Corrêa and Seipp 2022.)                                                                                                  |
+| `--full-novelty-check`          | Use the full-state novelty check instead of the default lazy effects-only novelty check described by Corrêa and Seipp (2022). The default effects-only variant is the recommended setting for state-of-the-art BFWS performance. |
 | `--plan-file FILE`              | Output file for plans. Sequential iterations append `.x` to the name.                                                                                                                                                                                  |
 | `--preprocess-task`             | Preprocess PDDL files using [CPDDL](https://gitlab.com/danfis/cpddl). Requires `CPDDL_BIN` environment variable pointing to `cpddl/bin`. *Note*: Still not fully functional — CPDDL may leave negated static preconditions unsupported by Powerlifted. |
 | `--seed SEED`                   | Random seed for the random number generator                                                                                                                                                                                                            |
