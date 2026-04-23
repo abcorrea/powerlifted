@@ -27,5 +27,5 @@ std::size_t hash_value(const DBState &s)
         }
         utils::feed(hash_state, static_cast<std::uint64_t>(relation_hash));
     }
-    return hash_state.get_hash32();
+    return hash_state.get_hash64();
 }
