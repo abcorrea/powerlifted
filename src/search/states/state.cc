@@ -1,32 +1,34 @@
 
 #include "state.h"
 
-#include <boost/functional/hash.hpp>
+#include "../utils/hash.h"
 
 using namespace std;
 
-void DBState::add_tuple(int relation, const GroundAtom &args) {
-  relations[relation].tuples.insert(args);
+void DBState::add_tuple(int relation, const GroundAtom &args)
+{
+    relations[relation].tuples.insert(args);
 }
 
 
-std::size_t hash_value(const DBState &s) {
+std::size_t hash_value(const DBState &s)
+{
     std::size_t seed = 0;
     for (bool b : s.nullary_atoms) {
-        boost::hash_combine(seed, b);
+        utils::hash_combine(seed, static_cast<std::size_t>(b));
     }
     for (const Relation &r : s.relations) {
         std::vector<std::size_t> x;
         for (const GroundAtom &vga : r.tuples) {
             std::size_t aux_seed = vga.size();
+            // 0x9e3779b9 = 2^32 / phi (golden ratio); see Knuth TAOCP Vol. 3, Sec. 6.4
             for (auto &i : vga)
                 aux_seed ^= i + 0x9e3779b9 + (aux_seed << 6) + (aux_seed >> 2);
             x.push_back(aux_seed);
-            //boost::hash_combine(seed, vga);
         }
         std::sort(x.begin(), x.end());
         for (std::size_t e : x) {
-            boost::hash_combine(seed, e);
+            utils::hash_combine(seed, e);
         }
     }
     return seed;

@@ -8,9 +8,10 @@
 
 #include "../annotations/annotation.h"
 
+#include <memory>
 #include <string>
-#include <utility>
 #include <unordered_set>
+#include <utility>
 
 namespace datalog {
 
@@ -18,12 +19,13 @@ class MapVariablePosition {
     // Class mapping free variables to positions of the head/effect.
     // This class is used only for the join/product/projection operation, and not to retrieve
     // the full instantiation of action by "unsplitting" it.
-    std::unordered_map<Term, int, boost::hash<Term>> mapping;
+    std::unordered_map<Term, int, std::hash<Term>> mapping;
 
 public:
     MapVariablePosition() = default;
 
-    void create_map(const DatalogAtom &effect) {
+    void create_map(const DatalogAtom &effect)
+    {
         mapping.clear();
         int position_counter = 0;
         for (const auto &eff : effect.get_arguments()) {
@@ -35,13 +37,9 @@ public:
         }
     }
 
-    bool has_variable(const Term &t) const {
-        return (mapping.count(t) > 0);
-    }
+    bool has_variable(const Term &t) const { return (mapping.count(t) > 0); }
 
-    size_t at(const Term &t) const {
-        return mapping.at(t);
-    }
+    size_t at(const Term &t) const { return mapping.at(t); }
 };
 
 /*
@@ -75,19 +73,24 @@ protected:
 
     MapVariablePosition variable_position;
 
-    int get_position_of_atom_in_same_body_rule(int i) const {
+    int get_position_of_atom_in_same_body_rule(int i) const
+    {
         return variable_source.get_position_of_atom_in_same_body_rule(i);
     }
 
 
 public:
-    RuleBase(int weight, DatalogAtom eff, std::vector<DatalogAtom> c, std::unique_ptr<Annotation> annotation) :
-        effect(std::move(eff)),
-        conditions(std::move(c)),
-        weight(weight),
-        index(next_index++),
-        annotation(std::move(annotation)),
-        variable_source(effect, conditions) {
+    RuleBase(int weight,
+             DatalogAtom eff,
+             std::vector<DatalogAtom> c,
+             std::unique_ptr<Annotation> annotation)
+        : effect(std::move(eff)),
+          conditions(std::move(c)),
+          weight(weight),
+          index(next_index++),
+          annotation(std::move(annotation)),
+          variable_source(effect, conditions)
+    {
         variable_position.create_map(effect);
         ground_effect = true;
         for (const auto &e : effect.get_arguments()) {
@@ -95,73 +98,56 @@ public:
                 ground_effect = false;
             }
         }
-
     };
 
     virtual ~RuleBase() = default;
 
     virtual void clean_up() = 0;
 
-    bool head_is_ground() const {
-        return ground_effect;
-    }
+    bool head_is_ground() const { return ground_effect; }
 
-    void update_index(int i) {
-        index = i;
-    }
+    void update_index(int i) { index = i; }
 
     // TODO Introduce overload using only index and passing VARIABLE to has_variable
-    int get_head_position_of_arg(const Term &arg) const {
+    int get_head_position_of_arg(const Term &arg) const
+    {
         if (variable_position.has_variable(arg))
             return variable_position.at(arg);
         return -1;
     }
 
-    void recreate_map_variable_position(const DatalogAtom &effect) {
+    void recreate_map_variable_position(const DatalogAtom &effect)
+    {
         variable_position.create_map(effect);
     }
 
-    const DatalogAtom &get_effect() const {
-        return effect;
-    }
+    const DatalogAtom &get_effect() const { return effect; }
 
-    const std::vector<DatalogAtom> &get_conditions() const {
-        return conditions;
-    }
+    const std::vector<DatalogAtom> &get_conditions() const { return conditions; }
 
-    int get_index() const {
-        return index;
-    }
+    int get_index() const { return index; }
 
-    int get_weight() const {
-        return weight;
-    }
+    int get_weight() const { return weight; }
 
     virtual int get_type() const = 0;
 
-    const Arguments &get_condition_arguments(int i) const {
-        return conditions[i].get_arguments();
-    }
+    const Arguments &get_condition_arguments(int i) const { return conditions[i].get_arguments(); }
 
-    const Arguments &get_effect_arguments() const {
-        return effect.get_arguments();
-    }
+    const Arguments &get_effect_arguments() const { return effect.get_arguments(); }
 
-    std::vector<std::pair<int, int>> get_variable_source_table() {
+    std::vector<std::pair<int, int>> get_variable_source_table()
+    {
         return variable_source.get_table();
     }
 
-    void update_variable_source_table(VariableSource &&new_source) {
+    void update_variable_source_table(VariableSource &&new_source)
+    {
         variable_source = std::move(new_source);
     }
 
-    VariableSource get_variable_source_object() {
-        return variable_source;
-    }
+    VariableSource get_variable_source_object() { return variable_source; }
 
-    const VariableSource &get_variable_source_object_by_ref() const {
-        return variable_source;
-    }
+    const VariableSource &get_variable_source_object_by_ref() const { return variable_source; }
 
     void update_conditions(DatalogAtom new_atom,
                            const std::vector<DatalogAtom> &new_rule_conditions,
@@ -172,22 +158,21 @@ public:
 
     void set_conditions(std::vector<DatalogAtom> new_rule_conditions);
 
-    void replace_single_condition(size_t j, DatalogAtom atom) ;
+    void replace_single_condition(size_t j, DatalogAtom atom);
 
     void output_variable_table() const;
 
-    std::unique_ptr<Annotation> get_annotation() {
-        return std::move(annotation);
-    }
+    std::unique_ptr<Annotation> get_annotation() { return std::move(annotation); }
 
-    void execute(int head,
-                 const Datalog &datalog) const {
+    void execute(int head, const Datalog &datalog) const
+    {
         if (annotation) {
             annotation->execute(head, datalog);
         }
     }
 
-    std::vector<int> get_variables_in_body() const {
+    std::vector<int> get_variables_in_body() const
+    {
         std::vector<int> variables;
         for (const DatalogAtom &atom : conditions) {
             for (const Term &term : atom.get_arguments()) {
@@ -199,27 +184,26 @@ public:
         return variables;
     }
 
-    bool is_equivalent(const RuleBase &other) const {
-        return (weight == other.get_weight()) && (get_effect_arguments() == other.get_effect_arguments())  && (conditions == other.get_conditions());
+    bool is_equivalent(const RuleBase &other) const
+    {
+        return (weight == other.get_weight()) &&
+               (get_effect_arguments() == other.get_effect_arguments()) &&
+               (conditions == other.get_conditions());
     }
 
-    virtual std::string get_type_name() {
-        return "RuleBase";
-    }
+    virtual std::string get_type_name() { return "RuleBase"; }
 
     void set_specific_condition(size_t i, DatalogAtom atom);
 
-    void update_condition_arguments(int i, std::vector<Term> &terms) {
+    void update_condition_arguments(int i, std::vector<Term> &terms)
+    {
         conditions[i].update_arguments(terms);
     }
 
-    void update_effect_arguments(std::vector<Term> &terms) {
-        effect.update_arguments(terms);
-    }
+    void update_effect_arguments(std::vector<Term> &terms) { effect.update_arguments(terms); }
 };
 
-}
+}  // namespace datalog
 
 
-
-#endif //GROUNDER_RULES_H
+#endif  // GROUNDER_RULES_H

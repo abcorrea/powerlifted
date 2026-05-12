@@ -3,14 +3,14 @@
 
 #include "../datalog.h"
 
-#include "../rules/rule_base.h"
 #include "../rules/generic_rule.h"
 #include "../rules/product.h"
 #include "../rules/project.h"
+#include "../rules/rule_base.h"
 
 namespace datalog {
 
-enum {FAST_DOWNWARD, HELMERT_2009};
+enum { FAST_DOWNWARD, HELMERT_2009 };
 
 class JoinCost {
     /*
@@ -22,27 +22,34 @@ class JoinCost {
     int third_parameter;
 
 public:
-    JoinCost(int n, int max, int min, int mode=FAST_DOWNWARD) {
+    JoinCost(int n, int max, int min, int mode = FAST_DOWNWARD)
+    {
         if (mode == FAST_DOWNWARD) {
             first_parameter = min - n;
             second_parameter = max - n;
             third_parameter = -1 * n;
-        } else if (mode == HELMERT_2009) {
+        }
+        else if (mode == HELMERT_2009) {
             first_parameter = n - max;
             second_parameter = n - min;
             third_parameter = n;
-        } else {
+        }
+        else {
             std::cerr << "Using undefined JoinCost." << std::endl;
             exit(-1);
         }
     }
 
-    JoinCost() : first_parameter(std::numeric_limits<int>::max()),
-                 second_parameter(std::numeric_limits<int>::max()),
-                 third_parameter(std::numeric_limits<int>::max()) {}
+    JoinCost()
+        : first_parameter(std::numeric_limits<int>::max()),
+          second_parameter(std::numeric_limits<int>::max()),
+          third_parameter(std::numeric_limits<int>::max())
+    {
+    }
 
 
-    friend bool operator<(const JoinCost &lhs, const JoinCost &rhs) {
+    friend bool operator<(const JoinCost &lhs, const JoinCost &rhs)
+    {
         if (lhs.first_parameter != rhs.first_parameter) {
             return (lhs.first_parameter < rhs.first_parameter);
         }
@@ -52,22 +59,26 @@ public:
         return (lhs.third_parameter < rhs.third_parameter);
     }
 
-    friend bool operator==(const JoinCost &lhs, const JoinCost &rhs) {
+    friend bool operator==(const JoinCost &lhs, const JoinCost &rhs)
+    {
         return (lhs.first_parameter == rhs.first_parameter) and
-            (lhs.second_parameter == rhs.second_parameter) and
-            (lhs.third_parameter == rhs.third_parameter);
+               (lhs.second_parameter == rhs.second_parameter) and
+               (lhs.third_parameter == rhs.third_parameter);
     }
 
-    friend bool operator<=(const JoinCost &lhs, const JoinCost &rhs) {
-        return lhs < rhs or lhs==rhs;
+    friend bool operator<=(const JoinCost &lhs, const JoinCost &rhs)
+    {
+        return lhs < rhs or lhs == rhs;
     }
-
 };
 
-Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {
+Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule,
+                                    const DatalogAtom &atom1,
+                                    const DatalogAtom &atom2)
+{
     const Arguments &args1 = atom1.get_arguments();
     const Arguments &args2 = atom2.get_arguments();
-    std::unordered_set<Term, boost::hash<Term>> variables_in_both_atoms;
+    std::unordered_set<Term, std::hash<Term>> variables_in_both_atoms;
     for (const auto &t : args1) {
         if (not t.is_object()) {
             variables_in_both_atoms.insert(t);
@@ -79,13 +90,14 @@ Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule, const
         }
     }
 
-    std::unordered_set<Term, boost::hash<Term>> important_vars_for_body_and_head;
+    std::unordered_set<Term, std::hash<Term>> important_vars_for_body_and_head;
     for (const auto &t : rule->get_effect().get_arguments()) {
         if (not t.is_object())
             important_vars_for_body_and_head.insert(t);
     }
     for (const DatalogAtom &condition : rule->get_conditions()) {
-        if (condition == atom1 or condition == atom2) continue;
+        if (condition == atom1 or condition == atom2)
+            continue;
         for (const auto &t : condition.get_arguments()) {
             important_vars_for_body_and_head.insert(t);
         }
@@ -99,15 +111,18 @@ Arguments compute_joining_variables(const std::unique_ptr<RuleBase> &rule, const
     return Arguments(std::move(joining_variables));
 }
 
-JoinCost compute_join_cost_helmert2009(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {
-    std::unordered_set<Term, boost::hash<Term>> free_variables_atom1;
+JoinCost compute_join_cost_helmert2009(const std::unique_ptr<RuleBase> &rule,
+                                       const DatalogAtom &atom1,
+                                       const DatalogAtom &atom2)
+{
+    std::unordered_set<Term, std::hash<Term>> free_variables_atom1;
     for (const auto &t : atom1.get_arguments()) {
         if (not t.is_object()) {
             free_variables_atom1.insert(t);
         }
     }
 
-    std::unordered_set<Term, boost::hash<Term>> free_variables_atom2;
+    std::unordered_set<Term, std::hash<Term>> free_variables_atom2;
     for (const auto &t : atom2.get_arguments()) {
         if (not t.is_object()) {
             free_variables_atom2.insert(t);
@@ -123,7 +138,10 @@ JoinCost compute_join_cost_helmert2009(const std::unique_ptr<RuleBase> &rule, co
     return JoinCost(new_arity, max_arity, min_arity, HELMERT_2009);
 }
 
-JoinCost compute_join_cost_fast_downward(const std::unique_ptr<RuleBase> &rule, const DatalogAtom &atom1, const DatalogAtom &atom2) {
+JoinCost compute_join_cost_fast_downward(const std::unique_ptr<RuleBase> &rule,
+                                         const DatalogAtom &atom1,
+                                         const DatalogAtom &atom2)
+{
     std::unordered_set<int> free_variables_atom1;
     for (const auto &t : atom1.get_arguments()) {
         if (not t.is_object()) {
@@ -152,6 +170,6 @@ JoinCost compute_join_cost_fast_downward(const std::unique_ptr<RuleBase> &rule, 
     return JoinCost(common_vars_arity, max_arity, min_arity);
 }
 
-}
+}  // namespace datalog
 
-#endif //SEARCH_DATALOG_TRANSFORMATIONS_GREEDY_JOIN_H_
+#endif  // SEARCH_DATALOG_TRANSFORMATIONS_GREEDY_JOIN_H_

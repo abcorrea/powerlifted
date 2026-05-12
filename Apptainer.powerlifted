@@ -15,9 +15,7 @@ Stage: build
                make \
                build-essential \
                python3-dev \
-               autotools-dev \
-               libboost-all-dev=1.74.0.3ubuntu7 \
-               libboost-program-options1.74-dev
+               autotools-dev
 
     ## Clear build directory.
     rm -rf /powerlifted/builds
@@ -36,7 +34,7 @@ Stage: run
 
 %post
     apt-get update
-    apt-get -y install --no-install-recommends python3 libboost-program-options1.74-dev
+    apt-get -y install --no-install-recommends python3
     rm -rf /var/lib/apt/lists/*
 
 %environment

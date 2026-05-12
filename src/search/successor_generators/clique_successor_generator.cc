@@ -1,7 +1,7 @@
+#include "clique_successor_generator.h"
 #include "../algorithms/kpkc.h"
 #include "clique_bron_kerbosch.h"
 #include "clique_help_functions.h"
-#include "clique_successor_generator.h"
 
 #include "../action.h"
 #include "../database/hash_join.h"
@@ -25,7 +25,8 @@ using namespace std;
 
 bool CliqueSuccessorGenerator::consistent_literals(const vector<Atom> &literals,
                                                    const Assignment &first_assignment,
-                                                   const Assignment &second_assignment) {
+                                                   const Assignment &second_assignment)
+{
     const auto num_objects = task.objects.size();
 
     for (const auto &literal : literals) {
@@ -124,14 +125,16 @@ bool CliqueSuccessorGenerator::consistent_literals(const vector<Atom> &literals,
     return true;
 }
 
-bool CliqueSuccessorGenerator::consistent_literals_with_constants(const vector<Atom> &literals) {
+bool CliqueSuccessorGenerator::consistent_literals_with_constants(const vector<Atom> &literals)
+{
     const auto empty_assignment = Assignment(-1, -1);
     return consistent_literals(literals, empty_assignment, empty_assignment);
 }
 
 
 bool CliqueSuccessorGenerator::test_nullary_preconditions(const ActionSchema &action,
-                                                          const DBState &state) {
+                                                          const DBState &state)
+{
     // If a nullary atom does not hold then all instantiations are inapplicable.
     const auto &nullary_atoms = state.get_nullary_atoms();
     const auto &positive_nullary = action.get_positive_nullary_precond();
@@ -157,7 +160,8 @@ bool CliqueSuccessorGenerator::test_nullary_preconditions(const ActionSchema &ac
  *
  * @return A set for each predicate that contains possible compatible assignments.
  */
-void CliqueSuccessorGenerator::build_assignment_sets(const DBState &atoms) {
+void CliqueSuccessorGenerator::build_assignment_sets(const DBState &atoms)
+{
     const auto num_objects = task.objects.size();
     const auto &relations = atoms.get_relations();
 
@@ -200,7 +204,8 @@ void CliqueSuccessorGenerator::build_assignment_sets(const DBState &atoms) {
 }
 
 CliqueSuccessorGenerator::CliqueSuccessorGenerator(const Task &task, const CliquePivot &pivot)
-    : GenericJoinSuccessor(task), task(task), pivot(pivot) {
+    : GenericJoinSuccessor(task), task(task), pivot(pivot)
+{
     // Types are static information, precompute the set of object that
     // can be assigned to each parameter based on type information.
 
@@ -301,8 +306,10 @@ CliqueSuccessorGenerator::CliqueSuccessorGenerator(const Task &task, const Cliqu
     }
 }
 
-vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_nullary_case(const ActionSchema &action,
-                                                                                   const DBState &state) {
+vector<LiftedOperatorId>
+CliqueSuccessorGenerator::applicable_actions_nullary_case(const ActionSchema &action,
+                                                          const DBState &state)
+{
     vector<LiftedOperatorId> applicable_actions;
 
     const auto &preconds = action_precondition.find(action)->second;
@@ -318,8 +325,10 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_nullary_ca
     return applicable_actions;
 }
 
-vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_unary_case(const ActionSchema &action,
-                                                                                 const DBState &state) {
+vector<LiftedOperatorId>
+CliqueSuccessorGenerator::applicable_actions_unary_case(const ActionSchema &action,
+                                                        const DBState &state)
+{
     vector<LiftedOperatorId> applicable_actions;
 
     const auto &preconds = action_precondition.find(action)->second;
@@ -332,7 +341,8 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_unary_case
     const auto &objects_with_correct_type = objects_by_parameter_type.at(parameter);
 
     for (const auto &object : objects_with_correct_type) {
-        const LiftedOperatorId op(action.get_index(), {object.get_index()}, unordered_map<int, int>());
+        const LiftedOperatorId op(
+            action.get_index(), {object.get_index()}, unordered_map<int, int>());
 
         if (literal_holds(op, dynamic_preconds, static_preconds, state, static_info, 1)) {
             applicable_actions.push_back(op);
@@ -342,11 +352,13 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_unary_case
     return applicable_actions;
 }
 
-vector<uint32_t> CliqueSuccessorGenerator::create_adjacency_list(const Precondition &preconds,
-                                                                 const std::vector<AssignmentPair> &statically_consistent_assignments,
-                                                                 std::size_t num_parameters,
-                                                                 vector<uint32_t> *adjacency_list,
-                                                                 std::size_t num_vertices) {
+vector<uint32_t> CliqueSuccessorGenerator::create_adjacency_list(
+    const Precondition &preconds,
+    const std::vector<AssignmentPair> &statically_consistent_assignments,
+    std::size_t num_parameters,
+    vector<uint32_t> *adjacency_list,
+    std::size_t num_vertices)
+{
     for (uint32_t vertex_id = 0; vertex_id < num_vertices; ++vertex_id) {
         adjacency_list[vertex_id] = vector<uint32_t>();
     }
@@ -398,24 +410,26 @@ vector<uint32_t> CliqueSuccessorGenerator::create_adjacency_list(const Precondit
     return vertex_ids;
 }
 
-void CliqueSuccessorGenerator::create_adjacency_matrix(const Precondition &preconds,
-                                                       const std::vector<AssignmentPair> &statically_consistent_assignments,
-                                                       std::size_t num_parameters,
-                                                       std::size_t num_vertices,
-                                                       std::vector<boost::dynamic_bitset<>> &adjacency_matrix) {
+void CliqueSuccessorGenerator::create_adjacency_matrix(
+    const Precondition &preconds,
+    const std::vector<AssignmentPair> &statically_consistent_assignments,
+    std::size_t num_parameters,
+    std::size_t num_vertices,
+    std::vector<dynamic_bitset::DynamicBitset<>> &adjacency_matrix)
+{
     for (const auto &pair : statically_consistent_assignments) {
         if (consistent_literals(
                 preconds.dynamic_preconds, pair.first_assignment, pair.second_assignment)) {
-            auto &first_row = adjacency_matrix[pair.first_position];
-            auto &second_row = adjacency_matrix[pair.second_position];
-            first_row[pair.second_position] = 1;
-            second_row[pair.first_position] = 1;
+            adjacency_matrix[pair.first_position].set(pair.second_position);
+            adjacency_matrix[pair.second_position].set(pair.first_position);
         }
     }
 }
 
-vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_general_case(const ActionSchema &action,
-                                                                                   const DBState &state) {
+vector<LiftedOperatorId>
+CliqueSuccessorGenerator::applicable_actions_general_case(const ActionSchema &action,
+                                                          const DBState &state)
+{
     vector<LiftedOperatorId> applicable_actions;
 
     const auto &preconds = action_precondition.find(action)->second;
@@ -483,8 +497,8 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_general_ca
 
         case KCliqueKPartite: {
             const auto num_vertices = to_vertex_assignment.size();
-            std::vector<boost::dynamic_bitset<>> adjacency_matrix(
-                num_vertices, boost::dynamic_bitset<>(num_vertices));
+            std::vector<dynamic_bitset::DynamicBitset<>> adjacency_matrix(
+                num_vertices, dynamic_bitset::DynamicBitset<>(num_vertices));
             create_adjacency_matrix(preconds,
                                     statically_consistent_assignments,
                                     num_parameters,
@@ -509,7 +523,7 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_general_ca
         }
 
         const auto action_index = action.get_index();
-        const LiftedOperatorId op(action_index, std::move(assignments), unordered_map<int,int>());
+        const LiftedOperatorId op(action_index, std::move(assignments), unordered_map<int, int>());
 
         // We do not have to check unary and binary relations, however, if the precondition
         // contains relations of higher arity then we need to check if they hold in the state.
@@ -529,7 +543,8 @@ vector<LiftedOperatorId> CliqueSuccessorGenerator::applicable_actions_general_ca
 
 std::vector<LiftedOperatorId>
 CliqueSuccessorGenerator::get_applicable_actions(const std::vector<ActionSchema> &actions,
-                                                 const DBState &state) {
+                                                 const DBState &state)
+{
     std::vector<LiftedOperatorId> all_applicable;
     bool has_built_assignment_sets = false;
 
@@ -565,7 +580,8 @@ CliqueSuccessorGenerator::get_applicable_actions(const std::vector<ActionSchema>
 }
 
 vector<LiftedOperatorId>
-CliqueSuccessorGenerator::get_applicable_actions(const ActionSchema &action, const DBState &state) {
+CliqueSuccessorGenerator::get_applicable_actions(const ActionSchema &action, const DBState &state)
+{
     if (!test_nullary_preconditions(action, state)) {
         return vector<LiftedOperatorId>();
     }

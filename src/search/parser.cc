@@ -3,8 +3,9 @@
 #include "goal_condition.h"
 #include "task.h"
 
-#include <boost/algorithm/string.hpp>
+#include "utils/string_utils.h"
 
+#include <cassert>
 #include <iostream>
 #include <vector>
 
@@ -105,7 +106,8 @@ void parse_action_schemas(Task &task, int number_action_schemas)
             cin >> param_name >> index >> type;
             parameters.emplace_back(param_name, index, type);
         }
-        if (num_fresh_vars > 0) task.flag_object_creation();
+        if (num_fresh_vars > 0)
+            task.flag_object_creation();
         for (int j = 0; j < num_fresh_vars; ++j) {
             string var_name;
             int index, type;
@@ -124,8 +126,8 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                     positive_nul_precond[index] = true;
                 else
                     negative_nul_precond[index] = true;
-
-            }else if (boost::iequals(precond_name, "=")){
+            }
+            else if (utils::iequals(precond_name, "=")) {
                 int id1, id2;
                 char c, d;
                 cin >> c >> id1 >> d >> id2;
@@ -133,11 +135,10 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                 vector<Argument> arguments;
                 arguments.emplace_back(id1, c == 'c', false);
                 arguments.emplace_back(id2, d == 'c', false);
-                static_preconditions.emplace_back(std::move(arguments),
-                                                  std::move(precond_name),
-                                                  index, negated);
-
-            }else{
+                static_preconditions.emplace_back(
+                    std::move(arguments), std::move(precond_name), index, negated);
+            }
+            else {
                 vector<Argument> arguments;
                 for (int k = 0; k < arguments_size; ++k) {
                     char c;
@@ -157,7 +158,8 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                         exit(-1);
                     }
                 }
-                preconditions.emplace_back(std::move(arguments), std::move(precond_name), index, negated);
+                preconditions.emplace_back(
+                    std::move(arguments), std::move(precond_name), index, negated);
             }
         }
         for (int j = 0; j < eff_size; ++j) {
@@ -241,7 +243,7 @@ void parse_goal(Task &task, int goal_size)
 
 void parse_initial_state(Task &task, int initial_state_size)
 {
-    //StaticInformation static_info(task.predicates.size());
+    // StaticInformation static_info(task.predicates.size());
     for (int i = 0; i < initial_state_size; ++i) {
         string name;
         int index;
@@ -262,7 +264,7 @@ void parse_initial_state(Task &task, int initial_state_size)
                 task.static_info.add_tuple(predicate_index, args);
         }
     }
-    //task.set_static_info(static_info);
+    // task.set_static_info(static_info);
 }
 
 void parse_objects(Task &task, int number_objects)
