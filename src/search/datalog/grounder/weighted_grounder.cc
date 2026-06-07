@@ -190,8 +190,9 @@ void WeightedGrounder::join(
         RuleBase &rule_, const Fact &fact, int position, std::vector<Fact>& newfacts) {
     JoinRule &rule = static_cast<JoinRule &>(rule_);
 
-    JoinHashKey key;
-    key.reserve(rule.get_number_joining_vars());
+    // Build the join key in the reused buffer (no per-call allocation).
+    JoinHashKey &key = join_key_buffer;
+    key.clear();
     for (int i : rule.get_position_of_matching_vars(position)) {
         key.push_back(fact.argument(i).get_index());
     }
