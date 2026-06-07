@@ -1,0 +1,342 @@
+[
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "blocksworld-large-simple",
+  "problem": "p-300-2-goal-2.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 4,
+  "expansions": 6,
+  "generations": 1797
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "childsnack-contents-parsize2-cham5",
+  "problem": "contentam2-p4.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 22,
+  "expansions": 65,
+  "generations": 188791
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "genome-edit-distance",
+  "problem": "d-13-2.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 77,
+  "expansions": 476,
+  "generations": 2269
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "genome-edit-distance-split",
+  "problem": "d-7-13.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 75,
+  "expansions": 399,
+  "generations": 2050
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "logistics-large-simple",
+  "problem": "p-a1-c1-s1000-p10-t1-g3-goal-3.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 12,
+  "expansions": 18,
+  "generations": 18041
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "organic-synthesis-original",
+  "problem": "prob18.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 9,
+  "expansions": 10,
+  "generations": 8139
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p18-net2-b16-g7-t60.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 21,
+  "expansions": 226,
+  "generations": 13728
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "rovers-large-simple",
+  "problem": "p-r1-w1000-o1-1-g2-goal-2.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 22,
+  "expansions": 27,
+  "generations": 195
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "domain": "visitall-multidimensional-4-dim-visitall-CLOSE-g2",
+  "problem": "p8.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 17,
+  "expansions": 38,
+  "generations": 242
+ },
+ {
+  "config": "bfs-blind-full_reducer",
+  "domain": "genome-edit-distance",
+  "problem": "d-3-1.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 14,
+  "expansions": 42709,
+  "generations": 113076
+ },
+ {
+  "config": "bfs-blind-full_reducer",
+  "domain": "genome-edit-distance-split",
+  "problem": "d-7-6.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 13,
+  "expansions": 58887,
+  "generations": 114119
+ },
+ {
+  "config": "bfs-blind-full_reducer",
+  "domain": "organic-synthesis-original",
+  "problem": "prob13.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 3,
+  "expansions": 114,
+  "generations": 26404
+ },
+ {
+  "config": "bfs-blind-full_reducer",
+  "domain": "visitall-multidimensional-4-dim-visitall-CLOSE-g2",
+  "problem": "p2.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 8,
+  "expansions": 26300,
+  "generations": 170528
+ },
+ {
+  "config": "bfs-blind-join",
+  "domain": "genome-edit-distance",
+  "problem": "d-3-1.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 14,
+  "expansions": 42709,
+  "generations": 113076
+ },
+ {
+  "config": "bfs-blind-join",
+  "domain": "genome-edit-distance-split",
+  "problem": "d-6-7.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 13,
+  "expansions": 58811,
+  "generations": 114015
+ },
+ {
+  "config": "bfs-blind-join",
+  "domain": "organic-synthesis-alkene",
+  "problem": "p8.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 1,
+  "expansions": 1,
+  "generations": 32
+ },
+ {
+  "config": "bfs-blind-join",
+  "domain": "visitall-multidimensional-4-dim-visitall-CLOSE-g2",
+  "problem": "p2.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 8,
+  "expansions": 26300,
+  "generations": 170528
+ },
+ {
+  "config": "bfws1-rx-blind-full_reducer",
+  "domain": "childsnack-contents-parsize1-cham3",
+  "problem": "contentam3-p10.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 12,
+  "expansions": 4196,
+  "generations": 186017
+ },
+ {
+  "config": "bfws1-rx-blind-full_reducer",
+  "domain": "genome-edit-distance",
+  "problem": "d-7-8.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 65,
+  "expansions": 22430,
+  "generations": 122876
+ },
+ {
+  "config": "bfws1-rx-blind-full_reducer",
+  "domain": "genome-edit-distance-split",
+  "problem": "d-4-13.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 95,
+  "expansions": 24837,
+  "generations": 126891
+ },
+ {
+  "config": "bfws1-rx-blind-full_reducer",
+  "domain": "organic-synthesis-original",
+  "problem": "prob14.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 5,
+  "expansions": 275,
+  "generations": 5824
+ },
+ {
+  "config": "bfws1-rx-blind-full_reducer",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p11-net2-b10-g2-t30.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 12,
+  "expansions": 5051,
+  "generations": 77061
+ },
+ {
+  "config": "bfws1-rx-blind-full_reducer",
+  "domain": "visitall-multidimensional-3-dim-visitall-FAR-g1",
+  "problem": "p3.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 54,
+  "expansions": 13135,
+  "generations": 75668
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "domain": "childsnack-contents-parsize2-cham3",
+  "problem": "contentam2-p0.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 12,
+  "expansions": 189,
+  "generations": 5341
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "domain": "genome-edit-distance",
+  "problem": "d-9-1.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 83,
+  "expansions": 326,
+  "generations": 728
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "domain": "genome-edit-distance-split",
+  "problem": "d-4-7.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 45,
+  "expansions": 109,
+  "generations": 681
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "domain": "organic-synthesis-alkene",
+  "problem": "p1.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 2,
+  "expansions": 3,
+  "generations": 360
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p07-net1-b12-g5-t80.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 9,
+  "expansions": 11,
+  "generations": 541
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "domain": "visitall-multidimensional-4-dim-visitall-CLOSE-g2",
+  "problem": "p4.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 12,
+  "expansions": 14,
+  "generations": 86
+ },
+ {
+  "config": "gbfs-hmax-full_reducer",
+  "domain": "genome-edit-distance",
+  "problem": "d-3-1.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 16,
+  "expansions": 1764,
+  "generations": 4433
+ },
+ {
+  "config": "gbfs-hmax-full_reducer",
+  "domain": "genome-edit-distance-split",
+  "problem": "d-7-6.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 13,
+  "expansions": 623,
+  "generations": 3032
+ },
+ {
+  "config": "gbfs-hmax-full_reducer",
+  "domain": "organic-synthesis-MIT",
+  "problem": "p7.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 2,
+  "expansions": 3,
+  "generations": 296
+ },
+ {
+  "config": "gbfs-hmax-full_reducer",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p02-net1-b6-g4-t50.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 16,
+  "expansions": 155,
+  "generations": 759
+ },
+ {
+  "config": "gbfs-hmax-full_reducer",
+  "domain": "visitall-multidimensional-4-dim-visitall-CLOSE-g1",
+  "problem": "p6.pddl",
+  "exit_code": 0,
+  "solved": 1,
+  "cost": 13,
+  "expansions": 14,
+  "generations": 79
+ }
+]
