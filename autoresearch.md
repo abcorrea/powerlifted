@@ -131,9 +131,46 @@ metric; re-init with a new header if the machine or the suite ever changes.
 
 ## What's Been Tried
 
-(Nothing yet — loop not started. Append wins, dead ends, and insights here
-every 5–10 experiments. Check this list and `git log` before retrying
-anything similar.)
+**Current best: run 2, commit `23d9f30`, median ≈ 67.0 s** (down from the
+81.2 s baseline). Compare new candidates against run 2's samples
+`[71.078, 65.417, 67.023, 71.158, 63.155]`, not the baseline.
+
+Profile (perf, 4 representative pairs): the **Datalog grounder**
+(`src/search/datalog/`) dominates *every* config — it is the FF/hmax/add
+heuristic + reachability engine, rerun once per state. Top symbols:
+`WeightedGrounder::join` (8–14 %), allocation (malloc/free/new ~16–20 %
+combined), the `get_head_position_of_arg` lookup, phmap `FlatHashSet<Fact>`
+inserts, `JoinRule::clean_up`. Almost all leverage is here, not in the
+successor generators. See `autoresearch.ideas.md`.
+
+### Wins
+- **run 2 (KEEP, ~15–17 %)** — three behavior-preserving grounder overhead
+  cuts, committed together: (a) `MapVariablePosition` flat vector + single
+  scan replacing `unordered_map<Term,int>` and its double lookup; (b)
+  `JoinRule::clean_up` uses `JoinHashTable::clear()` (retain buckets) instead
+  of reassigning a fresh table; (c) `WeightedGrounder::join` builds its key in
+  a reused member buffer instead of allocating per call.
+
+### Insights (read before measuring!)
+- **NEVER run anything CPU-heavy concurrently with a sweep, including
+  `perf record`.** `perf` pinned to core 2 (the sweep core) silently poisoned
+  a whole REPS=5 run (samples jumped to 90–115 s). Profile only when no sweep
+  is timing. Check `pgrep -af perf` and `/proc/loadavg` (1-min) before timing.
+- **Machine noise floor ≈ 5–9 % CV**, and it drifts on a minutes timescale
+  (whole-sweep multiplicative; a single REPS=5 run can ramp 76→94 s within
+  it). Consequence: a lone ~5 % micro-opt will NOT earn a KEEP — confidence
+  stalls at ~1.4–1.8x. **Batch several related, individually-justified
+  behavior-preserving micro-opts into one experiment** so the combined effect
+  (~10–15 %) clears the gate. This is how run 2 passed (each of its 3 parts
+  was sub-floor alone; the flat-vector part alone only ever hit 1.0–1.8x).
+- Wait for 1-min load < ~1.6 before timing (shared box). Loads settle in a
+  few minutes after stopping background work.
+- The recorded **run-1 baseline is noisy** (a contaminated 96.1 s sample
+  inflates its MAD); clean baselines measure ~78 s. For honest A/B on this
+  drifting box, measure candidate and a contemporaneous control close together.
+
+### Dead ends
+- (none yet)
 
 ## Idea backlog
 
