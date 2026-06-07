@@ -47,4 +47,10 @@ reused join key buffer, clean_up clear()).
 - Bigger structural changes (≥10 %) are the other way to beat the floor.
 
 ## Dead ends
-- (none yet)
+- **run 3 (DISCARD)** — `reached_facts`/`newfacts` as reused members
+  (retain buckets across ground()) + hoist of the join inner-loop
+  head-position lookup. No gain over run 2 (median 72.4 vs 67.0) and +6 MB
+  peak. Lesson: once the flat-vector lookup + join-key buffer + clean_up
+  clear are in, the per-state set/vector allocations and the inner-loop
+  lookup are no longer dominant. The flat-vector lookup already made the
+  hoist (idea 2) nearly worthless — drop it.
