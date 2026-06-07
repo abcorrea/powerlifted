@@ -196,6 +196,42 @@ successor generators. See `autoresearch.ideas.md`.
   tiny frequent allocations near-free; the cost is in the probing/copying
   work, not the malloc calls. Next: algorithmic/structural changes, or the
   successor generators (state side), not more malloc-shaving.
+- **run 5 (DISCARD, but REAL ~3.7 % — patch saved)** — successor-generator /
+  state-packer wins: (1) hoist `std::sort` out of `SparseStatePacker::pack`'s
+  relation loop (it re-sorted the whole growing vector after every relation;
+  R sorts → 1, identical final sorted vector) + drop a dead `packed_relation`
+  alloc; (2) `apply_lifted_action_effects` replace an O(n) `std::find` over an
+  `unordered_set` with `insert().second` (O(1)). Behavior-preserving (62/62),
+  simpler code, and a **consistent ~3.7 %** in a pooled 10v10 contemporaneous
+  A/B (62.83 vs 65.23) — but the win is **below this machine's ~5 % noise
+  floor**, so decide.py's min-rel gate can never confirm it (no number of reps
+  helps: the gate needs win > baseline CV ≈ 5 %). Diff saved to
+  `autoresearch-data/pending-succ-gen-wins.patch`. **TODO: bundle this patch
+  with 1–2 more successor-gen wins into one ≥5–6 % experiment** (like run 2
+  bundled three grounder wins). Re-apply with
+  `git apply autoresearch-data/pending-succ-gen-wins.patch`.
+
+### Profile map (where the time is)
+- **FF/hmax/add/bfws configs** → dominated by the **Datalog grounder**
+  (`src/search/datalog/`), esp. `WeightedGrounder::join`. Heavily optimized in
+  run 2; further malloc/hash shaving there is dead (run 4).
+- **blind configs** (and the successor side of every config) → the **database
+  join successor generator** (`src/search/successor_generators/`,
+  `database/`): `std::sort` in state packing (run 5), `GenericJoinSuccessor::
+  filter_static` (does linear `find`s over `tuple_index` — TODO in code says
+  preprocess them), `hash_join`/`hash_semi_join`, and the full relation copy
+  in `generate_successor` (`vector<Relation> new_relation(state.get_relations())`
+  copies every relation's `unordered_set` each successor — biggest single
+  structural cost, but copy-on-write is invasive/risky).
+
+### The confirmable-floor problem (decisive constraint)
+This machine's run-to-run CV is ~5 %. decide.py only returns KEEP when the win
+is BOTH ≥2× the noise AND larger than baseline CV. So **only wins ≥ ~5 % are
+confirmable here, period.** Sub-5 % real wins (runs 4 nominal, 5) cannot pass
+no matter how many reps. Strategy that follows: **don't chase 3–4 % wins
+individually — batch enough behavior-preserving cuts into ONE experiment to
+clear ~6 %, or find a single ≥6 % structural change.** Run 2 (~15 %) is the
+proof this works.
 
 ## Idea backlog
 
