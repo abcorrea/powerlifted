@@ -32,15 +32,17 @@ reused join key buffer, clean_up clear()).
    dedup is load-bearing (cost-lowering re-inserts), and storing fact indices
    would use live (updated) costs vs the set's snapshot cost → behavior change.
    Skip.
-9. [partly DONE in run 6] successor-gen redundancy. STILL OPEN there:
-   - `parse_precond_into_join_program` recomputes `get_indices_and_constants`
-     per fluent atom per state (code TODO says preprocess into adata). Small.
+9. [partly DONE in run 6; recompute-elim DEAD in run 7] successor-gen
+   redundancy. STILL OPEN:
    - `filter_static` Yannakakis path still re-checks every call (left original
-     for safety) — a correct per-subtree dedup could help the yannakakis
-     configs (alt-bfws1-ff-yannakakis is the heaviest single config), but
-     reason carefully about projection before touching it.
-   - YANNAKAKIS-style filter dedup: only valid if you respect that columns get
-     projected away; needs per-subtree tracking, not a single bitset.
+     for safety). A correct per-subtree dedup could help the yannakakis configs
+     (alt-bfws1-ff-yannakakis is the heaviest single config), but reason
+     carefully about projection (columns get projected away → single bitset is
+     wrong; needs per-subtree tracking). NOTE run 7 suggests recompute-elim is
+     low value, so weight this accordingly.
+   - DEAD (run 7): precompute get_indices_and_constants into adata + pack
+     reserve total tuples → no measurable gain. The per-state recompute and the
+     reserve were not bottlenecks. Don't retry recompute/reserve micro-opts.
 10. `generate_successor` copies ALL relations of the state
     (`vector<Relation> new_relation(state.get_relations())`, each an
     unordered_set) for every successor — likely the biggest single structural
