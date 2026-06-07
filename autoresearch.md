@@ -131,9 +131,21 @@ metric; re-init with a new header if the machine or the suite ever changes.
 
 ## What's Been Tried
 
-**Current best: run 2, commit `23d9f30`, median ≈ 67.0 s** (down from the
-81.2 s baseline). Compare new candidates against run 2's samples
-`[71.078, 65.417, 67.023, 71.158, 63.155]`, not the baseline.
+**Current best: run 2, commit `23d9f30`.** Its *stored* samples have a
+median of 67.0 s, but that run landed in a slow machine window — measured
+clean it runs ≈ **63 s**. Do NOT trust the stored 67.0 as the bar.
+
+**Measurement protocol (learned the hard way — follow it):** this box drifts
+±10–15 % on a minutes timescale, so comparing a candidate against *stored*
+best samples produces both false negatives (a real win buried under a slow
+candidate window) and false positives (a neutral change looking great against
+a slow stored baseline — run 4 nearly did this). **Always A/B
+contemporaneously:** measure the candidate AND a fresh build of current HEAD
+back-to-back in the same quiet window (REPS=5 each), then
+`decide.py --best <fresh-HEAD> --candidate <candidate>`. Only commit on KEEP
+of that fresh comparison. Yes, it doubles the cost (~16 min) — it is the only
+honest signal on this machine. (Stash the candidate, `build.py`, measure HEAD,
+unstash, `build.py`, measure candidate.)
 
 Profile (perf, 4 representative pairs): the **Datalog grounder**
 (`src/search/datalog/`) dominates *every* config — it is the FF/hmax/add
@@ -170,7 +182,20 @@ successor generators. See `autoresearch.ideas.md`.
   drifting box, measure candidate and a contemporaneous control close together.
 
 ### Dead ends
-- (none yet)
+- **run 3 (DISCARD)** — `reached_facts`/`newfacts` as reused members (retain
+  buckets across ground()) + hoist of the join inner-loop head-position
+  lookup. No gain over run 2 and +6 MB peak. Once the run-2 wins are in, the
+  per-state set/vector allocations and that lookup are no longer dominant.
+- **run 4 (DISCARD)** — Achievers by-value sink ctor + `std::move` at the
+  join/product sites (kills a double `vector<int>` alloc per fact) +
+  `is_cheapest_path` `lazy_emplace` with in-place cost mutation (one Fact hash
+  instead of find+erase+insert). All behavior-preserving (62/62). Looked like
+  ~6 % vs the stored run-2 best, but a **contemporaneous A/B** showed it dead
+  even with run 2 (both ≈ 63.2 s, confidence 0.02x). **Grounder micro-
+  allocation/hashing cuts do not help past run 2** — glibc tcache makes these
+  tiny frequent allocations near-free; the cost is in the probing/copying
+  work, not the malloc calls. Next: algorithmic/structural changes, or the
+  successor generators (state side), not more malloc-shaving.
 
 ## Idea backlog
 

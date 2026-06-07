@@ -23,28 +23,41 @@ reused join key buffer, clean_up clear()).
    once per join() call (into a reused buffer to avoid per-call alloc). Note:
    with the flat-vector lookup already in, the per-element scan is cheap, so
    this is now a smaller win — bundle it with others.
-5. `is_cheapest_path_to_achieve_fact`: the find()+insert() does two hashings
-   of the same Fact; use phmap `lazy_emplace` / a single find-then-insert by
-   iterator so the Fact is hashed once. (~4 % symbol.) Behavior-identical.
-6. `reached_facts` set rebuilt fresh every ground() call (local in ground());
-   the per-state churn could reuse a cleared member set (retain buckets), like
-   the join tables. Watch behavior: it must be empty at each ground() entry.
-7. Fact stores Arguments (vector<Term>) + Achievers (vector<int>) — lots of
-   small-vector allocs. Consider small-buffer optimization for Arguments
-   (heads/conditions are short). Bigger change; screen carefully.
-8. `JoinHashEntry` is a `flat_hash_set<Fact>` per key — but join only ever
-   iterates it (never dedups on read). Check whether duplicate facts per key
-   are possible; if a vector suffices it'd cut hashing on insert.
-9. State packing / hashing (`src/search/states/`) for the successor-gen side
-   (full_reducer/join/yannakakis generators, used by bfs/gbfs/bfws). Less hot
-   than the heuristic grounder but still in every config.
+5. [DONE/DEAD in run 4] `is_cheapest_path` lazy_emplace single-hash — no gain.
+6. [DEAD in run 3] reuse reached_facts member — no gain.
+7. Fact stores Arguments (vector<Term>) + Achievers (vector<int>) — small-vector
+   allocs. SBO for Arguments is the one allocation idea NOT yet tried, but run 4
+   suggests malloc isn't the bottleneck, so deprioritize.
+8. `JoinHashEntry` is a `flat_hash_set<Fact>` per key, but join only ever
+   ITERATES it (never dedups on read) — so the per-key set may be doing
+   pointless hashing on insert. Check whether duplicate facts per key are
+   possible; if not, a `std::vector<Fact>` (or vector<int> of fact indices)
+   per key would cut hashing AND the prepare_insert cost (3–7 % symbol). This
+   is structural, not malloc-shaving — promising.
+9. The Fact copied into the join hash entries / reached_facts carries
+   Arguments+Achievers it doesn't need there (only args, cost, index are read
+   from hash entries; only cost+index from reached_facts). Storing lighter
+   records (e.g. fact indices) in those sets could cut copy + hash cost.
+   Structural.
+10. `JoinHashKey` is a `vector<int>` used as a phmap map key — hashed+compared
+   on every join. For single-var joins (very common) the key is one int; a
+   specialized int-keyed path could skip vector hashing. Structural.
+11. State packing / hashing (`src/search/states/`) for the successor-gen side
+   (full_reducer/join/yannakakis generators). Less hot than the heuristic
+   grounder but in every config; separate from the grounder entirely.
+12. Algorithmic: hmax/add recomputation across sibling states — the grounder
+   reruns the whole Datalog fixpoint per state from scratch. Any provably-safe
+   incrementality/memoization would be a big win, but must not change returned
+   heuristic values (hard to keep behavior-identical). High risk/high reward.
 
 ## Strategy notes
-- Individual grounder micro-opts are below the ~5–9 % noise floor. BATCH
-  2–3 related behavior-preserving cuts per experiment so the combined effect
-  clears the gate (this is how run 2 passed). Screen the batch at REPS=3,
-  confirm at REPS=5.
-- Bigger structural changes (≥10 %) are the other way to beat the floor.
+- **Grounder malloc-shaving is exhausted (run 4).** glibc tcache makes the
+  small frequent allocs near-free; cutting them doesn't move the metric. Go
+  structural: cut WORK (hashing, probing, copying, redundant fixpoint), not
+  malloc calls. Ideas 8–10 target the actual hashing/probing in join.
+- Noise floor ≈ 5–9 %. A real win must clear that. BATCH related cuts OR make
+  one ≥10 % structural change. Confirm every would-be KEEP with a
+  contemporaneous A/B (see protocol in autoresearch.md), not stored samples.
 
 ## Dead ends
 - **run 3 (DISCARD)** — `reached_facts`/`newfacts` as reused members
