@@ -132,9 +132,38 @@ metric; re-init with a new header if the machine or the suite ever changes.
 ## What's Been Tried
 
 **Current best: run 6, commit `86f7124`** (median ≈ 59.5 s, measured clean;
-baseline was 81.2 s). Stored medians drift with the machine — when you need
-the real bar, re-measure HEAD contemporaneously (see protocol below), don't
-trust an old stored number.
+baseline was 81.2 s → ~27 % cumulative). Stored medians drift with the
+machine — when you need the real bar, re-measure HEAD contemporaneously (see
+protocol below), don't trust an old stored number.
+
+**Where to go next (prioritized, for a resuming agent).** The cheap wins are
+harvested: malloc-shaving (runs 3,4), allocation-retention (run 3), and
+state-independent recompute/reserve (run 7) are all confirmed DEAD — glibc
+tcache makes small allocs free and those recomputes weren't bottlenecks. The
+profile is now flat (~3–6 % items). Remaining levers, in rough value/risk
+order:
+1. **`generate_successor` copies ALL relations of the parent state**
+   (`vector<Relation> new_relation(state.get_relations())`, each an
+   `unordered_set<GroundAtom>`) for every successor — the biggest single
+   structural cost on the blind/successor side (~5 % + its malloc). A
+   copy-on-write / shared-relation scheme would cut it but is invasive (touches
+   DBState's value semantics, `operator==`, hash). Do it as a dedicated, very
+   careful experiment; the behavior gate + 62/62 checks are your safety net.
+2. **State packing** (`SparseStatePacker::pack_tuple` ~6 % + `get_hash64` ~3 %,
+   universal path): `pack_tuple` constructs+hashes a `pair<int,vector<int>>`
+   key per tuple per state, copying the tuple even on a cache hit. A
+   transparent/heterogeneous phmap lookup (hash the (pred,tuple) without
+   building the pair) would cut the copy on hits. Fiddly; maybe sub-floor.
+3. **Yannakakis `filter_static`** still re-checks every call (run 6 only
+   deduped the linear-join generators). A *per-subtree* dedup that respects
+   projection could help the heaviest config (alt-bfws1-ff-yannakakis), but
+   note that config is largely grounder-bound, so the upside is limited.
+4. **Grounder algorithmic** (FF/hmax = 47 %+16 % of suite): the per-state
+   Datalog fixpoint re-adds the permanent EDB every call; any provably-safe
+   incrementality is high reward but must not change returned heuristic values
+   (very hard to keep behavior-identical). Highest risk.
+Reminder: only wins ≥ ~5 % are confirmable here — BATCH small ones or find a
+single ≥6 % structural change.
 
 **Measurement protocol (learned the hard way — follow it):** this box drifts
 ±10–15 % on a minutes timescale, so comparing a candidate against *stored*
@@ -148,13 +177,15 @@ of that fresh comparison. Yes, it doubles the cost (~16 min) — it is the only
 honest signal on this machine. (Stash the candidate, `build.py`, measure HEAD,
 unstash, `build.py`, measure candidate.)
 
-Profile (perf, 4 representative pairs): the **Datalog grounder**
-(`src/search/datalog/`) dominates *every* config — it is the FF/hmax/add
-heuristic + reachability engine, rerun once per state. Top symbols:
-`WeightedGrounder::join` (8–14 %), allocation (malloc/free/new ~16–20 %
-combined), the `get_head_position_of_arg` lookup, phmap `FlatHashSet<Fact>`
-inserts, `JoinRule::clean_up`. Almost all leverage is here, not in the
-successor generators. See `autoresearch.ideas.md`.
+Profile note: the **Datalog grounder** (`src/search/datalog/`) dominates the
+FF/hmax/add configs (rerun once per state), while the **database-join
+successor generator** (`src/search/successor_generators/`, `database/`)
+dominates the blind configs and is on every config's expansion path. By
+generator, **full_reducer ≈ 61 % of suite time**, yannakakis ≈ 31 %, join
+≈ 9 %; by evaluator, ff ≈ 47 %, blind ≈ 38 %, hmax ≈ 16 %. Both sides have
+yielded wins (grounder: run 2; successor gen: run 6) — do NOT assume "all
+leverage is in the grounder" (an earlier note said that; run 6 disproved it).
+See `autoresearch.ideas.md` for the live backlog.
 
 ### Wins
 - **run 2 (KEEP, ~15–17 %)** — three behavior-preserving grounder overhead
@@ -218,11 +249,15 @@ successor generators. See `autoresearch.ideas.md`.
   simpler code, and a **consistent ~3.7 %** in a pooled 10v10 contemporaneous
   A/B (62.83 vs 65.23) — but the win is **below this machine's ~5 % noise
   floor**, so decide.py's min-rel gate can never confirm it (no number of reps
-  helps: the gate needs win > baseline CV ≈ 5 %). Diff saved to
-  `autoresearch-data/pending-succ-gen-wins.patch`. **TODO: bundle this patch
-  with 1–2 more successor-gen wins into one ≥5–6 % experiment** (like run 2
-  bundled three grounder wins). Re-apply with
-  `git apply autoresearch-data/pending-succ-gen-wins.patch`.
+  helps: the gate needs win > baseline CV ≈ 5 %). **These two changes were
+  later bundled with the filter_static dedup and committed as run 6** — they
+  ride along in the kept commit, just couldn't carry it alone.
+- **run 7 (DISCARD)** — precompute `get_indices_and_constants` per fluent atom
+  into `PrecompiledActionData` (the code's own TODO) + `pack()` reserve total
+  tuples instead of `num_predicates`. Behavior-preserving (62/62) but a
+  contemporaneous A/B showed no gain (candidate 61.7 vs run-6 HEAD 59.2). Once
+  the algorithmic redundancies are gone, trimming tiny state-independent
+  recompute + fixing reserves does not move the metric. Don't retry this class.
 
 ### Profile map (where the time is)
 - **FF/hmax/add/bfws configs** → dominated by the **Datalog grounder**
