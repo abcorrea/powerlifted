@@ -28,27 +28,30 @@ reused join key buffer, clean_up clear()).
 7. Fact stores Arguments (vector<Term>) + Achievers (vector<int>) — small-vector
    allocs. SBO for Arguments is the one allocation idea NOT yet tried, but run 4
    suggests malloc isn't the bottleneck, so deprioritize.
-8. `JoinHashEntry` is a `flat_hash_set<Fact>` per key, but join only ever
-   ITERATES it (never dedups on read) — so the per-key set may be doing
-   pointless hashing on insert. Check whether duplicate facts per key are
-   possible; if not, a `std::vector<Fact>` (or vector<int> of fact indices)
-   per key would cut hashing AND the prepare_insert cost (3–7 % symbol). This
-   is structural, not malloc-shaving — promising.
-9. The Fact copied into the join hash entries / reached_facts carries
-   Arguments+Achievers it doesn't need there (only args, cost, index are read
-   from hash entries; only cost+index from reached_facts). Storing lighter
-   records (e.g. fact indices) in those sets could cut copy + hash cost.
-   Structural.
-10. `JoinHashKey` is a `vector<int>` used as a phmap map key — hashed+compared
-   on every join. For single-var joins (very common) the key is one int; a
-   specialized int-keyed path could skip vector hashing. Structural.
-11. State packing / hashing (`src/search/states/`) for the successor-gen side
-   (full_reducer/join/yannakakis generators). Less hot than the heuristic
-   grounder but in every config; separate from the grounder entirely.
-12. Algorithmic: hmax/add recomputation across sibling states — the grounder
-   reruns the whole Datalog fixpoint per state from scratch. Any provably-safe
-   incrementality/memoization would be a big win, but must not change returned
-   heuristic values (hard to keep behavior-identical). High risk/high reward.
+8. [DONE/DEAD vs behavior] `JoinHashEntry` as vector instead of set — the set
+   dedup is load-bearing (cost-lowering re-inserts), and storing fact indices
+   would use live (updated) costs vs the set's snapshot cost → behavior change.
+   Skip.
+9. [partly DONE in run 6] successor-gen redundancy. STILL OPEN there:
+   - `parse_precond_into_join_program` recomputes `get_indices_and_constants`
+     per fluent atom per state (code TODO says preprocess into adata). Small.
+   - `filter_static` Yannakakis path still re-checks every call (left original
+     for safety) — a correct per-subtree dedup could help the yannakakis
+     configs (alt-bfws1-ff-yannakakis is the heaviest single config), but
+     reason carefully about projection before touching it.
+   - YANNAKAKIS-style filter dedup: only valid if you respect that columns get
+     projected away; needs per-subtree tracking, not a single bitset.
+10. `generate_successor` copies ALL relations of the state
+    (`vector<Relation> new_relation(state.get_relations())`, each an
+    unordered_set) for every successor — likely the biggest single structural
+    cost on the successor side. Copy-on-write / structural sharing would cut it
+    but is invasive and risks DBState equality/hashing behavior. High
+    risk/high reward; do as a dedicated careful experiment.
+11. `JoinHashKey` single-int specialized path for single-var joins. Structural,
+    modest.
+12. Algorithmic: hmax/add grounder reruns the whole Datalog fixpoint per state
+    from scratch. Provably-safe incrementality would be big but must not change
+    returned heuristic values. High risk/high reward.
 
 ## Strategy notes
 - **Grounder malloc-shaving is exhausted (run 4).** glibc tcache makes the

@@ -131,9 +131,10 @@ metric; re-init with a new header if the machine or the suite ever changes.
 
 ## What's Been Tried
 
-**Current best: run 2, commit `23d9f30`.** Its *stored* samples have a
-median of 67.0 s, but that run landed in a slow machine window — measured
-clean it runs ≈ **63 s**. Do NOT trust the stored 67.0 as the bar.
+**Current best: run 6, commit `86f7124`** (median ≈ 59.5 s, measured clean;
+baseline was 81.2 s). Stored medians drift with the machine — when you need
+the real bar, re-measure HEAD contemporaneously (see protocol below), don't
+trust an old stored number.
 
 **Measurement protocol (learned the hard way — follow it):** this box drifts
 ±10–15 % on a minutes timescale, so comparing a candidate against *stored*
@@ -162,6 +163,18 @@ successor generators. See `autoresearch.ideas.md`.
   `JoinRule::clean_up` uses `JoinHashTable::clear()` (retain buckets) instead
   of reassigning a fresh table; (c) `WeightedGrounder::join` builds its key in
   a reused member buffer instead of allocating per call.
+- **run 6 (KEEP, ~9.8 %)** — cut redundant successor-generator work (the
+  full_reducer path = ~61 % of suite). The decisive piece: **`filter_static`
+  no longer re-checks an already-enforced static (in)equality precondition
+  after every join** — once its columns are in the working table, later joins
+  preserve them, so re-filtering is a no-op; track applied preconds with a
+  per-`instantiate` bitset. Enabled for the linear-join generators
+  (generic/full_reducer/ordered); Yannakakis keeps original behavior (it
+  projects columns away per subtree, breaking the invariant). Bundled with the
+  run-5 patch: sort-hoist in `pack` + `apply_lifted_action_effects`
+  O(n) `std::find`→`insert().second`. The sort-hoist/find were sub-floor
+  alone; **`filter_static` dedup was what pushed the bundle to 9.8 %.**
+  Takeaway: **algorithmic redundancy on the dominant path beats micro-opts.**
 
 ### Insights (read before measuring!)
 - **NEVER run anything CPU-heavy concurrently with a sweep, including
