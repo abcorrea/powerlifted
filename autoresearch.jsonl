@@ -1,0 +1,2 @@
+{"type":"config","name":"powerlifted-htg-search-time","metricName":"search_time","metricUnit":"s","bestDirection":"lower"}
+{"run":1,"commit":"2f57c53","metric":81.208,"samples":[81.208,82.762,96.148,81.189,73.501],"metrics":{"peak_mem_mb":149},"confidence":null,"status":"keep","description":"baseline: HEAD af421db + setup, 5 sweeps via REPS=5 ./autoresearch.sh","timestamp":1780857955,"segment":0}
