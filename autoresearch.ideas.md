@@ -55,18 +55,29 @@ reused join key buffer, clean_up clear()).
     from scratch. Provably-safe incrementality would be big but must not change
     returned heuristic values. High risk/high reward.
 
-## Join-path bundle (run 8, saved patch — ready to extend)
-`autoresearch-data/pending-phmap-join-wins.patch` holds: phmap for
-hash_join/hash_semi_join + index-storage in hash_join's build map. ~4.5 %
-faster + 10 MB less peak mem, but sub-floor (confidence 0.66x). To land it,
-`git apply` the patch and add a 3rd join-path win:
-- Precompute `compute_matching_columns` for the **semi-join** order (those
-  tables have state-independent `tuple_index`, computable per action at init).
-  hash_join's matches evolve (tuple_index grows mid-sequence) so that side is
-  harder — would need to simulate the sequence.
-- Store indices (not key copies) in `hash_semi_join`'s probe, or skip building
-  `t2_keys` when |t2| is tiny.
-Then measure the 3-part bundle; combined should clear ~6 %.
+## Join-path bundle (runs 8 + 9 — DEAD as a standalone win; patch saved)
+`autoresearch-data/pending-join-path-bundle.patch` (supersedes the old
+`pending-phmap-join-wins.patch`) holds the **full 3-part join bundle**:
+phmap for hash_join/hash_semi_join + index-storage in hash_join's build map
+(run 8) + **in-place stable compaction in hash_semi_join** (run 9: move
+survivors down instead of copying into a fresh `new_tuples`; drops one vector
+alloc + N tuple copies per semi-join).
+
+**Verdict after run 9: the join path does NOT contain a 6 % win.** Adding the
+3rd win (in-place semi-join) on top of run-8's ~4.5 % moved the metric only
+~0.25 % (4.75 % total in a REPS=5 A/B; deterministic peak_mem 139 vs 149 MB,
+-6.7 %). Still sub-floor (4.75 % < the machine's 5-9 % CV). The semi-join copies
+are NOT a bottleneck — glibc tcache makes the allocs near-free (same lesson as
+run 4). **Do not keep adding micro-wins to this bundle.** The only way it lands
+is to **bundle it with a separately-confirmed STRUCTURAL win** (e.g. the
+generate_successor relation-copy, idea 10) so the COMBINED effect clears ~6 %.
+Plan: confirm the structural win alone first, commit it, then re-apply this
+patch on top and A/B the combination.
+
+Tried-and-not-worth-pursuing on this path: precompute `compute_matching_columns`
+(state-independent, but it's the run-7 recompute-elim class — tiny nested loop
+over small arities, won't move the metric); store indices in hash_semi_join's
+probe (compaction already removed those copies, ~nil gain).
 
 ## Strategy notes
 - **Grounder malloc-shaving is exhausted (run 4).** glibc tcache makes the
