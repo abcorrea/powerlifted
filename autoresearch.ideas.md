@@ -25,9 +25,12 @@ reused join key buffer, clean_up clear()).
    this is now a smaller win — bundle it with others.
 5. [DONE/DEAD in run 4] `is_cheapest_path` lazy_emplace single-hash — no gain.
 6. [DEAD in run 3] reuse reached_facts member — no gain.
-7. Fact stores Arguments (vector<Term>) + Achievers (vector<int>) — small-vector
-   allocs. SBO for Arguments is the one allocation idea NOT yet tried, but run 4
-   suggests malloc isn't the bottleneck, so deprioritize.
+7. [DONE in run 10, +21 % KEEP — THE BIG WIN] Fact stores Arguments
+   (vector<Term>) + Achievers (vector<int>). Gave both SBO (small_vector<Term,4>
+   / small_vector<int,2>). Run 4's "malloc isn't the bottleneck" was about alloc
+   COUNT; SBO wins on LAYOUT/cache-locality + indirection (every fact
+   hash/compare/copy in the fixpoint), a different axis. **Now apply the same SBO
+   lens elsewhere — see "SBO targets" below.**
 8. [DONE/DEAD vs behavior] `JoinHashEntry` as vector instead of set — the set
    dedup is load-bearing (cost-lowering re-inserts), and storing fact indices
    would use live (updated) costs vs the set's snapshot cost → behavior change.
@@ -79,11 +82,28 @@ Tried-and-not-worth-pursuing on this path: precompute `compute_matching_columns`
 over small arities, won't move the metric); store indices in hash_semi_join's
 probe (compaction already removed those copies, ~nil gain).
 
+## SBO targets (the run-10 lens — find hot tiny heap-vectors, inline them)
+The 21 % run-10 win came from inlining the grounder's per-fact vectors. Apply
+the same to other hot tiny heap-vectors on dominant paths:
+- **GroundAtom = std::vector<int>** (structures.h) — element of every relation's
+  unordered_set and of Table::tuple_t on the successor-gen path (blind/full_reducer
+  profile = ~24 % malloc + 17 % hash_semi_join). SBO candidate (`small_vector<int,4>`).
+  Behavior: hash sets key on CONTENTS (TupleHash), so storage-only SBO keeps the
+  same hash/eq/iteration order. Verify TupleHash + operator== work on small_vector.
+  Pervasive type — medium risk, big potential. **Top successor-gen lever now.**
+- Table join intermediates (`vector<int>` combined tuples in hash_join/product) —
+  already partly index-stored in the saved join patch; tuple_t SBO would help more.
+- JoinHashKey = std::vector<int> (rules/join.h) — built per fact in the grounder
+  join; small_vector candidate (the reused buffer already cuts allocs, so smaller).
+
 ## Strategy notes
-- **Grounder malloc-shaving is exhausted (run 4).** glibc tcache makes the
-  small frequent allocs near-free; cutting them doesn't move the metric. Go
-  structural: cut WORK (hashing, probing, copying, redundant fixpoint), not
-  malloc calls. Ideas 8–10 target the actual hashing/probing in join.
+- **Memory LAYOUT > memory ALLOCATION (run 10).** Run 4 retired malloc-shaving
+  (alloc count, tcache-free); run 10 showed SBO/inline-storage is a *separate,
+  live* lever — it cuts cache misses + pointer indirection on hot
+  hash/compare/copy paths. When you see a tiny per-element heap vector on a
+  dominant path, try SBO before concluding "allocs don't matter."
+- Go structural: cut WORK (hashing, probing, copying, redundant fixpoint) and
+  cut INDIRECTION (SBO), not just malloc calls.
 - Noise floor ≈ 5–9 %. A real win must clear that. BATCH related cuts OR make
   one ≥10 % structural change. Confirm every would-be KEEP with a
   contemporaneous A/B (see protocol in autoresearch.md), not stored samples.

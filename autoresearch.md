@@ -131,37 +131,55 @@ metric; re-init with a new header if the machine or the suite ever changes.
 
 ## What's Been Tried
 
-**Current best: run 6, commit `8b350d9`** (median ≈ 59.5 s, measured clean;
-baseline was 81.2 s → ~27 % cumulative). Stored medians drift with the
+**Current best: run 10, commit `76ac380`** (median ≈ 46 s, measured clean;
+baseline was 81.2 s → ~43 % cumulative). Stored medians drift with the
 machine — when you need the real bar, re-measure HEAD contemporaneously (see
 protocol below), don't trust an old stored number.
 
-**Where to go next (prioritized, for a resuming agent).** The cheap wins are
-harvested: malloc-shaving (runs 3,4), allocation-retention (run 3), and
-state-independent recompute/reserve (run 7) are all confirmed DEAD — glibc
-tcache makes small allocs free and those recomputes weren't bottlenecks. The
-profile is now flat (~3–6 % items). Remaining levers, in rough value/risk
-order:
-1. **`generate_successor` copies ALL relations of the parent state**
-   (`vector<Relation> new_relation(state.get_relations())`, each an
-   `unordered_set<GroundAtom>`) for every successor — the biggest single
-   structural cost on the blind/successor side (~5 % + its malloc). A
-   copy-on-write / shared-relation scheme would cut it but is invasive (touches
-   DBState's value semantics, `operator==`, hash). Do it as a dedicated, very
-   careful experiment; the behavior gate + 62/62 checks are your safety net.
-2. **State packing** (`SparseStatePacker::pack_tuple` ~6 % + `get_hash64` ~3 %,
-   universal path): `pack_tuple` constructs+hashes a `pair<int,vector<int>>`
-   key per tuple per state, copying the tuple even on a cache hit. A
-   transparent/heterogeneous phmap lookup (hash the (pred,tuple) without
-   building the pair) would cut the copy on hits. Fiddly; maybe sub-floor.
-3. **Yannakakis `filter_static`** still re-checks every call (run 6 only
-   deduped the linear-join generators). A *per-subtree* dedup that respects
-   projection could help the heaviest config (alt-bfws1-ff-yannakakis), but
-   note that config is largely grounder-bound, so the upside is limited.
-4. **Grounder algorithmic** (FF/hmax = 47 %+16 % of suite): the per-state
-   Datalog fixpoint re-adds the permanent EDB every call; any provably-safe
-   incrementality is high reward but must not change returned heuristic values
-   (very hard to keep behavior-identical). Highest risk.
+**BREAKTHROUGH (run 10): memory LAYOUT beats memory ALLOCATION.** Run 4's
+"malloc-shaving is dead — tcache makes small allocs free" was only half the
+story: it tested alloc *count*, not *layout*. Run 10 gave a clean **21 %** by
+giving the Datalog grounder's per-fact heap vectors small-buffer optimization
+(SBO): `Arguments` (`vector<Term>`→`small_vector<Term,4>`) and `Achievers`
+(`vector<int>`→`small_vector<int,2>`). Millions of Facts each held two tiny
+heap buffers; inlining them removed the allocs AND the pointer-chase on every
+fact hash/compare/copy in the fixpoint. **The live direction is now: find hot
+tiny heap-vectors on a dominant path and inline them.** This is distinct from
+malloc-shaving — it wins on cache locality + indirection, not alloc count.
+
+**Where to go next (prioritized, for a resuming agent).**
+1. **Re-apply the saved join-path bundle** (`autoresearch-data/pending-join-path-bundle.patch`):
+   phmap + index-store in hash_join + in-place semi-join compaction. It was a
+   real but sub-floor ~4.75 % (~2.7 s absolute) against the old 57 s baseline;
+   the grounder is now 21 % faster so the suite total is ~46 s and that SAME
+   ~2.7 s absolute is now ~5.9 % relative — much closer to the floor, plus it
+   carries a deterministic −10 MB peak-mem win. Low risk (written + behavior-
+   proven, 62/62). Measure on top of run 10. **DO THIS FIRST.**
+2. **GroundAtom SBO** — the successor-gen analogue of run 10. `GroundAtom =
+   std::vector<int>` (structures.h) is the element type of every relation's
+   `unordered_set<GroundAtom,TupleHash>` and of the join `Table::tuple_t`. The
+   blind/full_reducer profile is ~24 % malloc + 17 % hash_semi_join, much of it
+   tiny tuple-vector allocs. SBO on GroundAtom/tuple_t (e.g. `small_vector<int,
+   4>`) should cut it. BEHAVIOR CHECK: hash sets key on contents via TupleHash
+   (same contents→same hash→same set iteration order→same trajectory), so SBO is
+   storage-only — but verify TupleHash/operator== work on small_vector and that
+   nothing depends on the exact type. Potentially another large win; medium risk
+   (GroundAtom is pervasive). 62/62 + reference gate is the net.
+3. **State packing** (`SparseStatePacker::pack_tuple` ~6 % + `get_hash64` ~3 %,
+   universal path): builds+hashes a `pair<int,vector<int>>` key per tuple per
+   state, copying the tuple even on a cache hit. Transparent/heterogeneous phmap
+   lookup would cut the copy on hits. Fiddly; maybe sub-floor.
+4. **Grounder algorithmic** (FF/hmax = 47 %+16 % of suite): per-state Datalog
+   fixpoint re-adds the permanent EDB every call; provably-safe incrementality
+   is high reward but must not change returned heuristic values. Highest risk.
+
+NOTE: run 10 introduced a header-only **system-boost** include
+(`boost/container/small_vector.hpp`) — compiles with no CMake/link change
+because /usr/include is default-searched. The project otherwise vendors its
+deps (phmap) and avoids system deps; a clean follow-up (build hygiene, not a
+perf experiment) would vendor a minimal `small_vector` or declare boost in
+CMake. Flagged for the maintainer; left as-is since it's off the metric path.
+
 Reminder: only wins ≥ ~5 % are confirmable here — BATCH small ones or find a
 single ≥6 % structural change.
 
@@ -188,6 +206,16 @@ leverage is in the grounder" (an earlier note said that; run 6 disproved it).
 See `autoresearch.ideas.md` for the live backlog.
 
 ### Wins
+- **run 10 (KEEP, ~21 %)** — SBO for the grounder's per-fact heap vectors:
+  `Arguments` → `boost::container::small_vector<Term,4>` and `Achievers` →
+  `small_vector<int,2>`. Inlines the two tiny heap buffers every Fact carried,
+  removing both the per-fact allocs and the pointer indirection on every fact
+  hash/compare/copy in the per-state Datalog fixpoint (grounder = 63 % of
+  suite). Behavior-preserving storage-only change (62/62 + reference gate);
+  needed one ADL fix in join.h (`std::find`/`std::distance`). Confirmed +21.15 %
+  (confidence 18.2x) in a REPS=5 contemporaneous A/B (45.96 vs 58.29). peak_mem
+  flat at 149 MB. **Lesson: memory LAYOUT (SBO/locality) is a live lever even
+  where malloc-shaving (alloc count) was dead — different axis (see run 4).**
 - **run 2 (KEEP, ~15–17 %)** — three behavior-preserving grounder overhead
   cuts, committed together: (a) `MapVariablePosition` flat vector + single
   scan replacing `unordered_map<Term,int>` and its double lookup; (b)
