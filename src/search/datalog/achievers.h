@@ -5,7 +5,7 @@
 #ifndef SEARCH_DATALOG_ACHIEVERS_H_
 #define SEARCH_DATALOG_ACHIEVERS_H_
 
-#include <boost/container/small_vector.hpp>
+#include "../utils/small_vector.h"
 
 namespace datalog {
 
@@ -13,7 +13,7 @@ class Achievers {
     // A fact's achiever body is tiny (one entry for project rules, two for join
     // rules), so we hold it inline to avoid a per-fact heap allocation. Same
     // semantics as the previous std::vector<int>.
-    using Container = boost::container::small_vector<int, 2>;
+    using Container = utils::small_vector<int, 2>;
     Container achievers;
     int rule_idx;
     int rule_cost;

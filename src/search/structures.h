@@ -3,7 +3,7 @@
 
 #include "hash_structures.h"
 
-#include <boost/container/small_vector.hpp>
+#include "utils/small_vector.h"
 
 #include <string>
 #include <utility>
@@ -21,7 +21,7 @@
  * content-based hash (see TupleHash / utils::feed). The inline capacity is also
  * shared by Table::tuple_t so the two interconvert by move (see database/table.h).
  */
-using GroundAtom = boost::container::small_vector<int, 4>;
+using GroundAtom = utils::small_vector<int, 4>;
 
 
 /**

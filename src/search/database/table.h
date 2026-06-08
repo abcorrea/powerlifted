@@ -1,7 +1,7 @@
 #ifndef SEARCH_TABLE_H
 #define SEARCH_TABLE_H
 
-#include <boost/container/small_vector.hpp>
+#include "../utils/small_vector.h"
 
 #include <vector>
 
@@ -15,7 +15,7 @@ public:
     // parsed from the state move into a Table without an element-wise copy. The
     // inline storage removes a heap allocation per join-output tuple on the hot
     // successor-generation path.
-    using tuple_t = boost::container::small_vector<int, 4>;
+    using tuple_t = utils::small_vector<int, 4>;
 
     /// @var tuples: the relation corresponding to the table, encoded as a vector of tuples
     std::vector<tuple_t> tuples;

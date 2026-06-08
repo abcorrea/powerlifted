@@ -8,7 +8,7 @@
  */
 
 
-#include <boost/container/small_vector.hpp>
+#include "small_vector.h"
 
 #include <cassert>
 #include <cstddef>
@@ -287,7 +287,7 @@ void feed(HashState &hash_state, const std::vector<T> &vec)
 // state packer (which keys on std::pair<int, GroundAtom>) behaviour-identical
 // when GroundAtom is a small-buffer-optimized vector.
 template <typename T, std::size_t N>
-void feed(HashState &hash_state, const boost::container::small_vector<T, N> &vec)
+void feed(HashState &hash_state, const small_vector<T, N> &vec)
 {
     std::size_t sz = vec.size();
     feed(hash_state, static_cast<uint64_t>(sz));

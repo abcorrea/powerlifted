@@ -4,8 +4,7 @@
 #include "term.h"
 
 #include "../utils/hash.h"
-
-#include <boost/container/small_vector.hpp>
+#include "../utils/small_vector.h"
 
 #include <cassert>
 #include <vector>
@@ -20,7 +19,7 @@ class Arguments {
     // touches these arguments, so cutting the indirection matters more than the
     // raw malloc count. Behaviour is identical to a std::vector<Term>: same
     // elements, same order, same operator== and hash_range result.
-    using Container = boost::container::small_vector<Term, 4>;
+    using Container = utils::small_vector<Term, 4>;
     Container arguments;
 
 public:
