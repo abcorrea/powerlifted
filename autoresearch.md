@@ -190,9 +190,12 @@ now prohibited** — see Constraints → "No new dependencies", enforced by
 `utils::small_vector<T,N>` in `src/search/utils/small_vector.h` — all of
 GroundAtom/tuple_t/Arguments/Achievers now use it; guard + 62/62 pass and
 peak_mem is unchanged (184 MB) vs the boost build, confirming identical layout.
-Wall-clock parity with boost was still being re-confirmed via a contemporaneous
-A/B when the box was too loaded to time (see ledger). Do NOT reintroduce
-`#include <boost/...>` (or any external include) — the checks gate rejects it.
+**Wall-clock parity CONFIRMED:** the vendored build measured median 41.77 s in a
+clean window (load 0.54), matching run-12's boost median (41.79 s) — the +33 %
+SBO wins survive the de-boosting intact (for trivially-copyable int/Term the
+hand-rolled container compiles to the same pointer ops as boost). Do NOT
+reintroduce `#include <boost/...>` (or any external include) — the checks gate
+rejects it.
 
 Reminder: only wins ≥ ~5 % are confirmable here — BATCH small ones or find a
 single ≥6 % structural change. (Runs 10 + 12 were each well over.)
