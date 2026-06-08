@@ -131,7 +131,7 @@ metric; re-init with a new header if the machine or the suite ever changes.
 
 ## What's Been Tried
 
-**Current best: run 6, commit `86f7124`** (median ≈ 59.5 s, measured clean;
+**Current best: run 6, commit `8b350d9`** (median ≈ 59.5 s, measured clean;
 baseline was 81.2 s → ~27 % cumulative). Stored medians drift with the
 machine — when you need the real bar, re-measure HEAD contemporaneously (see
 protocol below), don't trust an old stored number.
