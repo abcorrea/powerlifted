@@ -160,20 +160,26 @@ hash/compare/copy paths — a different axis. Two big wins from one lens:
 them.** Both kept; together they cut the suite ~31 % off the run-6 baseline.
 
 **Where to go next (prioritized, for a resuming agent).**
-1. **Recover run-12's memory regression (tune SBO N / decouple types).** Run 12
-   took peak_mem 149→184 MB (+23 %) by making GroundAtom AND Table::tuple_t a
-   shared `small_vector<int,4>`. Try: (a) smaller inline N (2 or 3 — relation
-   arities are small) and re-measure time+mem; (b) DECOUPLE — keep GroundAtom
-   small (persistent, in relations + packer maps) and tuple_t wider (transient,
-   join width), converting element-wise in select_tuples (same cost as the
-   existing copy). Goal: hold the ~12 % speed while clawing back memory. Cheap to
-   screen (rebuild + REPS=3 shows both metrics). **DO THIS FIRST** — it's a
-   strict-improvement refinement of a just-kept win.
-2. **Re-profile post-run-12** to find the new bottleneck. Pre-run-12 grounder
-   showed a now-hot `JoinHashTable` (`flat_hash_map<vector<int>,JoinHashEntry,
-   VectorHash<int>>` try_emplace ~6 %) keyed by `JoinHashKey = std::vector<int>`
-   — an SBO candidate (small key copied per fact insert), contained to
-   rules/join.h + VectorHash. Also `Arguments::Arguments` copy ~3.7 %.
+1. **JoinHashKey SBO (grounder).** Post-run-10 grounder profile shows a now-hot
+   `JoinHashTable` (`flat_hash_map<vector<int>,JoinHashEntry,VectorHash<int>>`
+   try_emplace ~6 % of the hmax pair) keyed by `JoinHashKey = std::vector<int>`,
+   built+copied per fact insert. SBO candidate (use `utils::small_vector`),
+   contained to rules/join.h + a VectorHash overload for small_vector. ~4 % of
+   suite at best — likely needs bundling to clear the floor. Watch peak_mem (the
+   flat-map key slot grows, same tradeoff as run 12).
+2. **Re-profile post-run-12** (done once: blind path is now hash_semi_join
+   20.6 % + std::unordered machinery ~7 % + ~16 % malloc; suite still grounder-
+   weighted). `Arguments::Arguments` copy ~3.7 % on the grounder is inherent.
+3. **Memory recovery of run-12's +23 % — DEPRIORITIZED (tried, not worth it).**
+   Uniform N=2 in `small_vector` deterministically recovers ~17 MB (184→167) but
+   inlines only ≤2-int tuples, spilling 3-4-wide join tuples to the heap — so it
+   can only be ≤ as fast as N=4 (more allocs), i.e. it trades a little TIME for
+   memory. Since peak_mem (184 MB) is ≪ the 8 GiB limit and TIME is the metric,
+   that trade is backwards; kept N=4. The only no-time-cost recovery is to
+   DECOUPLE (GroundAtom=2 for the packer/relations where the bytes live;
+   tuple_t=4 for join width), converting element-wise in select_tuples — but
+   that's real complexity for an operationally-irrelevant memory gain. Only do it
+   if memory ever becomes a stated priority.
 3. **Join-path bundle** (`autoresearch-data/pending-join-path-bundle.patch`):
    phmap + index-store + in-place semi-join compaction. Real but INTRINSICALLY
    sub-floor on this box (~5-6 %, confidence 0.66-1.73x across runs 8/9/11) — do
