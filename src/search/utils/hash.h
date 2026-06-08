@@ -8,6 +8,8 @@
  */
 
 
+#include <boost/container/small_vector.hpp>
+
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -273,6 +275,20 @@ void feed(HashState &hash_state, const std::vector<T> &vec)
       Using uint64_t is wasteful on 32-bit platforms but feeding a size_t breaks
       the build on MacOS (see msg7812).
     */
+    std::size_t sz = vec.size();
+    feed(hash_state, static_cast<uint64_t>(sz));
+    for (unsigned i = 0; i < sz; ++i) {
+        feed(hash_state, vec[i]);
+    }
+}
+
+// Same code sequence as the std::vector<T> overload above, so a small_vector and
+// a std::vector with identical contents produce identical hashes. This keeps the
+// state packer (which keys on std::pair<int, GroundAtom>) behaviour-identical
+// when GroundAtom is a small-buffer-optimized vector.
+template <typename T, std::size_t N>
+void feed(HashState &hash_state, const boost::container::small_vector<T, N> &vec)
+{
     std::size_t sz = vec.size();
     feed(hash_state, static_cast<uint64_t>(sz));
     for (unsigned i = 0; i < sz; ++i) {

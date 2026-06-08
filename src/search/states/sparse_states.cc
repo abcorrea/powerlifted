@@ -78,11 +78,11 @@ DBState SparseStatePacker::unpack(const SparsePackedState &packed_state) const {
     return DBState(std::move(relations), std::move(nullary_atoms), packed_state.get_number_objects());
 }
 
-int SparseStatePacker::pack_tuple(const std::vector<int> &tuple, int predicate_index) {
-    auto p = atom_index.try_emplace(make_pair(predicate_index, tuple), next_idx);
+int SparseStatePacker::pack_tuple(const GroundAtom &tuple, int predicate_index) {
+    auto p = atom_index.try_emplace(std::make_pair(predicate_index, tuple), next_idx);
     int index = p.first->second;
     if (p.second) {
-        index_to_atom.emplace(next_idx, make_pair(predicate_index, tuple));
+        index_to_atom.emplace(next_idx, std::make_pair(predicate_index, tuple));
         next_idx++;
     }
     return index;

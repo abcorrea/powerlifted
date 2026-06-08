@@ -1,6 +1,9 @@
 #ifndef SEARCH_SUCCESSOR_GENERATOR_H
 #define SEARCH_SUCCESSOR_GENERATOR_H
 
+#include "../structures.h"
+
+#include <utility>
 #include <vector>
 
 // A few forward declarations :-)
@@ -23,7 +26,7 @@ class SuccessorGenerator {
 public:
     virtual ~SuccessorGenerator() = default;
 
-    std::vector<std::pair<int, std::vector<int>>> added_atoms;
+    std::vector<std::pair<int, GroundAtom>> added_atoms;
 
     /**
      * Compute the instantiations of the given action schema that are applicable in
@@ -56,11 +59,11 @@ public:
                                const ActionSchema& action,
                                const DBState &state) = 0;
 
-    void add_to_added_atoms(int i, const std::vector<int> & atom) {
+    void add_to_added_atoms(int i, const GroundAtom & atom) {
         added_atoms.emplace_back(i, atom);
     }
 
-    virtual const std::vector<std::pair<int, std::vector<int>>> &get_added_atoms() const {
+    virtual const std::vector<std::pair<int, GroundAtom>> &get_added_atoms() const {
         return added_atoms;
     }
 

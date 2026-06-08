@@ -259,10 +259,11 @@ void parse_initial_state(Task &task, int initial_state_size)
         vector<int> args;
         copy_next_n_values(number_args, args);
         if (!task.initial_state.get_nullary_atoms()[predicate_index]) {
+            GroundAtom ga(args.begin(), args.end());
             if (!task.predicates[predicate_index].isStaticPredicate())
-                task.initial_state.add_tuple(predicate_index, args);
+                task.initial_state.add_tuple(predicate_index, ga);
             else
-                task.static_info.add_tuple(predicate_index, args);
+                task.static_info.add_tuple(predicate_index, ga);
         }
     }
     // task.set_static_info(static_info);
