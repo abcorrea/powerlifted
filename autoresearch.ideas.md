@@ -83,18 +83,21 @@ over small arities, won't move the metric); store indices in hash_semi_join's
 probe (compaction already removed those copies, ~nil gain).
 
 ## SBO targets (the run-10 lens — find hot tiny heap-vectors, inline them)
-The 21 % run-10 win came from inlining the grounder's per-fact vectors. Apply
-the same to other hot tiny heap-vectors on dominant paths:
-- **GroundAtom = std::vector<int>** (structures.h) — element of every relation's
-  unordered_set and of Table::tuple_t on the successor-gen path (blind/full_reducer
-  profile = ~24 % malloc + 17 % hash_semi_join). SBO candidate (`small_vector<int,4>`).
-  Behavior: hash sets key on CONTENTS (TupleHash), so storage-only SBO keeps the
-  same hash/eq/iteration order. Verify TupleHash + operator== work on small_vector.
-  Pervasive type — medium risk, big potential. **Top successor-gen lever now.**
-- Table join intermediates (`vector<int>` combined tuples in hash_join/product) —
-  already partly index-stored in the saved join patch; tuple_t SBO would help more.
-- JoinHashKey = std::vector<int> (rules/join.h) — built per fact in the grounder
-  join; small_vector candidate (the reused buffer already cuts allocs, so smaller).
+Inlining hot per-element vectors has yielded the two biggest wins of the loop:
+run 10 (grounder Arguments/Achievers, +21 %) and run 12 (GroundAtom/tuple_t,
++12 %). Remaining / follow-up SBO work:
+- **[DONE run 12, +12 % KEEP] GroundAtom + Table::tuple_t → small_vector<int,4>.**
+  TRADEOFF: peak_mem +23 % (149→184 MB). FOLLOW-UP (next experiment): recover the
+  memory — (a) try smaller inline N (2/3); (b) decouple GroundAtom (small,
+  persistent in relations + packer maps) from tuple_t (wider, transient join
+  width) with an element-wise convert in select_tuples. Hold the speed, cut mem.
+- **JoinHashKey = std::vector<int>** (rules/join.h) — post-run-10 grounder profile
+  shows `flat_hash_map<vector<int>,JoinHashEntry,VectorHash<int>>::try_emplace`
+  ~6 %; the key is built+copied per fact insert. SBO candidate, contained to
+  rules/join.h + a VectorHash overload for small_vector. Watch: bigger flat-map
+  key slot (same memory tradeoff as run 12 — measure mem too).
+- `Arguments::Arguments` copy is still ~3.7 % post-run-10 (inherent per-fact copy
+  in join/product) — probably not removable without an algorithmic change.
 
 ## Strategy notes
 - **Memory LAYOUT > memory ALLOCATION (run 10).** Run 4 retired malloc-shaving

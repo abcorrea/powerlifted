@@ -131,57 +131,53 @@ metric; re-init with a new header if the machine or the suite ever changes.
 
 ## What's Been Tried
 
-**Current best: run 10, commit `76ac380`** (median ≈ 46 s, measured clean;
-baseline was 81.2 s → ~43 % cumulative). Stored medians drift with the
-machine — when you need the real bar, re-measure HEAD contemporaneously (see
-protocol below), don't trust an old stored number.
+**Current best: run 12, commit `0531a7a`** (median ≈ 42 s, measured clean;
+baseline was 81.2 s → ~48 % cumulative). peak_mem rose to **184 MB** (run 12
+tradeoff, see below). Stored medians drift with the machine — when you need the
+real bar, re-measure HEAD contemporaneously (see protocol below).
 
-**BREAKTHROUGH (run 10): memory LAYOUT beats memory ALLOCATION.** Run 4's
+**BREAKTHROUGH (runs 10 + 12): memory LAYOUT beats memory ALLOCATION.** Run 4's
 "malloc-shaving is dead — tcache makes small allocs free" was only half the
-story: it tested alloc *count*, not *layout*. Run 10 gave a clean **21 %** by
-giving the Datalog grounder's per-fact heap vectors small-buffer optimization
-(SBO): `Arguments` (`vector<Term>`→`small_vector<Term,4>`) and `Achievers`
-(`vector<int>`→`small_vector<int,2>`). Millions of Facts each held two tiny
-heap buffers; inlining them removed the allocs AND the pointer-chase on every
-fact hash/compare/copy in the fixpoint. **The live direction is now: find hot
-tiny heap-vectors on a dominant path and inline them.** This is distinct from
-malloc-shaving — it wins on cache locality + indirection, not alloc count.
+story: it tested alloc *count*, not *layout*. SBO (small-buffer-optimized
+vectors, inline storage) wins on cache locality + pointer-indirection on hot
+hash/compare/copy paths — a different axis. Two big wins from one lens:
+- **run 10 (+21 %)**: grounder `Arguments`/`Achievers` → small_vector.
+- **run 12 (+12 %)**: successor-gen `GroundAtom`/`Table::tuple_t` → small_vector.
+**The live direction: find hot tiny heap-vectors on a dominant path, inline
+them.** Both kept; together they cut the suite ~31 % off the run-6 baseline.
 
 **Where to go next (prioritized, for a resuming agent).**
-1. **Re-apply the saved join-path bundle** (`autoresearch-data/pending-join-path-bundle.patch`):
-   phmap + index-store in hash_join + in-place semi-join compaction. It was a
-   real but sub-floor ~4.75 % (~2.7 s absolute) against the old 57 s baseline;
-   the grounder is now 21 % faster so the suite total is ~46 s and that SAME
-   ~2.7 s absolute is now ~5.9 % relative — much closer to the floor, plus it
-   carries a deterministic −10 MB peak-mem win. Low risk (written + behavior-
-   proven, 62/62). Measure on top of run 10. **DO THIS FIRST.**
-2. **GroundAtom SBO** — the successor-gen analogue of run 10. `GroundAtom =
-   std::vector<int>` (structures.h) is the element type of every relation's
-   `unordered_set<GroundAtom,TupleHash>` and of the join `Table::tuple_t`. The
-   blind/full_reducer profile is ~24 % malloc + 17 % hash_semi_join, much of it
-   tiny tuple-vector allocs. SBO on GroundAtom/tuple_t (e.g. `small_vector<int,
-   4>`) should cut it. BEHAVIOR CHECK: hash sets key on contents via TupleHash
-   (same contents→same hash→same set iteration order→same trajectory), so SBO is
-   storage-only — but verify TupleHash/operator== work on small_vector and that
-   nothing depends on the exact type. Potentially another large win; medium risk
-   (GroundAtom is pervasive). 62/62 + reference gate is the net.
-3. **State packing** (`SparseStatePacker::pack_tuple` ~6 % + `get_hash64` ~3 %,
-   universal path): builds+hashes a `pair<int,vector<int>>` key per tuple per
-   state, copying the tuple even on a cache hit. Transparent/heterogeneous phmap
-   lookup would cut the copy on hits. Fiddly; maybe sub-floor.
-4. **Grounder algorithmic** (FF/hmax = 47 %+16 % of suite): per-state Datalog
-   fixpoint re-adds the permanent EDB every call; provably-safe incrementality
-   is high reward but must not change returned heuristic values. Highest risk.
+1. **Recover run-12's memory regression (tune SBO N / decouple types).** Run 12
+   took peak_mem 149→184 MB (+23 %) by making GroundAtom AND Table::tuple_t a
+   shared `small_vector<int,4>`. Try: (a) smaller inline N (2 or 3 — relation
+   arities are small) and re-measure time+mem; (b) DECOUPLE — keep GroundAtom
+   small (persistent, in relations + packer maps) and tuple_t wider (transient,
+   join width), converting element-wise in select_tuples (same cost as the
+   existing copy). Goal: hold the ~12 % speed while clawing back memory. Cheap to
+   screen (rebuild + REPS=3 shows both metrics). **DO THIS FIRST** — it's a
+   strict-improvement refinement of a just-kept win.
+2. **Re-profile post-run-12** to find the new bottleneck. Pre-run-12 grounder
+   showed a now-hot `JoinHashTable` (`flat_hash_map<vector<int>,JoinHashEntry,
+   VectorHash<int>>` try_emplace ~6 %) keyed by `JoinHashKey = std::vector<int>`
+   — an SBO candidate (small key copied per fact insert), contained to
+   rules/join.h + VectorHash. Also `Arguments::Arguments` copy ~3.7 %.
+3. **Join-path bundle** (`autoresearch-data/pending-join-path-bundle.patch`):
+   phmap + index-store + in-place semi-join compaction. Real but INTRINSICALLY
+   sub-floor on this box (~5-6 %, confidence 0.66-1.73x across runs 8/9/11) — do
+   NOT retry alone. Only land it bundled with another successor-gen win that
+   pushes the combined effect clearly past the gate, or for its −10 MB mem win
+   if memory becomes the priority.
+4. **State packing / grounder algorithmic** — see older notes below; higher risk.
 
-NOTE: run 10 introduced a header-only **system-boost** include
+NOTE: runs 10+12 depend on a header-only **system-boost** include
 (`boost/container/small_vector.hpp`) — compiles with no CMake/link change
-because /usr/include is default-searched. The project otherwise vendors its
-deps (phmap) and avoids system deps; a clean follow-up (build hygiene, not a
-perf experiment) would vendor a minimal `small_vector` or declare boost in
-CMake. Flagged for the maintainer; left as-is since it's off the metric path.
+(/usr/include is default-searched). The project otherwise vendors its deps
+(phmap) and avoids system deps; a clean follow-up (build hygiene, not a perf
+experiment) would vendor a minimal `small_vector` or declare boost in CMake.
+Flagged for the maintainer; left as-is since it's off the metric path.
 
 Reminder: only wins ≥ ~5 % are confirmable here — BATCH small ones or find a
-single ≥6 % structural change.
+single ≥6 % structural change. (Runs 10 + 12 were each well over.)
 
 **Measurement protocol (learned the hard way — follow it):** this box drifts
 ±10–15 % on a minutes timescale, so comparing a candidate against *stored*
@@ -206,6 +202,17 @@ leverage is in the grounder" (an earlier note said that; run 6 disproved it).
 See `autoresearch.ideas.md` for the live backlog.
 
 ### Wins
+- **run 12 (KEEP, ~12 %)** — SBO on the successor-gen path: `GroundAtom` and
+  `Table::tuple_t` (`std::vector<int>` → shared `boost small_vector<int,4>`), so
+  every relation tuple and join intermediate (hash_join/semi_join/project/
+  cartesian/filter_static) is inline. Targets the blind/full_reducer hot path
+  (hash_semi_join 18 % + ~21 % malloc) that run 10 didn't touch. Behavior-
+  preserving (content-based TupleHash/feed keep set iteration order → identical
+  packer indices → identical trajectory; 62/62 + gate). Pooled 10v10 A/B:
+  41.79 vs 47.68 = +12.35 %, confidence 2.06x. **Tradeoff: peak_mem 149→184 MB
+  (+23 %)** — see next-steps #1 to recover it. Cascade touched ~15 files
+  (templated TupleHash, added small_vector feed, AtomicGoal/added_atoms/
+  pack_tuple/order_tuple → GroundAtom; LiftedOperatorId kept vector<int>).
 - **run 10 (KEEP, ~21 %)** — SBO for the grounder's per-fact heap vectors:
   `Arguments` → `boost::container::small_vector<Term,4>` and `Achievers` →
   `small_vector<int,2>`. Inlines the two tiny heap buffers every Fact carried,
