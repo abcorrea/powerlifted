@@ -55,8 +55,18 @@ reused join key buffer, clean_up clear()).
 11. `JoinHashKey` single-int specialized path for single-var joins. Structural,
     modest.
 12. Algorithmic: hmax/add grounder reruns the whole Datalog fixpoint per state
-    from scratch. Provably-safe incrementality would be big but must not change
-    returned heuristic values. High risk/high reward.
+    from scratch. **MEASURED (instrumented ground(), 4 hmax domains): caching the
+    STATIC closure is worthless — the static-only fixpoint (permanent EDB, no
+    state facts) derives +0 in genome & organic-MIT (closure == raw EDB) and only
+    ~20%/<1% of the full closure in pipesworld/visitall. Relaxed-action rules all
+    need a fluent precondition, so ~80-99% of each per-state closure is genuinely
+    state-driven and cannot be precomputed. The permanent EDB is tiny (18-196
+    facts, ~2-10% of work) so re-seeding it is already cheap. DO NOT chase
+    "cache the static closure".** The only surviving angle is PARENT->CHILD reuse
+    (successive states differ by a few effect atoms) — but it's much harder and
+    risky: visitall shows 2 state facts -> 27575 reached, i.e. the relaxed closure
+    can swing violently on a tiny state delta, so keeping h-values bit-identical
+    across incremental-vs-fresh is very hard. Not low-hanging.
 
 ## Join-path bundle (runs 8 + 9 — DEAD as a standalone win; patch saved)
 `autoresearch-data/pending-join-path-bundle.patch` (supersedes the old

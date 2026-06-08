@@ -186,7 +186,10 @@ them.** Both kept; together they cut the suite ~31 % off the run-6 baseline.
    NOT retry alone. Only land it bundled with another successor-gen win that
    pushes the combined effect clearly past the gate, or for its −10 MB mem win
    if memory becomes the priority.
-4. **State packing / grounder algorithmic** — see older notes below; higher risk.
+4. **State packing** — see older notes below; higher risk. NOTE: grounder
+   "cache-the-static-closure" incrementality is DEBUNKED (measured: static-only
+   fixpoint derives ~0 in 2/4 hmax domains, <20% elsewhere — relaxed rules need
+   fluent preconditions; see ideas.md #12). Don't chase it.
 
 NOTE: runs 10+12 originally used a header-only **system-boost** include
 (`boost/container/small_vector.hpp`). **boost is NOT a project dependency and is
