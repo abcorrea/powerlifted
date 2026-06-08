@@ -55,6 +55,19 @@ reused join key buffer, clean_up clear()).
     from scratch. Provably-safe incrementality would be big but must not change
     returned heuristic values. High risk/high reward.
 
+## Join-path bundle (run 8, saved patch — ready to extend)
+`autoresearch-data/pending-phmap-join-wins.patch` holds: phmap for
+hash_join/hash_semi_join + index-storage in hash_join's build map. ~4.5 %
+faster + 10 MB less peak mem, but sub-floor (confidence 0.66x). To land it,
+`git apply` the patch and add a 3rd join-path win:
+- Precompute `compute_matching_columns` for the **semi-join** order (those
+  tables have state-independent `tuple_index`, computable per action at init).
+  hash_join's matches evolve (tuple_index grows mid-sequence) so that side is
+  harder — would need to simulate the sequence.
+- Store indices (not key copies) in `hash_semi_join`'s probe, or skip building
+  `t2_keys` when |t2| is tiny.
+Then measure the 3-part bundle; combined should clear ~6 %.
+
 ## Strategy notes
 - **Grounder malloc-shaving is exhausted (run 4).** glibc tcache makes the
   small frequent allocs near-free; cutting them doesn't move the metric. Go

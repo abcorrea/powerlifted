@@ -258,6 +258,24 @@ See `autoresearch.ideas.md` for the live backlog.
   contemporaneous A/B showed no gain (candidate 61.7 vs run-6 HEAD 59.2). Once
   the algorithmic redundancies are gone, trimming tiny state-independent
   recompute + fixing reserves does not move the metric. Don't retry this class.
+- **run 8 (DISCARD — strongest near-miss; PATCH SAVED)** — join-path bundle:
+  (a) `hash_join`'s `std::unordered_map` and `hash_semi_join`'s
+  `std::unordered_set` → **phmap** (SwissTable, the project's standard map),
+  behavior-preserving since join output order depends on t1/t2 iteration, not
+  map layout; (b) `hash_join`'s build map stores **indices into `t1.tuples`**
+  instead of copying whole tuples (valid — `t1.tuples` is untouched until the
+  final move). Behavior-preserving (62/62 + gate). Over a **15v15** pooled
+  contemporaneous A/B (3 rounds): bundle median 58.4 vs HEAD 61.1 = consistent
+  **~4.5 % faster (mean 3.7 %)** AND a **deterministic peak_mem 139 vs 149 MB
+  (-7 %)** — but confidence only 0.66x because ~4.5 % sits below this machine's
+  effective noise floor (~6.6 %, inflated by persistent slow-sweep outliers).
+  Real, clean, lower-memory — but unconfirmable on the primary metric. Patch:
+  `autoresearch-data/pending-phmap-join-wins.patch`
+  (`git apply` to re-add). **TODO: bundle with a 3rd join-path win** (e.g.
+  precompute `compute_matching_columns` for the semi-join order — its tables
+  have fixed `tuple_index`; or store indices in `hash_semi_join` too) to push
+  the combined win past ~6 % so it clears. phmap (a) alone was ~2.9 % (also
+  sub-floor); the index-store (b) added the memory win + a bit more speed.
 
 ### Profile map (where the time is)
 - **FF/hmax/add/bfws configs** → dominated by the **Datalog grounder**
