@@ -185,11 +185,14 @@ them.** Both kept; together they cut the suite ~31 % off the run-6 baseline.
 NOTE: runs 10+12 originally used a header-only **system-boost** include
 (`boost/container/small_vector.hpp`). **boost is NOT a project dependency and is
 now prohibited** — see Constraints → "No new dependencies", enforced by
-`autoresearch.guard.sh` (run from `autoresearch.checks.sh`). The small_vector
-wins are being preserved by **vendoring a minimal single-header `small_vector`
-into the tree** (the way phmap is vendored), not by depending on boost. Do NOT
-reintroduce `#include <boost/...>` (or any external include) — the checks gate
-rejects it and the experiment must be reverted.
+`autoresearch.guard.sh` (run from `autoresearch.checks.sh`). **DONE (commit
+`8591635`):** boost was replaced by a vendored, self-contained
+`utils::small_vector<T,N>` in `src/search/utils/small_vector.h` — all of
+GroundAtom/tuple_t/Arguments/Achievers now use it; guard + 62/62 pass and
+peak_mem is unchanged (184 MB) vs the boost build, confirming identical layout.
+Wall-clock parity with boost was still being re-confirmed via a contemporaneous
+A/B when the box was too loaded to time (see ledger). Do NOT reintroduce
+`#include <boost/...>` (or any external include) — the checks gate rejects it.
 
 Reminder: only wins ≥ ~5 % are confirmable here — BATCH small ones or find a
 single ≥6 % structural change. (Runs 10 + 12 were each well over.)
