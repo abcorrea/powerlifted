@@ -5,13 +5,23 @@
 
 #include "../utils/hash.h"
 
+#include <boost/container/small_vector.hpp>
+
 #include <cassert>
 #include <vector>
 
 namespace datalog {
 
 class Arguments {
-    std::vector<Term> arguments;
+    // Datalog facts almost always have a handful of arguments (predicate arity),
+    // so we keep them inline with a small-buffer-optimized vector. This avoids a
+    // tiny heap allocation per Fact and keeps the argument data contiguous with
+    // the Fact itself — every fact hash/compare/copy in the grounder fixpoint
+    // touches these arguments, so cutting the indirection matters more than the
+    // raw malloc count. Behaviour is identical to a std::vector<Term>: same
+    // elements, same order, same operator== and hash_range result.
+    using Container = boost::container::small_vector<Term, 4>;
+    Container arguments;
 
 public:
     Arguments() = default;
@@ -23,7 +33,8 @@ public:
         }
     }
 
-    explicit Arguments(std::vector<Term> &&args) : arguments(std::move(args)) {}
+    explicit Arguments(std::vector<Term> &&args)
+        : arguments(args.begin(), args.end()) {}
 
     Term operator[](size_t i) const
     {
@@ -31,9 +42,9 @@ public:
         return arguments[i];
     }
 
-    std::vector<Term>::const_iterator begin() const { return arguments.begin(); }
+    Container::const_iterator begin() const { return arguments.begin(); }
 
-    std::vector<Term>::const_iterator end() const { return arguments.end(); }
+    Container::const_iterator end() const { return arguments.end(); }
 
     size_t size() const { return arguments.size(); }
 
