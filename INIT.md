@@ -23,6 +23,14 @@ it.
      `benchmarks/reference.json`; never regenerate or edit that file, the
      suite, the harness scripts, or anything listed as off-limits in
      `autoresearch.md`.
+   - No new dependencies. Only the C++ standard library and the in-tree
+     vendored deps (`src/search/parallel_hashmap/`) are allowed — **no boost,
+     no other third-party/system library** (boost lives in `/usr/include` so
+     it compiles silently, but it is not a project dependency).
+     `autoresearch.checks.sh` runs `autoresearch.guard.sh` to enforce this; a
+     guard failure reverts the experiment like any check failure. If you truly
+     need a container the stdlib lacks, vendor a minimal single-header version
+     into the repo instead of including an external one.
    - Keep a change only when `decide.py` says KEEP; revert on DISCARD,
      crash, or a `./autoresearch.checks.sh` failure, even if the numbers
      looked good.

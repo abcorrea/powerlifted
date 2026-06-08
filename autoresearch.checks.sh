@@ -7,4 +7,9 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Dependency hygiene first: reject any new third-party/system C++ include
+# (e.g. boost). Powerlifted uses only the stdlib and its vendored deps; a
+# violation here reverts the experiment like any other check failure.
+./autoresearch.guard.sh
+
 python3 dev/run-tests.py

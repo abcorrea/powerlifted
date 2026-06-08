@@ -61,10 +61,13 @@ floor.
 Correctness gate, run after a *passing* benchmark, off the metric clock:
 
 ```bash
-./autoresearch.checks.sh   # full local regression suite (dev/run-tests.py)
+./autoresearch.checks.sh   # dependency guard + full regression suite
 ```
 
-Takes ~40 s; 62 tests. Run it serially, never in parallel with a sweep.
+First runs `autoresearch.guard.sh` (rejects any external `#include`, e.g.
+boost — see Constraints), then the full local regression suite
+(`dev/run-tests.py`). Takes ~40 s; 62 tests. Run it serially, never in
+parallel with a sweep. Any failure (guard or tests) reverts the experiment.
 
 ## Decision procedure
 
@@ -105,9 +108,9 @@ pass.** It changes only if the user explicitly approves a behavior change.
 
 ## Off-limits
 
-- `autoresearch.sh`, `autoresearch.checks.sh`, `benchmarks/**` (suite,
-  PDDLs, `reference.json`, `run_suite.py`) — the agent never edits the
-  judge or the exam.
+- `autoresearch.sh`, `autoresearch.checks.sh`, `autoresearch.guard.sh`,
+  `benchmarks/**` (suite, PDDLs, `reference.json`, `run_suite.py`) — the agent
+  never edits the judge, the exam, or the dependency guard.
 - `dev/**` — the regression suite and its expected plan costs.
 - `.claude/**`, `autoresearch.jsonl` history (append-only), `driver/**`
   (not measured), `build.py`/CMake flags (changing optimization flags is
@@ -117,6 +120,16 @@ pass.** It changes only if the user explicitly approves a behavior change.
 
 - Behavior-preserving only (see contract above).
 - C++17; keep the code style of the surrounding files.
+- **No new dependencies.** Only the C++ standard library and the deps already
+  vendored in-tree (`src/search/parallel_hashmap/`) are allowed. **No boost, no
+  other third-party/system library.** boost headers happen to live in
+  `/usr/include`, so `#include <boost/...>` compiles with no CMake/link change
+  and the *build* will not catch it — but it is NOT a project dependency.
+  `autoresearch.checks.sh` runs `autoresearch.guard.sh`, which fails on any
+  external include; treat that failure like any other check failure (revert).
+  If a win genuinely needs a container the stdlib lacks (e.g. a small-buffer-
+  optimized vector), **vendor a minimal single-header implementation into the
+  repo** (the way phmap is vendored) — never `#include <boost/...>`.
 - Simpler is better: removing code while holding the metric is a win; ugly
   complexity for a tiny gain is a discard.
 - One experiment at a time; finish (commit or revert) before starting the
@@ -169,12 +182,14 @@ them.** Both kept; together they cut the suite ~31 % off the run-6 baseline.
    if memory becomes the priority.
 4. **State packing / grounder algorithmic** — see older notes below; higher risk.
 
-NOTE: runs 10+12 depend on a header-only **system-boost** include
-(`boost/container/small_vector.hpp`) — compiles with no CMake/link change
-(/usr/include is default-searched). The project otherwise vendors its deps
-(phmap) and avoids system deps; a clean follow-up (build hygiene, not a perf
-experiment) would vendor a minimal `small_vector` or declare boost in CMake.
-Flagged for the maintainer; left as-is since it's off the metric path.
+NOTE: runs 10+12 originally used a header-only **system-boost** include
+(`boost/container/small_vector.hpp`). **boost is NOT a project dependency and is
+now prohibited** — see Constraints → "No new dependencies", enforced by
+`autoresearch.guard.sh` (run from `autoresearch.checks.sh`). The small_vector
+wins are being preserved by **vendoring a minimal single-header `small_vector`
+into the tree** (the way phmap is vendored), not by depending on boost. Do NOT
+reintroduce `#include <boost/...>` (or any external include) — the checks gate
+rejects it and the experiment must be reverted.
 
 Reminder: only wins ≥ ~5 % are confirmable here — BATCH small ones or find a
 single ≥6 % structural change. (Runs 10 + 12 were each well over.)
