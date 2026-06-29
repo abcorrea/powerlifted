@@ -39,12 +39,12 @@ void cartesian_product(Table &t1, const Table &t2) {
     const size_t sz2 = t2.tuples.empty() ? 0 : t2.tuples[0].size();
     const size_t combined_sz = sz1 + sz2;
 
-    vector<vector<int>> new_tuples;
+    vector<Table::tuple_t> new_tuples;
     new_tuples.reserve(t1.tuples.size() * t2.tuples.size());
 
     for (const auto &tuple_t1 : t1.tuples) {
         for (const auto &tuple_t2 : t2.tuples) {
-            vector<int> combined;
+            Table::tuple_t combined;
             combined.reserve(combined_sz);
             combined.insert(combined.end(), tuple_t1.begin(), tuple_t1.end());
             combined.insert(combined.end(), tuple_t2.begin(), tuple_t2.end());

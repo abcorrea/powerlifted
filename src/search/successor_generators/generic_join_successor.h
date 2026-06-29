@@ -117,7 +117,7 @@ protected:
 
     static void order_tuple_by_free_variable_order(const std::vector<int> &free_var_indices,
                                             const std::vector<int> &map_indices_to_position,
-                                            const std::vector<int> &tuple_with_const,
+                                            const GroundAtom &tuple_with_const,
                                             std::vector<int> &ordered_tuple) ;
 
     static bool is_trivially_inapplicable(const DBState &state, const ActionSchema &action) ;

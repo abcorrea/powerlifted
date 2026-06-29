@@ -63,7 +63,7 @@ public:
     int next_idx;
 
 private:
-    int pack_tuple(const std::vector<int> &tuple, int predicate_index);
+    int pack_tuple(const GroundAtom &tuple, int predicate_index);
 
     std::pair<int, GroundAtom> unpack_tuple(int index) const;
 

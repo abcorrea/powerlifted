@@ -315,7 +315,7 @@ CliqueSuccessorGenerator::applicable_actions_nullary_case(const ActionSchema &ac
     const auto &static_preconds = preconds.static_preconds;
     const auto &dynamic_preconds = preconds.dynamic_preconds;
     const auto &static_info = task.get_static_info();
-    const LiftedOperatorId op(action.get_index(), GroundAtom(), unordered_map<int, int>());
+    const LiftedOperatorId op(action.get_index(), std::vector<int>(), unordered_map<int, int>());
 
     if (literal_holds(op, dynamic_preconds, static_preconds, state, static_info, 1)) {
         applicable_actions.push_back(op);
@@ -513,7 +513,7 @@ CliqueSuccessorGenerator::applicable_actions_general_case(const ActionSchema &ac
     }
 
     for (const auto &clique : cliques) {
-        GroundAtom assignments(num_parameters);
+        std::vector<int> assignments(num_parameters);
         assignments.resize(num_parameters);
 
         for (const auto vertex_id : clique) {

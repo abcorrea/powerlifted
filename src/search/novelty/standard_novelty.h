@@ -116,7 +116,7 @@ public:
                                   const DBState &state,
                                   int number_unsatisfied_goals,
                                   int number_unsatisfied_relevant_atoms,
-                                  const std::vector<std::pair<int, std::vector<int>>> &added_atoms);
+                                  const std::vector<std::pair<int, GroundAtom>> &added_atoms);
 
     int get_number_relevant_atoms() const { return number_relevant_atoms; }
 };
