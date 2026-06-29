@@ -64,10 +64,11 @@ Table OrderedJoinSuccessorGenerator<OrderT>::instantiate(const ActionSchema &act
     assert(tables.size() == actiondata.relevant_precondition_atoms.size());
 
     Table &working_table = tables[order[0]];
+    std::vector<bool> applied(action.get_static_precondition().size(), false);
     for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[order[i]]);
         // Filter out equalities
-        filter_static(action, working_table);
+        filter_static(action, working_table, applied);
         if (working_table.tuples.empty()) {
             return working_table;
         }

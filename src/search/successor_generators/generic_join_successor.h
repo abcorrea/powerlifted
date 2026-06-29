@@ -99,7 +99,8 @@ protected:
                               const std::vector<int> &constants);
 
     static void filter_static(const ActionSchema &action,
-                              Table &working_table) ;
+                              Table &working_table,
+                              std::vector<bool> &applied) ;
     static void create_hypergraph(
         const ActionSchema &action,
         std::vector<int> &hypernodes,

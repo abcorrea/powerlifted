@@ -51,13 +51,15 @@ SparsePackedState SparseStatePacker::pack(const DBState &state) {
     packed_state.nullary_atoms = state.get_nullary_atoms();
     for (const Relation &r : relations) {
         int predicate_index = r.predicate_symbol;
-        std::vector<int> packed_relation;
-        packed_relation.reserve(r.tuples.size());
         for (const auto &tuple : r.tuples) {
             packed_state.packed_relations.push_back(pack_tuple(tuple, predicate_index));
         }
-        sort(packed_state.packed_relations.begin(), packed_state.packed_relations.end());
     }
+    // One sort over the fully-assembled vector instead of re-sorting it after
+    // every relation: the final sorted contents are identical (the canonical
+    // packed state is the sorted multiset of all packed tuples), but this is a
+    // single O(n log n) instead of one per relation.
+    sort(packed_state.packed_relations.begin(), packed_state.packed_relations.end());
     return packed_state;
 }
 
