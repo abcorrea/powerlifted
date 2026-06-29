@@ -32,6 +32,11 @@ class WeightedGrounder : public Grounder {
     phmap::flat_hash_set<int> initial_facts;
     std::vector<int> best_achievers;
 
+    // Reused across join() calls so the per-call join key is built in place
+    // instead of allocating a fresh vector every time (join() is the hottest
+    // path in the grounder).
+    std::vector<int> join_key_buffer;
+
     int queue_pushes;
     int atoms_produced;
     int total_number_of_facts;
