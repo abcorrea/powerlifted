@@ -29,7 +29,7 @@ size_t hash_semi_join(Table &t1, const Table &t2) {
     }
 
     // Probe phase: keep t1 tuples whose join key exists in t2
-    vector<vector<int>> new_tuples;
+    vector<Table::tuple_t> new_tuples;
     {
         vector<int> key(matches.size());
         for (const auto &tuple : t1.tuples) {

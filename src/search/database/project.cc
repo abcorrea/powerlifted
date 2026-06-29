@@ -23,7 +23,7 @@ void project(Table &t, const std::unordered_set<int> &over) {
                 matches.push_back(i);
 
     unordered_set<vector<int>, TupleHash> keys;
-    vector<vector<int>> new_tuples;
+    vector<Table::tuple_t> new_tuples;
 
     vector<int> key(matches.size());
     for (const auto &tuple : t.tuples) {

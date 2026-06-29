@@ -1,6 +1,8 @@
 #ifndef SEARCH_GOAL_CONDITION_H
 #define SEARCH_GOAL_CONDITION_H
 
+#include "structures.h"
+
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -9,26 +11,27 @@
  * @brief Define a single atom contained in the goal condition.
  *
  * @var predicate: Index of the predicate symbol of the atom.
- * @var args: Vector containing the indices of the objects instantiating the
- * atom.
+ * @var args: Object indices instantiating the atom. Stored as a GroundAtom so
+ * it can be looked up directly in a relation's tuple set and reused as a
+ * GroundAtom by the BFWS evaluators.
  * @var negated: Boolean value indicating whether the atom is negated in the
  * goal.
  *
  */
 class AtomicGoal {
     int predicate;
-    std::vector<int> args;
+    GroundAtom args;
     bool negated;
 
 public:
     AtomicGoal(int predicate, std::vector<int> args, bool negated)
-        : predicate(predicate), args(std::move(args)), negated(negated) {}
+        : predicate(predicate), args(args.begin(), args.end()), negated(negated) {}
 
     int get_predicate_index() const {
         return predicate;
     }
 
-    const std::vector<int> &get_arguments() const {
+    const GroundAtom &get_arguments() const {
         return args;
     }
 

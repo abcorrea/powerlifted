@@ -22,7 +22,7 @@ void hash_join(Table &t1, const Table &t2) {
     }
 
     // Build phase: index t1 tuples by their join key
-    unordered_map<vector<int>, vector<vector<int>>, TupleHash> hash_join_map;
+    unordered_map<vector<int>, vector<Table::tuple_t>, TupleHash> hash_join_map;
     {
         vector<int> key(matches1.size());
         for (const auto &tuple : t1.tuples) {
@@ -48,7 +48,7 @@ void hash_join(Table &t1, const Table &t2) {
     }
 
     // Probe phase: scan t2 and look up matching t1 tuples
-    vector<vector<int>> new_tuples;
+    vector<Table::tuple_t> new_tuples;
     {
         vector<int> key(matches2.size());
         for (const auto &tuple : t2.tuples) {
@@ -59,7 +59,7 @@ void hash_join(Table &t1, const Table &t2) {
             auto it = hash_join_map.find(key);
             if (it != hash_join_map.end()) {
                 for (const auto &t1_tuple : it->second) {
-                    vector<int> combined;
+                    Table::tuple_t combined;
                     combined.reserve(t1_tuple.size() + t2_keep_indices.size());
                     combined.insert(combined.end(), t1_tuple.begin(), t1_tuple.end());
                     for (int idx : t2_keep_indices) {

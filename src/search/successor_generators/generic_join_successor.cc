@@ -101,7 +101,7 @@ void GenericJoinSuccessor::filter_static(const ActionSchema &action,
                 if (it != tup_idx.end()){
                     int index = distance(tup_idx.begin(), it);
 
-                    vector<vector<int>> newtuples;
+                    vector<Table::tuple_t> newtuples;
                     for (const auto &t : working_table.tuples) {
                         if ((atom.is_negated() && t[index] != const_idx)
                                 || (!atom.is_negated() && t[index] == const_idx)){
@@ -122,7 +122,7 @@ void GenericJoinSuccessor::filter_static(const ActionSchema &action,
                     int index1 = distance(tup_idx.begin(), it_1);
                     int index2 = distance(tup_idx.begin(), it_2);
 
-                    vector<vector<int>> newtuples;
+                    vector<Table::tuple_t> newtuples;
                     for (const auto &t : working_table.tuples) {
                         if ((atom.is_negated() && t[index1] != t[index2])
                                 || (!atom.is_negated() && t[index1] == t[index2])){
@@ -364,7 +364,7 @@ DBState GenericJoinSuccessor::generate_successor(
 
 void GenericJoinSuccessor::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,
                                                             const vector<int> &map_indices_to_position,
-                                                            const vector<int> &tuple_with_const,
+                                                            const Table::tuple_t &tuple_with_const,
                                                             vector<int> &ordered_tuple) {
     for (size_t i = 0; i < free_var_indices.size(); ++i) {
         ordered_tuple[free_var_indices[i]] = tuple_with_const[map_indices_to_position[i]];
@@ -507,7 +507,7 @@ std::vector<LiftedOperatorId> GenericJoinSuccessor::get_applicable_actions(
     compute_map_indices_to_table_positions(
         instantiations, free_var_indices, map_indices_to_position);
 
-    for (const vector<int> &tuple_with_const : instantiations.tuples) {
+    for (const auto &tuple_with_const : instantiations.tuples) {
         vector<int> ordered_tuple(free_var_indices.size());
         order_tuple_by_free_variable_order(
             free_var_indices, map_indices_to_position, tuple_with_const, ordered_tuple);
@@ -575,7 +575,7 @@ bool GenericJoinSuccessor::is_ground_action_applicable(const ActionSchema &actio
 {
     for (const Atom &precond : action.get_precondition()) {
         int index = precond.get_predicate_symbol_idx();
-        vector<int> tuple;
+        GroundAtom tuple;
         tuple.reserve(precond.get_arguments().size());
         for (const Argument &arg : precond.get_arguments()) {
             assert(arg.is_constant());

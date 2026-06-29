@@ -3,16 +3,25 @@
 
 #include "hash_structures.h"
 
+#include "utils/small_vector.h"
+
 #include <string>
 #include <utility>
 #include <unordered_set>
 #include <vector>
 
 /**
- * @brief GroundAtom is an alias for vector of integers. It is represented
- * as a list of object indices.
+ * @brief GroundAtom is a list of object indices (one per predicate argument).
+ *
+ * Ground atoms almost always have a small arity, so we store them inline with a
+ * small-buffer-optimized vector. This avoids a heap allocation per atom on the
+ * hot successor-generation path (every relation tuple and join-table tuple is a
+ * GroundAtom), and keeps the data contiguous for hashing/compare. Same value
+ * semantics as the previous std::vector<int>: same elements, order, ==, and
+ * content-based hash (see TupleHash / utils::feed). The inline capacity is also
+ * shared by Table::tuple_t so the two interconvert by move (see database/table.h).
  */
-using GroundAtom = std::vector<int>;
+using GroundAtom = utils::small_vector<int, 4>;
 
 
 /**
