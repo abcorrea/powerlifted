@@ -196,9 +196,10 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     }
 
     Table &working_table = tables[fjr[0]];
+    std::vector<bool> applied(action.get_static_precondition().size(), false);
     for (size_t i = 1; i < fjr.size(); ++i) {
         hash_join(working_table, tables[fjr[i]]);
-        filter_static(action, working_table);
+        filter_static(action, working_table, applied);
         if (working_table.tuples.empty()) {
             return working_table;
         }

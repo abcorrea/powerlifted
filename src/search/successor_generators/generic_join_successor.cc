@@ -43,10 +43,11 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     assert(tables.size() == actiondata.relevant_precondition_atoms.size());
 
     Table &working_table = tables[0];
+    std::vector<bool> applied(action.get_static_precondition().size(), false);
     for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
         // Filter out equalities
-        filter_static(action, working_table);
+        filter_static(action, working_table, applied);
         if (working_table.tuples.empty()) {
             return working_table;
         }
@@ -56,11 +57,19 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
 }
 
 void GenericJoinSuccessor::filter_static(const ActionSchema &action,
-                                         Table &working_table)
+                                         Table &working_table,
+                                         std::vector<bool> &applied)
 {
     const auto& tup_idx = working_table.tuple_index;
 
-    for (const Atom& atom : action.get_static_precondition()) {
+    const auto &static_precond = action.get_static_precondition();
+    for (size_t k = 0; k < static_precond.size(); ++k) {
+        // Once a precondition has been enforced, every later join only adds
+        // columns and recombines surviving tuples, so the constrained columns
+        // keep their (already valid) values — re-filtering is a guaranteed
+        // no-op. Skip the ones already applied in an earlier join iteration.
+        if (applied[k]) continue;
+        const Atom &atom = static_precond[k];
         const std::vector<Argument> &args = atom.get_arguments();
         bool is_equality = true;
         // TODO: for now, we assume all static preconditions are
@@ -70,6 +79,8 @@ void GenericJoinSuccessor::filter_static(const ActionSchema &action,
             if (args[0].is_constant() && args[1].is_constant()){
                 bool is_equal = (args[0].get_index() == args[1].get_index());
 
+                // Independent of the table columns, so its result is final.
+                applied[k] = true;
                 if ((atom.is_negated() && is_equal)
                         || (!atom.is_negated() && !is_equal)){
                     working_table.tuples.clear();
@@ -98,6 +109,7 @@ void GenericJoinSuccessor::filter_static(const ActionSchema &action,
                         }
                     }
                     working_table.tuples = std::move(newtuples);
+                    applied[k] = true;
                 }
 
             }else{ // !args[0].is_constant() && !args[1].is_constant()
@@ -118,6 +130,7 @@ void GenericJoinSuccessor::filter_static(const ActionSchema &action,
                         }
                     }
                     working_table.tuples = std::move(newtuples);
+                    applied[k] = true;
                 }
             }
         }
@@ -437,13 +450,13 @@ void GenericJoinSuccessor::apply_lifted_action_effects(const ActionSchema &actio
         }
         else {
             int predicate_symbol_idx = eff.get_predicate_symbol_idx();
-            if (find(new_relation[predicate_symbol_idx].tuples.begin(),
-                     new_relation[predicate_symbol_idx].tuples.end(),
-                     ga) == new_relation[predicate_symbol_idx].tuples.end()) {
-                // If ground atom is not in the state, we add it
-                new_relation[eff.get_predicate_symbol_idx()].tuples.insert(ga);
-                add_to_added_atoms(eff.get_predicate_symbol_idx(), ga);
-
+            // tuples is an unordered_set, so insert() both adds the atom and
+            // tells us (via .second) whether it was new — no need for a prior
+            // O(n) linear std::find over the set.
+            auto insertion = new_relation[predicate_symbol_idx].tuples.insert(ga);
+            if (insertion.second) {
+                // Ground atom was not already in the state: record it as added.
+                add_to_added_atoms(predicate_symbol_idx, ga);
             }
         }
     }

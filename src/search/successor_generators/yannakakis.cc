@@ -6,6 +6,7 @@
 #include "../database/table.h"
 #include "../task.h"
 
+#include <algorithm>
 #include <cassert>
 #include <stack>
 #include <queue>
@@ -248,7 +249,12 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         hash_join(working_table, tables[j.first]);
         // Project must be after removal of inequality constraints, otherwise we might keep only the tuple violating
         // some inequality. Variables in inequalities are also considered distinguished.
-        filter_static(action, working_table);
+        // Fresh "applied" each call: Yannakakis reassigns working_table per
+        // subtree and projects columns away, so the linear-join dedup used by
+        // the other generators is not valid here — keep the original behaviour
+        // of re-checking every static precondition.
+        std::vector<bool> applied(action.get_static_precondition().size(), false);
+        filter_static(action, working_table, applied);
         project(working_table, project_over);
         if (working_table.tuples.empty()) {
             return working_table;
@@ -257,9 +263,13 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
 
     // For the case where the action schema is cyclic
     Table &working_table = tables[remaining_join[action.get_index()][0]];
+    std::vector<bool> applied_cyclic(action.get_static_precondition().size(), false);
     for (size_t i = 1; i < remaining_join[action.get_index()].size(); ++i) {
         hash_join(working_table, tables[remaining_join[action.get_index()][i]]);
-        filter_static(action, working_table);
+        // Reset so each join re-checks every precondition (preserve original
+        // behaviour; see note above).
+        std::fill(applied_cyclic.begin(), applied_cyclic.end(), false);
+        filter_static(action, working_table, applied_cyclic);
         if (working_table.tuples.empty()) {
             return working_table;
         }
