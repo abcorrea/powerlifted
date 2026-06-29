@@ -63,6 +63,16 @@ public:
         else
             return hash_table_2[key];
     }
+
+    // Empty both tables but keep their bucket arrays so the next grounding
+    // reuses them instead of reallocating. Equivalent to assigning a fresh
+    // JoinHashTable, only without the malloc/free churn (clean_up() runs once
+    // per join rule per state evaluation).
+    void clear()
+    {
+        hash_table_1.clear();
+        hash_table_2.clear();
+    }
 };
 
 class JoiningVariables {
@@ -129,7 +139,7 @@ public:
     {
     }
 
-    void clean_up() override { hash_table_indices = JoinHashTable(); }
+    void clean_up() override { hash_table_indices.clear(); }
 
     int get_type() const override { return JOIN; }
 
