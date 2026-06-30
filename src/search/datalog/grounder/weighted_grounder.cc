@@ -174,7 +174,7 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact,
                   rule_.get_weight() + fact.get_cost(),
                   rule.get_effect().is_pred_symbol_new());
     process_new_fact(new_fact, reached_facts, lp, [&]() {
-        return Achievers({fact.get_fact_index()}, rule.get_index(), rule_.get_weight());
+        return Achievers(fact.get_fact_index(), rule.get_index(), rule_.get_weight());
     });
 }
 
@@ -247,10 +247,10 @@ void WeightedGrounder::join(
         // body atom (position 1) goes last.
         process_new_fact(new_fact, reached_facts, lp, [&]() {
             if (position == 1) {
-                return Achievers({already_achieved_fact.get_fact_index(), fact.get_fact_index()},
+                return Achievers(already_achieved_fact.get_fact_index(), fact.get_fact_index(),
                                  rule_index, rule_weight);
             }
-            return Achievers({fact.get_fact_index(), already_achieved_fact.get_fact_index()},
+            return Achievers(fact.get_fact_index(), already_achieved_fact.get_fact_index(),
                              rule_index, rule_weight);
         });
     }
