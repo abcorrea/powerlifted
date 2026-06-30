@@ -18,6 +18,10 @@ namespace datalog {
 
 int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) {
     phmap::flat_hash_set<Fact> reached_facts;
+    // Pre-size from the previous call to skip the doubling rehashes this set
+    // would otherwise pay growing from empty (behaviour-neutral: the set is only
+    // probed by key, never iterated, so capacity does not affect productions).
+    reached_facts.reserve(reached_size_hint);
 
     queue_pushes = 0;
     atoms_produced = 0;
@@ -58,6 +62,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         if (current_fact.get_predicate_index() == goal_predicate) {
             datalog.backchain_from_goal(current_fact, initial_facts);
             record_grounder_run(atoms_produced, queue_pushes);
+            reached_size_hint = reached_facts.size();
             return current_fact.get_cost();
         }
         if (current_fact.get_cost() < cost) {
@@ -90,6 +95,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         }
     }
     record_grounder_run(atoms_produced, queue_pushes);
+    reached_size_hint = reached_facts.size();
     return std::numeric_limits<int>::max();
 }
 

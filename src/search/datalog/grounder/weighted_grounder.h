@@ -45,6 +45,12 @@ class WeightedGrounder : public Grounder {
     int atoms_produced;
     int total_number_of_facts;
 
+    // Number of distinct facts the previous ground() call reached. The grounder
+    // is re-run once per state on similar reachable sets, so reserving the
+    // reached-facts set to this size up front avoids the incremental rehashing
+    // it would otherwise pay growing from empty on every call.
+    std::size_t reached_size_hint = 0;
+
 protected:
     int heuristic_type;
 
