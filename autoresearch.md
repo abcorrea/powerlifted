@@ -284,6 +284,45 @@ small_vector + "reserve/reuse from the previous call").**
   out of scope). `perf` can't sample here (0 samples); callgrind too slow for a
   multi-eval search; gauge "fewer" ideas by whether grounder_atoms moves at all.
 
+### THE run-11 "convergence" was WRONG — a second wave of STRUCTURAL wins (13-17)
+
+After the allocation/reserve wins, removing that overhead UNMASKED slow data
+structures and accidental work the allocator cost had hidden. Lesson: don't
+declare convergence on "allocations are gone" — then hunt for slow std
+containers, double lookups, accidental insertions, by-value returns, and
+per-element work that can be precomputed.
+
+- **run 13 (KEEP, 1.5%) — `find()` not `operator[]` for join partners.**
+  `JoinHashTable::get_entries` used `hash_table[key]`, which INSERTS an empty
+  entry on every partnerless-key lookup (common while a join fills; permanent for
+  one-sided keys), polluting both maps. find()+static-empty is byte-identical.
+  peak_mem 55→51MB. commit 359d50e.
+- **run 14 (KEEP, 10.3%!) — flat_hash_map + single lookup for head positions.**
+  `MapVariablePosition` was a `std::unordered_map<Term,int>` (node-based, pointer
+  chase) AND `get_head_position_of_arg` did `count()`+`at()` (two lookups). It is
+  consulted per body argument per produced head. Switched to phmap::flat_hash_map
+  + one find(). A std::unordered_map on the hottest path was the single biggest
+  hidden bottleneck. commit 4a42d75.
+- **run 15 (KEEP, 5.1%) — precompute per-condition head positions.** The head
+  position of each condition arg is fixed per rule; cache it (object/non-head →
+  -1) so the join inner loops index an array instead of hashing each argument.
+  commit 592b0bc.
+- **run 16 (KEEP, 0.4%) — VariableSource::get_table() const returned BY VALUE**
+  (a full vector copy) and backchain reads `get_table()[idx]` per variable per
+  useful atom. Return const&. commit e7b30a7.
+- **run 17 (KEEP, 0.6%) — reuse the run-15 precompute in the project rule.**
+  commit ac968eb.
+- **run 18 (DISCARD) — remove a redundant `Arguments(std::move())` temporary in
+  DatalogAtom's ctor** (two inline moves → one, per Fact). Byte-identical but A/B
+  within noise (0.23%, conf 0.60): an inline small_vector move is too cheap.
+
+**Updated cumulative: baseline f2ff317 → run 17 is ~52.9s → ~22.5s (~57%, 2.35×).
+Still hunting; second-wave structural wins prove the loop hadn't converged.**
+Next candidates (likely marginal, per the run 7/11 SwissTable lessons): LightFact
+(drop the dead achiever from the join inner set's stored element); skip the dead
+achiever in the per-pop current_fact copy; product-rule precompute (rare). The
+big remaining unknowns need a profiler the env can't run.
+
 ## Measurement protocol (this box drifts ±10–15%)
 
 Shared machine; whole-sweep timings drift on a minutes timescale. **Always A/B a
