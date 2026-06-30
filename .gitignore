@@ -15,3 +15,5 @@ powerlifted.sif
 reports/
 local-tests/
 *.out
+benchmarks/.cache/
+autoresearch-data/

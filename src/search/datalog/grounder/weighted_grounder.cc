@@ -1,5 +1,7 @@
 #include "weighted_grounder.h"
 
+#include "grounder_statistics.h"
+
 #include "../datalog.h"
 
 #include "../rules/join.h"
@@ -56,6 +58,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         const Fact current_fact = datalog.get_fact_by_index(top_fact_index);
         if (current_fact.get_predicate_index() == goal_predicate) {
             datalog.backchain_from_goal(current_fact, initial_facts);
+            record_grounder_run(atoms_produced, queue_pushes);
             return current_fact.get_cost();
         }
         if (current_fact.get_cost() < cost) {
@@ -97,6 +100,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
             }
         }
     }
+    record_grounder_run(atoms_produced, queue_pushes);
     return std::numeric_limits<int>::max();
 }
 

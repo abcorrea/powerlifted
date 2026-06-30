@@ -3,6 +3,7 @@
 #include "plan_manager.h"
 #include "task.h"
 
+#include "datalog/grounder/grounder_statistics.h"
 #include "heuristics/heuristic.h"
 #include "heuristics/heuristic_factory.h"
 #include "search_engines/search.h"
@@ -114,6 +115,7 @@ int main(int argc, char *argv[])
     try {
         auto exitcode = search->search(task, *sgen, *heuristic);
         search->print_statistics();
+        datalog::print_grounder_statistics();  // autoresearch harness meter
         utils::report_exit_code_reentrant(exitcode);
         return static_cast<int>(exitcode);
     }
