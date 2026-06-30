@@ -227,14 +227,41 @@ the alloc model and confirmed by contemporaneous A/B.
   (2) achiever bodies are built with no heap alloc (~22.4M new facts). commit
   924e16e. peak_mem 68→55MB.
 
-Net: baseline ~50.9s → ~33.1s (~35%), all behavior-preserving.
+- **run 5 (KEEP, 10.1%) — inline `JoinHashKey`** (`std::vector<int>` →
+  `small_vector<int,3>`); per-join-firing key + stored map keys go off-heap.
+  Local `JoinHashKeyHash` (same hash values as VectorHash). commit f8ede57.
+- **run 6 (DISCARD) — in-place cheaper-path cost mutate** (idea #3). Counters
+  flat, but A/B −1.1% (noise): the strictly-cheaper-path branch is too rare
+  (most pushes are first-reaches) for removing its erase+insert to register.
+- **run 7 (DISCARD) — union-SBO compact small_vector** (−8 bytes/vector, Fact
+  ~76→60, peak_mem 55→48MB deterministically). But time only 0.32% (below noise),
+  confidence FELL as reps grew. **KEY INSIGHT: reached_facts is local to each
+  ground() call and cleared per state eval, so each set is small/cache-resident
+  regardless of Fact size — the wins are from removing ALLOCATIONS (malloc/free
+  cost), not object size. ⇒ size/N-tuning is a dead end; chase allocation +
+  rehash COUNT.** Reverted (kept the simpler pointer-based small_vector).
+- **run 8 (KEEP, 5.8%) — reserve `reached_facts`** to the previous call's size
+  up front, skipping the ~log(n) doubling rehashes it paid growing from empty
+  each call. Behaviour-neutral (set is only probed, never iterated). commit 3377ad4.
+- **run 9 (KEEP, 4.5%) — reuse + pre-size join hash tables.** `clean_up` was
+  `= JoinHashTable()` (frees both maps every call); now `reset_for_next_call()`
+  clears the two OUTER maps in place and reserves them to the previous key count.
+  Outer-map order is never used for productions, inner per-key sets stay fresh,
+  so byte-identical. commit 221da57.
 
-**Open levers (next):** JoinHashKey is still `std::vector<int>` built per
-join-firing (inline it); `is_cheapest` cheaper-path does erase+insert (in-place
-cost mutate via const_cast, since cost isn't in the key); reached_facts new-fact
-branch double-probes (find then insert); N-tuning for the small_vectors; and the
-untouched big "fewer" lever — finalization/skip-doomed-facts (idea #2, risky for
-product rules, needs a non-decreasing-pop proof). See "The target levers".
+Net: baseline ~50.9s → ~26.7s (~48%), every kept change behaviour-preserving
+(counters EXACTLY flat). **The lever is allocation/rehash COUNT in per-call hash
+containers, harvested via the "reserve from the previous call" pattern.**
+
+**Open levers (next):** the remaining big allocation source is the join INNER
+per-key sets (allocated/grown/freed every call) — but reusing OR inlining them
+changes partner iteration order, which changes a kept fact's recorded achiever
+(violates the byte-identical invariant, risky under the relaxed gate), so left
+alone. `initial_facts` reserve (small EDB-sized set). Finalization/skip-doomed
+(idea #2) now looks LOW-value post-alloc-cleanup: the per-discard cost is the
+reached_facts probe, which finalization can't avoid without its own probe, and
+args are now inline-cheap. N-tuning is a dead end (run 7). `perf` can't sample
+here (0 samples); callgrind is too slow for a full multi-eval search.
 
 ## Measurement protocol (this box drifts ±10–15%)
 
