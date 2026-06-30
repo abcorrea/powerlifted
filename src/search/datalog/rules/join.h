@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <iterator>
 #include <unordered_map>
 #include <unordered_set>
@@ -16,10 +17,20 @@
 #include <vector>
 
 #include "../../utils/hash.h"
+#include "../../utils/small_vector.h"
 
 namespace datalog {
 
-using JoinHashKey = std::vector<int>;
+// The join key holds one int per joining variable; join rules share few
+// variables, so an inline buffer keeps the per-firing key (built once for every
+// popped fact matching a join rule) and the stored map keys off the heap.
+using JoinHashKey = utils::small_vector<int, 3>;
+
+struct JoinHashKeyHash {
+    std::size_t operator()(const JoinHashKey &v) const {
+        return utils::hash_range(v.begin(), v.end());
+    }
+};
 
 class JoinHashEntry {
 
@@ -36,8 +47,8 @@ public:
 };
 
 class JoinHashTable {
-    phmap::flat_hash_map<JoinHashKey, JoinHashEntry, utils::VectorHash<int>> hash_table_1;
-    phmap::flat_hash_map<JoinHashKey, JoinHashEntry, utils::VectorHash<int>> hash_table_2;
+    phmap::flat_hash_map<JoinHashKey, JoinHashEntry, JoinHashKeyHash> hash_table_1;
+    phmap::flat_hash_map<JoinHashKey, JoinHashEntry, JoinHashKeyHash> hash_table_2;
 
     static bool valid_position(size_t i) { return (i == 0 or i == 1); }
 

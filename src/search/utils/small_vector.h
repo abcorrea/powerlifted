@@ -101,6 +101,10 @@ public:
         if (!is_inline()) ::operator delete(data_);
     }
 
+    void reserve(std::size_t n) {
+        if (n > capacity_) grow(static_cast<std::uint32_t>(n));
+    }
+
     void push_back(const T &v) {
         if (size_ == capacity_) grow(size_ + 1);
         data_[size_++] = v;
