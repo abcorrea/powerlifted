@@ -95,7 +95,7 @@ public:
         return table[i].first < 0;
     }
 
-    std::vector<std::pair<int, int>> get_table() const {
+    const std::vector<std::pair<int, int>> &get_table() const {
         return table;
     }
 
