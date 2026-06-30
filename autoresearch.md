@@ -201,7 +201,40 @@ Logged as run 1 in `autoresearch.jsonl`. Same code as the greedy-join baseline
 
 ## What's Been Tried
 
-(nothing yet — fresh loop)
+**Theme so far: allocator churn per produced fact dominates, not the algorithm.**
+Every kept win is "cheaper" (deterministic `grounder_atoms`/`grounder_pushes`
+stay EXACTLY at baseline 47644479 / 22398404 — productions unchanged, behavior
+preserved — while wall-clock drops). The deterministic counters are the
+correctness net: any hashing/equality bug would move them. `perf` cannot sample
+in this environment (0 samples even with `task-clock`), so wins are reasoned from
+the alloc model and confirmed by contemporaneous A/B.
+
+- **run 2 (KEEP, 5.9%) — defer achiever construction** (`weighted_grounder.cc`).
+  Moved the cheapest-path check inline into project/join/product (dropped the
+  batch `newfacts` buffer) and build the `Achievers` ONLY on the new-fact branch.
+  Key insight: `reached_facts` achievers are dead (backchaining reads achievers
+  from `lp`, written once at first insertion, never updated on a cheaper path),
+  so the discard (53%) AND cheaper-path branches need no achiever at all. Also
+  move-insert kept facts into `reached_facts`. commit cf27d27.
+- **run 3 (KEEP, 20.2%) — inline `Arguments`**. Vendored `utils/small_vector.h`
+  (SBO vector for trivially-copyable T, element-wise `==`, raw-pointer iterators
+  ⇒ Fact hash/eq byte-identical) and backed `datalog::Arguments` with
+  `small_vector<Term,4>`. Removes the per-produced-fact `std::vector<Term>` heap
+  alloc (~47.6M). Had to qualify `std::find`/`std::distance` in join.h (raw-ptr
+  iterators kill the prior std ADL). commit fe9b548.
+- **run 4 (KEEP, 16.3%) — inline `Achievers`**. Backed `Achievers` with
+  `small_vector<int,2>` + direct `int`/`int,int` ctors so project (1) and join
+  (2) achiever bodies are built with no heap alloc (~22.4M new facts). commit
+  924e16e. peak_mem 68→55MB.
+
+Net: baseline ~50.9s → ~33.1s (~35%), all behavior-preserving.
+
+**Open levers (next):** JoinHashKey is still `std::vector<int>` built per
+join-firing (inline it); `is_cheapest` cheaper-path does erase+insert (in-place
+cost mutate via const_cast, since cost isn't in the key); reached_facts new-fact
+branch double-probes (find then insert); N-tuning for the small_vectors; and the
+untouched big "fewer" lever — finalization/skip-doomed-facts (idea #2, risky for
+product rules, needs a non-decreasing-pop proof). See "The target levers".
 
 ## Measurement protocol (this box drifts ±10–15%)
 
