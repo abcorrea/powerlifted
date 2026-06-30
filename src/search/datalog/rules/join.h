@@ -50,10 +50,29 @@ class JoinHashTable {
     phmap::flat_hash_map<JoinHashKey, JoinHashEntry, JoinHashKeyHash> hash_table_1;
     phmap::flat_hash_map<JoinHashKey, JoinHashEntry, JoinHashKeyHash> hash_table_2;
 
+    // Number of distinct keys each table held at the end of the previous ground()
+    // call. The grounder reruns on similar reachable sets, so reserving to these
+    // counts lets the maps skip the doubling rehashes they would pay refilling
+    // from empty every call.
+    std::size_t prev_keys_0 = 0;
+    std::size_t prev_keys_1 = 0;
+
     static bool valid_position(size_t i) { return (i == 0 or i == 1); }
 
 public:
     JoinHashTable() = default;
+
+    // Empty the tables for the next ground() call but keep them pre-sized to the
+    // previous call's key counts (replaces destroying and rebuilding them).
+    void reset_for_next_call()
+    {
+        prev_keys_0 = hash_table_1.size();
+        prev_keys_1 = hash_table_2.size();
+        hash_table_1.clear();
+        hash_table_2.clear();
+        hash_table_1.reserve(prev_keys_0);
+        hash_table_2.reserve(prev_keys_1);
+    }
 
     void insert(const Fact &f, const JoinHashKey &key, int position)
     {
@@ -142,7 +161,7 @@ public:
     {
     }
 
-    void clean_up() override { hash_table_indices = JoinHashTable(); }
+    void clean_up() override { hash_table_indices.reset_for_next_call(); }
 
     int get_type() const override { return JOIN; }
 
