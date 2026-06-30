@@ -12,15 +12,21 @@ namespace datalog {
 class Match {
     int rule;
     int position;
+    int type;
 
 public:
-    Match(int r, int p) : rule(r), position(p) {}
+    Match(int r, int p, int t) : rule(r), position(p), type(t) {}
 
     int get_rule() const {
         return rule;
     }
     int get_position() const {
         return position;
+    }
+    // Rule type (PROJECT/JOIN/PRODUCT), cached here so the grounder's hot
+    // dispatch loop avoids a virtual RuleBase::get_type() call per matched rule.
+    int get_type() const {
+        return type;
     }
 };
 
@@ -33,8 +39,8 @@ public:
     explicit
     Matches(std::vector<Match> &&matches) : matches(std::move(matches)) {}
 
-    void insert_new_match(int r, int p) {
-        matches.emplace_back(r, p);
+    void insert_new_match(int r, int p, int t) {
+        matches.emplace_back(r, p, t);
     }
 
     std::vector<Match>::const_iterator begin() const {
@@ -65,11 +71,11 @@ public:
 //    explicit RuleMatcher(std::unordered_map<int, Matches> rule_matcher) :
 //        rule_matcher(std::move(rule_matcher)) {}
 
-    void insert(int predicate_index, int rule_index, int position) {
+    void insert(int predicate_index, int rule_index, int position, int type) {
         if (!atom_has_matched_rules(predicate_index)) {
             rule_matcher[predicate_index] = Matches();
         }
-        rule_matcher[predicate_index].insert_new_match(rule_index, position);
+        rule_matcher[predicate_index].insert_new_match(rule_index, position, type);
     }
 
     const Matches &get_matched_rules(int index) const {

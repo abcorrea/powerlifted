@@ -75,16 +75,20 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
             int position_in_the_body = m.get_position();
             RuleBase &rule = datalog.get_rule_by_index(rule_index);
 
-            assert(rule.get_type()==PROJECT || rule.get_type() == JOIN || rule.get_type() == PRODUCT);
+            // Rule type is cached in the Match (filled when the matcher is built),
+            // so this hot dispatch avoids a virtual RuleBase::get_type() call per
+            // matched rule.
+            const int rule_type = m.get_type();
+            assert(rule_type==PROJECT || rule_type == JOIN || rule_type == PRODUCT);
 
             // Each rule produces its head atoms and commits them (probe + queue
             // push) inline, so the achiever for a discarded production is never
             // built. See process_new_fact.
-            if (rule.get_type()==PROJECT) {
+            if (rule_type==PROJECT) {
                 // Projection rule - single condition in the body
                 assert(position_in_the_body==0);
                 project(rule, current_fact, reached_facts, datalog);
-            } else if (rule.get_type()==JOIN) {
+            } else if (rule_type==JOIN) {
                 // Join rule - two conditions in the body
                 assert(position_in_the_body <= 1);
                 join(rule, current_fact, position_in_the_body, reached_facts, datalog);
@@ -391,10 +395,12 @@ void WeightedGrounder::create_rule_matcher(const Datalog &lp) {
     // Loop over rule conditions
     for (const auto &rule : lp.get_rules()) {
         int cont = 0;
+        int type = rule->get_type();
         for (const auto &condition : rule->get_conditions()) {
             rule_matcher.insert(condition.get_predicate_index(),
                                 rule->get_index(),
-                                cont++);
+                                cont++,
+                                type);
         }
     }
 }
