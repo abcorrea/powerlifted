@@ -8,6 +8,8 @@
 
 #include "../annotations/annotation.h"
 
+#include "../../parallel_hashmap/phmap.h"
+
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -19,7 +21,9 @@ class MapVariablePosition {
     // Class mapping free variables to positions of the head/effect.
     // This class is used only for the join/product/projection operation, and not to retrieve
     // the full instantiation of action by "unsplitting" it.
-    std::unordered_map<Term, int, std::hash<Term>> mapping;
+    // flat_hash_map (not std::unordered_map) because this is probed once per
+    // body argument per produced head in the grounder hot loop.
+    phmap::flat_hash_map<Term, int, std::hash<Term>> mapping;
 
 public:
     MapVariablePosition() = default;
@@ -40,6 +44,14 @@ public:
     bool has_variable(const Term &t) const { return (mapping.count(t) > 0); }
 
     size_t at(const Term &t) const { return mapping.at(t); }
+
+    // Head position of t, or -1 if t is not a head variable. Single lookup
+    // (replaces a has_variable() + at() pair on the hot path).
+    int position_of(const Term &t) const
+    {
+        auto it = mapping.find(t);
+        return (it != mapping.end()) ? it->second : -1;
+    }
 };
 
 /*
@@ -111,9 +123,7 @@ public:
     // TODO Introduce overload using only index and passing VARIABLE to has_variable
     int get_head_position_of_arg(const Term &arg) const
     {
-        if (variable_position.has_variable(arg))
-            return variable_position.at(arg);
-        return -1;
+        return variable_position.position_of(arg);
     }
 
     void recreate_map_variable_position(const DatalogAtom &effect)
