@@ -249,19 +249,40 @@ the alloc model and confirmed by contemporaneous A/B.
   Outer-map order is never used for productions, inner per-key sets stay fresh,
   so byte-identical. commit 221da57.
 
-Net: baseline ~50.9s → ~26.7s (~48%), every kept change behaviour-preserving
-(counters EXACTLY flat). **The lever is allocation/rehash COUNT in per-call hash
-containers, harvested via the "reserve from the previous call" pattern.**
+- **run 10 (DISCARD) — same-head-join collapse** (a "fewer" attempt): when a
+  join's inverse condition contributes no head var, all partners give the same
+  head, so emit one. Counters EXACTLY UNCHANGED ⇒ the branch never fired: the
+  normal-form semijoin reduction (full_reducer/yannakakis) already projects away
+  non-propagating vars, so the case doesn't exist here. Added check is overhead.
+- **run 11 (DISCARD) — fuse find+insert into one `emplace` probe** (halves the
+  ~22.4M new-branch double-probes). Byte-identical (counters flat, 0 trajectory
+  moves) but A/B −0.3% (neutral): the saved probes are offset by ~25.2M extra
+  inline-Fact moves emplace makes constructing+discarding a temp on every
+  duplicate; the phmap SwissTable probe (compact control-byte scan) is too cheap
+  for halving the probe count to win. ⇒ probe-COUNT reduction is also tapped out.
 
-**Open levers (next):** the remaining big allocation source is the join INNER
-per-key sets (allocated/grown/freed every call) — but reusing OR inlining them
-changes partner iteration order, which changes a kept fact's recorded achiever
-(violates the byte-identical invariant, risky under the relaxed gate), so left
-alone. `initial_facts` reserve (small EDB-sized set). Finalization/skip-doomed
-(idea #2) now looks LOW-value post-alloc-cleanup: the per-discard cost is the
-reached_facts probe, which finalization can't avoid without its own probe, and
-args are now inline-cheap. N-tuning is a dead end (run 7). `perf` can't sample
-here (0 samples); callgrind is too slow for a full multi-eval search.
+**Cumulative checkpoint (contemporaneous A/B, run 221da57 vs baseline f2ff317):
+52.93s → 26.64s = 49.7% faster (~2× speedup), confidence 319×, grounder_atoms/
+pushes IDENTICAL, peak_mem 68→55MB.** Every kept change behaviour-preserving.
+**The lever was allocation/rehash COUNT in per-call hash containers (inline
+small_vector + "reserve/reuse from the previous call").**
+
+**Convergence assessment — the major levers are exhausted on this suite:**
+- *Fewer productions* is empty: 88 rules after dedup (113 removed), EDB only 45
+  atoms; the 47.6M productions / 53% waste are INHERENT (many body instantiations
+  project to the same head). CSE/finalization/same-head-collapse all bottom out
+  on work the normal-form transformation already did.
+- *Cheaper per production*: allocations removed (small_vectors), per-call rehashing
+  removed (reserve/reuse). Remaining per-production cost is the SwissTable probe +
+  Fact copies into the join index — memory-latency-bound and already efficient
+  (run 7: Fact size doesn't matter because SwissTable scans compact control bytes;
+  run 11: halving probes doesn't help because probes are that cheap).
+- Untried/rejected: join INNER per-key set reuse (changes partner order → changes
+  recorded achiever → not byte-identical, risky); product-rule achiever vectors
+  still std::vector (but product is rare — genome dominates with joins);
+  incremental/delta grounding across consecutive states (big architectural change,
+  out of scope). `perf` can't sample here (0 samples); callgrind too slow for a
+  multi-eval search; gauge "fewer" ideas by whether grounder_atoms moves at all.
 
 ## Measurement protocol (this box drifts ±10–15%)
 
