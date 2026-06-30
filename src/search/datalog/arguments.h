@@ -4,6 +4,7 @@
 #include "term.h"
 
 #include "../utils/hash.h"
+#include "../utils/small_vector.h"
 
 #include <cassert>
 #include <vector>
@@ -11,7 +12,10 @@
 namespace datalog {
 
 class Arguments {
-    std::vector<Term> arguments;
+    // Inline capacity 4 keeps the arguments of typical small-arity atoms off the
+    // heap; larger atoms spill transparently. This vector is copied once per
+    // produced ground fact in the grounder hot loop.
+    utils::small_vector<Term, 4> arguments;
 
 public:
     Arguments() = default;
@@ -23,7 +27,7 @@ public:
         }
     }
 
-    explicit Arguments(std::vector<Term> &&args) : arguments(std::move(args)) {}
+    explicit Arguments(std::vector<Term> &&args) : arguments(args.begin(), args.end()) {}
 
     Term operator[](size_t i) const
     {
@@ -31,9 +35,9 @@ public:
         return arguments[i];
     }
 
-    std::vector<Term>::const_iterator begin() const { return arguments.begin(); }
+    utils::small_vector<Term, 4>::const_iterator begin() const { return arguments.begin(); }
 
-    std::vector<Term>::const_iterator end() const { return arguments.end(); }
+    utils::small_vector<Term, 4>::const_iterator end() const { return arguments.end(); }
 
     size_t size() const { return arguments.size(); }
 
