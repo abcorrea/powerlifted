@@ -90,10 +90,18 @@ public:
     const JoinHashEntry &get_entries(const JoinHashKey &key, size_t position)
     {
         assert(valid_position(position));
-        if (position == 0)
-            return hash_table_1[key];
-        else
-            return hash_table_2[key];
+        // Look up with find() rather than operator[]: a key with no partner yet
+        // (common while the join is still filling) must NOT be inserted as an
+        // empty entry -- that pollutes the map with one-sided keys, inflating it
+        // and the per-call reserve. A missing key just means "no partners".
+        static const JoinHashEntry empty_entry;
+        if (position == 0) {
+            auto it = hash_table_1.find(key);
+            return (it != hash_table_1.end()) ? it->second : empty_entry;
+        } else {
+            auto it = hash_table_2.find(key);
+            return (it != hash_table_2.end()) ? it->second : empty_entry;
+        }
     }
 };
 
