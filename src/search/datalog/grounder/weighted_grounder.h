@@ -23,9 +23,18 @@ const int HAS_CHEAPER_PATH = -2;
 enum {H_ADD, H_MAX};
 
 class WeightedGrounder : public Grounder {
-    int is_cheapest_path_to_achieve_fact(Fact &new_fact,
-                                         phmap::flat_hash_set<Fact> &reached_facts,
-                                         Datalog &lp);
+    // Probe reached_facts with the (achiever-free) head atom and commit it only
+    // if it is new or strictly cheaper. The achiever is built lazily through
+    // build_achievers() and ONLY when the fact is first reached -- the discard
+    // and cheaper-path branches never read an achiever (backchaining reads
+    // achievers from lp, which is written once at first insertion and never
+    // updated on a cheaper path; the achiever stored in reached_facts is dead),
+    // so building it there is wasted work. Defined in the .cc next to its uses.
+    template <typename BuildAchievers>
+    void process_new_fact(Fact &new_fact,
+                          phmap::flat_hash_set<Fact> &reached_facts,
+                          Datalog &lp,
+                          BuildAchievers &&build_achievers);
 
     priority_queues::AdaptiveQueue<int> q;
 
@@ -43,9 +52,12 @@ protected:
 
     void create_rule_matcher(const Datalog &lp);
 
-    void project(const RuleBase &rule, const Fact &fact, std::vector<Fact>& newfacts);
-    void join(RuleBase &rule, const Fact &fact, int position, std::vector<Fact>& newfacts);
-    void product(RuleBase &rule, const Fact &fact, int position, std::vector<Fact>& newfacts);
+    void project(const RuleBase &rule, const Fact &fact,
+                 phmap::flat_hash_set<Fact> &reached_facts, Datalog &lp);
+    void join(RuleBase &rule, const Fact &fact, int position,
+              phmap::flat_hash_set<Fact> &reached_facts, Datalog &lp);
+    void product(RuleBase &rule, const Fact &fact, int position,
+                 phmap::flat_hash_set<Fact> &reached_facts, Datalog &lp);
 
     int aggregation_function(int i, int j) const {
         return (heuristic_type == H_ADD) ? i + j : std::max(i, j);

@@ -18,7 +18,6 @@ namespace datalog {
 
 int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) {
     phmap::flat_hash_set<Fact> reached_facts;
-    std::vector<Fact> newfacts;
 
     queue_pushes = 0;
     atoms_produced = 0;
@@ -73,30 +72,20 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
 
             assert(rule.get_type()==PROJECT || rule.get_type() == JOIN || rule.get_type() == PRODUCT);
 
-            newfacts.clear();
+            // Each rule produces its head atoms and commits them (probe + queue
+            // push) inline, so the achiever for a discarded production is never
+            // built. See process_new_fact.
             if (rule.get_type()==PROJECT) {
                 // Projection rule - single condition in the body
                 assert(position_in_the_body==0);
-                project(rule, current_fact, newfacts);
+                project(rule, current_fact, reached_facts, datalog);
             } else if (rule.get_type()==JOIN) {
                 // Join rule - two conditions in the body
                 assert(position_in_the_body <= 1);
-                join(rule, current_fact, position_in_the_body, newfacts);
+                join(rule, current_fact, position_in_the_body, reached_facts, datalog);
             } else {
                 // Product rule - more than one condition without shared free vars
-                product(rule, current_fact, position_in_the_body, newfacts);
-            }
-
-            // Note: using for loop for performance reasons, this is a heavily used loop
-            for (unsigned i=0, sz=newfacts.size(); i < sz; ++i) {
-                auto& new_fact = newfacts[i];
-                int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, datalog);
-                //datalog.output_atom(new_fact);
-                //std::cout << std::endl << std::flush;
-                if (id!=HAS_CHEAPER_PATH) {
-                    q.push(new_fact.get_cost(), id);
-                    queue_pushes++;
-                }
+                product(rule, current_fact, position_in_the_body, reached_facts, datalog);
             }
         }
     }
@@ -104,27 +93,43 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
     return std::numeric_limits<int>::max();
 }
 
-int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
-                                                       phmap::flat_hash_set<Fact> &reached_facts,
-                                                       Datalog &lp) {
-    const auto& it = reached_facts.find(new_fact);
+/*
+ * Probe reached_facts with the head atom and commit it iff it is new or
+ * strictly cheaper, pushing the kept fact onto the queue. The achiever is
+ * produced lazily via build_achievers() and ONLY on the new-fact branch:
+ *
+ *  - new fact      -> record achiever (it feeds backchaining via lp) + queue.
+ *  - cheaper path  -> only the cost matters; lp keeps the first achiever and the
+ *                     reached_facts achiever is never read, so we build none.
+ *  - has-cheaper   -> discarded; build nothing.
+ *
+ * Fact equality is predicate+arguments only (see datalog_fact.h), so the probe
+ * needs no achiever. This skips ~half of all achiever allocations, which were
+ * built and immediately thrown away in the previous batch-then-filter design.
+ */
+template <typename BuildAchievers>
+void WeightedGrounder::process_new_fact(Fact &new_fact,
+                                        phmap::flat_hash_set<Fact> &reached_facts,
+                                        Datalog &lp,
+                                        BuildAchievers &&build_achievers) {
     atoms_produced++;
+    const auto it = reached_facts.find(new_fact);
     if (it == reached_facts.end()) {  // The fact wasn't reached yet
+        new_fact.update_achievers(build_achievers());
         new_fact.set_fact_index();
-        reached_facts.insert(new_fact);
         lp.insert_fact(new_fact);
-        return new_fact.get_fact_index();
+        q.push(new_fact.get_cost(), new_fact.get_fact_index());
+        queue_pushes++;
+        reached_facts.insert(std::move(new_fact));
+    } else if (new_fact.get_cost() < it->get_cost()) {
+        new_fact.update_fact_index(it->get_fact_index());
+        reached_facts.erase(it);
+        lp.update_fact_cost(new_fact.get_fact_index(), new_fact.get_cost());
+        q.push(new_fact.get_cost(), new_fact.get_fact_index());
+        queue_pushes++;
+        reached_facts.insert(std::move(new_fact));
     }
-    else {
-        if (new_fact.get_cost() < it->get_cost()) {
-            new_fact.update_fact_index(it->get_fact_index());
-            reached_facts.erase(it);
-            reached_facts.insert(new_fact);
-            lp.update_fact_cost(new_fact.get_fact_index(), new_fact.get_cost());
-            return new_fact.get_fact_index();
-        }
-    }
-    return HAS_CHEAPER_PATH;
+    // else: a cheaper path already exists -- discard, building no achiever.
 }
 
 /*
@@ -138,7 +143,8 @@ int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
  *
  */
 
-void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vector<Fact>& newfacts) {
+void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact,
+                               phmap::flat_hash_set<Fact> &reached_facts, Datalog &lp) {
     const ProjectRule &rule = static_cast<const ProjectRule &>(rule_);
 
     // New arguments start as a copy of the head atom and we just replace the
@@ -163,12 +169,13 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vec
         }
     }
 
-    // Return a vector with one single fact
-    newfacts.emplace_back(std::move(new_arguments),
-                          rule.get_effect().get_predicate_index(),
-                          rule_.get_weight() + fact.get_cost(),
-                          Achievers({fact.get_fact_index()}, rule.get_index(), rule_.get_weight()),
-                          rule.get_effect().is_pred_symbol_new());
+    Fact new_fact(std::move(new_arguments),
+                  rule.get_effect().get_predicate_index(),
+                  rule_.get_weight() + fact.get_cost(),
+                  rule.get_effect().is_pred_symbol_new());
+    process_new_fact(new_fact, reached_facts, lp, [&]() {
+        return Achievers({fact.get_fact_index()}, rule.get_index(), rule_.get_weight());
+    });
 }
 
 /*
@@ -191,7 +198,8 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vec
  *
  */
 void WeightedGrounder::join(
-        RuleBase &rule_, const Fact &fact, int position, std::vector<Fact>& newfacts) {
+        RuleBase &rule_, const Fact &fact, int position,
+        phmap::flat_hash_set<Fact> &reached_facts, Datalog &lp) {
     JoinRule &rule = static_cast<JoinRule &>(rule_);
 
     JoinHashKey key;
@@ -218,6 +226,8 @@ void WeightedGrounder::join(
 
     int rule_index = rule.get_index();
     int rule_weight = rule.get_weight();
+    int pred_index = rule.get_effect().get_predicate_index();
+    bool pred_is_new = rule.get_effect().is_pred_symbol_new();
     const int inverse_position = rule.get_inverse_position(position);
     for (const Fact &already_achieved_fact : rule.get_facts_matching_key(key, inverse_position)) {
         Arguments new_arguments = new_arguments_persistent;
@@ -231,18 +241,18 @@ void WeightedGrounder::join(
             position_counter++;
         }
 
-        vector<int> achievers_body{fact.get_fact_index(), already_achieved_fact.get_fact_index()};
-        if (position == 1) {
-            // We need to keep the order of the atoms in the achiever as in the rule body,
-            // so we reverse the order if `fact` is the one in the second position (index 1).
-            reverse(achievers_body.begin(), achievers_body.end());
-        }
-
         int cost = aggregation_function(fact.get_cost(), already_achieved_fact.get_cost()) + rule_weight;
-        newfacts.emplace_back(std::move(new_arguments),
-                           rule.get_effect().get_predicate_index(),
-                           cost,Achievers(achievers_body, rule_index, rule_weight),
-                           rule.get_effect().is_pred_symbol_new());
+        Fact new_fact(std::move(new_arguments), pred_index, cost, pred_is_new);
+        // Achiever body keeps the atom order of the rule body, so the second
+        // body atom (position 1) goes last.
+        process_new_fact(new_fact, reached_facts, lp, [&]() {
+            if (position == 1) {
+                return Achievers({already_achieved_fact.get_fact_index(), fact.get_fact_index()},
+                                 rule_index, rule_weight);
+            }
+            return Achievers({fact.get_fact_index(), already_achieved_fact.get_fact_index()},
+                             rule_index, rule_weight);
+        });
     }
 }
 
@@ -257,7 +267,8 @@ void WeightedGrounder::join(
  *
  */
 void WeightedGrounder::product(
-        RuleBase &rule_, const Fact &fact, int position, std::vector<Fact>& newfacts) {
+        RuleBase &rule_, const Fact &fact, int position,
+        phmap::flat_hash_set<Fact> &reached_facts, Datalog &lp) {
     ProductRule &rule = static_cast<ProductRule &>(rule_);
 
     const auto& args = rule.get_condition_arguments(position);
@@ -292,14 +303,19 @@ void WeightedGrounder::product(
         total_cost = aggregation_function(total_cost, min_cost);
     }
 
+    int rule_index = rule.get_index();
+    int rule_weight = rule.get_weight();
+    int pred_index = rule.get_effect().get_predicate_index();
+    bool pred_is_new = rule.get_effect().is_pred_symbol_new();
+
     // If there is one reachable ground atom for every condition and the head
     // is nullary or has no free variable, then simply trigger it.
     if (rule.head_is_ground()) {
-        newfacts.emplace_back(rule.get_effect_arguments(),
-                              rule.get_effect().get_predicate_index(),
-                              total_cost + rule.get_weight(),
-                              Achievers(std::move(nullary_head_achievers), rule.get_index(), rule.get_weight()),
-                              rule.get_effect().is_pred_symbol_new());
+        Fact new_fact(rule.get_effect_arguments(), pred_index,
+                      total_cost + rule_weight, pred_is_new);
+        process_new_fact(new_fact, reached_facts, lp, [&]() {
+            return Achievers(std::move(nullary_head_achievers), rule_index, rule_weight);
+        });
         return;
     }
 
@@ -322,24 +338,24 @@ void WeightedGrounder::product(
 
     // Third: in this case, we just loop over the other conditions and its already
     // reached facts and instantiate all possibilities (i.e., cartesian product).
-    // We do this using a queue
-    deque<ProductDequeEntry> q;
-    //deque<pair<Arguments, int>> q;
-    q.emplace_back(new_arguments_persistent, 0, fact.get_cost());
-    while (!q.empty()) {
-        auto& next = q.front();
+    // We do this using a queue (named 'work' so it does not shadow the member
+    // priority queue 'q').
+    deque<ProductDequeEntry> work;
+    work.emplace_back(new_arguments_persistent, 0, fact.get_cost());
+    while (!work.empty()) {
+        auto& next = work.front();
 
         if (next.index >= int(rule.get_conditions().size())) {
-            newfacts.emplace_back(next.arguments,
-                                  rule.get_effect().get_predicate_index(),
-                                  next.cost + rule.get_weight(),
-                                  Achievers(next.achiever_atoms_indices, rule.get_index(), rule.get_weight()),
-                                  rule.get_effect().is_pred_symbol_new());
+            Fact new_fact(next.arguments, pred_index, next.cost + rule_weight, pred_is_new);
+            std::vector<int> achievers_body = std::move(next.achiever_atoms_indices);
+            process_new_fact(new_fact, reached_facts, lp, [&]() {
+                return Achievers(std::move(achievers_body), rule_index, rule_weight);
+            });
         } else if (next.index==position) {
             // If it is the condition that we are currently reaching, we do not need
             // to consider the other tuples with this predicate
             next.achiever_atoms_indices.push_back(fact.get_fact_index());
-            q.emplace_back(next.arguments, next.index + 1, next.cost, next.achiever_atoms_indices);
+            work.emplace_back(next.arguments, next.index + 1, next.cost, next.achiever_atoms_indices);
         } else {
             int vector_counter = 0;
             for (const auto &assignment : rule.get_reached_facts_of_condition(next.index)) {
@@ -356,14 +372,14 @@ void WeightedGrounder::product(
                 }
                 std::vector<int> new_achievers = next.achiever_atoms_indices;
                 new_achievers.push_back(rule.get_fact_index_reached_fact_in_position(next.index, vector_counter));
-                q.emplace_back(
+                work.emplace_back(
                         std::move(new_arguments),
                         next.index + 1,
                         aggregation_function(next.cost, rule.get_cost_reached_fact_in_position(next.index, vector_counter++)),
                         std::move(new_achievers));
             }
         }
-        q.pop_front();
+        work.pop_front();
     }
 }
 
