@@ -158,20 +158,19 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact,
     Arguments new_arguments = rule.get_effect_arguments();
 
     const Arguments &args = rule.get_condition_arguments();
+    // Precomputed head positions (object/non-head args are -1); object args still
+    // need their constant-match check, so that branch stays.
+    const std::vector<int> &head_positions = rule.get_condition_head_positions(0);
     for (size_t i = 0; i < args.size(); ++i) {
-        const auto a = args[i];
         if (args.is_object(i)) {
             // Constant instead of free var
-            if (fact.argument(i)!=a) {
+            if (fact.argument(i)!=args[i]) {
                 // constants do not match!
                 return;
             }
-        } else {
-            int pos = rule.get_head_position_of_arg(a);
-            if (pos!=-1) {
-                // Variable should NOT be projected away by this rule
-                new_arguments.set_term_to_object(pos, fact.argument(i).get_index());
-            }
+        } else if (head_positions[i] != -1) {
+            // Variable should NOT be projected away by this rule
+            new_arguments.set_term_to_object(head_positions[i], fact.argument(i).get_index());
         }
     }
 
