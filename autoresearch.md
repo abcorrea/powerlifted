@@ -316,12 +316,38 @@ per-element work that can be precomputed.
   DatalogAtom's ctor** (two inline moves → one, per Fact). Byte-identical but A/B
   within noise (0.23%, conf 0.60): an inline small_vector move is too cheap.
 
-**Updated cumulative: baseline f2ff317 → run 17 is ~52.9s → ~22.5s (~57%, 2.35×).
-Still hunting; second-wave structural wins prove the loop hadn't converged.**
-Next candidates (likely marginal, per the run 7/11 SwissTable lessons): LightFact
-(drop the dead achiever from the join inner set's stored element); skip the dead
-achiever in the per-pop current_fact copy; product-rule precompute (rare). The
-big remaining unknowns need a profiler the env can't run.
+- **run 18 (DISCARD) — remove redundant `Arguments(std::move())` temporary** in
+  DatalogAtom's ctor (two inline moves → one). Within noise (0.23%): inline move
+  too cheap.
+- **run 19 (KEEP, 1.9%) — cache rule type in the Match to kill virtual dispatch.**
+  The grounder's per-popped-fact loop called the VIRTUAL `RuleBase::get_type()`
+  up to twice per matched rule (the PROJECT/JOIN branch tests). Store the type in
+  the `Match` struct (one get_type() per rule at matcher-build time) and dispatch
+  on the int. A first cut that merely read get_type() ONCE was ~0.65% (RERUN);
+  eliminating the virtual call entirely was ~3× better. commit 4765b0c.
+
+**Cumulative (contemporaneous A/B, run 19 lineage vs baseline f2ff317): ~53.3s →
+~22.2s ≈ 58% / 2.4×, grounder_atoms/pushes IDENTICAL, peak_mem 68→51MB.**
+
+**Second-convergence assessment (more thorough than run 11's).** The in-scope
+grounding hot path is now free of: per-fact heap allocs, per-call hash rehashing,
+slow std containers, `operator[]` pollution, redundant per-element lookups,
+by-value heavy returns, and virtual dispatch. Verified-marginal/blocked remainders:
+- `AdaptiveQueue` push/pop dispatch (~45M virtual calls) is OUT OF SCOPE
+  (priority_queues.h) and can't be safely replaced: forcing BucketQueue OOMs
+  large-cost domains generally; forcing HeapQueue is slower + reorders pops
+  (changes achievers). The adaptive fallback is load-bearing for correctness.
+- `add_useful_atom` allocates a `GroundAtom` (==std::vector<int>, a core type in
+  107 sites incl. states/novelty/successor-gen) per useful atom; useful_atoms'
+  clear+rebuild contract is read by out-of-scope search code → can't inline/pool.
+- `DatalogAtom::index = next_index++` per Fact is dead for facts but ~0.13% only.
+- LightFact / index-only join inner set: the only remaining BIG copy saving, but
+  both change partner ITERATION ORDER (int-hash vs args-hash, or grown capacity)
+  ⇒ change the recorded first-achiever ⇒ not byte-identical (the relaxed gate
+  MIGHT accept it if plan cost ≤ baseline, but it violates the achiever
+  invariant; left for an explicit decision).
+Lesson reinforced: after each apparent convergence, sweep for the NEXT class of
+"wrong tool / accidental work" — two waves of wins came from doing exactly that.
 
 ## Measurement protocol (this box drifts ±10–15%)
 
