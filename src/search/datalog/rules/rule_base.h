@@ -85,6 +85,12 @@ protected:
 
     MapVariablePosition variable_position;
 
+    // Lazily-cached head position of every condition argument (-1 if the argument
+    // is an object or is not a head variable). The mapping is fixed per rule, so
+    // the grounder's per-partner inner loops index this instead of hashing each
+    // argument through variable_position on every produced head.
+    mutable std::vector<std::vector<int>> condition_head_positions;
+
     int get_position_of_atom_in_same_body_rule(int i) const
     {
         return variable_source.get_position_of_atom_in_same_body_rule(i);
@@ -124,6 +130,26 @@ public:
     int get_head_position_of_arg(const Term &arg) const
     {
         return variable_position.position_of(arg);
+    }
+
+    // Head positions of condition i's arguments, with the object/non-head check
+    // already folded in (-1 = skip). Computed once and reused across the millions
+    // of grounder calls.
+    const std::vector<int> &get_condition_head_positions(int i) const
+    {
+        if (condition_head_positions.size() != conditions.size()) {
+            condition_head_positions.assign(conditions.size(), {});
+            for (size_t c = 0; c < conditions.size(); ++c) {
+                const Arguments &args = conditions[c].get_arguments();
+                std::vector<int> &positions = condition_head_positions[c];
+                positions.reserve(args.size());
+                for (size_t k = 0; k < args.size(); ++k) {
+                    const Term t = args[k];
+                    positions.push_back(t.is_object() ? -1 : get_head_position_of_arg(t));
+                }
+            }
+        }
+        return condition_head_positions[i];
     }
 
     void recreate_map_variable_position(const DatalogAtom &effect)

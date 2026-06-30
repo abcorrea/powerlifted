@@ -220,14 +220,15 @@ void WeightedGrounder::join(
     // See comment in "project" about 'new_arguments' vector
     Arguments new_arguments_persistent = rule.get_effect_arguments();
 
-    int position_counter = 0;
-    for (auto &arg : rule.get_condition_arguments(position)) {
-        int pos = rule.get_head_position_of_arg(arg);
-        if (pos!=-1 and !arg.is_object()) {
-            new_arguments_persistent.set_term_to_object(pos,
-                                                        fact.argument(position_counter).get_index());
+    // Head positions are precomputed per condition (object/non-head args are -1),
+    // so these inner loops are plain indexed writes instead of a hash lookup per
+    // argument per produced head.
+    const std::vector<int> &head_positions = rule.get_condition_head_positions(position);
+    for (size_t i = 0; i < head_positions.size(); ++i) {
+        if (head_positions[i] != -1) {
+            new_arguments_persistent.set_term_to_object(head_positions[i],
+                                                        fact.argument(i).get_index());
         }
-        position_counter++;
     }
 
     int rule_index = rule.get_index();
@@ -235,16 +236,14 @@ void WeightedGrounder::join(
     int pred_index = rule.get_effect().get_predicate_index();
     bool pred_is_new = rule.get_effect().is_pred_symbol_new();
     const int inverse_position = rule.get_inverse_position(position);
+    const std::vector<int> &inverse_head_positions = rule.get_condition_head_positions(inverse_position);
     for (const Fact &already_achieved_fact : rule.get_facts_matching_key(key, inverse_position)) {
         Arguments new_arguments = new_arguments_persistent;
-        position_counter = 0;
-        for (auto &arg : rule.get_condition_arguments(inverse_position)) {
-            int pos = rule.get_head_position_of_arg(arg);
-            if (pos!=-1 and !arg.is_object()) {
-                new_arguments.set_term_to_object(pos,
-                                                 already_achieved_fact.argument(position_counter).get_index());
+        for (size_t i = 0; i < inverse_head_positions.size(); ++i) {
+            if (inverse_head_positions[i] != -1) {
+                new_arguments.set_term_to_object(inverse_head_positions[i],
+                                                 already_achieved_fact.argument(i).get_index());
             }
-            position_counter++;
         }
 
         int cost = aggregation_function(fact.get_cost(), already_achieved_fact.get_cost()) + rule_weight;
