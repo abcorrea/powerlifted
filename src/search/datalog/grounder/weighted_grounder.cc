@@ -279,27 +279,25 @@ void WeightedGrounder::product(
 
     // Check that *all* other positions of the effect have at least one tuple
     rule.add_reached_fact_to_condition(fact, position, fact.get_cost());
-    int total_cost = 0;
-    std::vector<int> nullary_head_achievers;
-    for (const ReachedFacts &v : rule.get_reached_facts_all_conditions()) {
+    const std::vector<ReachedFacts> &all_conditions = rule.get_reached_facts_all_conditions();
+    for (const ReachedFacts &v : all_conditions) {
         if (v.empty()) return;
-        int min_cost = std::numeric_limits<int>::max();
-        int min_index = 0;
-        int index = 0;
-        for (int cost : v.get_costs()) {
-            if (min_cost > cost) {
-                min_cost = cost;
-                min_index = index;
-            }
-            index++;
-        }
-        nullary_head_achievers.push_back(v.get_fact_index(min_index));
-        total_cost = aggregation_function(total_cost, min_cost);
     }
 
     // If there is one reachable ground atom for every condition and the head
-    // is nullary or has no free variable, then simply trigger it.
+    // is nullary or has no free variable, then simply trigger it. Only the
+    // cheapest tuple of each condition matters here, and ReachedFacts tracks that
+    // minimum incrementally, so this is O(#conditions) instead of re-scanning
+    // (and copying) every reached tuple's costs on every call. The min-scan is
+    // pointless for non-ground heads, so we skip it entirely in that case.
     if (rule.head_is_ground()) {
+        int total_cost = 0;
+        std::vector<int> nullary_head_achievers;
+        nullary_head_achievers.reserve(all_conditions.size());
+        for (const ReachedFacts &v : all_conditions) {
+            nullary_head_achievers.push_back(v.get_min_fact_index());
+            total_cost = aggregation_function(total_cost, v.get_min_cost());
+        }
         newfacts.emplace_back(rule.get_effect_arguments(),
                               rule.get_effect().get_predicate_index(),
                               total_cost + rule.get_weight(),

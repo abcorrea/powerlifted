@@ -3,6 +3,8 @@
 
 #include "rule_base.h"
 
+#include <limits>
+
 namespace datalog {
 
 struct ProductDequeEntry {
@@ -27,6 +29,11 @@ class ReachedFacts {
     std::vector<Arguments> facts;
     std::vector<int> fact_indices;
     std::vector<int> costs;
+    // Cheapest reached tuple, tracked incrementally so product() does not have to
+    // re-scan every tuple on every call. Strict "<" keeps the first tuple that
+    // reached the minimum cost, matching the old min-scan's tie-break exactly.
+    int min_cost = std::numeric_limits<int>::max();
+    int min_fact_index = -1;
 
 public:
     ReachedFacts() = default;
@@ -35,7 +42,15 @@ public:
         facts.push_back(fact.get_arguments());
         fact_indices.push_back(fact.get_fact_index());
         costs.push_back(i);
+        if (i < min_cost) {
+            min_cost = i;
+            min_fact_index = fact.get_fact_index();
+        }
     }
+
+    int get_min_cost() const { return min_cost; }
+
+    int get_min_fact_index() const { return min_fact_index; }
 
     bool empty() const {
         return facts.empty();
