@@ -58,10 +58,14 @@ public:
     const JoinHashEntry &get_entries(const JoinHashKey &key, size_t position)
     {
         assert(valid_position(position));
-        if (position == 0)
-            return hash_table_1[key];
-        else
-            return hash_table_2[key];
+        // Look up partners with find(), not operator[]: a miss (a popped fact
+        // whose join key has no partner yet — very common) must not insert a
+        // spurious empty entry, which would copy the vector<int> key into the map
+        // and possibly rehash it. An absent key yields the same empty range.
+        static const JoinHashEntry empty_entry;
+        const auto &table = (position == 0) ? hash_table_1 : hash_table_2;
+        const auto it = table.find(key);
+        return (it == table.end()) ? empty_entry : it->second;
     }
 
     // Empty both tables but keep their bucket arrays so the next grounding
