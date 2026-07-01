@@ -34,8 +34,8 @@ class WeightedGrounder : public Grounder {
 
     // Reused across join() calls so the per-call join key is built in place
     // instead of allocating a fresh vector every time (join() is the hottest
-    // path in the grounder).
-    std::vector<int> join_key_buffer;
+    // path in the grounder). Same small-buffer-optimized type as JoinHashKey.
+    utils::small_vector<int, 2> join_key_buffer;
 
     int queue_pushes;
     int atoms_produced;
