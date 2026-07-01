@@ -215,7 +215,51 @@ suite (7/7/7), measured 2026-07-01 in a quiet window (loadavg ~1.1).
 
 ## What's Been Tried
 
-(nothing yet — fresh loop)
+Experiments run 2–6 (run 1 = baseline). Only run 2 kept.
+
+- **run 2 — KEEP (+4.5%), "cheaper", counter flat.** Build join/project achiever
+  bodies directly in the inline `small_vector<int,2>` via new
+  `Achievers(int,int,int,int)` / `Achievers(int,int,int)` ctors, removing the
+  per-produced-fact heap-allocated temporary `std::vector<int>` (join 2-int +
+  project 1-int). Committed `3c51e36`. **The winning pattern: delete a genuine
+  per-fact heap allocation.**
+- **run 3 — DISCARD, "cheaper".** `ReachedFacts::get_costs()` by-value →
+  const-ref (stop copying the costs vector in product's min scan). Real but
+  tiny; only touches the narrow product path; +0.4% is lost in noise.
+- **run 4 — DISCARD, "cheaper".** Rewrite `is_cheapest_path` with phmap
+  `lazy_emplace` to fuse the `find()`+`insert()` double-probe into one, plus
+  in-place `const_cast` cost update on the strictly-cheaper branch (both
+  behavior-preserving — reached_facts achievers are never read back; backchain
+  reads achievers from `Datalog::facts`). Plan costs identical. But the saved
+  find-probe on small cache-hot genome args is too cheap: order-balanced A/B
+  gave ~0.7% median with ±1–2s noise → indistinguishable from zero.
+- **run 5 — DISCARD, REGRESSED −1.2%.** Make `reached_facts`/`newfacts` reused
+  members `clear()`-ed per call. `clear()` is O(capacity); a bucket array sized
+  to the biggest eval penalizes the many small evals. Reuse is *worse* here.
+- **run 6 — DISCARD, REGRESSED −0.7%.** Hoist join's partner (head_pos,
+  arg_pos) map out of the per-partner loop. `position_of` is already a cache-hot
+  ≤4-elem scan; the precompute pass then runs unconditionally, adding cost to
+  the many zero-partner join calls.
+
+**Takeaways.** (1) The grounder is already well-tuned post-SBO+run2; hot funcs
+(join 15%, product 11%, phmap prepare_insert 9.6%, is_cheapest 7.8%) are
+dominated by *irreducible* work (Arguments copies, Fact construction, hash
+probes on real data), not removable overhead. (2) Removing a real per-fact heap
+alloc wins (run 2); shaving cache-hot scalar work or fusing cheap probes does
+not; reusing big containers or adding unconditional precompute *regresses*.
+(3) Remaining clear target = the ~11% still in malloc/free, mostly product's
+`std::vector<int>`/`deque` (genome). (4) **Next levers to try:** product
+cartesian allocation (lever 5) and the count-reducing levers (finalization
+lever 2 / CSE lever 4) that drop `grounder_atoms` rather than per-fact cost.
+
+**Measurement protocol that works on this box (IMPORTANT):** naive 5-vs-5
+fresh-build A/B is too noisy (±3–5%, box drifts within a sweep). Instead: build
+BOTH binaries once, save them, then run **order-balanced interleaved** full-suite
+sweeps (alternate which binary runs first each round) via `run_suite.py` with the
+saved binary copied over `builds/release/search/search`. In a quiet window this
+gives a **0.3–0.5% noise floor** and detects sub-1% effects. Always verify
+`grounder_atoms` flat (cheaper win) and plan cost preserved on a heavy pair
+(genome d-13-2 gbfs-ff = cost 79, d-7-8 gbfs-add = cost 31) before timing.
 
 ## Measurement protocol (this box drifts ±10–15%)
 
