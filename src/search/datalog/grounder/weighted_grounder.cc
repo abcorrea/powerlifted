@@ -107,22 +107,31 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
 int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                                        phmap::flat_hash_set<Fact> &reached_facts,
                                                        Datalog &lp) {
-    const auto& it = reached_facts.find(new_fact);
     atoms_produced++;
-    if (it == reached_facts.end()) {  // The fact wasn't reached yet
+    // Fuse the membership probe and the insert into one hash+probe pass. The old
+    // code did find() then, on a miss, a second insert() (two hashes of the whole
+    // argument tuple per new fact). lazy_emplace() probes once and constructs the
+    // stored copy only when the fact is new.
+    bool inserted = false;
+    const auto it = reached_facts.lazy_emplace(new_fact, [&](const auto &ctor) {
         new_fact.set_fact_index();
-        reached_facts.insert(new_fact);
+        ctor(new_fact);
+        inserted = true;
+    });
+    if (inserted) {  // The fact wasn't reached yet
         lp.insert_fact(new_fact);
         return new_fact.get_fact_index();
     }
-    else {
-        if (new_fact.get_cost() < it->get_cost()) {
-            new_fact.update_fact_index(it->get_fact_index());
-            reached_facts.erase(it);
-            reached_facts.insert(new_fact);
-            lp.update_fact_cost(new_fact.get_fact_index(), new_fact.get_cost());
-            return new_fact.get_fact_index();
-        }
+    if (new_fact.get_cost() < it->get_cost()) {
+        const int existing_index = it->get_fact_index();
+        new_fact.update_fact_index(existing_index);
+        // Cost is neither hashed nor compared (Fact keys on predicate+args only),
+        // and the stored entry's achiever body is never read back from
+        // reached_facts (backchaining reads achievers from Datalog::facts), so
+        // lower the cost in place instead of erase+reinsert (one hash saved).
+        const_cast<Fact &>(*it).set_cost(new_fact.get_cost());
+        lp.update_fact_cost(existing_index, new_fact.get_cost());
+        return existing_index;
     }
     return HAS_CHEAPER_PATH;
 }
