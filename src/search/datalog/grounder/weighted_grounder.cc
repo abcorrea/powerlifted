@@ -55,16 +55,22 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         pair<int, int> queue_top = q.pop();
         int cost = queue_top.first;
         int top_fact_index = queue_top.second;
-        const Fact current_fact = datalog.get_fact_by_index(top_fact_index);
-        if (current_fact.get_predicate_index() == goal_predicate) {
-            datalog.backchain_from_goal(current_fact, initial_facts);
+        // Access the popped fact by reference, not by copy (a copy clones its
+        // arguments and achiever body on every pop). is_cheapest_path_to_achieve_fact()
+        // below can push_back to — and thus reallocate — datalog's fact vector, so
+        // we never hold this reference across it; we re-fetch by index (O(1))
+        // inside the rule loop, where no fact is inserted during a single
+        // project/join/product call.
+        const Fact &popped_fact = datalog.get_fact_by_index(top_fact_index);
+        if (popped_fact.get_predicate_index() == goal_predicate) {
+            datalog.backchain_from_goal(popped_fact, initial_facts);
             record_grounder_run(atoms_produced, queue_pushes);
-            return current_fact.get_cost();
+            return popped_fact.get_cost();
         }
-        if (current_fact.get_cost() < cost) {
+        if (popped_fact.get_cost() < cost) {
             continue;
         }
-        int predicate_index = current_fact.get_predicate_index();
+        int predicate_index = popped_fact.get_predicate_index();
         for (const auto
                 &m : rule_matcher.get_matched_rules(predicate_index)) {
             int rule_index = m.get_rule();
@@ -74,6 +80,9 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
             assert(rule.get_type()==PROJECT || rule.get_type() == JOIN || rule.get_type() == PRODUCT);
 
             newfacts.clear();
+            // Re-fetch: a previous iteration's is_cheapest_path may have grown
+            // (and moved) the fact vector. Valid for this single rule application.
+            const Fact &current_fact = datalog.get_fact_by_index(top_fact_index);
             if (rule.get_type()==PROJECT) {
                 // Projection rule - single condition in the body
                 assert(position_in_the_body==0);
