@@ -308,16 +308,30 @@ irreducible), Fact-set `prepare_insert` 12% (reached_facts + JoinHashEntry, both
 malloc/free (much of it JoinHashEntry per-key set alloc + JoinRule teardown/clean_up
 ~6.7%). Genome is still ~47% of the suite.
 
-**Remaining candidate levers (all higher-risk / uncertain — not yet cracked):**
-(1) JoinHashEntry is a per-key `flat_hash_set<Fact>` — many small-set allocs +
-teardown churn each eval; a small_vector-with-linear-dedup would cut allocs for
-small entries but risks O(n²) on large ones (needs the entry-size distribution to
-be mostly-small; unverified). (2) reached_facts/JoinHashEntry store ~100-byte
-Facts with dead achievers — a set-of-fact-indices would shrink slots but adds a
-lp.facts indirection per compare that may offset the cache win; also needs phmap
-heterogeneous hashing. NB JoinHashEntry MUST keep snapshot costs (run 9 lesson),
-so it can't be pure indices. (3) shrinking Fact via a uint32 small_vector
-size_type — broad but touches successor-gen (GroundAtom/Table) too.
+**Remaining candidate levers:**
+(1) ~~JoinHashEntry as a small_vector/vector~~ — **CLOSED (run 18).** Instrumented
+entry sizes: tiny (28% empty, 72% size-1, max ≤16, avg fan-out 0.76), so a
+per-key `flat_hash_set` is mostly overhead and dedup can't cause O(n²). BUT
+swapping it for a vector moves the counter +433K and regresses time ~27%: the
+set iterates partners in HASH order, a vector in INSERTION order, and that order
+change alters recorded achievers + the production trajectory (h^add value still
+order-independent, so plan costs hold and the gate passes — but the invariant
+"reordering must not change achievers" is violated, and h^ff guidance degrades).
+The set's iteration order is load-bearing; it cannot be replaced by a cheaper
+structure without replicating phmap's exact iteration order. This is also the
+real explanation for run 9 (it was never the dedup). (2) reached_facts as a
+set-of-fact-indices would shrink slots but adds an lp.facts indirection per
+compare that likely offsets the cache win; needs phmap heterogeneous hashing;
+uncertain. (3) shrinking Fact via a uint32 small_vector size_type — broad but the
+dominant costs (phmap SIMD probing, arg hashing) are size-independent, so the
+expected gain is modest, and it touches successor-gen (GroundAtom/Table). Neither
+(2) nor (3) is clearly positive-EV.
+
+**Status:** the accessible grounder optimization space is thoroughly explored. 7
+clean wins, ~20% cumulative (validated contemporaneously vs the run-1 baseline,
+28.5s→22.8s, all 6 rounds 19.75–20.61%). The remaining hot time is irreducible
+flat_hash SIMD probing + real join/product output. Micro-opts (runs 12–14, 17)
+are all sub-noise; structural levers are closed or uncertain.
 
 **Method note:** borderline ~2.0x confidence on 8 rounds is often optimistic —
 pool 12–16 rounds before committing. Watch for two recurring transients on this
