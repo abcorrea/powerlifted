@@ -241,6 +241,28 @@ Experiments run 2–6 (run 1 = baseline). Only run 2 kept.
   ≤4-elem scan; the precompute pass then runs unconditionally, adding cost to
   the many zero-partner join calls.
 
+- **run 7 — KEEP (+3.7%), "cheaper", counter flat.** `product()` recomputed the
+  cheapest reached tuple per condition by re-scanning ALL tuples on EVERY call
+  (O(n²) over grounding) + `get_costs()` copied the whole cost vector. Now
+  `ReachedFacts` tracks `(min_cost, min_fact_index)` incrementally (strict `<`
+  keeps old first-wins tie-break); ground-head branch is O(#conditions), and the
+  min work is skipped entirely for non-ground heads. Committed `15b6379`.
+- **run 8 — KEEP (+4.4%), "cheaper", counter flat.** `JoinHashTable::get_entries`
+  looked up partners with `operator[]`, inserting a spurious empty entry (copying
+  the vector<int> key, maybe rehashing) on every zero-partner lookup (very
+  common). Switched to `find()` + static empty entry on miss. Committed `991195b`.
+- **run 9 — DISCARD (rejected by counter, not timed).** Replace `JoinHashEntry`'s
+  `flat_hash_set<Fact>` with `vector<Fact>` to skip per-insert Fact hashing.
+  WRONG assumption: facts **re-fire at strictly-decreasing costs** (decrease-key
+  re-push), and the set's first-wins dedup keeps each partner at its first-fired
+  cost — load-bearing. Vector → duplicate partners → `grounder_atoms` +433K.
+  The deterministic counter caught the behavior change before any timing.
+
+**Product + join hash-table structure were the live levers** (runs 6–8, all on
+the genome domain but each moved the *suite* metric ~4%): kill redundant
+re-computation (min-scan), and stop the hash maps doing insert-work on the
+lookup/miss path. Cumulative: ~28s → ~25.2s.
+
 **Takeaways.** (1) The grounder is already well-tuned post-SBO+run2; hot funcs
 (join 15%, product 11%, phmap prepare_insert 9.6%, is_cheapest 7.8%) are
 dominated by *irreducible* work (Arguments copies, Fact construction, hash
