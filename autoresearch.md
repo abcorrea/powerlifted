@@ -263,6 +263,28 @@ the genome domain but each moved the *suite* metric ~4%): kill redundant
 re-computation (min-scan), and stop the hash maps doing insert-work on the
 lookup/miss path. Cumulative: ~28s → ~25.2s.
 
+- **run 10 — KEEP (+1.2%), "cheaper", counter flat.** Re-test of run 4's
+  `lazy_emplace` in a CLEAN order-balanced window. Same code run 4 discarded as
+  noise; the clean protocol (0.19% floor) resolved it as a real +1.16%. LESSON:
+  window quality, not the idea, decided run 4 vs run 10. Committed `959a242`.
+- **run 11 — KEEP (+6.9%, biggest win), "cheaper", counter flat.** `JoinHashKey`
+  `std::vector<int>` → `utils::small_vector<int,2>` (+ `JoinHashKeyHash`). Join
+  keys are 1–2 ints; inline keys remove a heap alloc per distinct key and the
+  pointer chase when hashing/comparing on every join hash-table access.
+  Committed `ffc9f68`. **The inline-small-vector pattern is the strongest lever
+  found.**
+- **run 12 — KEEP (+0.85%), "cheaper", counter flat.** Main loop accessed the
+  popped fact by copy (`const Fact current_fact = ...`, clones args+achievers);
+  changed to a reference re-fetched by index per rule application (the copy was
+  defensive vs fact-vector realloc in is_cheapest; re-fetch is safe because
+  project/join/product never insert during a single call). Small; needed two
+  clean A/Bs to confirm past a lone transient outlier. Committed `0d2a2e8`.
+
+Cumulative after run 12: ~28s → ~23.35s (~17%). **6 keeps / 11 experiments.**
+Every win was a "cheaper" (counter-flat) change; no "fewer-productions" idea has
+landed (finalization stays unproven; run 9's vector-entry attempt showed facts
+re-fire and the JoinHashEntry set-dedup is load-bearing → counter moved).
+
 **Takeaways.** (1) The grounder is already well-tuned post-SBO+run2; hot funcs
 (join 15%, product 11%, phmap prepare_insert 9.6%, is_cheapest 7.8%) are
 dominated by *irreducible* work (Arguments copies, Fact construction, hash
