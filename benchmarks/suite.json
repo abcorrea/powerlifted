@@ -1,0 +1,170 @@
+[
+ {
+  "config": "gbfs-add-full_reducer",
+  "search": "gbfs",
+  "evaluator": "add",
+  "generator": "full_reducer",
+  "domain": "visitall-multidimensional-4-dim-visitall-CLOSE-g2",
+  "problem": "p2.pddl"
+ },
+ {
+  "config": "gbfs-add-full_reducer",
+  "search": "gbfs",
+  "evaluator": "add",
+  "generator": "full_reducer",
+  "domain": "genome-edit-distance-split",
+  "problem": "d-6-7.pddl"
+ },
+ {
+  "config": "gbfs-add-full_reducer",
+  "search": "gbfs",
+  "evaluator": "add",
+  "generator": "full_reducer",
+  "domain": "childsnack-contents-parsize2-cham3",
+  "problem": "contentam2-p0.pddl"
+ },
+ {
+  "config": "gbfs-add-full_reducer",
+  "search": "gbfs",
+  "evaluator": "add",
+  "generator": "full_reducer",
+  "domain": "organic-synthesis-alkene",
+  "problem": "p1.pddl"
+ },
+ {
+  "config": "gbfs-add-full_reducer",
+  "search": "gbfs",
+  "evaluator": "add",
+  "generator": "full_reducer",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p07-net1-b12-g5-t80.pddl"
+ },
+ {
+  "config": "gbfs-add-full_reducer",
+  "search": "gbfs",
+  "evaluator": "add",
+  "generator": "full_reducer",
+  "domain": "visitall-multidimensional-4-dim-visitall-CLOSE-g2",
+  "problem": "p4.pddl"
+ },
+ {
+  "config": "gbfs-add-full_reducer",
+  "search": "gbfs",
+  "evaluator": "add",
+  "generator": "full_reducer",
+  "domain": "genome-edit-distance",
+  "problem": "d-7-8.pddl"
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "search": "gbfs",
+  "evaluator": "ff",
+  "generator": "full_reducer",
+  "domain": "visitall-multidimensional-4-dim-visitall-CLOSE-g1",
+  "problem": "p6.pddl"
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "search": "gbfs",
+  "evaluator": "ff",
+  "generator": "full_reducer",
+  "domain": "childsnack-contents-parsize2-cham3",
+  "problem": "contentam2-p0.pddl"
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "search": "gbfs",
+  "evaluator": "ff",
+  "generator": "full_reducer",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p02-net1-b6-g4-t50.pddl"
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "search": "gbfs",
+  "evaluator": "ff",
+  "generator": "full_reducer",
+  "domain": "genome-edit-distance",
+  "problem": "d-9-1.pddl"
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "search": "gbfs",
+  "evaluator": "ff",
+  "generator": "full_reducer",
+  "domain": "genome-edit-distance-split",
+  "problem": "d-4-7.pddl"
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "search": "gbfs",
+  "evaluator": "ff",
+  "generator": "full_reducer",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p07-net1-b12-g5-t80.pddl"
+ },
+ {
+  "config": "gbfs-ff-full_reducer",
+  "search": "gbfs",
+  "evaluator": "ff",
+  "generator": "full_reducer",
+  "domain": "genome-edit-distance",
+  "problem": "d-13-2.pddl"
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "search": "alt-bfws1",
+  "evaluator": "ff",
+  "generator": "yannakakis",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p02-net1-b6-g4-t50.pddl"
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "search": "alt-bfws1",
+  "evaluator": "ff",
+  "generator": "yannakakis",
+  "domain": "genome-edit-distance",
+  "problem": "d-9-1.pddl"
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "search": "alt-bfws1",
+  "evaluator": "ff",
+  "generator": "yannakakis",
+  "domain": "organic-synthesis-original",
+  "problem": "prob13.pddl"
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "search": "alt-bfws1",
+  "evaluator": "ff",
+  "generator": "yannakakis",
+  "domain": "logistics-large-simple",
+  "problem": "p-a1-c1-s1000-p10-t1-g3-goal-3.pddl"
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "search": "alt-bfws1",
+  "evaluator": "ff",
+  "generator": "yannakakis",
+  "domain": "genome-edit-distance",
+  "problem": "d-13-2.pddl"
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "search": "alt-bfws1",
+  "evaluator": "ff",
+  "generator": "yannakakis",
+  "domain": "pipesworld-tankage-nosplit",
+  "problem": "p18-net2-b16-g7-t60.pddl"
+ },
+ {
+  "config": "alt-bfws1-ff-yannakakis",
+  "search": "alt-bfws1",
+  "evaluator": "ff",
+  "generator": "yannakakis",
+  "domain": "rovers-large-simple",
+  "problem": "p-r1-w1000-o1-1-g2-goal-2.pddl"
+ }
+]
