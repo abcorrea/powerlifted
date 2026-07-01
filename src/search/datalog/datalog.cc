@@ -202,7 +202,9 @@ std::vector<int> Datalog::extract_variable_instantiation_from_rule(int head) con
     return instantiation;
 }
 
-void Datalog::backchain_from_goal(const Fact &goal_fact, const phmap::flat_hash_set<int> &initial_facts) {
+void Datalog::backchain_from_goal(const Fact &goal_fact, int num_initial_facts) {
+    // An index identifies an initial (EDB/state) fact iff it lies in the
+    // contiguous range [0, num_initial_facts) assigned before rule firing began.
 
     for (auto &relation : useful_atoms) {
         relation.clear();
@@ -212,7 +214,7 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const phmap::flat_hash_
     std::queue<int> queue;
 
     for (int achiever_idx : goal_fact.get_achiever_body()) {
-        if (initial_facts.count(achiever_idx) == 0) {
+        if (achiever_idx >= num_initial_facts) {
             queue.push(achiever_idx);
         }
     }
@@ -226,7 +228,7 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const phmap::flat_hash_
              // Previously achieved and already processed. We can skip this iteration.
              continue;
          }
-         if (initial_facts.count(next_achiever_idx) > 0) {
+         if (next_achiever_idx < num_initial_facts) {
              continue;
          }
          add_useful_atom(next_achiever_idx);
@@ -242,7 +244,7 @@ void Datalog::backchain_from_goal(const Fact &goal_fact, const phmap::flat_hash_
              //std::cout << " achiever -> ";
              //output_atom(achiever_fact);
              //std::cout << std::endl << std::flush;
-             if (initial_facts.count(achiever)==0) {
+             if (achiever >= num_initial_facts) {
                  queue.push(achiever);
              } else {
                  if (achiever_fact.get_cost() > 0) {

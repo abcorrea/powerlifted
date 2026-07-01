@@ -28,7 +28,6 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
 
     q.clear();
     best_achievers.clear();
-    initial_facts.clear();
 
     for (const Fact &f : datalog.get_permanent_edb()) {
         Fact f2 = f;
@@ -36,7 +35,6 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         q.push(f.get_cost(), f2.get_fact_index());
         queue_pushes++;
         atoms_produced++;
-        initial_facts.insert(f2.get_fact_index());
         datalog.insert_fact(f2);
         reached_facts.insert(f2);
     }
@@ -46,10 +44,12 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         q.push(f.get_cost(), f.get_fact_index());
         queue_pushes++;
         atoms_produced++;
-        initial_facts.insert(f.get_fact_index());
         datalog.insert_fact(f);
         reached_facts.insert(f);
     }
+
+    // EDB + state facts now own the contiguous index range [0, num_initial_facts).
+    num_initial_facts = Fact::next_fact_index;
 
     while (!q.empty()) {
         pair<int, int> queue_top = q.pop();
@@ -63,7 +63,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         // project/join/product call.
         const Fact &popped_fact = datalog.get_fact_by_index(top_fact_index);
         if (popped_fact.get_predicate_index() == goal_predicate) {
-            datalog.backchain_from_goal(popped_fact, initial_facts);
+            datalog.backchain_from_goal(popped_fact, num_initial_facts);
             record_grounder_run(atoms_produced, queue_pushes);
             return popped_fact.get_cost();
         }
