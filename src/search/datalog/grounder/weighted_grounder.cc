@@ -163,11 +163,12 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vec
         }
     }
 
-    // Return a vector with one single fact
+    // Return a vector with one single fact. The single-int Achievers ctor keeps
+    // the achiever body in the inline small_vector (no heap-allocated vector).
     newfacts.emplace_back(std::move(new_arguments),
                           rule.get_effect().get_predicate_index(),
                           rule_.get_weight() + fact.get_cost(),
-                          Achievers({fact.get_fact_index()}, rule.get_index(), rule_.get_weight()),
+                          Achievers(fact.get_fact_index(), rule.get_index(), rule_.get_weight()),
                           rule.get_effect().is_pred_symbol_new());
 }
 
@@ -232,17 +233,20 @@ void WeightedGrounder::join(
             position_counter++;
         }
 
-        vector<int> achievers_body{fact.get_fact_index(), already_achieved_fact.get_fact_index()};
+        // Achiever body in rule-body order. If `fact` is the atom in the second
+        // position (index 1), swap so the body order is preserved. Constructing
+        // the two-int Achievers directly avoids a per-fact heap-allocated
+        // std::vector<int> (the inline small_vector<int,2> holds both elements).
+        int achiever_first = fact.get_fact_index();
+        int achiever_second = already_achieved_fact.get_fact_index();
         if (position == 1) {
-            // We need to keep the order of the atoms in the achiever as in the rule body,
-            // so we reverse the order if `fact` is the one in the second position (index 1).
-            reverse(achievers_body.begin(), achievers_body.end());
+            std::swap(achiever_first, achiever_second);
         }
 
         int cost = aggregation_function(fact.get_cost(), already_achieved_fact.get_cost()) + rule_weight;
         newfacts.emplace_back(std::move(new_arguments),
                            rule.get_effect().get_predicate_index(),
-                           cost,Achievers(achievers_body, rule_index, rule_weight),
+                           cost, Achievers(achiever_first, achiever_second, rule_index, rule_weight),
                            rule.get_effect().is_pred_symbol_new());
     }
 }

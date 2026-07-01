@@ -25,6 +25,18 @@ public:
 
     Achievers(const std::vector<int> &&a, int rule_idx, int rule_cost) : achievers(a.begin(), a.end()), rule_idx(rule_idx), rule_cost(rule_cost) {};
 
+    // Single-achiever body (project rules). Avoids materializing a heap-allocated
+    // std::vector just to copy one element into the inline small_vector.
+    Achievers(int a0, int rule_idx, int rule_cost) : achievers(), rule_idx(rule_idx), rule_cost(rule_cost) {
+        achievers.push_back(a0);
+    }
+
+    // Two-achiever body (join rules), already in body order. Same rationale.
+    Achievers(int a0, int a1, int rule_idx, int rule_cost) : achievers(), rule_idx(rule_idx), rule_cost(rule_cost) {
+        achievers.push_back(a0);
+        achievers.push_back(a1);
+    }
+
     Achievers() : achievers(), rule_idx(-1), rule_cost(0) {}
 
     Container::const_iterator begin() const {
