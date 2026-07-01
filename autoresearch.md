@@ -280,10 +280,50 @@ lookup/miss path. Cumulative: ~28s → ~25.2s.
   project/join/product never insert during a single call). Small; needed two
   clean A/Bs to confirm past a lone transient outlier. Committed `0d2a2e8`.
 
-Cumulative after run 12: ~28s → ~23.35s (~17%). **6 keeps / 11 experiments.**
-Every win was a "cheaper" (counter-flat) change; no "fewer-productions" idea has
-landed (finalization stays unproven; run 9's vector-entry attempt showed facts
-re-fire and the JoinHashEntry set-dedup is load-bearing → counter moved).
+- **runs 13, 14, 17 — DISCARD, sub-noise (~0.3–0.5%).** Product ground-head
+  Achievers-inline (13), RuleMatcher get_type cache to kill a virtual call (14),
+  skip storing Arguments for ground-head product ReachedFacts (17). All
+  behavior-preserving and never slower, but individually below the ~0.4% floor.
+- **run 15 — DISCARD (bundle).** Bundling 13+14 to test if small wins stack past
+  noise: they don't (median +0.29%, conf 0.49x). Confirms these are at/below
+  noise and their single-batch ~1% "KEEPs" were noise-inflated.
+- **run 16 — KEEP (+1.0%), "cheaper", counter flat.** Replaced the per-eval
+  `flat_hash_set<int> initial_facts` with one int `num_initial_facts`: EDB+state
+  facts own the contiguous index range [0, N), so membership is `idx < N`.
+  Removes per-eval set population + turns backchain's 3 `.count()` lookups into
+  int compares. ALL 13 clean pooled rounds faster (uniform direction, unlike the
+  sub-noise micro-opts). Committed `7ec9378`. **Removing a per-eval data
+  structure is a productive lever (cf. inline-key).**
+
+Cumulative after run 16: ~28s → ~22.8s (**~18.5%**). **7 keeps / 16 experiments.**
+Every win is "cheaper" (counter-flat); no "fewer-productions" idea has landed
+(finalization is a dead end — the 53% waste is already discarded cheaply by
+is_cheapest's cost check, and args must be built regardless; CSE is already
+substantially done by normal-form-split + dedup of identical aux rules).
+
+**Where the remaining time is (genome d-13-2 gbfs-ff profile, post run 16):**
+join 18% (phmap SIMD probing on the two per-call map accesses — largely
+irreducible), Fact-set `prepare_insert` 12% (reached_facts + JoinHashEntry, both
+`flat_hash_set<Fact>`), product 11% (cartesian output + Arguments copies), ~8%
+malloc/free (much of it JoinHashEntry per-key set alloc + JoinRule teardown/clean_up
+~6.7%). Genome is still ~47% of the suite.
+
+**Remaining candidate levers (all higher-risk / uncertain — not yet cracked):**
+(1) JoinHashEntry is a per-key `flat_hash_set<Fact>` — many small-set allocs +
+teardown churn each eval; a small_vector-with-linear-dedup would cut allocs for
+small entries but risks O(n²) on large ones (needs the entry-size distribution to
+be mostly-small; unverified). (2) reached_facts/JoinHashEntry store ~100-byte
+Facts with dead achievers — a set-of-fact-indices would shrink slots but adds a
+lp.facts indirection per compare that may offset the cache win; also needs phmap
+heterogeneous hashing. NB JoinHashEntry MUST keep snapshot costs (run 9 lesson),
+so it can't be pure indices. (3) shrinking Fact via a uint32 small_vector
+size_type — broad but touches successor-gen (GroundAtom/Table) too.
+
+**Method note:** borderline ~2.0x confidence on 8 rounds is often optimistic —
+pool 12–16 rounds before committing. Watch for two recurring transients on this
+box: (a) the FIRST sweep of a fresh Bash invocation runs anomalously fast (absorb
+it with a discarded warm sweep), and (b) occasional single-round dual-spikes from
+load — exclude and note them.
 
 **Takeaways.** (1) The grounder is already well-tuned post-SBO+run2; hot funcs
 (join 15%, product 11%, phmap prepare_insert 9.6%, is_cheapest 7.8%) are
