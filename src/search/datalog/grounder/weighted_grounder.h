@@ -29,13 +29,17 @@ class WeightedGrounder : public Grounder {
 
     priority_queues::AdaptiveQueue<int> q;
 
-    phmap::flat_hash_set<int> initial_facts;
+    // The EDB and state facts are the first facts created each grounding, so they
+    // occupy the contiguous fact-index range [0, num_initial_facts). Testing
+    // "is this an initial fact" is therefore a single comparison — no need for a
+    // per-evaluation hash set of their indices.
+    int num_initial_facts;
     std::vector<int> best_achievers;
 
     // Reused across join() calls so the per-call join key is built in place
     // instead of allocating a fresh vector every time (join() is the hottest
-    // path in the grounder).
-    std::vector<int> join_key_buffer;
+    // path in the grounder). Same small-buffer-optimized type as JoinHashKey.
+    utils::small_vector<int, 2> join_key_buffer;
 
     int queue_pushes;
     int atoms_produced;

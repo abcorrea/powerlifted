@@ -14,10 +14,23 @@
 #include <vector>
 
 #include "../../utils/hash.h"
+#include "../../utils/small_vector.h"
 
 namespace datalog {
 
-using JoinHashKey = std::vector<int>;
+// Join keys hold one entry per joining variable — almost always 1 or 2. Keeping
+// them in a small-buffer-optimized vector avoids a heap allocation per distinct
+// key stored in the join hash maps and removes the pointer indirection when
+// hashing/comparing keys, which happens on every join hash-table access (the
+// hottest path in the grounder). Content-based hash and element-wise operator==
+// are identical to the previous std::vector<int>, so the maps behave the same.
+using JoinHashKey = utils::small_vector<int, 2>;
+
+struct JoinHashKeyHash {
+    std::size_t operator()(const JoinHashKey &v) const {
+        return utils::hash_range(v.begin(), v.end());
+    }
+};
 
 class JoinHashEntry {
 
@@ -34,8 +47,8 @@ public:
 };
 
 class JoinHashTable {
-    phmap::flat_hash_map<JoinHashKey, JoinHashEntry, utils::VectorHash<int>> hash_table_1;
-    phmap::flat_hash_map<JoinHashKey, JoinHashEntry, utils::VectorHash<int>> hash_table_2;
+    phmap::flat_hash_map<JoinHashKey, JoinHashEntry, JoinHashKeyHash> hash_table_1;
+    phmap::flat_hash_map<JoinHashKey, JoinHashEntry, JoinHashKeyHash> hash_table_2;
 
     static bool valid_position(size_t i) { return (i == 0 or i == 1); }
 
@@ -58,10 +71,14 @@ public:
     const JoinHashEntry &get_entries(const JoinHashKey &key, size_t position)
     {
         assert(valid_position(position));
-        if (position == 0)
-            return hash_table_1[key];
-        else
-            return hash_table_2[key];
+        // Look up partners with find(), not operator[]: a miss (a popped fact
+        // whose join key has no partner yet — very common) must not insert a
+        // spurious empty entry, which would copy the vector<int> key into the map
+        // and possibly rehash it. An absent key yields the same empty range.
+        static const JoinHashEntry empty_entry;
+        const auto &table = (position == 0) ? hash_table_1 : hash_table_2;
+        const auto it = table.find(key);
+        return (it == table.end()) ? empty_entry : it->second;
     }
 
     // Empty both tables but keep their bucket arrays so the next grounding
