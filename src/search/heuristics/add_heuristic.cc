@@ -22,7 +22,7 @@ int AdditiveHeuristic::compute_heuristic(const DBState &s, const Task &task) {
 
     int h = grounder.ground(datalog, state_facts, datalog.get_goal_atom_idx());
     //grounder.print_statistics(datalog);
-    datalog.reset_facts();
+    // ground() itself truncates the facts to the persistent base.
 
     for (const auto &r : datalog.get_rules())
         r->clean_up();
