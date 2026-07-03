@@ -79,29 +79,27 @@ utils::ExitCode GreedyBestFirstSearch<PackedStateT>::search(const Task &task,
             DBState s = generator.generate_successor(op_id, action, state);
             auto& child_node = space.insert_or_get_previous_node(packer.pack(s), op_id, node.state_id);
             int dist = g + action.get_cost();
-            int new_h = heuristic.compute_heuristic(s, task);
-            statistics.inc_evaluations();
-            if (new_h == UNSOLVABLE_STATE) {
-                if (child_node.status == SearchNode::Status::NEW) {
-                    // Only increase statistics for new dead-ends
-                    child_node.open(dist, new_h);
+            if (child_node.status == SearchNode::Status::NEW) {
+                // The search reaches this state for the first time: evaluate
+                // it and memoize the value in the node. The heuristic is a
+                // function of the state alone, so duplicates never need
+                // re-evaluation.
+                int new_h = heuristic.compute_heuristic(s, task);
+                statistics.inc_evaluations();
+                child_node.open(dist, new_h);
+                if (new_h == UNSOLVABLE_STATE) {
                     statistics.inc_dead_ends();
                     statistics.inc_pruned_states();
+                    continue;
                 }
-                continue;
-            }
-
-            if (child_node.status == SearchNode::Status::NEW) {
-                // Inserted for the first time in the map
-                child_node.open(dist, new_h);
                 statistics.inc_evaluated_states();
                 queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
             }
             else {
-                if (dist < child_node.g) {
-                    child_node.open(dist, new_h); // Reopening
+                if (dist < child_node.g && child_node.h != UNSOLVABLE_STATE) {
+                    child_node.open(dist, child_node.h); // Reopening, memoized h
                     statistics.inc_reopened();
-                    queue.do_insertion(child_node.state_id, make_pair(new_h, dist));
+                    queue.do_insertion(child_node.state_id, make_pair(child_node.h, dist));
                 }
             }
         }
