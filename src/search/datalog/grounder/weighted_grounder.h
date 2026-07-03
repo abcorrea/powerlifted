@@ -53,6 +53,31 @@ class WeightedGrounder : public Grounder {
     // calls (state facts + derived facts only; see num_base_facts).
     phmap::flat_hash_set<Fact> reached_facts;
 
+    // A* for lightest derivations (Felzenszwalb & McAllester): each call
+    // computes exact inside/outside costs of the predicate-level abstraction
+    // (one node per predicate, one hyperedge per rule) and orders the queue
+    // by f = g (+/max) outside[predicate]. Outside estimates from an
+    // abstraction are admissible and monotone, so the goal still pops at its
+    // exact cost; a predicate with infinite outside cost can never take part
+    // in a goal derivation, so its facts skip the queue entirely.
+    static constexpr int ABSTRACT_INF = std::numeric_limits<int>::max() / 4;
+    std::vector<int> abstract_inside;
+    std::vector<int> abstract_outside;
+
+    void compute_abstract_costs(Datalog &datalog,
+                                const std::vector<Fact> &state_facts,
+                                int goal_predicate);
+
+    int priority_of(const Fact &fact) const {
+        int pred = fact.get_predicate_index();
+        // Goal-less evaluation (static-stratum materialization) computes no
+        // outside costs and runs as a plain Dijkstra.
+        int out = pred < int(abstract_outside.size()) ? abstract_outside[pred] : 0;
+        if (out >= ABSTRACT_INF) return ABSTRACT_INF;
+        return (heuristic_type == H_ADD) ? fact.get_cost() + out
+                                         : std::max(fact.get_cost(), out);
+    }
+
     // Reused across join() calls so the per-call join key is built in place
     // instead of allocating a fresh vector every time (join() is the hottest
     // path in the grounder). Same small-buffer-optimized type as JoinHashKey.
