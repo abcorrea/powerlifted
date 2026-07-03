@@ -7,7 +7,9 @@ namespace datalog {
 
 class GenericRule : public RuleBase {
 
-    int schema_index;
+    // Rules created through the inherited constructor have no associated
+    // action schema; -1 makes the annotation generators return no annotation.
+    int schema_index = -1;
 
 public:
     using RuleBase::RuleBase;
@@ -26,7 +28,7 @@ public:
         return GENERIC;
     }
 
-    int get_schema_index() {
+    int get_schema_index() const {
         return schema_index;
     }
 
