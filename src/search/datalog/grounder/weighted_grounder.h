@@ -10,7 +10,9 @@
 #include "../../algorithms/priority_queues.h"
 #include "../../parallel_hashmap/phmap.h"
 
+#include <algorithm>
 #include <iostream>
+#include <limits>
 #include <unordered_set>
 #include <vector>
 
@@ -35,6 +37,21 @@ class WeightedGrounder : public Grounder {
     // per-evaluation hash set of their indices.
     int num_initial_facts;
     std::vector<int> best_achievers;
+
+    // Persistent base: EDB facts whose predicate no rule derives can never
+    // collide with a runtime-derived fact, so the first ground() call inserts
+    // them into the fact vector once (indices [0, num_base_facts)) and they
+    // never enter the reached-facts set; later calls re-push their indices
+    // without re-copying or re-hashing them. EDB facts of derivable
+    // predicates (kept in improvable_edb) get the classic per-call treatment,
+    // because a runtime derivation may improve their cost.
+    bool base_initialized;
+    int num_base_facts;
+    std::vector<Fact> improvable_edb;
+
+    // Member instead of a ground() local so its capacity survives across
+    // calls (state facts + derived facts only; see num_base_facts).
+    phmap::flat_hash_set<Fact> reached_facts;
 
     // Reused across join() calls so the per-call join key is built in place
     // instead of allocating a fresh vector every time (join() is the hottest
@@ -74,6 +91,8 @@ public:
         cumulative_atoms_produced = 0;
         cumulative_queue_pushes = 0;
         total_number_of_facts = 0;
+        base_initialized = false;
+        num_base_facts = 0;
     }
 
     ~WeightedGrounder() override = default;

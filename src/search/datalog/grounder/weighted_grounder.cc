@@ -8,6 +8,7 @@
 
 #include <deque>
 #include <limits>
+#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -15,19 +16,50 @@ using namespace std;
 namespace datalog {
 
 int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) {
-    phmap::flat_hash_set<Fact> reached_facts;
     std::vector<Fact> newfacts;
 
     queue_pushes = 0;
     atoms_produced = 0;
 
-    // Reset of data structures
-    Fact::next_fact_index = 0;
+    if (!base_initialized) {
+        // One-time split of the EDB into the persistent base and the
+        // improvable remainder (see header comment).
+        std::unordered_set<int> derived_preds;
+        for (const auto &rule : datalog.get_rules()) {
+            derived_preds.insert(rule->get_effect().get_predicate_index());
+        }
+        Fact::next_fact_index = 0;
+        for (const Fact &f : datalog.get_permanent_edb()) {
+            if (derived_preds.count(f.get_predicate_index())) {
+                improvable_edb.push_back(f);
+            }
+            else {
+                Fact f2 = f;
+                f2.set_fact_index();
+                datalog.insert_fact(f2);
+            }
+        }
+        num_base_facts = Fact::next_fact_index;
+        base_initialized = true;
+    }
+
+    // Reset of data structures: drop everything after the persistent base.
+    datalog.truncate_facts(num_base_facts);
+    Fact::next_fact_index = num_base_facts;
+    reached_facts.clear();
 
     q.clear();
     best_achievers.clear();
 
-    for (const Fact &f : datalog.get_permanent_edb()) {
+    for (int i = 0; i < num_base_facts; ++i) {
+        q.push(datalog.get_fact_by_index(i).get_cost(), i);
+        queue_pushes++;
+        cumulative_queue_pushes++;
+        atoms_produced++;
+        cumulative_atoms_produced++;
+    }
+
+    for (const Fact &f : improvable_edb) {
         Fact f2 = f;
         f2.set_fact_index();
         q.push(f.get_cost(), f2.get_fact_index());

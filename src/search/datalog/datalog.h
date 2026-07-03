@@ -152,6 +152,14 @@ public:
         facts.clear();
     }
 
+    // Drop every fact after the persistent base prefix (see WeightedGrounder)
+    // while keeping the allocation. This only ever shrinks the vector; erase
+    // instead of resize because Fact has no default constructor.
+    void truncate_facts(int num_kept) {
+        assert(num_kept <= int(facts.size()));
+        facts.erase(facts.begin() + num_kept, facts.end());
+    }
+
     void print_statistics() {
         std::cout << "Total number of static atoms in the EDB: " << permanent_edb.size() << std::endl;
         std::cout << "Total number of rules: " << rules.size() << std::endl;

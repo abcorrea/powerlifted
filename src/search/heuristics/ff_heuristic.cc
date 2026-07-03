@@ -57,7 +57,7 @@ int FFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
         ff_cost += task.get_action_schema_by_index(action.first).get_cost();
     }
 
-    datalog.reset_facts();
+    // ground() itself truncates the facts to the persistent base.
     for (const auto &r : datalog.get_rules())
         r->clean_up();
     if (h_add == std::numeric_limits<int>::max())

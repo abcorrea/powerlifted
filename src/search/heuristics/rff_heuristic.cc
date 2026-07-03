@@ -41,7 +41,7 @@ int RFFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
 
     int h_add = grounder.ground(datalog, state_facts, datalog.get_goal_atom_idx());
 
-    datalog.reset_facts();
+    // ground() itself truncates the facts to the persistent base.
     for (const auto &r : datalog.get_rules())
         r->clean_up();
     if (h_add == std::numeric_limits<int>::max())
