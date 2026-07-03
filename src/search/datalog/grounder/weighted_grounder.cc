@@ -106,8 +106,15 @@ void WeightedGrounder::compute_abstract_costs(Datalog &datalog,
                     others_agg = aggregation_function(others_agg, c);
                 }
                 if (infinite) continue;
-                int candidate =
-                    aggregation_function(out_head, others_agg + rule->get_weight());
+                // Rule weights add along a derivation chain under both
+                // aggregations (cost(head) = w (+/max) bodies telescopes to
+                // goal >= g(b) + sum of chain weights), so the outside cost
+                // is a weight sum in both cases; sibling inside costs join it
+                // only under the additive aggregation. The sibling scan above
+                // still runs for h^max: a rule with an underivable body atom
+                // (infinite inside) can never fire and propagates no demand.
+                int candidate = out_head + rule->get_weight() +
+                                (heuristic_type == H_ADD ? others_agg : 0);
                 int &out = abstract_outside[body[i].get_predicate_index()];
                 if (candidate < out) {
                     out = candidate;
