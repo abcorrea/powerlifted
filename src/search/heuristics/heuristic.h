@@ -32,6 +32,11 @@ public:
      */
     virtual int compute_heuristic(const DBState &s, const Task &task) = 0;
 
+    // The planner calls this once after the search finishes; heuristics can
+    // report cumulative statistics here (the grounder-based ones print the
+    // total atoms produced and queue pushes over all ground() calls).
+    virtual void print_statistics() const {}
+
     const std::vector<std::vector<GroundAtom>> &get_useful_atoms() const {
         return useful_atoms;
     }

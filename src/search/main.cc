@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     try {
         auto exitcode = search->search(task, *sgen, *heuristic);
         search->print_statistics();
+        heuristic->print_statistics();
         utils::report_exit_code_reentrant(exitcode);
         return static_cast<int>(exitcode);
     }

@@ -32,7 +32,9 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         f2.set_fact_index();
         q.push(f.get_cost(), f2.get_fact_index());
         queue_pushes++;
+        cumulative_queue_pushes++;
         atoms_produced++;
+        cumulative_atoms_produced++;
         datalog.insert_fact(f2);
         reached_facts.insert(f2);
     }
@@ -41,7 +43,9 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
         f.set_fact_index();
         q.push(f.get_cost(), f.get_fact_index());
         queue_pushes++;
+        cumulative_queue_pushes++;
         atoms_produced++;
+        cumulative_atoms_produced++;
         datalog.insert_fact(f);
         reached_facts.insert(f);
     }
@@ -102,6 +106,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
                 if (id!=HAS_CHEAPER_PATH) {
                     q.push(new_fact.get_cost(), id);
                     queue_pushes++;
+                    cumulative_queue_pushes++;
                 }
             }
         }
@@ -113,6 +118,7 @@ int WeightedGrounder::is_cheapest_path_to_achieve_fact(Fact &new_fact,
                                                        phmap::flat_hash_set<Fact> &reached_facts,
                                                        Datalog &lp) {
     atoms_produced++;
+    cumulative_atoms_produced++;
     // Fuse the membership probe and the insert into one hash+probe pass. The old
     // code did find() then, on a miss, a second insert() (two hashes of the whole
     // argument tuple per new fact). lazy_emplace() probes once and constructs the

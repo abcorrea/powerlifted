@@ -90,7 +90,7 @@ utils::ExitCode AlternatedBFWS<PackedStateT>::search(const Task &task,
     size_t number_goal_conditions = task.get_goal().goal.size() + task.get_goal().positive_nullary_goals.size() + task.get_goal().negative_nullary_goals.size();
     size_t number_relevant_atoms;
 
-    std::unique_ptr<Heuristic> delete_free_h(HeuristicFactory::create_delete_free_heuristic(heuristic_type, task));
+    delete_free_h.reset(HeuristicFactory::create_delete_free_heuristic(heuristic_type, task));
 
     atom_counter = initialize_counter_with_useful_atoms(task, *delete_free_h);
     number_relevant_atoms = atom_counter.get_total_number_of_atoms();
@@ -228,6 +228,8 @@ template <class PackedStateT>
 void AlternatedBFWS<PackedStateT>::print_statistics() const {
     statistics.print_detailed_statistics();
     space.print_statistics();
+    if (delete_free_h)
+        delete_free_h->print_statistics();
 }
 
 
