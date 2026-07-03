@@ -49,34 +49,29 @@ public:
 
 class RuleMatcher {
     /*
-     Map index of an atom to a vector rule matches
+     * Map predicate index to the rule matches. Predicate indices are small
+     * dense integers, so a flat vector answers the per-pop matcher lookup,
+     * the hottest lookup of the grounder loop, with a single indexed load
+     * where a hash map would pay a hash and a probe per popped fact.
     */
-    phmap::flat_hash_map<int, Matches> rule_matcher;
+    std::vector<Matches> rule_matcher;
 
     static const Matches empty_matches;
-
-    bool atom_has_matched_rules(int i) const {
-        return (rule_matcher.find(i)!=rule_matcher.end());
-    }
 
 public:
     RuleMatcher() = default;
 
-//    explicit RuleMatcher(std::unordered_map<int, Matches> rule_matcher) :
-//        rule_matcher(std::move(rule_matcher)) {}
-
     void insert(int predicate_index, int rule_index, int position) {
-        if (!atom_has_matched_rules(predicate_index)) {
-            rule_matcher[predicate_index] = Matches();
+        if (predicate_index >= int(rule_matcher.size())) {
+            rule_matcher.resize(predicate_index + 1);
         }
         rule_matcher[predicate_index].insert_new_match(rule_index, position);
     }
 
     const Matches &get_matched_rules(int index) const {
-        auto result = rule_matcher.find(index);
-        if (result==rule_matcher.end())
+        if (index >= int(rule_matcher.size()))
             return empty_matches;
-        return result->second;
+        return rule_matcher[index];
     }
 
 };
