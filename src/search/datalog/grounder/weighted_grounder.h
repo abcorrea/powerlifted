@@ -56,10 +56,10 @@ class WeightedGrounder : public Grounder {
     // A* for lightest derivations (Felzenszwalb & McAllester): each call
     // computes exact inside/outside costs of the predicate-level abstraction
     // (one node per predicate, one hyperedge per rule) and orders the queue
-    // by f = g (+/max) outside[predicate]. Outside estimates from an
-    // abstraction are admissible and monotone, so the goal still pops at its
-    // exact cost; a predicate with infinite outside cost can never take part
-    // in a goal derivation, so its facts skip the queue entirely.
+    // by f = g + outside[predicate]. Outside estimates from an abstraction
+    // are admissible and monotone, so the goal still pops at its exact cost;
+    // a predicate with infinite outside cost can never take part in a goal
+    // derivation, so its facts skip the queue entirely.
     static constexpr int ABSTRACT_INF = std::numeric_limits<int>::max() / 4;
     std::vector<int> abstract_inside;
     std::vector<int> abstract_outside;
@@ -71,11 +71,13 @@ class WeightedGrounder : public Grounder {
     int priority_of(const Fact &fact) const {
         int pred = fact.get_predicate_index();
         // Goal-less evaluation (static-stratum materialization) computes no
-        // outside costs and runs as a plain Dijkstra.
+        // outside costs and runs as a plain Dijkstra. f = g + outside holds
+        // under both aggregations: chain weights add along a derivation even
+        // under h^max, and the max across a rule's preconditions falls out of
+        // the queue itself, since every fact carries its own f.
         int out = pred < int(abstract_outside.size()) ? abstract_outside[pred] : 0;
         if (out >= ABSTRACT_INF) return ABSTRACT_INF;
-        return (heuristic_type == H_ADD) ? fact.get_cost() + out
-                                         : std::max(fact.get_cost(), out);
+        return fact.get_cost() + out;
     }
 
     // Reused across join() calls so the per-call join key is built in place
