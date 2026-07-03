@@ -2,7 +2,8 @@
 
 datalog::Datalog initialize_datalog(const Task &task,
                                     datalog::AnnotationGenerator annotation_generator,
-                                    const DatalogTransformationOptions &opts) {
+                                    const DatalogTransformationOptions &opts,
+                                    int grounder_type) {
     datalog::Datalog dl(task, annotation_generator);
 
     if (opts.get_remove_action_predicates())
@@ -20,6 +21,7 @@ datalog::Datalog initialize_datalog(const Task &task,
 
     // These transformations are always done too.
     dl.set_permanent_edb(task.get_static_info());
+    dl.materialize_static_stratum(task, grounder_type);
     dl.update_rule_indices();
 
     dl.print_statistics();

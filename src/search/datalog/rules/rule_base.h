@@ -183,6 +183,8 @@ public:
 
     std::unique_ptr<Annotation> get_annotation() { return std::move(annotation); }
 
+    bool has_annotation() const { return annotation != nullptr; }
+
     void execute(int head, const Datalog &datalog) const
     {
         if (annotation) {
