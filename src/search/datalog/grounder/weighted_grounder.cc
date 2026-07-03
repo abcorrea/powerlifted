@@ -15,6 +15,109 @@ using namespace std;
 
 namespace datalog {
 
+/*
+ * Exact inside (cheapest derivation) and outside (cheapest completion of a
+ * goal derivation) costs of the predicate-level abstraction. The abstract
+ * hypergraph has one node per predicate and one hyperedge per rule; both
+ * fixpoints are Bellman-Ford style loops over the rules, which is plenty on a
+ * graph this small (costs are monotone and integral, so they terminate).
+ */
+void WeightedGrounder::compute_abstract_costs(Datalog &datalog,
+                                              const std::vector<Fact> &state_facts,
+                                              int goal_predicate) {
+    size_t num_preds = 0;
+    for (const auto &rule : datalog.get_rules()) {
+        num_preds = std::max(num_preds, size_t(rule->get_effect().get_predicate_index()) + 1);
+        for (const DatalogAtom &b : rule->get_conditions()) {
+            num_preds = std::max(num_preds, size_t(b.get_predicate_index()) + 1);
+        }
+    }
+    for (const Fact &f : datalog.get_permanent_edb()) {
+        num_preds = std::max(num_preds, size_t(f.get_predicate_index()) + 1);
+    }
+    for (const Fact &f : state_facts) {
+        num_preds = std::max(num_preds, size_t(f.get_predicate_index()) + 1);
+    }
+    num_preds = std::max(num_preds, size_t(goal_predicate) + 1);
+
+    abstract_inside.assign(num_preds, ABSTRACT_INF);
+    abstract_outside.assign(num_preds, ABSTRACT_INF);
+
+    // Base: the cheapest initial fact of each predicate. The persistent base
+    // lives in the fact vector prefix; the improvable EDB facts and the state
+    // facts arrive as arguments.
+    for (int i = 0; i < num_base_facts; ++i) {
+        const Fact &f = datalog.get_fact_by_index(i);
+        int &c = abstract_inside[f.get_predicate_index()];
+        c = std::min(c, f.get_cost());
+    }
+    for (const Fact &f : improvable_edb) {
+        int &c = abstract_inside[f.get_predicate_index()];
+        c = std::min(c, f.get_cost());
+    }
+    for (const Fact &f : state_facts) {
+        int &c = abstract_inside[f.get_predicate_index()];
+        c = std::min(c, f.get_cost());
+    }
+
+    const auto &rules = datalog.get_rules();
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (const auto &rule : rules) {
+            int body_agg = 0;
+            bool infinite = false;
+            for (const DatalogAtom &b : rule->get_conditions()) {
+                int c = abstract_inside[b.get_predicate_index()];
+                if (c >= ABSTRACT_INF) {
+                    infinite = true;
+                    break;
+                }
+                body_agg = aggregation_function(body_agg, c);
+            }
+            if (infinite) continue;
+            int head_cost = body_agg + rule->get_weight();
+            int &c = abstract_inside[rule->get_effect().get_predicate_index()];
+            if (head_cost < c) {
+                c = head_cost;
+                changed = true;
+            }
+        }
+    }
+
+    abstract_outside[goal_predicate] = 0;
+    changed = true;
+    while (changed) {
+        changed = false;
+        for (const auto &rule : rules) {
+            int out_head = abstract_outside[rule->get_effect().get_predicate_index()];
+            if (out_head >= ABSTRACT_INF) continue;
+            const std::vector<DatalogAtom> &body = rule->get_conditions();
+            for (size_t i = 0; i < body.size(); ++i) {
+                int others_agg = 0;
+                bool infinite = false;
+                for (size_t j = 0; j < body.size(); ++j) {
+                    if (j == i) continue;
+                    int c = abstract_inside[body[j].get_predicate_index()];
+                    if (c >= ABSTRACT_INF) {
+                        infinite = true;
+                        break;
+                    }
+                    others_agg = aggregation_function(others_agg, c);
+                }
+                if (infinite) continue;
+                int candidate =
+                    aggregation_function(out_head, others_agg + rule->get_weight());
+                int &out = abstract_outside[body[i].get_predicate_index()];
+                if (candidate < out) {
+                    out = candidate;
+                    changed = true;
+                }
+            }
+        }
+    }
+}
+
 int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) {
     std::vector<Fact> newfacts;
 
@@ -51,35 +154,48 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
     q.clear();
     best_achievers.clear();
 
+    if (goal_predicate >= 0) {
+        compute_abstract_costs(datalog, state_facts, goal_predicate);
+    }
+    else {
+        abstract_outside.clear();
+    }
+
     for (int i = 0; i < num_base_facts; ++i) {
-        q.push(datalog.get_fact_by_index(i).get_cost(), i);
-        queue_pushes++;
-        cumulative_queue_pushes++;
         atoms_produced++;
         cumulative_atoms_produced++;
+        int priority = priority_of(datalog.get_fact_by_index(i));
+        if (priority >= ABSTRACT_INF) continue;
+        q.push(priority, i);
+        queue_pushes++;
+        cumulative_queue_pushes++;
     }
 
     for (const Fact &f : improvable_edb) {
         Fact f2 = f;
         f2.set_fact_index();
-        q.push(f.get_cost(), f2.get_fact_index());
-        queue_pushes++;
-        cumulative_queue_pushes++;
         atoms_produced++;
         cumulative_atoms_produced++;
         datalog.insert_fact(f2);
         reached_facts.insert(f2);
+        int priority = priority_of(f2);
+        if (priority >= ABSTRACT_INF) continue;
+        q.push(priority, f2.get_fact_index());
+        queue_pushes++;
+        cumulative_queue_pushes++;
     }
 
     for (Fact &f : state_facts) {
         f.set_fact_index();
-        q.push(f.get_cost(), f.get_fact_index());
-        queue_pushes++;
-        cumulative_queue_pushes++;
         atoms_produced++;
         cumulative_atoms_produced++;
         datalog.insert_fact(f);
         reached_facts.insert(f);
+        int priority = priority_of(f);
+        if (priority >= ABSTRACT_INF) continue;
+        q.push(priority, f.get_fact_index());
+        queue_pushes++;
+        cumulative_queue_pushes++;
     }
 
     // EDB + state facts now own the contiguous index range [0, num_initial_facts).
@@ -100,7 +216,7 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
             datalog.backchain_from_goal(popped_fact, num_initial_facts);
             return popped_fact.get_cost();
         }
-        if (popped_fact.get_cost() < cost) {
+        if (priority_of(popped_fact) < cost) {
             continue;
         }
         int predicate_index = popped_fact.get_predicate_index();
@@ -136,7 +252,11 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
                 //datalog.output_atom(new_fact);
                 //std::cout << std::endl << std::flush;
                 if (id!=HAS_CHEAPER_PATH) {
-                    q.push(new_fact.get_cost(), id);
+                    // Duplicate detection above already recorded the fact;
+                    // queue it only if it can still join a goal derivation.
+                    int priority = priority_of(new_fact);
+                    if (priority >= ABSTRACT_INF) continue;
+                    q.push(priority, id);
                     queue_pushes++;
                     cumulative_queue_pushes++;
                 }
