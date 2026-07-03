@@ -96,6 +96,8 @@ public:
 
     void remove_action_predicates(AnnotationGenerator &annotation_generator, const Task &task);
 
+    void materialize_static_stratum(const Task &task, int heuristic_type);
+
     void convert_rules_to_normal_form(const Task &task);
 
     bool remove_duplicate_rules();

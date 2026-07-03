@@ -7,9 +7,13 @@
 
 #include "../datalog/grounder/weighted_grounder.h"
 
+// grounder_type is the cost aggregation (datalog::H_ADD or datalog::H_MAX) of
+// the grounder that will evaluate the program; the static-stratum
+// materialization uses the same aggregation.
 datalog::Datalog initialize_datalog(const Task &task,
                                     datalog::AnnotationGenerator annotation_generator,
-                                    const DatalogTransformationOptions &opts);
+                                    const DatalogTransformationOptions &opts,
+                                    int grounder_type = datalog::H_ADD);
 
 std::vector<datalog::Fact> get_datalog_facts_from_state(const DBState &s, const Task &task);
 

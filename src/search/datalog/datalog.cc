@@ -8,6 +8,7 @@
 #include "transformations/goal_rule.h"
 #include "transformations/normal_form.h"
 #include "transformations/remove_equivalent_rules.h"
+#include "transformations/static_stratum.h"
 #include "transformations/variable_renaming.h"
 
 #include <iostream>
