@@ -43,6 +43,11 @@ class WeightedGrounder : public Grounder {
 
     int queue_pushes;
     int atoms_produced;
+    // Sums over all ground() calls of the search. Unlike the per-call
+    // counters, nothing resets these, so the planner can report one total at
+    // the end of the search.
+    unsigned long long cumulative_atoms_produced;
+    unsigned long long cumulative_queue_pushes;
     int total_number_of_facts;
 
 protected:
@@ -66,6 +71,8 @@ public:
         heuristic_type = h;
         queue_pushes = 0;
         atoms_produced = 0;
+        cumulative_atoms_produced = 0;
+        cumulative_queue_pushes = 0;
         total_number_of_facts = 0;
     }
 
@@ -81,6 +88,14 @@ public:
 
     const std::vector<int> &get_best_achiever_indices() const {
         return best_achievers;
+    }
+
+    unsigned long long get_cumulative_atoms_produced() const {
+        return cumulative_atoms_produced;
+    }
+
+    unsigned long long get_cumulative_queue_pushes() const {
+        return cumulative_queue_pushes;
     }
 
 

@@ -22,6 +22,13 @@ public:
     AdditiveHeuristic(const Task &task, DatalogTransformationOptions opts);
 
     int compute_heuristic(const DBState &s, const Task &task) override;
+
+    void print_statistics() const override {
+        std::cout << "Total atoms produced by grounder: "
+                  << grounder.get_cumulative_atoms_produced() << std::endl;
+        std::cout << "Total queue pushes by grounder: "
+                  << grounder.get_cumulative_queue_pushes() << std::endl;
+    }
 };
 
 #endif //SEARCH_HEURISTICS_ADD_HEURISTIC_H_

@@ -13,6 +13,8 @@
 #include "../open_lists/tiebreaking_open_list.h"
 #include "../open_lists/greedy_open_list.h"
 
+#include <memory>
+
 #include "../options.h"
 
 template <class PackedStateT>
@@ -22,6 +24,10 @@ class AlternatedBFWS : public SearchBase {
     bool full_novelty_check;
 
     std::string heuristic_type;
+
+    // A member rather than a search() local, so print_statistics() can report
+    // the grounder statistics of the heuristic that evaluated the states.
+    std::unique_ptr<Heuristic> delete_free_h;
 
 protected:
     SearchSpace<PackedStateT> space;
