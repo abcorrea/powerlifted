@@ -107,7 +107,7 @@ void Datalog::materialize_static_stratum(const Task &task, int heuristic_type) {
     rules = std::move(stratum);
     update_rule_indices();
     {
-        WeightedGrounder grounder(*this, heuristic_type);
+        WeightedGrounder grounder(*this, heuristic_type, true);
         std::vector<Fact> no_state_facts;
         grounder.ground(*this, no_state_facts, -1);
         for (auto &rule : rules) {

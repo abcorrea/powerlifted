@@ -55,14 +55,22 @@ class WeightedGrounder : public Grounder {
 
     // A* for lightest derivations (Felzenszwalb & McAllester): each call
     // computes exact inside/outside costs of the predicate-level abstraction
-    // (one node per predicate, one hyperedge per rule) and orders the queue
-    // by f = g + outside[predicate]. Outside estimates from an abstraction
-    // are admissible and monotone, so the goal still pops at its exact cost;
-    // a predicate with infinite outside cost can never take part in a goal
-    // derivation, so its facts skip the queue entirely.
+    // (one node per predicate, one hyperedge per rule). A predicate with
+    // infinite outside cost can never take part in a goal derivation, so its
+    // facts skip the queue under either ordering policy. Ordering the queue
+    // by f = g + outside truncates the evaluation earlier; outside estimates
+    // from an abstraction are admissible and monotone, so the goal still
+    // pops at its exact cost, and f = g + outside holds under both
+    // aggregations: chain weights add along a derivation even under h^max.
+    // Heuristics that extract achievers (h^ff, h^rff) keep the plain cost
+    // order instead: the f order pops equally cheap derivations in a
+    // different sequence, records different (equally valid) achievers, and
+    // thereby changes the extracted relaxed plan, whereas the cost order
+    // reproduces the plain Dijkstra grounder's achievers exactly.
     static constexpr int ABSTRACT_INF = std::numeric_limits<int>::max() / 4;
     std::vector<int> abstract_inside;
     std::vector<int> abstract_outside;
+    bool order_by_outside;
 
     void compute_abstract_costs(Datalog &datalog,
                                 const std::vector<Fact> &state_facts,
@@ -71,13 +79,10 @@ class WeightedGrounder : public Grounder {
     int priority_of(const Fact &fact) const {
         int pred = fact.get_predicate_index();
         // Goal-less evaluation (static-stratum materialization) computes no
-        // outside costs and runs as a plain Dijkstra. f = g + outside holds
-        // under both aggregations: chain weights add along a derivation even
-        // under h^max, and the max across a rule's preconditions falls out of
-        // the queue itself, since every fact carries its own f.
+        // outside costs and runs as a plain Dijkstra either way.
         int out = pred < int(abstract_outside.size()) ? abstract_outside[pred] : 0;
         if (out >= ABSTRACT_INF) return ABSTRACT_INF;
-        return fact.get_cost() + out;
+        return order_by_outside ? fact.get_cost() + out : fact.get_cost();
     }
 
     // Reused across join() calls so the per-call join key is built in place
@@ -110,7 +115,8 @@ protected:
     }
 
 public:
-    WeightedGrounder(const Datalog &lp, int h)  {
+    WeightedGrounder(const Datalog &lp, int h, bool order_by_outside)
+        : order_by_outside(order_by_outside) {
         create_rule_matcher(lp);
         heuristic_type = h;
         queue_pushes = 0;
