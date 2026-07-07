@@ -36,7 +36,9 @@ public:
 
 FFHeuristic::FFHeuristic(const Task &task, DatalogTransformationOptions opts) :
     datalog(initialize_datalog(task, get_annotation_generator(), opts)),
-    grounder(datalog, datalog::H_ADD) {}
+    // Cost-only queue order: the relaxed plan depends on achiever
+    // tie-breaking, which the outside-cost order would change.
+    grounder(datalog, datalog::H_ADD, false) {}
 
 int FFHeuristic::compute_heuristic(const DBState &s, const Task &task) {
     pi_ff.clear();

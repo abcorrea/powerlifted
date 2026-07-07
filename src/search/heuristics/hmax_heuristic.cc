@@ -6,7 +6,7 @@ using namespace std;
 
 HMaxHeuristic::HMaxHeuristic(const Task &task, DatalogTransformationOptions opts) :
     datalog(initialize_datalog(task, get_annotation_generator(), opts, datalog::H_MAX)),
-    grounder(datalog, datalog::H_MAX) {}
+    grounder(datalog, datalog::H_MAX, true) {}
 
 datalog::AnnotationGenerator HMaxHeuristic::get_annotation_generator() {
     return [&](int action_schema_id, const Task &task) -> unique_ptr<datalog::Annotation> {
