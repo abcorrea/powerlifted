@@ -20,7 +20,9 @@ correctness regressions quickly before running larger experiments elsewhere.
    These run `bfs` and `gbfs` with the `blind` heuristic on a small set of
    benchmark instances and check the expected plan cost.
 2. Special-case planner paths.
-   These include `clique_bk`, `clique_kckp`, and a small object-creation task.
+   These include `clique_bk`, `clique_kckp`, a small object-creation task, and
+   a disjunctive-precondition task that checks the Datalog heuristics on
+   action schemas split by the translator (issue #64).
 3. Heuristic smoke tests.
    These tests evaluate `goalcount`, `add`, `hmax`, `ff`, and `rff` through `gbfs`
    and require heuristic-evaluation output plus a valid plan.

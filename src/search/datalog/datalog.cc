@@ -52,7 +52,11 @@ void Datalog::create_rules(AnnotationGenerator ann) {
 
 void Datalog::generate_action_rule(const ActionSchema &schema,
                                    std::vector<size_t> nullary_preconds, AnnotationGenerator &annotation_generator) {
-    string action_predicate = "action-" + schema.get_name();
+    // Key the auxiliary predicate by schema index: the translator can emit
+    // several schemas with the same name (e.g., split disjunctive
+    // preconditions), and name collisions would wire all their effect rules
+    // to a single action predicate.
+    string action_predicate = "action-" + std::to_string(schema.get_index());
     int idx = get_next_auxiliary_predicate_idx();
     map_new_predicates_to_idx.emplace(action_predicate, idx);
     predicate_names.push_back(action_predicate);
@@ -86,7 +90,7 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
 
 vector<DatalogAtom> Datalog::get_action_effect_rule_body(const ActionSchema &schema) {
     vector<DatalogAtom> body(1);
-    string action_predicate = "action-" + schema.get_name();
+    string action_predicate = "action-" + std::to_string(schema.get_index());
     size_t idx = map_new_predicates_to_idx[action_predicate];
     body[0] = DatalogAtom(schema, idx);
     return body;
