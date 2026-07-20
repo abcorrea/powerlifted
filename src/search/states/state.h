@@ -34,7 +34,11 @@ public:
 
     DBState() = default;
     explicit DBState(unsigned num_predicates) :
-        relations(num_predicates), nullary_atoms(num_predicates, false) {}
+        relations(num_predicates), nullary_atoms(num_predicates, false) {
+        for (std::size_t i = 0; i < relations.size(); ++i) {
+            relations[i].predicate_symbol = static_cast<int>(i);
+        }
+    }
 
     DBState(std::vector<Relation> &&relations, std::vector<bool> &&nullary_atoms, int num_objects) :
         relations(std::move(relations)),
