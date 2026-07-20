@@ -51,6 +51,19 @@ SPECIAL_PLAN_TESTS = [
         'configs': [('bfs', 'blind', 'full_reducer')],
     },
     {
+        # Regression test for issue #64: disjunctive preconditions are split
+        # into several action schemas with the same name, and the Datalog
+        # heuristics used to collapse them into a single action predicate.
+        'instance': 'domains/disjunction/prob01.pddl',
+        'label': 'disjunction-prob01',
+        'cost': 2,
+        'validate': True,
+        'configs': [('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'hmax', 'full_reducer'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'rff', 'full_reducer')],
+    },
+    {
         'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
         'label': 'probBLOCKS-4-0-full-novelty',
         'cost': None,
