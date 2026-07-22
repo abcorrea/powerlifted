@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <unordered_map>
 
 using namespace std;
 
@@ -14,6 +15,7 @@ AxiomEvaluator::AxiomEvaluator(const vector<Axiom> &axioms,
 {
     if (axioms.empty()) return;
 
+    num_predicates = predicates.size();
     for (const Predicate &p : predicates) {
         if (p.isDerivedPredicate()) {
             derived_predicates.push_back(p.get_index());
@@ -30,8 +32,16 @@ AxiomEvaluator::AxiomEvaluator(const vector<Axiom> &axioms,
         is_static.push_back(!r.tuples.empty());
     }
 
+    // The stratum of every derived predicate (the translator assigns one
+    // stratum per head predicate; all axioms of a head share it).
+    unordered_map<int, int> stratum_of_predicate;
+    for (const Axiom &axiom : axioms) {
+        stratum_of_predicate.emplace(axiom.get_head_predicate(),
+                                     axiom.get_stratum());
+    }
+
     assert(number_of_strata > 0);
-    axioms_by_stratum.resize(number_of_strata);
+    strata.resize(number_of_strata);
     for (const Axiom &axiom : axioms) {
         assert(axiom.get_stratum() >= 0 && axiom.get_stratum() < number_of_strata);
 #ifndef NDEBUG
@@ -45,7 +55,26 @@ AxiomEvaluator::AxiomEvaluator(const vector<Axiom> &axioms,
         PrecompiledAxiom pax(axiom);
         pax.program = join_program::precompile(
             vector<Atom>(axiom.get_body()), is_static, static_information);
-        axioms_by_stratum[axiom.get_stratum()].push_back(std::move(pax));
+        // precompile() keeps the atoms in body order, so positions in
+        // relevant_atoms line up with the body.
+        for (size_t i = 0; i < pax.program.relevant_atoms.size(); ++i) {
+            int pred = pax.program.relevant_atoms[i].get_predicate_symbol_idx();
+            auto it = stratum_of_predicate.find(pred);
+            if (it != stratum_of_predicate.end()
+                    && it->second == axiom.get_stratum()) {
+                pax.recursive_positions.push_back(int(i));
+            }
+        }
+        for (int pred : axiom.get_positive_nullary_body()) {
+            auto it = stratum_of_predicate.find(pred);
+            if (it != stratum_of_predicate.end()
+                    && it->second == axiom.get_stratum()) {
+                pax.recursive_nullary.push_back(pred);
+            }
+        }
+        Stratum &stratum = strata[axiom.get_stratum()];
+        stratum.has_recursive_axiom |= pax.is_recursive();
+        stratum.axioms.push_back(std::move(pax));
     }
 }
 
@@ -64,24 +93,64 @@ void AxiomEvaluator::evaluate(DBState &state) const
         state.set_nullary_atom(pred, false);
     }
 
-    for (const auto &stratum : axioms_by_stratum) {
-        // Naive fixpoint: re-evaluate every axiom of the stratum until no
-        // rule derives a new atom. (Semi-naive evaluation is a documented
-        // possible follow-up.)
-        bool changed = true;
-        while (changed) {
-            changed = false;
-            for (const PrecompiledAxiom &pax : stratum) {
-                if (evaluate_axiom(pax, state)) {
-                    changed = true;
+    for (const Stratum &stratum : strata) {
+        // Semi-naive fixpoint. Round 0 evaluates every axiom over the full
+        // relations and collects the newly derived tuples as the delta.
+        NewTuples delta(stratum.has_recursive_axiom ? num_predicates : 0);
+        NewTuples *delta_ptr = stratum.has_recursive_axiom ? &delta : nullptr;
+        bool any_new = false;
+        for (const PrecompiledAxiom &pax : stratum.axioms) {
+            if (evaluate_axiom(pax, state, -1, nullptr, delta_ptr)) {
+                any_new = true;
+            }
+        }
+        if (!stratum.has_recursive_axiom) continue;
+
+        // Every later round re-evaluates only the recursive axioms, and
+        // only against the tuples first derived in the previous round: a
+        // tuple new in this round must use at least one of them (anything
+        // older was already joined in an earlier round).
+        while (any_new) {
+            NewTuples next(num_predicates);
+            any_new = false;
+            for (const PrecompiledAxiom &pax : stratum.axioms) {
+                if (!pax.is_recursive()) continue;
+                bool nullary_triggered = false;
+                for (int pred : pax.recursive_nullary) {
+                    if (!delta[pred].empty()) {
+                        nullary_triggered = true;
+                        break;
+                    }
+                }
+                if (nullary_triggered) {
+                    // A same-stratum nullary body atom became true; it has
+                    // no table position to restrict, so re-evaluate the
+                    // axiom in full (this also covers its delta positions).
+                    if (evaluate_axiom(pax, state, -1, nullptr, &next)) {
+                        any_new = true;
+                    }
+                    continue;
+                }
+                for (int position : pax.recursive_positions) {
+                    int pred = pax.program.relevant_atoms[position]
+                                   .get_predicate_symbol_idx();
+                    if (delta[pred].empty()) continue;
+                    if (evaluate_axiom(pax, state, position, &delta[pred],
+                                       &next)) {
+                        any_new = true;
+                    }
                 }
             }
+            delta = std::move(next);
         }
     }
 }
 
 bool AxiomEvaluator::evaluate_axiom(const PrecompiledAxiom &pax,
-                                    DBState &state) const
+                                    DBState &state,
+                                    int delta_position,
+                                    const vector<GroundAtom> *delta_tuples,
+                                    NewTuples *new_tuples) const
 {
     const Axiom &axiom = pax.axiom;
     const int head = axiom.get_head_predicate();
@@ -110,11 +179,15 @@ bool AxiomEvaluator::evaluate_axiom(const PrecompiledAxiom &pax,
             if (eq.is_negated() == is_equal) return false;
         }
         state.set_nullary_atom(head, true);
+        if (new_tuples) (*new_tuples)[head].emplace_back();
         return true;
     }
 
     vector<Table> tables;
-    if (!join_program::fill_tables(pax.program, state, tables)) return false;
+    if (!join_program::fill_tables(pax.program, state, tables, delta_position,
+                                   delta_tuples)) {
+        return false;
+    }
 
     Table working_table = std::move(tables[0]);
     vector<bool> applied(axiom.get_equalities().size(), false);
@@ -130,6 +203,7 @@ bool AxiomEvaluator::evaluate_axiom(const PrecompiledAxiom &pax,
 
     if (arity == 0) {
         state.set_nullary_atom(head, true);
+        if (new_tuples) (*new_tuples)[head].emplace_back();
         return true;
     }
 
@@ -151,8 +225,9 @@ bool AxiomEvaluator::evaluate_axiom(const PrecompiledAxiom &pax,
         for (int c : head_columns) {
             ga.push_back(tuple[c]);
         }
-        if (state.insert_tuple_if_new(std::move(ga), head)) {
+        if (state.insert_tuple_if_new(ga, head)) {
             changed = true;
+            if (new_tuples) (*new_tuples)[head].push_back(std::move(ga));
         }
     }
     return changed;

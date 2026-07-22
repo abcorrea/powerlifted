@@ -14,10 +14,20 @@
  *
  * Each axiom body is evaluated as a conjunctive query with the same
  * precompiled join-program machinery used for action preconditions
- * (database/join_program.h). Within a stratum, the axioms are applied
- * repeatedly until a fixpoint is reached (naive evaluation; semi-naive
- * evaluation is a possible follow-up). Atoms derived in earlier strata are
- * part of the state when later strata are evaluated.
+ * (database/join_program.h). Within a stratum, the fixpoint is computed by
+ * semi-naive evaluation: the first round evaluates every axiom of the
+ * stratum over the full relations; every later round re-evaluates only the
+ * recursive axioms (those with a body atom whose predicate is derived in
+ * the same stratum), once per recursive body position, with that position's
+ * table restricted to the delta -- the tuples first derived in the previous
+ * round. Any tuple that is new in round i+1 must use at least one tuple of
+ * delta i in its body (otherwise it would have been derived in an earlier
+ * round), so restricting one position at a time to the delta loses nothing,
+ * while derivations from older rounds are not recomputed over and over.
+ * Recursive dependencies on *nullary* derived predicates have no table
+ * position; an axiom with such a dependency is re-evaluated in full in the
+ * round after the nullary atom becomes true. Atoms derived in earlier
+ * strata are part of the state when later strata are evaluated.
  *
  * Design decision (Option A of the axiom-support plan): derived atoms are
  * stored in the state's ordinary relations, filled in by evaluate() when the
@@ -32,24 +42,58 @@
  */
 class AxiomEvaluator {
 
+    //! Tuples first derived in the current fixpoint round, per predicate
+    //! index. For a nullary head, "the atom became true" is recorded as a
+    //! single empty tuple.
+    using NewTuples = std::vector<std::vector<GroundAtom>>;
+
     struct PrecompiledAxiom {
         explicit PrecompiledAxiom(const Axiom &axiom) : axiom(axiom) {}
 
         Axiom axiom;
         PrecompiledJoinProgram program;
+
+        //! Positions in program.relevant_atoms whose predicate is derived in
+        //! the same stratum as the head: the delta positions of the
+        //! semi-naive evaluation.
+        std::vector<int> recursive_positions;
+
+        //! Nullary body predicates derived in the same stratum as the head;
+        //! they have no table position, so the axiom is re-evaluated in full
+        //! when one of them becomes true.
+        std::vector<int> recursive_nullary;
+
+        bool is_recursive() const {
+            return !recursive_positions.empty() || !recursive_nullary.empty();
+        }
     };
 
-    //! Axioms grouped by stratum: axioms_by_stratum[i] holds the
-    //! (precompiled) axioms whose head is in stratum i.
-    std::vector<std::vector<PrecompiledAxiom>> axioms_by_stratum;
+    struct Stratum {
+        std::vector<PrecompiledAxiom> axioms;
+        //! Whether any axiom of the stratum is recursive; if none is, a
+        //! single evaluation round suffices and no delta is collected.
+        bool has_recursive_axiom = false;
+    };
+
+    //! Axioms grouped by stratum, in evaluation order.
+    std::vector<Stratum> strata;
 
     //! Predicate indices of all derived predicates (cleared before
     //! re-evaluation).
     std::vector<int> derived_predicates;
 
+    //! Number of predicates of the task (size of the per-predicate delta).
+    size_t num_predicates = 0;
+
     //! Evaluate a single axiom on the state; returns true if a new atom of
-    //! the head predicate was derived.
-    bool evaluate_axiom(const PrecompiledAxiom &pax, DBState &state) const;
+    //! the head predicate was derived. If delta_position >= 0, the body
+    //! atom at that position is restricted to delta_tuples (semi-naive
+    //! round); newly derived tuples are appended to *new_tuples if it is
+    //! non-null.
+    bool evaluate_axiom(const PrecompiledAxiom &pax, DBState &state,
+                        int delta_position,
+                        const std::vector<GroundAtom> *delta_tuples,
+                        NewTuples *new_tuples) const;
 
 public:
     //! Constructs an evaluator for a task without axioms; evaluate() is a
@@ -62,7 +106,7 @@ public:
                    const StaticInformation &static_information);
 
     bool has_axioms() const {
-        return !axioms_by_stratum.empty();
+        return !strata.empty();
     }
 
     //! Recompute the derived relations of the state in place: all derived
