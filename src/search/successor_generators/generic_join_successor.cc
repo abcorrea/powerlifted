@@ -47,10 +47,12 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
 
     Table &working_table = tables[0];
     std::vector<bool> applied(action.get_static_precondition().size(), false);
+    std::vector<bool> applied_neg(actiondata.negated_atoms.size(), false);
     for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
-        // Filter out equalities
+        // Filter out equalities and negated atoms
         filter_static(action, working_table, applied);
+        filter_negated_preconditions(actiondata, state, working_table, applied_neg);
         if (working_table.tuples.empty()) {
             return working_table;
         }
@@ -59,6 +61,9 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     // still have to be enforced here (applied[] makes this a no-op for the
     // filters already handled inside the loop).
     filter_static(action, working_table, applied);
+    filter_negated_preconditions(actiondata, state, working_table, applied_neg);
+    assert(std::find(applied_neg.begin(), applied_neg.end(), false)
+           == applied_neg.end());
 
     return working_table;
 }
@@ -71,6 +76,18 @@ void GenericJoinSuccessor::filter_static(const ActionSchema &action,
     //       (in)equalities. This may change in future
     join_program::filter_equalities(action.get_static_precondition(),
                                     working_table, applied);
+}
+
+void GenericJoinSuccessor::filter_negated_preconditions(
+    const PrecompiledActionData &adata,
+    const DBState &state,
+    Table &working_table,
+    std::vector<bool> &applied) const
+{
+    join_program::filter_negated_atoms(adata.negated_atoms, state,
+                                       static_information,
+                                       is_predicate_static,
+                                       working_table, applied);
 }
 
 std::vector<PrecompiledActionData>
@@ -92,14 +109,17 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
     }
 
     vector<Atom> relevant_atoms;
+    vector<Atom> negated_atoms;
     for (const Atom &p : action.get_precondition()) {
         bool is_ineq = (p.get_name() == "=");
-        if (p.is_negated() and !is_ineq) {
-            throw std::runtime_error("Actions with negated preconditions not supported yet");
-        }
-
+        if (is_ineq) continue;  // Enforced through the static preconditions
         // Nullary atoms are handled differently, they don't result in DB tables
-        if (!p.is_ground() and !is_ineq) {
+        if (p.is_ground()) continue;
+        if (p.is_negated()) {
+            // Negated atoms are enforced as filters on the working table.
+            negated_atoms.push_back(p);
+        }
+        else {
             relevant_atoms.push_back(p);
         }
     }
@@ -107,8 +127,10 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
     // TODO (GFM): Not sure why this assert is here and why should we fail for it :-)
     assert(!relevant_atoms.empty());
 
-    return join_program::precompile(std::move(relevant_atoms),
-                                    is_predicate_static, static_information);
+    PrecompiledActionData data = join_program::precompile(
+        std::move(relevant_atoms), is_predicate_static, static_information);
+    data.negated_atoms = std::move(negated_atoms);
+    return data;
 }
 
 

@@ -101,6 +101,14 @@ protected:
     static void filter_static(const ActionSchema &action,
                               Table &working_table,
                               std::vector<bool> &applied) ;
+
+    //! Enforce the negated precondition atoms of the schema on the working
+    //! table (tuples whose instantiation of a negated atom is in the state,
+    //! or in the static information, are dropped).
+    void filter_negated_preconditions(const PrecompiledActionData &adata,
+                                      const DBState &state,
+                                      Table &working_table,
+                                      std::vector<bool> &applied) const;
     static void create_hypergraph(
         const ActionSchema &action,
         std::vector<int> &hypernodes,

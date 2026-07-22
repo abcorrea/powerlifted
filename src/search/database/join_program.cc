@@ -226,4 +226,63 @@ void filter_equalities(const vector<Atom> &equalities,
     }
 }
 
+void filter_negated_atoms(const vector<Atom> &negated_atoms,
+                          const DBState &state,
+                          const StaticInformation &static_information,
+                          const vector<bool> &is_static,
+                          Table &working_table,
+                          vector<bool> &applied)
+{
+    const auto &tup_idx = working_table.tuple_index;
+
+    for (size_t k = 0; k < negated_atoms.size(); ++k) {
+        // Once enforced, later joins only add columns and recombine
+        // surviving tuples, so the constrained columns keep their (already
+        // valid) values -- re-filtering is a guaranteed no-op.
+        if (applied[k]) continue;
+        const Atom &atom = negated_atoms[k];
+        assert(atom.is_negated());
+        const vector<Argument> &args = atom.get_arguments();
+
+        // Column of each argument in the working table (-1 for constants).
+        bool all_columns_present = true;
+        vector<int> columns(args.size(), -1);
+        for (size_t i = 0; i < args.size(); ++i) {
+            if (args[i].is_constant()) continue;
+            auto it = find(tup_idx.begin(), tup_idx.end(), args[i].get_index());
+            if (it == tup_idx.end()) {
+                all_columns_present = false;
+                break;
+            }
+            columns[i] = distance(tup_idx.begin(), it);
+        }
+        if (!all_columns_present) continue;
+
+        int predicate = atom.get_predicate_symbol_idx();
+        const auto &tuples = is_static[predicate]
+            ? static_information.get_tuples_of_relation(predicate)
+            : state.get_tuples_of_relation(predicate);
+        applied[k] = true;
+        if (tuples.empty()) continue;
+
+        GroundAtom instantiation;
+        instantiation.resize(args.size());
+        for (size_t i = 0; i < args.size(); ++i) {
+            if (args[i].is_constant()) instantiation[i] = args[i].get_index();
+        }
+
+        vector<Table::tuple_t> newtuples;
+        for (const auto &t : working_table.tuples) {
+            for (size_t i = 0; i < args.size(); ++i) {
+                if (columns[i] >= 0) instantiation[i] = t[columns[i]];
+            }
+            if (tuples.find(instantiation) == tuples.end()) {
+                newtuples.push_back(t);
+            }
+        }
+        working_table.tuples = std::move(newtuples);
+        if (working_table.tuples.empty()) return;
+    }
+}
+
 }  // namespace join_program

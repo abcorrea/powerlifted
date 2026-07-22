@@ -27,12 +27,18 @@
  * created from each state.
  * @var precompiled_db: The tables of the join program, with the static ones
  * already filled in.
+ * @var negated_atoms: Negated (non-nullary, non-'=') atoms of the query.
+ * They do not take part in the joins; they are enforced as filters on the
+ * working table (see filter_negated_atoms). Every variable of a negated
+ * atom is guaranteed to occur in some positive atom (the translator adds
+ * type atoms for all parameters), so the filters are always applicable on
+ * the fully joined table.
  */
 class PrecompiledJoinProgram {
 public:
     PrecompiledJoinProgram()
         : is_ground(false), statically_inapplicable(false),
-          relevant_atoms(), fluent_tables(), precompiled_db()
+          relevant_atoms(), fluent_tables(), precompiled_db(), negated_atoms()
     {}
 
     bool is_ground;
@@ -40,6 +46,7 @@ public:
     std::vector<Atom> relevant_atoms;
     std::vector<unsigned> fluent_tables;
     std::vector<Table> precompiled_db;
+    std::vector<Atom> negated_atoms;
 };
 
 namespace join_program {
@@ -105,6 +112,21 @@ bool fill_tables(const PrecompiledJoinProgram &program,
 void filter_equalities(const std::vector<Atom> &equalities,
                        Table &working_table,
                        std::vector<bool> &applied);
+
+/**
+ * Filter a working table with negated atoms: a tuple survives iff the
+ * instantiated atom is *not* in the corresponding relation, taken from
+ * `static_information` for static predicates (per `is_static`) and from
+ * `state` otherwise. Like filter_equalities, an atom is only enforced once
+ * all its variable columns appear in the table, and `applied[k]` records
+ * which atoms have been enforced.
+ */
+void filter_negated_atoms(const std::vector<Atom> &negated_atoms,
+                          const DBState &state,
+                          const StaticInformation &static_information,
+                          const std::vector<bool> &is_static,
+                          Table &working_table,
+                          std::vector<bool> &applied);
 
 }  // namespace join_program
 
