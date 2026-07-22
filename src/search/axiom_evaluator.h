@@ -29,6 +29,13 @@
  * round after the nullary atom becomes true. Atoms derived in earlier
  * strata are part of the state when later strata are evaluated.
  *
+ * Negated body atoms are evaluated as negation as failure: a tuple
+ * survives iff the instantiated atom is absent from its relation. The
+ * stratification guarantees that a negated derived predicate lives in a
+ * strictly lower stratum, so its extension -- like that of negated fluent
+ * and static atoms -- is already complete and constant while the current
+ * stratum's fixpoint runs, which also keeps the semi-naive deltas sound.
+ *
  * Design decision (Option A of the axiom-support plan): derived atoms are
  * stored in the state's ordinary relations, filled in by evaluate() when the
  * state is created (initial state and every successor). Goal checks,
@@ -84,6 +91,11 @@ class AxiomEvaluator {
 
     //! Number of predicates of the task (size of the per-predicate delta).
     size_t num_predicates = 0;
+
+    //! Static relations and the per-predicate static classification, needed
+    //! to resolve the relations of negated body atoms.
+    const StaticInformation *static_information = nullptr;
+    std::vector<bool> is_static;
 
     //! Evaluate a single axiom on the state; returns true if a new atom of
     //! the head predicate was derived. If delta_position >= 0, the body

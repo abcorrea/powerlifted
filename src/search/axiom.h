@@ -21,8 +21,11 @@
  * literals. Arguments reference parameters ('p') or constants ('c').
  * @var equalities: literals over the '=' predicate (equalities and
  * inequalities), applied as filters during evaluation.
- * @var positive_nullary_body: indices of nullary predicates that occur
- * (positively) in the body.
+ * @var negated_body: negated body atoms with at least one argument,
+ * excluding '=' literals, applied as anti-join filters during evaluation
+ * (negation as failure over strictly lower strata, fluents, and statics).
+ * @var positive_nullary_body / negative_nullary_body: indices of nullary
+ * predicates that occur positively / negated in the body.
  *
  * Axioms are evaluated stratum by stratum; get_stratum() returns the
  * stratum of the head predicate as computed by the translator.
@@ -36,7 +39,9 @@ class Axiom {
     int num_head_parameters;
     std::vector<Atom> body;
     std::vector<Atom> equalities;
+    std::vector<Atom> negated_body;
     std::vector<int> positive_nullary_body;
+    std::vector<int> negative_nullary_body;
 
 public:
     Axiom(std::string name,
@@ -47,7 +52,9 @@ public:
           int num_head_parameters,
           std::vector<Atom> body,
           std::vector<Atom> equalities,
-          std::vector<int> positive_nullary_body)
+          std::vector<Atom> negated_body,
+          std::vector<int> positive_nullary_body,
+          std::vector<int> negative_nullary_body)
         : name(std::move(name)),
           index(index),
           head_predicate(head_predicate),
@@ -56,7 +63,9 @@ public:
           num_head_parameters(num_head_parameters),
           body(std::move(body)),
           equalities(std::move(equalities)),
-          positive_nullary_body(std::move(positive_nullary_body)) {}
+          negated_body(std::move(negated_body)),
+          positive_nullary_body(std::move(positive_nullary_body)),
+          negative_nullary_body(std::move(negative_nullary_body)) {}
 
     const std::string &get_name() const { return name; }
 
@@ -74,8 +83,14 @@ public:
 
     const std::vector<Atom> &get_equalities() const { return equalities; }
 
+    const std::vector<Atom> &get_negated_body() const { return negated_body; }
+
     const std::vector<int> &get_positive_nullary_body() const {
         return positive_nullary_body;
+    }
+
+    const std::vector<int> &get_negative_nullary_body() const {
+        return negative_nullary_body;
     }
 };
 

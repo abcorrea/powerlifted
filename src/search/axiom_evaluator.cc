@@ -11,10 +11,11 @@ using namespace std;
 AxiomEvaluator::AxiomEvaluator(const vector<Axiom> &axioms,
                                int number_of_strata,
                                const vector<Predicate> &predicates,
-                               const StaticInformation &static_information)
+                               const StaticInformation &static_info)
 {
     if (axioms.empty()) return;
 
+    static_information = &static_info;
     num_predicates = predicates.size();
     for (const Predicate &p : predicates) {
         if (p.isDerivedPredicate()) {
@@ -26,9 +27,8 @@ AxiomEvaluator::AxiomEvaluator(const vector<Axiom> &axioms,
     // iff its relation lives in the static information. (A static predicate
     // with an empty extension counts as fluent; its state relation is empty
     // as well, so the body simply never matches.)
-    vector<bool> is_static;
-    is_static.reserve(static_information.get_relations().size());
-    for (const auto &r : static_information.get_relations()) {
+    is_static.reserve(static_info.get_relations().size());
+    for (const auto &r : static_info.get_relations()) {
         is_static.push_back(!r.tuples.empty());
     }
 
@@ -52,9 +52,25 @@ AxiomEvaluator::AxiomEvaluator(const vector<Axiom> &axioms,
                    || !is_static[a.get_predicate_symbol_idx()]);
         }
 #endif
+#ifndef NDEBUG
+        // Negated derived body atoms must be in a strictly lower stratum
+        // (guaranteed by the translator's stratification check), so their
+        // extensions are complete when this axiom is evaluated.
+        for (const Atom &a : axiom.get_negated_body()) {
+            auto it = stratum_of_predicate.find(a.get_predicate_symbol_idx());
+            assert(it == stratum_of_predicate.end()
+                   || it->second < axiom.get_stratum());
+        }
+        for (int pred : axiom.get_negative_nullary_body()) {
+            auto it = stratum_of_predicate.find(pred);
+            assert(it == stratum_of_predicate.end()
+                   || it->second < axiom.get_stratum());
+        }
+#endif
         PrecompiledAxiom pax(axiom);
         pax.program = join_program::precompile(
-            vector<Atom>(axiom.get_body()), is_static, static_information);
+            vector<Atom>(axiom.get_body()), is_static, static_info);
+        pax.program.negated_atoms = axiom.get_negated_body();
         // precompile() keeps the atoms in body order, so positions in
         // relevant_atoms line up with the body.
         for (size_t i = 0; i < pax.program.relevant_atoms.size(); ++i) {
@@ -159,6 +175,9 @@ bool AxiomEvaluator::evaluate_axiom(const PrecompiledAxiom &pax,
     for (int pred : axiom.get_positive_nullary_body()) {
         if (!state.get_nullary_atoms()[pred]) return false;
     }
+    for (int pred : axiom.get_negative_nullary_body()) {
+        if (state.get_nullary_atoms()[pred]) return false;
+    }
 
     if (arity == 0 && state.get_nullary_atoms()[head]) {
         // Nullary head already derived; nothing new can come out of this
@@ -167,9 +186,10 @@ bool AxiomEvaluator::evaluate_axiom(const PrecompiledAxiom &pax,
     }
 
     if (pax.program.relevant_atoms.empty()) {
-        // The body has no atoms with arguments. Non-nullary heads always
-        // have their parameters' type atoms in the body, so the head must be
-        // nullary; only constant-only equality literals can remain.
+        // The body has no atoms with arguments carrying variables. Non-
+        // nullary heads always have their parameters' type atoms in the
+        // body, so the head must be nullary; only constant-only equality
+        // literals and ground negated atoms can remain.
         assert(arity == 0);
         for (const Atom &eq : axiom.get_equalities()) {
             const auto &args = eq.get_arguments();
@@ -177,6 +197,18 @@ bool AxiomEvaluator::evaluate_axiom(const PrecompiledAxiom &pax,
             assert(args[0].is_constant() && args[1].is_constant());
             bool is_equal = (args[0].get_index() == args[1].get_index());
             if (eq.is_negated() == is_equal) return false;
+        }
+        for (const Atom &na : pax.program.negated_atoms) {
+            GroundAtom instantiation;
+            for (const Argument &arg : na.get_arguments()) {
+                assert(arg.is_constant());
+                instantiation.push_back(arg.get_index());
+            }
+            int predicate = na.get_predicate_symbol_idx();
+            const auto &tuples = is_static[predicate]
+                ? static_information->get_tuples_of_relation(predicate)
+                : state.get_tuples_of_relation(predicate);
+            if (tuples.find(instantiation) != tuples.end()) return false;
         }
         state.set_nullary_atom(head, true);
         if (new_tuples) (*new_tuples)[head].emplace_back();
@@ -191,15 +223,27 @@ bool AxiomEvaluator::evaluate_axiom(const PrecompiledAxiom &pax,
 
     Table working_table = std::move(tables[0]);
     vector<bool> applied(axiom.get_equalities().size(), false);
+    vector<bool> applied_neg(pax.program.negated_atoms.size(), false);
     join_program::filter_equalities(axiom.get_equalities(), working_table,
                                     applied);
+    join_program::filter_negated_atoms(pax.program.negated_atoms, state,
+                                       *static_information, is_static,
+                                       working_table, applied_neg);
     if (working_table.tuples.empty()) return false;
     for (size_t i = 1; i < tables.size(); ++i) {
         hash_join(working_table, tables[i]);
         join_program::filter_equalities(axiom.get_equalities(), working_table,
                                         applied);
+        join_program::filter_negated_atoms(pax.program.negated_atoms, state,
+                                           *static_information, is_static,
+                                           working_table, applied_neg);
         if (working_table.tuples.empty()) return false;
     }
+    // Every variable of a negated atom occurs in some positive atom (the
+    // translator adds type atoms for all parameters), so all filters have
+    // been enforced on the fully joined table.
+    assert(find(applied_neg.begin(), applied_neg.end(), false)
+           == applied_neg.end());
 
     if (arity == 0) {
         state.set_nullary_atom(head, true);
