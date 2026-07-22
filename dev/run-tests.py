@@ -223,6 +223,42 @@ AXIOM_PLAN_TESTS = [
                     ('gbfs', 'hmax', 'full_reducer')],
     },
     {
+        # A pure chain: the transitive-closure fixpoint needs seven rounds,
+        # exercising the delta iteration of the semi-naive axiom evaluation.
+        'instance': 'domains/axioms-reachability/prob04.pddl',
+        'label': 'axioms-reachability-04',
+        'cost': 7,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'add', 'yannakakis')],
+        'required_output_by_config': {
+            ('gbfs', 'ff', 'full_reducer'): ['Initial heuristic value 7'],
+            ('gbfs', 'add', 'yannakakis'): ['Initial heuristic value 7'],
+        },
+    },
+    {
+        # Mutually recursive nullary derived predicates: exercises the
+        # full-re-evaluation trigger for nullary recursive dependencies in
+        # the semi-naive axiom evaluation. (The FF value of 1 instead of 2
+        # is a pre-existing undercount for parameterless actions without
+        # preconditions, whose empty-body rules become EDB facts; the same
+        # value results without any axioms.)
+        'instance': 'domains/axioms-nullary-rec/prob01.pddl',
+        'label': 'axioms-nullary-rec-01',
+        'cost': 2,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'hmax', 'yannakakis'),
+                    ('gbfs', 'ff', 'full_reducer')],
+        'required_output_by_config': {
+            ('gbfs', 'add', 'full_reducer'): ['Initial heuristic value 2'],
+            ('gbfs', 'hmax', 'yannakakis'): ['Initial heuristic value 2'],
+            ('gbfs', 'ff', 'full_reducer'): ['Initial heuristic value 1'],
+        },
+    },
+    {
         # Two strata (marked-pair feeds special), an inequality literal in
         # an axiom body, and a constant in an axiom body.
         'instance': 'domains/axioms-strata/prob01.pddl',

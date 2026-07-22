@@ -63,6 +63,15 @@ void select_tuples(const DBState &s,
                    const std::vector<int> &constants);
 
 /**
+ * Same, but selecting from an explicit tuple list instead of a state
+ * relation (used for the delta tables of the semi-naive axiom evaluation).
+ */
+void select_tuples(const std::vector<GroundAtom> &source,
+                   const Atom &a,
+                   std::vector<GroundAtom> &tuples,
+                   const std::vector<int> &constants);
+
+/**
  * Precompile the join program for the given query atoms. `is_static` says,
  * per predicate index, whether the predicate's extension lives in
  * `static_information` (otherwise its table is refilled from each state).
@@ -75,11 +84,17 @@ PrecompiledJoinProgram precompile(std::vector<Atom> &&atoms,
  * Create the tables of the join program for the given state: copies the
  * precompiled static tables and fills the fluent ones from `state`.
  *
+ * If `delta_position` is the index of a fluent atom of the program, that
+ * atom's table is filled from `delta_tuples` instead of the state (the
+ * semi-naive restriction of the axiom evaluator).
+ *
  * @return false if some table is empty (the query has no answer).
  */
 bool fill_tables(const PrecompiledJoinProgram &program,
                  const DBState &state,
-                 std::vector<Table> &tables);
+                 std::vector<Table> &tables,
+                 int delta_position = -1,
+                 const std::vector<GroundAtom> *delta_tuples = nullptr);
 
 /**
  * Filter a working table with '='-literals (equalities and inequalities)

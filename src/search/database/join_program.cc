@@ -27,12 +27,13 @@ void get_indices_and_constants(vector<int> &indices,
  * Select only those tuples matching the constants of a partially grounded
  * atom.
  */
-void select_tuples(const DBState &s,
-                   const Atom &a,
-                   vector<GroundAtom> &tuples,
-                   const vector<int> &constants)
+template <typename Container>
+static void select_matching_tuples(const Container &source,
+                                   const Atom &a,
+                                   vector<GroundAtom> &tuples,
+                                   const vector<int> &constants)
 {
-    for (const GroundAtom &atom : s.get_relations()[a.get_predicate_symbol_idx()].tuples) {
+    for (const GroundAtom &atom : source) {
         bool match_constants = true;
         for (int c : constants) {
             assert(a.get_arguments()[c].is_constant());
@@ -43,6 +44,23 @@ void select_tuples(const DBState &s,
         }
         if (match_constants) tuples.push_back(atom);
     }
+}
+
+void select_tuples(const DBState &s,
+                   const Atom &a,
+                   vector<GroundAtom> &tuples,
+                   const vector<int> &constants)
+{
+    select_matching_tuples(s.get_relations()[a.get_predicate_symbol_idx()].tuples,
+                           a, tuples, constants);
+}
+
+void select_tuples(const vector<GroundAtom> &source,
+                   const Atom &a,
+                   vector<GroundAtom> &tuples,
+                   const vector<int> &constants)
+{
+    select_matching_tuples(source, a, tuples, constants);
 }
 
 PrecompiledJoinProgram precompile(vector<Atom> &&atoms,
@@ -86,7 +104,9 @@ PrecompiledJoinProgram precompile(vector<Atom> &&atoms,
 
 bool fill_tables(const PrecompiledJoinProgram &program,
                  const DBState &state,
-                 vector<Table> &tables)
+                 vector<Table> &tables,
+                 int delta_position,
+                 const vector<GroundAtom> *delta_tuples)
 {
     /*
      * Parse the state and the query atoms into a set of tables to perform
@@ -94,10 +114,12 @@ bool fill_tables(const PrecompiledJoinProgram &program,
      *
      * We first obtain all indices in the atom that are constants. Then, we
      * create the table applying the projection over the arguments that
-     * satisfy the instantiation of the constants. There are two cases for
+     * satisfy the instantiation of the constants. There are three cases for
      * the projection:
-     *    1. The table comes from the static information (precompiled); or
-     *    2. The table comes directly from the current state.
+     *    1. The table comes from the static information (precompiled);
+     *    2. The table comes directly from the current state; or
+     *    3. The table is the delta position of a semi-naive evaluation and
+     *       comes from the delta tuples.
      */
     if (program.statically_inapplicable) return false;
 
@@ -111,7 +133,13 @@ bool fill_tables(const PrecompiledJoinProgram &program,
         vector<int> constants, indices;
 
         get_indices_and_constants(indices, constants, atom);
-        select_tuples(state, atom, tuples, constants);
+        if (int(i) == delta_position) {
+            assert(delta_tuples != nullptr);
+            select_tuples(*delta_tuples, atom, tuples, constants);
+        }
+        else {
+            select_tuples(state, atom, tuples, constants);
+        }
 
         if (tuples.empty()) return false;
 
