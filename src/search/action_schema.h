@@ -14,6 +14,11 @@ class ActionSchema {
     int index;
     int cost;
     std::vector<Parameter> parameters;
+    //! The first num_external_parameters parameters are the parameters of
+    //! the PDDL action schema; the rest were introduced by the translator
+    //! (compiled-away existential quantifiers) and are not part of the
+    //! ground action name in plans.
+    int num_external_parameters;
     std::vector<FreshVariable> fresh_variables;
     std::vector<Atom> precondition;
     std::vector<Atom> effects;
@@ -34,6 +39,7 @@ public:
                           int index,
                           int cost,
                           std::vector<Parameter> parameters,
+                          int num_external_parameters,
                           std::vector<FreshVariable> fresh_variables,
                           std::vector<Atom> precondition,
                           std::vector<Atom> effects,
@@ -57,6 +63,10 @@ public:
 
     const std::vector<Parameter> &get_parameters() const {
         return parameters;
+    }
+
+    int get_num_external_parameters() const {
+        return num_external_parameters;
     }
 
     const std::vector<FreshVariable> &get_fresh_variables() const {

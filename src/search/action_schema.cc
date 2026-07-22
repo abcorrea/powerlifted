@@ -4,6 +4,7 @@
 
 ActionSchema::ActionSchema(std::string name, int index, int cost,
                            std::vector<Parameter> parameters,
+                           int num_external_parameters,
                            std::vector<FreshVariable> fresh_variables,
                            std::vector<Atom> precondition,
                            std::vector<Atom> effects,
@@ -14,6 +15,7 @@ ActionSchema::ActionSchema(std::string name, int index, int cost,
                            std::vector<bool> negative_nullary_effects) :
         name(std::move(name)), index(index), cost(cost),
         parameters(std::move(parameters)),
+        num_external_parameters(num_external_parameters),
         fresh_variables(std::move(fresh_variables)),
         precondition(std::move(precondition)),
         effects(std::move(effects)),

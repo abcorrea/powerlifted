@@ -174,8 +174,9 @@ void parse_action_schemas(Task &task, int number_action_schemas)
     vector<ActionSchema> actions;
     for (int i = 0; i < number_action_schemas; ++i) {
         string name;
-        int cost, args, num_fresh_vars, precond_size, eff_size;
-        cin >> name >> cost >> args >> num_fresh_vars >> precond_size >> eff_size;
+        int cost, args, num_external_params, num_fresh_vars, precond_size, eff_size;
+        cin >> name >> cost >> args >> num_external_params >> num_fresh_vars
+            >> precond_size >> eff_size;
         vector<Parameter> parameters;
         vector<FreshVariable> fresh_vars;
         vector<Atom> preconditions, static_preconditions, effects;
@@ -287,6 +288,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                        i,
                        cost,
                        parameters,
+                       num_external_params,
                        fresh_vars,
                        preconditions,
                        effects,
