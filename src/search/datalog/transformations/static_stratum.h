@@ -94,6 +94,10 @@ void Datalog::materialize_static_stratum(const Task &task, int heuristic_type) {
             kept.push_back(std::move(rule));
         }
         else {
+            // Only auxiliary predicates can be materialized. In particular,
+            // derived (axiom-defined) task predicates are never materialized:
+            // they are non-static, so they are tainted from the start.
+            assert(rule->get_effect().is_pred_symbol_new());
             stratum.push_back(std::move(rule));
         }
     }

@@ -48,6 +48,37 @@ void Datalog::create_rules(AnnotationGenerator ann) {
         //generate_rules_with_n_ary_heads(schema, nullary_preconds);
         //generate_rules_with_nullary_heads(schema, nullary_preconds);
     }
+    generate_axiom_rules(ann);
+}
+
+void Datalog::generate_axiom_rules(AnnotationGenerator &annotation_generator) {
+    /*
+     * One rule per axiom with weight 0, mirroring Fast Downward's treatment
+     * of axioms as zero-cost operators in the delete relaxation. No
+     * auxiliary action predicate is needed: an axiom is a single head with
+     * a single body. The annotation generator is called with the sentinel
+     * schema index -1 (like effect rules), so achiever-extracting
+     * heuristics (h-FF, h-RFF) do not count axiom applications as plan
+     * actions but still backchain through them to reach their body atoms.
+     * '=' literals are skipped like the (in)equality preconditions of
+     * action rules.
+     */
+    for (const Axiom &axiom : task.get_axioms()) {
+        vector<pair<int, int>> head_args;
+        for (int i = 0; i < axiom.get_head_arity(); ++i) {
+            head_args.emplace_back(i, VARIABLE);
+        }
+        DatalogAtom head(Arguments(head_args), axiom.get_head_predicate(), false);
+        vector<DatalogAtom> body;
+        for (const Atom &condition : axiom.get_body()) {
+            body.emplace_back(DatalogAtom(condition));
+        }
+        for (int nullary_idx : axiom.get_positive_nullary_body()) {
+            body.emplace_back(DatalogAtom(Arguments(), nullary_idx, false));
+        }
+        std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
+        rules.emplace_back(make_unique<GenericRule>(0, head, std::move(body), std::move(ann)));
+    }
 }
 
 void Datalog::generate_action_rule(const ActionSchema &schema,

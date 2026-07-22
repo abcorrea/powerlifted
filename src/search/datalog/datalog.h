@@ -35,6 +35,8 @@ class Datalog {
 
     void generate_action_effect_rules(const ActionSchema &schema, AnnotationGenerator &annotation_generator);
 
+    void generate_axiom_rules(AnnotationGenerator &annotation_generator);
+
     std::vector<DatalogAtom> get_action_effect_rule_body(const ActionSchema &schema);
     void get_nullary_atoms_from_vector(const std::vector<bool> &nullary_predicates_in_precond,
                                        std::vector<size_t> &nullary_preconds) const;
