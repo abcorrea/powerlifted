@@ -13,6 +13,10 @@ bool Predicate::isStaticPredicate() const {
     return static_predicate;
 }
 
+bool Predicate::isDerivedPredicate() const {
+    return derived_predicate;
+}
+
 const std::string &Predicate::get_name() const {
     return name;
 }

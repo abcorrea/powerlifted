@@ -22,5 +22,6 @@ void parse_objects(Task &task, int number_objects);
 void parse_initial_state(Task &task, int initial_state_size);
 void parse_goal(Task &task, int goal_size);
 void parse_action_schemas(Task &task, int number_action_schemas);
+void parse_axioms(Task &task, int number_axioms, int number_axiom_strata);
 
 #endif  // SEARCH_PARSER_H
