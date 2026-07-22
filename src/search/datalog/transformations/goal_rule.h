@@ -19,6 +19,13 @@ void Datalog::add_goal_rule(const Task &task, AnnotationGenerator &annotation_ge
 
     std::vector<DatalogAtom> body;
     for (const AtomicGoal &ag: task.get_goal().goal) {
+        if (ag.is_negated()) {
+            // Negated goal atoms are relaxed away, like negated
+            // preconditions in the action rules: requiring the positive
+            // atom to be *reachable* would be wrong (it may be unreachable
+            // while the negated goal is trivially satisfied).
+            continue;
+        }
         std::vector<std::pair<int, int>> terms;
         for (int arg: ag.get_arguments()) {
             terms.emplace_back(arg, OBJECT); // All goal conditions are ground.
