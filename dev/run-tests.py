@@ -147,6 +147,187 @@ NOVELTY_PLAN_TESTS = [
     },
 ]
 
+AXIOM_PLAN_TESTS = [
+    {
+        # Recursive transitive closure (reachable) with the goal being a
+        # derived atom; the recursive rule has an existential body variable.
+        'instance': 'domains/axioms-reachability/prob01.pddl',
+        'label': 'axioms-reachability-01',
+        'cost': 2,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'yannakakis'),
+                    ('astar', 'blind', 'full_reducer'),
+                    ('gbfs', 'goalcount', 'full_reducer')],
+    },
+    {
+        'instance': 'domains/axioms-reachability/prob01.pddl',
+        'label': 'axioms-reachability-01-heur',
+        'cost': None,
+        'validate': True,
+        'configs': [('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'hmax', 'full_reducer'),
+                    ('gbfs', 'ff', 'join'),
+                    ('gbfs', 'rff', 'full_reducer'),
+                    ('lazy', 'ff', 'full_reducer')],
+        'required_output_by_config': {
+            ('gbfs', 'add', 'full_reducer'): ['Initial heuristic value 2'],
+            ('gbfs', 'hmax', 'full_reducer'): ['Initial heuristic value 1'],
+            ('gbfs', 'ff', 'join'): ['Initial heuristic value 2'],
+            ('gbfs', 'rff', 'full_reducer'): ['Initial heuristic value 2'],
+        },
+    },
+    {
+        # Disjunctive goal over derived atoms: the translator introduces a
+        # nullary goal axiom split into several axioms with constants in
+        # their bodies.
+        'instance': 'domains/axioms-reachability/prob02.pddl',
+        'label': 'axioms-reachability-02',
+        'cost': 1,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'ff', 'yannakakis')],
+    },
+    {
+        # Recursive 'above' with the derived atom in the goal.
+        'instance': 'domains/axioms-above/prob01.pddl',
+        'label': 'axioms-above-01',
+        'cost': 2,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'yannakakis'),
+                    ('astar', 'blind', 'full_reducer')],
+    },
+    {
+        'instance': 'domains/axioms-above/prob01.pddl',
+        'label': 'axioms-above-01-heur',
+        'cost': None,
+        'validate': True,
+        'configs': [('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'hmax', 'full_reducer'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'rff', 'full_reducer')],
+        'required_output': ['Initial heuristic value 2'],
+    },
+    {
+        # Recursive 'above' used in an action precondition; the initial
+        # state already satisfies it through the recursive rule.
+        'instance': 'domains/axioms-above/prob02.pddl',
+        'label': 'axioms-above-02',
+        'cost': 1,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'full_reducer'),
+                    ('gbfs', 'ff', 'yannakakis'),
+                    ('gbfs', 'hmax', 'full_reducer')],
+    },
+    {
+        # Two strata (marked-pair feeds special), an inequality literal in
+        # an axiom body, and a constant in an axiom body.
+        'instance': 'domains/axioms-strata/prob01.pddl',
+        'label': 'axioms-strata-01',
+        'cost': 3,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'yannakakis'),
+                    ('astar', 'blind', 'full_reducer'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'ff', 'full_reducer')],
+    },
+]
+
+# Exhaustive searches with a known reachable state count: derived atoms are
+# a function of the base fluents, so they must not affect duplicate
+# detection. prob03's reachable state space is exactly the 16 subsets of
+# buildable roads; more registered states would mean states differing only
+# in derived atoms coexisted.
+AXIOM_UNSOLVABLE_TESTS = [
+    {
+        'name': 'axioms-reachability-03-duplicates',
+        'instance': 'domains/axioms-reachability/prob03.pddl',
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'full_reducer')],
+        'required_output': ['No solution found!',
+                           'Number of registered states: 16'],
+    },
+]
+
+# Tasks outside the supported axiom fragment: the translator must reject
+# them with an informative message (and a non-zero exit code).
+TRANSLATOR_REJECTION_TESTS = [
+    {
+        'name': 'axioms-negated-body',
+        'domain': 'domains/axioms-invalid/negated-body-domain.pddl',
+        'instance': 'domains/axioms-invalid/negated-body-prob01.pddl',
+        'expected_text': 'contains the negated atom',
+    },
+    {
+        'name': 'axioms-forall-body',
+        'domain': 'domains/axioms-invalid/forall-body-domain.pddl',
+        'instance': 'domains/axioms-invalid/forall-body-prob01.pddl',
+        'expected_text': 'negation over the derived predicate',
+    },
+    {
+        'name': 'axioms-negated-derived-precond',
+        'domain': 'domains/axioms-invalid/negated-derived-precond-domain.pddl',
+        'instance': 'domains/axioms-invalid/negated-derived-precond-prob01.pddl',
+        'expected_text': 'negated derived predicate',
+    },
+    {
+        'name': 'axioms-derived-in-effect',
+        'domain': 'domains/axioms-invalid/derived-in-effect-domain.pddl',
+        'instance': 'domains/axioms-invalid/derived-in-effect-prob01.pddl',
+        'expected_text': 'appears in effect of action',
+    },
+    {
+        'name': 'axioms-derived-in-init',
+        'domain': 'domains/axioms-invalid/derived-in-init-domain.pddl',
+        'instance': 'domains/axioms-invalid/derived-in-init-prob01.pddl',
+        'expected_text': 'appears in :init fact',
+    },
+]
+
+# The four IPC domains with derived predicates all fall outside the
+# supported fragment (negation over derived predicates after normalization,
+# or quantified action conditions); they must be rejected cleanly. Only run
+# when the benchmarks are available.
+DOWNWARD_BENCHMARKS = os.environ.get('DOWNWARD_BENCHMARKS')
+IPC_AXIOM_REJECTION_TESTS = [
+    {
+        'name': 'ipc-philosophers',
+        'domain': 'philosophers/domain.pddl',
+        'instance': 'philosophers/p01-phil2.pddl',
+        'expected_text': 'not supported',
+    },
+    {
+        'name': 'ipc-optical-telegraphs',
+        'domain': 'optical-telegraphs/domain.pddl',
+        'instance': 'optical-telegraphs/p01-opt2.pddl',
+        'expected_text': 'not supported',
+    },
+    {
+        'name': 'ipc-psr-middle',
+        'domain': 'psr-middle/domain.pddl',
+        'instance': 'psr-middle/p01-s17-n2-l2-f30.pddl',
+        'expected_text': 'not supported',
+    },
+    {
+        'name': 'ipc-psr-large',
+        'domain': 'psr-large/domain.pddl',
+        'instance': 'psr-large/p01-s29-n2-l5-f30.pddl',
+        'expected_text': 'not supported',
+    },
+]
+
+UNIT_TESTS = [
+    {
+        'name': 'axiom-stratification',
+        'cmd': [sys.executable,
+                str(BASEDIR / 'src' / 'translator' / 'tests' / 'test_axiom_rules.py')],
+    },
+]
+
 CLI_OPTION_TESTS = [
     {
         'name': 'invalid-option',
@@ -369,6 +550,111 @@ def run_cli_option_test(test):
     )
 
 
+def run_translator_rejection_test(test, base_dir):
+    """Run the translator alone and expect a clean rejection."""
+    translator = BASEDIR / 'src' / 'translator' / 'translate.py'
+    output_file = '/tmp/powerlifted_test_rejection.out'
+    cmd = [sys.executable, str(translator),
+           str(base_dir / test['domain']), str(base_dir / test['instance']),
+           '--output-file', output_file]
+    start = timeit.default_timer()
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT, check=False)
+    wall_time = timeit.default_timer() - start
+    output = proc.stdout.decode('utf-8', errors='replace')
+    if os.path.isfile(output_file):
+        os.remove(output_file)
+
+    passed = proc.returncode != 0 and test['expected_text'] in output
+    status = 'PASSED' if passed else 'FAILED'
+    details = ''
+    if proc.returncode == 0:
+        details += ' [translator unexpectedly succeeded]'
+    if test['expected_text'] not in output:
+        details += " [missing output: '{}']".format(test['expected_text'])
+
+    print("{} translator rejection test '{}' (time: {:.2f}s){}".format(
+        status, test['name'], wall_time, details))
+
+    return TestResult(
+        name='rejection-{}'.format(test['name']),
+        domain='translator',
+        instance_name=test['name'],
+        config='rejection',
+        passed=passed,
+        wall_time=wall_time,
+        peak_memory_kb=None,
+        expected_cost=None,
+        found_cost=None,
+        plan_valid=None,
+    )
+
+
+def run_unsolvable_test(test):
+    """Run configurations expected to exhaust the search space without a
+    plan, checking required output markers (e.g. the registered state
+    count)."""
+    results = []
+    for config in test['configs']:
+        cmd = [str(BASEDIR / 'powerlifted.py'),
+               '-i', str(BASEDIR / 'dev' / test['instance']),
+               '-s', config[0], '-e', config[1], '-g', config[2]]
+        start = timeit.default_timer()
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, check=False)
+        wall_time = timeit.default_timer() - start
+        output = proc.stdout.decode('utf-8', errors='replace')
+
+        missing = [m for m in test['required_output'] if m not in output]
+        passed = not missing
+        status = 'PASSED' if passed else 'FAILED'
+        details = ''
+        for marker in missing:
+            details += " [missing output: '{}']".format(marker)
+        print("{} unsolvable test '{}' with {} (time: {:.2f}s){}".format(
+            status, test['name'], ','.join(config), wall_time, details))
+
+        results.append(TestResult(
+            name='{}[{}]'.format(test['name'], ','.join(config)),
+            domain='unsolvable',
+            instance_name=test['name'],
+            config=','.join(config),
+            passed=passed,
+            wall_time=wall_time,
+            peak_memory_kb=None,
+            expected_cost=None,
+            found_cost=None,
+            plan_valid=None,
+        ))
+    return results
+
+
+def run_unit_test(test):
+    start = timeit.default_timer()
+    proc = subprocess.run(test['cmd'], stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT, check=False)
+    wall_time = timeit.default_timer() - start
+    passed = proc.returncode == 0
+    status = 'PASSED' if passed else 'FAILED'
+    print("{} unit test '{}' (time: {:.2f}s)".format(
+        status, test['name'], wall_time))
+    if not passed:
+        print(proc.stdout.decode('utf-8', errors='replace'))
+
+    return TestResult(
+        name='unit-{}'.format(test['name']),
+        domain='unit',
+        instance_name=test['name'],
+        config='unit',
+        passed=passed,
+        wall_time=wall_time,
+        peak_memory_kb=None,
+        expected_cost=None,
+        found_cost=None,
+        plan_valid=None,
+    )
+
+
 def run_plan_test_cases(results, test_cases):
     for test_case in test_cases:
         for config in test_case['configs']:
@@ -547,6 +833,24 @@ if __name__ == '__main__':
     run_plan_test_cases(results, SPECIAL_PLAN_TESTS)
     run_plan_test_cases(results, heuristic_plan_tests)
     run_plan_test_cases(results, novelty_plan_tests)
+    run_plan_test_cases(results, AXIOM_PLAN_TESTS)
+
+    for unsolvable_test in AXIOM_UNSOLVABLE_TESTS:
+        results.extend(run_unsolvable_test(unsolvable_test))
+
+    for rejection_test in TRANSLATOR_REJECTION_TESTS:
+        results.append(run_translator_rejection_test(
+            rejection_test, BASEDIR / 'dev'))
+    if DOWNWARD_BENCHMARKS:
+        for rejection_test in IPC_AXIOM_REJECTION_TESTS:
+            results.append(run_translator_rejection_test(
+                rejection_test, Path(DOWNWARD_BENCHMARKS)))
+    else:
+        print("Skipping IPC axiom rejection tests "
+              "(DOWNWARD_BENCHMARKS not set).")
+
+    for unit_test in UNIT_TESTS:
+        results.append(run_unit_test(unit_test))
 
     for cli_test in CLI_OPTION_TESTS:
         results.append(run_cli_option_test(cli_test))
