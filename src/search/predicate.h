@@ -11,9 +11,10 @@
 class Predicate {
 public:
   Predicate(std::string &&name, int index, int arity, bool static_predicate,
-            std::vector<int> &&types)
+            bool derived_predicate, std::vector<int> &&types)
       : name(std::move(name)), index(index), arity(arity),
-        static_predicate(static_predicate), types(std::move(types)) {
+        static_predicate(static_predicate),
+        derived_predicate(derived_predicate), types(std::move(types)) {
     // Constructor
   }
 
@@ -27,6 +28,10 @@ public:
 
   bool isStaticPredicate() const;
 
+  //! Whether the predicate is derived, i.e., defined by axioms. Derived
+  //! predicates are never static: their extension is recomputed per state.
+  bool isDerivedPredicate() const;
+
   int get_index() const {
       return index;
   }
@@ -36,6 +41,7 @@ private:
   int index;
   int arity;
   bool static_predicate;
+  bool derived_predicate;
   std::vector<int> types;
 };
 

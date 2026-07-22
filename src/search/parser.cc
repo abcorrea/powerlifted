@@ -84,7 +84,87 @@ bool parse(Task &task, const ifstream &in)
     cout << "Total number of action schemas: " << number_action_schemas << endl;
     parse_action_schemas(task, number_action_schemas);
 
+    int number_axioms, number_axiom_strata;
+    cin >> canary >> number_axioms >> number_axiom_strata;
+    if (not is_next_section_correct(canary, "AXIOMS")) {
+        return false;
+    }
+    cout << "Total number of axioms: " << number_axioms << " in "
+         << number_axiom_strata << " strata" << endl;
+    parse_axioms(task, number_axioms, number_axiom_strata);
+
     return true;
+}
+
+void parse_axioms(Task &task, int number_axioms, int number_axiom_strata)
+{
+    vector<Axiom> axioms;
+    for (int i = 0; i < number_axioms; ++i) {
+        string name;
+        int head_predicate, stratum, num_head_params, num_existential, body_size;
+        cin >> name >> head_predicate >> stratum >> num_head_params
+            >> num_existential >> body_size;
+        assert(task.predicates[head_predicate].isDerivedPredicate());
+        vector<Parameter> parameters;
+        for (int j = 0; j < num_head_params + num_existential; ++j) {
+            string param_name;
+            int index, type;
+            cin >> param_name >> index >> type;
+            parameters.emplace_back(param_name, index, type);
+        }
+        vector<Atom> body, equalities;
+        vector<int> positive_nullary_body;
+        for (int j = 0; j < body_size; ++j) {
+            string atom_name;
+            int index;
+            bool negated;
+            int arguments_size;
+            cin >> atom_name >> index >> negated >> arguments_size;
+            if (arguments_size == 0) {
+                assert(task.nullary_predicates.count(index) > 0);
+                assert(!negated);
+                positive_nullary_body.push_back(index);
+                continue;
+            }
+            vector<Argument> arguments;
+            for (int k = 0; k < arguments_size; ++k) {
+                char c;
+                int arg_index;
+                cin >> c >> arg_index;
+                if (c == 'c') {
+                    arguments.emplace_back(arg_index, true, false);
+                }
+                else if (c == 'p') {
+                    arguments.emplace_back(arg_index, false, false);
+                }
+                else {
+                    cerr << "Error while reading axiom " << name
+                         << ". Argument is neither constant nor parameter."
+                         << endl;
+                    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+                }
+            }
+            if (utils::iequals(atom_name, "=")) {
+                equalities.emplace_back(
+                    std::move(arguments), std::move(atom_name), index, negated);
+            }
+            else {
+                assert(!negated);
+                body.emplace_back(
+                    std::move(arguments), std::move(atom_name), index, negated);
+            }
+        }
+        axioms.emplace_back(name,
+                            i,
+                            head_predicate,
+                            stratum,
+                            std::move(parameters),
+                            num_head_params,
+                            std::move(body),
+                            std::move(equalities),
+                            std::move(positive_nullary_body));
+    }
+    task.initialize_axioms(std::move(axioms), number_axiom_strata);
 }
 
 void parse_action_schemas(Task &task, int number_action_schemas)
@@ -292,13 +372,15 @@ void parse_predicates(Task &task, int number_predicates)
         int index;
         int number_args;
         bool static_pred;
-        cin >> predicate_name >> index >> number_args >> static_pred;
+        bool derived_pred;
+        cin >> predicate_name >> index >> number_args >> static_pred >> derived_pred;
         if (number_args == 0) {
             task.nullary_predicates.insert(index);
         }
         vector<int> types;
         copy_next_n_values(number_args, types);
-        task.add_predicate(predicate_name, index, number_args, static_pred, types);
+        task.add_predicate(predicate_name, index, number_args, static_pred,
+                           derived_pred, types);
     }
 }
 

@@ -8,9 +8,11 @@
 using namespace std;
 
 void Task::add_predicate(
-    string &name, int index, int arity, bool static_predicate, vector<int> &types)
+    string &name, int index, int arity, bool static_predicate,
+    bool derived_predicate, vector<int> &types)
 {
-    predicates.emplace_back(std::move(name), index, arity, static_predicate, std::move(types));
+    predicates.emplace_back(std::move(name), index, arity, static_predicate,
+                            derived_predicate, std::move(types));
 }
 
 void Task::add_object(const string &name, int index, const vector<int> &types)

@@ -2,6 +2,7 @@
 #define SEARCH_TASK_H
 
 #include "action_schema.h"
+#include "axiom.h"
 #include "goal_condition.h"
 #include "object.h"
 #include "predicate.h"
@@ -36,6 +37,8 @@ public:
     DBState initial_state;
     std::unordered_set<int> nullary_predicates;
     StaticInformation static_info;
+    std::vector<Axiom> axioms;
+    int number_of_axiom_strata = 0;
 
     Task(const std::string &domain_name, const std::string &task_name)
         : domain_name(domain_name), task_name(task_name) {
@@ -49,7 +52,21 @@ public:
     void add_type(const std::string &type_name);
 
     void add_predicate(std::string &name, int index, int arity,
-                       bool static_predicate, std::vector<int> &types);
+                       bool static_predicate, bool derived_predicate,
+                       std::vector<int> &types);
+
+    void initialize_axioms(std::vector<Axiom> &&axiom_list, int num_strata) {
+        axioms = std::move(axiom_list);
+        number_of_axiom_strata = num_strata;
+    }
+
+    bool has_axioms() const {
+        return !axioms.empty();
+    }
+
+    const std::vector<Axiom> &get_axioms() const {
+        return axioms;
+    }
 
     void add_object(const std::string &name, int index,
                     const std::vector<int> &types);
