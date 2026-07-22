@@ -169,6 +169,11 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
     #    - action name
     #    - action cost
     #    - number of action parameters
+    #    - number of external parameters, i.e., the parameters of the PDDL
+    #      action schema. The remaining parameters were introduced by the
+    #      normalization (compiled-away existential quantifiers); they come
+    #      last in the parameter list and are not part of the ground action
+    #      name in plans.
     #    - number of fresh variables (i.e., variables that will be instantiated by new objects)
     #    - size of precondition
     #    - size of effect
@@ -222,7 +227,9 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
         fresh_vars = list(fresh_vars)
         fresh_vars.sort()
 
-        print(action.name, action.cost, len(list(action.parameters)), len(fresh_vars),
+        assert 0 <= action.num_external_parameters <= len(action.parameters)
+        print(action.name, action.cost, len(list(action.parameters)),
+              action.num_external_parameters, len(fresh_vars),
               len(precond), len(list(action.effects)), file=output)
         for index, par in enumerate(action.parameters):
             parameter_index[par.name] = index
