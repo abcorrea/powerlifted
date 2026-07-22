@@ -197,9 +197,11 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
 
     Table &working_table = tables[fjr[0]];
     std::vector<bool> applied(action.get_static_precondition().size(), false);
+    std::vector<bool> applied_neg(actiondata.negated_atoms.size(), false);
     for (size_t i = 1; i < fjr.size(); ++i) {
         hash_join(working_table, tables[fjr[i]]);
         filter_static(action, working_table, applied);
+        filter_negated_preconditions(actiondata, state, working_table, applied_neg);
         if (working_table.tuples.empty()) {
             return working_table;
         }
@@ -208,6 +210,7 @@ Table FullReducerSuccessorGenerator::instantiate(const ActionSchema &action, con
     // still have to be enforced here (applied[] makes this a no-op for the
     // filters already handled inside the loop).
     filter_static(action, working_table, applied);
+    filter_negated_preconditions(actiondata, state, working_table, applied_neg);
 
     return working_table;
 }

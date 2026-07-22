@@ -147,6 +147,40 @@ NOVELTY_PLAN_TESTS = [
     },
 ]
 
+NEGATED_PRECONDITION_TESTS = [
+    {
+        # Negated fluent and static precondition atoms, enforced as
+        # anti-join filters in the join-based successor generators.
+        'instance': 'domains/negated-preconditions/prob01.pddl',
+        'label': 'negated-preconditions-01',
+        'cost': 2,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'full_reducer'),
+                    ('bfs', 'blind', 'yannakakis'),
+                    ('bfs', 'blind', 'ordered_join'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'add', 'yannakakis')],
+    },
+    {
+        # Negated fluent goal atom whose positive counterpart is not even
+        # relaxed-reachable: the Datalog goal rule must relax it away.
+        'instance': 'domains/negated-preconditions/prob03.pddl',
+        'label': 'negated-preconditions-03',
+        'cost': 1,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'ff', 'yannakakis'),
+                    ('gbfs', 'hmax', 'full_reducer'),
+                    ('gbfs', 'rff', 'full_reducer')],
+        'required_output_by_config': {
+            ('gbfs', 'add', 'full_reducer'): ['Initial heuristic value 1'],
+            ('gbfs', 'ff', 'yannakakis'): ['Initial heuristic value 1'],
+        },
+    },
+]
+
 AXIOM_PLAN_TESTS = [
     {
         # Recursive transitive closure (reachable) with the goal being a
@@ -289,6 +323,17 @@ UNSOLVABLE_TESTS = [
                     ('bfs', 'blind', 'yannakakis')],
         'required_output': ['No solution found!',
                            'Number of registered states: 2'],
+    },
+    {
+        # (done) needs an unmarked special object; c1 is marked forever.
+        # An invalid plan here means a negated precondition was ignored.
+        'name': 'negated-preconditions-02',
+        'instance': 'domains/negated-preconditions/prob02.pddl',
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'full_reducer'),
+                    ('bfs', 'blind', 'yannakakis')],
+        'required_output': ['No solution found!',
+                           'Number of registered states: 16'],
     },
     {
         'name': 'axioms-reachability-03-duplicates',
@@ -890,6 +935,7 @@ if __name__ == '__main__':
     run_plan_test_cases(results, SPECIAL_PLAN_TESTS)
     run_plan_test_cases(results, heuristic_plan_tests)
     run_plan_test_cases(results, novelty_plan_tests)
+    run_plan_test_cases(results, NEGATED_PRECONDITION_TESTS)
     run_plan_test_cases(results, AXIOM_PLAN_TESTS)
 
     for unsolvable_test in UNSOLVABLE_TESTS:
