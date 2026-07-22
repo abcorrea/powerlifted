@@ -275,6 +275,13 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
         }
     }
 
+    // Catch-all for join programs whose loops above never ran (e.g. a
+    // single-table program): re-check every static precondition on the final
+    // table. Variables of (in)equalities are distinguished, so their columns
+    // survive the projections.
+    std::vector<bool> applied_final(action.get_static_precondition().size(), false);
+    filter_static(action, working_table, applied_final);
+
     project(working_table, distinguished_variables[action.get_index()]);
     return working_table;
 }

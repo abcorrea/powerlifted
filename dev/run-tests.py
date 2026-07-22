@@ -278,7 +278,18 @@ AXIOM_PLAN_TESTS = [
 # detection. prob03's reachable state space is exactly the 16 subsets of
 # buildable roads; more registered states would mean states differing only
 # in derived atoms coexisted.
-AXIOM_UNSOLVABLE_TESTS = [
+UNSOLVABLE_TESTS = [
+    {
+        # Regression: (in)equality filters must be applied even when the
+        # join program has a single table (the join loop never runs then).
+        'name': 'single-table-inequality-01',
+        'instance': 'domains/inequality/prob01.pddl',
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'full_reducer'),
+                    ('bfs', 'blind', 'yannakakis')],
+        'required_output': ['No solution found!',
+                           'Number of registered states: 2'],
+    },
     {
         'name': 'axioms-reachability-03-duplicates',
         'instance': 'domains/axioms-reachability/prob03.pddl',
@@ -881,7 +892,7 @@ if __name__ == '__main__':
     run_plan_test_cases(results, novelty_plan_tests)
     run_plan_test_cases(results, AXIOM_PLAN_TESTS)
 
-    for unsolvable_test in AXIOM_UNSOLVABLE_TESTS:
+    for unsolvable_test in UNSOLVABLE_TESTS:
         results.extend(run_unsolvable_test(unsolvable_test))
 
     for rejection_test in TRANSLATOR_REJECTION_TESTS:

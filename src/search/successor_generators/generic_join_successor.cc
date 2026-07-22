@@ -55,6 +55,10 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
             return working_table;
         }
     }
+    // Single-table join programs never enter the loop above, so the filters
+    // still have to be enforced here (applied[] makes this a no-op for the
+    // filters already handled inside the loop).
+    filter_static(action, working_table, applied);
 
     return working_table;
 }
