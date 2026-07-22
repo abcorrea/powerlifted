@@ -1,0 +1,6 @@
+(define (problem axioms-invalid-negated-body-01)
+  (:domain axioms-invalid-negated-body)
+  (:objects c1 c2 - item)
+  (:init (marked c1))
+  (:goal (done))
+)

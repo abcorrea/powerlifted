@@ -1,0 +1,6 @@
+(define (problem axioms-invalid-derived-in-init-01)
+  (:domain axioms-invalid-derived-in-init)
+  (:objects c1 - item)
+  (:init (blessed c1))
+  (:goal (done))
+)
