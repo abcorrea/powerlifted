@@ -186,10 +186,18 @@ before or after planner execution.
 
 ## Limitations
 
-- **Axioms**: not supported
+- **Axioms**: supported for stratifiable axiom sets whose normalized bodies
+  are conjunctions of positive atoms plus (in)equality literals. Variables
+  occurring only in a body are implicitly existentially quantified
+  (`exists` and `forall` are accepted inside axiom bodies and compiled away
+  during normalization, as long as the result stays in this fragment), and
+  positive recursion is allowed. Negation over derived predicates — in
+  axiom bodies, preconditions, or goals — is rejected by the translator.
+  The delete-relaxation heuristics treat axioms as zero-cost rules,
+  following Fast Downward's semantics.
 - **Conditional effects**: not supported
 - **Negated preconditions**: only inequality
-- **Quantifiers**: not supported
+- **Quantifiers**: not supported outside axiom bodies
 
 ## References
 
