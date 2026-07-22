@@ -1,0 +1,6 @@
+(define (problem axioms-invalid-negated-derived-precond-01)
+  (:domain axioms-invalid-negated-derived-precond)
+  (:objects c1 - item)
+  (:init)
+  (:goal (done))
+)

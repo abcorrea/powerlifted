@@ -121,6 +121,33 @@ def add_effects_to_actions(task, graph):
         action.effects = new_eff
 
 
+def add_conditions_to_axioms(task, graph):
+    """Add unary type conditions to each axiom body according to the axiom
+    parameters (head parameters and formerly existentially quantified body
+    variables alike).
+
+    Besides enforcing the PDDL typing semantics of the parameters, this
+    guarantees that every axiom parameter occurs in at least one positive
+    body atom, which the join-based axiom evaluation of the search component
+    relies on.
+    """
+    for axiom in task.axioms:
+        condition = axiom.condition
+        if isinstance(condition, pddl.Literal):
+            parts = [condition]
+        elif isinstance(condition, pddl.Truth):
+            parts = []
+        else:
+            assert isinstance(condition, pddl.Conjunction), \
+                "Axiom body is not normalized: %r" % condition
+            parts = list(condition.parts)
+        for param in axiom.parameters:
+            parts.append(pddl.Atom(_get_type_predicate_name(param.type_name),
+                                   [param.name]))
+        axiom.condition = pddl.Conjunction(parts)
+    return
+
+
 def adjust_initial_state(task, graph):
     """Creates the unary predicates for types and supertypes of each object and
     append them to the initial state description.
@@ -190,6 +217,7 @@ def compile_types(task):
     graph = TypesGraph(task.types)
     compile_into_unary_predicates(task)
     add_conditions_to_actions(task, graph)
+    add_conditions_to_axioms(task, graph)
     add_effects_to_actions(task, graph)
     adjust_initial_state(task, graph)
     return graph

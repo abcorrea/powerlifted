@@ -27,7 +27,13 @@ def naturals_iterator():
 uniq_fresh_var_id = naturals_iterator()
 
 
-def is_tag_supported(tag):
+def is_tag_supported(tag, allow_quantifiers=False):
+    if allow_quantifiers and tag in ("forall", "exists"):
+        # Quantifiers are allowed in axiom bodies: existentials are compiled
+        # into extra axiom parameters and universals into auxiliary axioms by
+        # the normalization pipeline. (The resulting axioms must still fall
+        # into the supported fragment, which is checked after normalization.)
+        return
     if tag in UNSUPPORTED_FEATURES:
         print('ERROR: PDDL feature "%s" not supported yet.' % tag, file=sys.stderr)
         sys.exit(-1)
@@ -82,15 +88,17 @@ def parse_function(alist, type_name):
     return pddl.Function(name, arguments, type_name)
 
 
-def parse_condition(alist, type_dict, predicate_dict):
-    condition = parse_condition_aux(alist, False, type_dict, predicate_dict)
+def parse_condition(alist, type_dict, predicate_dict, allow_quantifiers=False):
+    condition = parse_condition_aux(alist, False, type_dict, predicate_dict,
+                                    allow_quantifiers)
     return condition.uniquify_variables({}).simplified()
 
 
-def parse_condition_aux(alist, negated, type_dict, predicate_dict):
+def parse_condition_aux(alist, negated, type_dict, predicate_dict,
+                        allow_quantifiers=False):
     """Parse a PDDL condition. The condition is translated into NNF on the fly."""
     tag = alist[0]
-    is_tag_supported(tag)
+    is_tag_supported(tag, allow_quantifiers)
     if tag in ("and", "or", "not", "imply"):
         args = alist[1:]
         if tag == "imply":
@@ -98,7 +106,8 @@ def parse_condition_aux(alist, negated, type_dict, predicate_dict):
         if tag == "not":
             assert len(args) == 1
             return parse_condition_aux(
-                args[0], not negated, type_dict, predicate_dict)
+                args[0], not negated, type_dict, predicate_dict,
+                allow_quantifiers)
     elif tag in ("forall", "exists"):
         parameters = parse_typed_list(alist[1])
         args = alist[2:]
@@ -108,12 +117,15 @@ def parse_condition_aux(alist, negated, type_dict, predicate_dict):
 
     if tag == "imply":
         parts = [parse_condition_aux(
-                args[0], not negated, type_dict, predicate_dict),
+                args[0], not negated, type_dict, predicate_dict,
+                allow_quantifiers),
                  parse_condition_aux(
-                args[1], negated, type_dict, predicate_dict)]
+                args[1], negated, type_dict, predicate_dict,
+                allow_quantifiers)]
         tag = "or"
     else:
-        parts = [parse_condition_aux(part, negated, type_dict, predicate_dict)
+        parts = [parse_condition_aux(part, negated, type_dict, predicate_dict,
+                                     allow_quantifiers)
                  for part in args]
 
     if tag == "and" and not negated or tag == "or" and negated:
@@ -354,8 +366,23 @@ def parse_axiom(alist, type_dict, predicate_dict):
     assert len(alist) == 3
     assert alist[0] == ":derived"
     predicate = parse_predicate(alist[1])
+    declared = predicate_dict.get(predicate.name)
+    if declared is None:
+        raise SystemExit(
+            "error: derived predicate '%s' is not declared in :predicates"
+            % predicate.name)
+    if declared.get_arity() != predicate.get_arity():
+        raise SystemExit(
+            "error: axiom head (%s) does not match the declared arity %d of "
+            "predicate '%s'" % (" ".join(alist[1]), declared.get_arity(),
+                                predicate.name))
+    parameter_names = [p.name for p in predicate.arguments]
+    if len(set(parameter_names)) != len(parameter_names):
+        raise SystemExit(
+            "error: axiom head (%s) repeats a parameter"
+            % " ".join(alist[1]))
     condition = parse_condition(
-        alist[2], type_dict, predicate_dict)
+        alist[2], type_dict, predicate_dict, allow_quantifiers=True)
     return pddl.Axiom(predicate.name, predicate.arguments,
                       len(predicate.arguments), condition)
 
@@ -452,10 +479,8 @@ def parse_domain_pddl(domain_pddl):
     the_actions = []
     for entry in entries:
         if entry[0] == ":derived":
-            #axiom = parse_axiom(entry, type_dict, predicate_dict)
-            #the_axioms.append(axiom)
-            print("ERROR: Derived predicates are not supported.", file=sys.stderr)
-            sys.exit(-1)
+            axiom = parse_axiom(entry, type_dict, predicate_dict)
+            the_axioms.append(axiom)
         else:
             action = parse_action(entry, type_dict, predicate_dict)
             if action is not None:

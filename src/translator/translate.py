@@ -17,6 +17,7 @@ def python_version_supported():
 if not python_version_supported():
     sys.exit("Error: Translator only supports Python >= 2.7 and Python >= 3.2.")
 
+import axiom_rules
 import compile_types
 import complete_state
 import normalize
@@ -58,6 +59,16 @@ def main():
     print('Processing task', task.task_name)
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
+
+    with timers.timing("Validating axioms"):
+        axiom_rules.validate_axioms(task)
+        axiom_strata, num_strata = axiom_rules.compute_axiom_strata(task)
+        for pred in task.predicates:
+            if pred.name in axiom_strata:
+                pred.set_derived()
+    if task.axioms and options.ground_state_representation:
+        sys.exit("error: axioms are not supported with the ground state "
+                 "representation")
 
     if options.unit_cost:
         with timers.timing("Transforming into unit cost task"):
@@ -136,6 +147,10 @@ def main():
 
     with timers.timing("Printing action schemas"):
         print_action_schemas(output, task, object_index, predicate_index, type_index)
+
+    with timers.timing("Printing axioms"):
+        print_axioms(output, task, object_index, predicate_index, type_index,
+                     axiom_strata, num_strata)
 
     print("Total translation time:", timer.get_cpu_time())
 
@@ -255,6 +270,78 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
                   file=output)
 
 
+def print_axioms(output, task, object_index, predicate_index, type_index,
+                 axiom_strata, num_strata):
+    # Axioms (derived predicates) are defined as follows:
+    # - First, a canary, the number of axioms and the number of strata.
+    # - Then a list of axioms, sorted by stratum, each one having
+    #    - name of the head (derived) predicate
+    #    - index of the head predicate
+    #    - stratum index of the head predicate
+    #    - number of head parameters (= arity of the head predicate)
+    #    - number of existential parameters (variables occurring only in the
+    #      body; they are implicitly existentially quantified)
+    #    - size of the body
+    # - Then we list all parameters (head parameters first, followed by the
+    # existential parameters), one per line, containing
+    #    - parameter name
+    #    - parameter index
+    #    - index of the parameter type
+    # The head atom is implicitly the head predicate applied to parameters
+    # 0, ..., arity - 1.
+    # - We then list all body atoms, one per line, using the same encoding as
+    # action preconditions:
+    #    - predicate name
+    #    - predicate index
+    #    - boolean variable saying if it is negated or not (only '='
+    #      literals, i.e., equalities and inequalities, can be negated)
+    #    - number of predicate arguments
+    #    - list of pairs in the format (O, i), where O is 'c' if it is a
+    # constant and 'p' if it is a parameter. In the case it is a constant,
+    # 'i' is its object index; otherwise it is the parameter index.
+    axioms = sorted(task.axioms,
+                    key=lambda ax: (axiom_strata[ax.name], ax.name))
+    print("AXIOMS %d %d" % (len(axioms), num_strata), file=output)
+    for axiom in axioms:
+        assert axiom.num_external_parameters == \
+            len(axiom.parameters[:axiom.num_external_parameters])
+        parameter_names = [p.name for p in axiom.parameters]
+        assert len(set(parameter_names)) == len(parameter_names), \
+            "Axiom parameters are not unique: %s" % parameter_names
+        condition = axiom.condition
+        if isinstance(condition, pddl.Literal):
+            body = [condition]
+        elif isinstance(condition, pddl.Truth):
+            body = []
+        else:
+            assert isinstance(condition, pddl.Conjunction)
+            body = list(condition.parts)
+        num_head_params = axiom.num_external_parameters
+        num_existential = len(axiom.parameters) - num_head_params
+        print(axiom.name, predicate_index[axiom.name],
+              axiom_strata[axiom.name], num_head_params, num_existential,
+              len(body), file=output)
+        parameter_index = {}
+        for index, par in enumerate(axiom.parameters):
+            parameter_index[par.name] = index
+            print(par.name, index, type_index[par.type_name], file=output)
+        for literal in sorted(body):
+            assert isinstance(literal, pddl.Literal)
+            assert not literal.negated or literal.predicate == "=", \
+                "Non-equality negated literal in axiom body: %s" % literal
+            args_list = []
+            for x in literal.args:
+                if x in parameter_index:
+                    args_list += ['p', str(parameter_index[x])]
+                else:
+                    args_list += ['c', str(object_index[x])]
+            print(literal.predicate, predicate_index[literal.predicate],
+                  int(literal.negated),
+                  len(literal.args),
+                  ' '.join(args_list),
+                  file=output)
+
+
 def print_goal(output, task, atom_index, object_index, predicate_index):
     # Print canary and the number of atoms in the goal, the output of each
     # individual goal atom depends on the representation we are using. See below
@@ -332,12 +419,15 @@ def print_predicates(output, task, predicate_index, type_index):
     #      - J, its predicate index,
     #      - N, its arity and then N numbers,
     #      - S, a boolean value indicating if the predicate is static or not
-    #      - (if it is not static) a sequence of N type indices,
-    # corresponding to the indices of the predicate arguments
+    #      - D, a boolean value indicating if the predicate is derived
+    #        (defined by axioms) or not
+    #      - a sequence of N type indices, corresponding to the indices of
+    # the predicate arguments (all 'object' if the predicate is static)
     print("PREDICATES %d" % len(task.predicates), file=output)
     for index, p in enumerate(task.predicates):
         predicate_index[p.name] = index
-        print("%s %d %d %d" % (p.name, index, len(p.arguments), p.static), file=output)
+        print("%s %d %d %d %d" % (p.name, index, len(p.arguments), p.static,
+                                  p.derived), file=output)
         if not p.static:
             # If p is fluent, then we care about the types of its parameters
             args = []
@@ -471,7 +561,7 @@ def output_trivially_solvable_task():
     SPARSE-REPRESENTATION
     TYPES 0
     PREDICATES 1
-    dummy 0 0 0
+    dummy 0 0 0 0
 
     OBJECTS 0
 
@@ -479,7 +569,8 @@ def output_trivially_solvable_task():
     dummy() 0 0 0 0
     GOAL 1
     dummy() 0 0 0
-    ACTION-SCHEMAS 0"""
+    ACTION-SCHEMAS 0
+    AXIOMS 0 0"""
     print("Printing a trivially solvable task.", file=native_stdout)
     print(dummy_task)
     return
@@ -490,14 +581,15 @@ def output_trivially_unsolvable_task():
     SPARSE-REPRESENTATION
     TYPES 0
     PREDICATES 1
-    dummy 0 0 0
+    dummy 0 0 0 0
 
     OBJECTS 0
 
     INITIAL-STATE 0
     GOAL 1
     dummy() 0 0 0
-    ACTION-SCHEMAS 0"""
+    ACTION-SCHEMAS 0
+    AXIOMS 0 0"""
     print("Printing a trivially unsolvable task.", file=native_stdout)
     print(dummy_task)
     return
