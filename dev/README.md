@@ -29,6 +29,16 @@ correctness regressions quickly before running larger experiments elsewhere.
 4. Novelty / width-based smoke tests.
    These tests evaluate `bfws1`, `bfws1-rx`, `alt-bfws1`, and `dq-bfws1-rx`,
    including the novelty-related command-line flags.
+5. Axiom (derived predicate) tests.
+   The `axioms-*` domains cover recursion, multiple strata, existential body
+   variables, constants and inequalities in axiom bodies, disjunctive goals,
+   and derived predicates in goals and preconditions, across generators and
+   heuristics (with pinned initial heuristic values). An exhaustive
+   unsolvable instance checks that derived atoms do not pollute duplicate
+   detection, `axioms-invalid/` checks that the translator rejects tasks
+   outside the supported fragment, and the stratification check has unit
+   tests in `src/translator/tests/`. When `DOWNWARD_BENCHMARKS` is set, the
+   four IPC domains with derived predicates are checked for clean rejection.
 
 The local suite does not try to be exhaustive. The tests are also quite superficial,
 and full experiments should be always used.
