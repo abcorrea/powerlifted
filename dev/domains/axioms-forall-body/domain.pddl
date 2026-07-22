@@ -1,9 +1,8 @@
-;; Invalid: a universally quantified axiom body normalizes to a negated
-;; auxiliary derived predicate, which is outside the supported fragment
-;; (this mirrors the 'blocked' axiom of the IPC philosophers domain).
-;; The translator must reject this domain.
+;; A universally quantified axiom body (this mirrors the 'blocked' axiom of
+;; the IPC philosophers domain): (all-marked) normalizes to the negation of
+;; an auxiliary derived predicate whose body has a negated fluent.
 
-(define (domain axioms-invalid-forall-body)
+(define (domain axioms-forall-body)
   (:requirements :strips :typing :derived-predicates)
   (:types item - object)
   (:predicates

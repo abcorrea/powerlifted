@@ -31,14 +31,24 @@ correctness regressions quickly before running larger experiments elsewhere.
    including the novelty-related command-line flags.
 5. Axiom (derived predicate) tests.
    The `axioms-*` domains cover recursion, multiple strata, existential body
-   variables, constants and inequalities in axiom bodies, disjunctive goals,
-   and derived predicates in goals and preconditions, across generators and
-   heuristics (with pinned initial heuristic values). An exhaustive
-   unsolvable instance checks that derived atoms do not pollute duplicate
-   detection, `axioms-invalid/` checks that the translator rejects tasks
-   outside the supported fragment, and the stratification check has unit
-   tests in `src/translator/tests/`. When `DOWNWARD_BENCHMARKS` is set, the
-   four IPC domains with derived predicates are checked for clean rejection.
+   variables, constants and inequalities in axiom bodies, disjunctive and
+   quantified goals, stratified negation (negated fluent and derived atoms
+   in axiom bodies, negated derived preconditions), and derived predicates
+   in goals and preconditions, across generators and heuristics (with
+   pinned initial heuristic values). Exhaustive unsolvable instances check
+   that derived atoms do not pollute duplicate detection, `axioms-invalid/`
+   checks that the translator rejects tasks outside the supported fragment
+   (including non-stratifiable axiom sets), and the stratification check
+   has unit tests in `src/translator/tests/`. When `DOWNWARD_BENCHMARKS`
+   is set, philosophers and optical-telegraphs are solved end to end with
+   costs cross-checked against Fast Downward, and the psr domains are
+   checked for clean rejection.
+6. Negated-precondition and quantified-precondition tests.
+   `negated-preconditions/` covers negated fluent/static preconditions and
+   negated goals; `forall-preconditions/` covers universally and
+   existentially quantified action preconditions (including plan printing
+   of actions with non-external parameters); `inequality/` is a regression
+   test for (in)equality filters on single-table join programs.
 
 The local suite does not try to be exhaustive. The tests are also quite superficial,
 and full experiments should be always used.

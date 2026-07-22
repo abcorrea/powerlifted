@@ -29,10 +29,12 @@ uniq_fresh_var_id = naturals_iterator()
 
 def is_tag_supported(tag, allow_quantifiers=False):
     if allow_quantifiers and tag in ("forall", "exists"):
-        # Quantifiers are allowed in axiom bodies: existentials are compiled
-        # into extra axiom parameters and universals into auxiliary axioms by
-        # the normalization pipeline. (The resulting axioms must still fall
-        # into the supported fragment, which is checked after normalization.)
+        # Quantifiers are allowed in conditions (axiom bodies, action
+        # preconditions, goals): existentials are compiled into extra
+        # parameters and universals into auxiliary axioms by the
+        # normalization pipeline. (The result must still fall into the
+        # supported fragment, which is checked after normalization.) They
+        # remain unsupported in effects.
         return
     if tag in UNSUPPORTED_FEATURES:
         print('ERROR: PDDL feature "%s" not supported yet.' % tag, file=sys.stderr)
@@ -339,7 +341,8 @@ def parse_action(alist, type_dict, predicate_dict):
             precondition = pddl.Conjunction([])
         else:
             precondition = parse_condition(
-                precondition_list, type_dict, predicate_dict)
+                precondition_list, type_dict, predicate_dict,
+                allow_quantifiers=True)
         effect_tag = next(iterator)
     else:
         precondition = pddl.Conjunction([])
@@ -557,7 +560,8 @@ def parse_task_pddl(task_pddl, type_dict, predicate_dict):
 
     goal = next(iterator)
     assert goal[0] == ":goal" and len(goal) == 2
-    yield parse_condition(goal[1], type_dict, predicate_dict)
+    yield parse_condition(goal[1], type_dict, predicate_dict,
+                          allow_quantifiers=True)
 
     use_metric = False
     for entry in iterator:

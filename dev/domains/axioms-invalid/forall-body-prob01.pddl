@@ -1,6 +1,0 @@
-(define (problem axioms-invalid-forall-body-01)
-  (:domain axioms-invalid-forall-body)
-  (:objects c1 c2 - item)
-  (:init)
-  (:goal (done))
-)
