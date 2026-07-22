@@ -3,6 +3,7 @@
 #include "generic_join_successor.h"
 
 #include "../action_schema.h"
+#include "../axiom_evaluator.h"
 #include "../database/hash_join.h"
 #include "../database/table.h"
 #include "../states/state.h"
@@ -15,7 +16,9 @@
 using namespace std;
 
 GenericJoinSuccessor::GenericJoinSuccessor(const Task &task)
-    : static_information(task.get_static_info()), is_predicate_static(), action_data()
+    : static_information(task.get_static_info()),
+      axiom_evaluator(task.get_axiom_evaluator()),
+      is_predicate_static(), action_data()
 {
     is_predicate_static.reserve(static_information.get_relations().size());
     for (const auto &r : static_information.get_relations()) {
@@ -40,7 +43,7 @@ Table GenericJoinSuccessor::instantiate(const ActionSchema &action,
     if (!res) return Table::EMPTY_TABLE();
 
     assert(!tables.empty());
-    assert(tables.size() == actiondata.relevant_precondition_atoms.size());
+    assert(tables.size() == actiondata.relevant_atoms.size());
 
     Table &working_table = tables[0];
     std::vector<bool> applied(action.get_static_precondition().size(), false);
@@ -60,120 +63,10 @@ void GenericJoinSuccessor::filter_static(const ActionSchema &action,
                                          Table &working_table,
                                          std::vector<bool> &applied)
 {
-    const auto& tup_idx = working_table.tuple_index;
-
-    const auto &static_precond = action.get_static_precondition();
-    for (size_t k = 0; k < static_precond.size(); ++k) {
-        // Once a precondition has been enforced, every later join only adds
-        // columns and recombines surviving tuples, so the constrained columns
-        // keep their (already valid) values — re-filtering is a guaranteed
-        // no-op. Skip the ones already applied in an earlier join iteration.
-        if (applied[k]) continue;
-        const Atom &atom = static_precond[k];
-        const std::vector<Argument> &args = atom.get_arguments();
-        bool is_equality = true;
-        // TODO: for now, we assume all static preconditions are
-        //       (in)equalities. This may change in future
-        if (is_equality){
-            assert(args.size() == 2);
-            if (args[0].is_constant() && args[1].is_constant()){
-                bool is_equal = (args[0].get_index() == args[1].get_index());
-
-                // Independent of the table columns, so its result is final.
-                applied[k] = true;
-                if ((atom.is_negated() && is_equal)
-                        || (!atom.is_negated() && !is_equal)){
-                    working_table.tuples.clear();
-                    return;
-                }
-
-            }else if (args[0].is_constant() || args[1].is_constant()){
-                int param_idx = -1;
-                int const_idx = -1;
-                if (args[0].is_constant()){
-                    const_idx = args[0].get_index();
-                    param_idx = args[1].get_index();
-                }else{
-                    const_idx = args[1].get_index();
-                    param_idx = args[0].get_index();
-                }
-                auto it = find(tup_idx.begin(), tup_idx.end(), param_idx);
-                if (it != tup_idx.end()){
-                    int index = distance(tup_idx.begin(), it);
-
-                    vector<Table::tuple_t> newtuples;
-                    for (const auto &t : working_table.tuples) {
-                        if ((atom.is_negated() && t[index] != const_idx)
-                                || (!atom.is_negated() && t[index] == const_idx)){
-                            newtuples.push_back(t);
-                        }
-                    }
-                    working_table.tuples = std::move(newtuples);
-                    applied[k] = true;
-                }
-
-            }else{ // !args[0].is_constant() && !args[1].is_constant()
-                // TODO Revise this, looks that some work could be offloaded to preprocessing so that we
-                //      do not need to do all this linear-time finds at runtime?
-                auto it_1 = find(tup_idx.begin(), tup_idx.end(), args[0].get_index());
-                auto it_2 = find(tup_idx.begin(), tup_idx.end(), args[1].get_index());
-
-                if (it_1 != tup_idx.end() and it_2 != tup_idx.end()) {
-                    int index1 = distance(tup_idx.begin(), it_1);
-                    int index2 = distance(tup_idx.begin(), it_2);
-
-                    vector<Table::tuple_t> newtuples;
-                    for (const auto &t : working_table.tuples) {
-                        if ((atom.is_negated() && t[index1] != t[index2])
-                                || (!atom.is_negated() && t[index1] == t[index2])){
-                            newtuples.push_back(t);
-                        }
-                    }
-                    working_table.tuples = std::move(newtuples);
-                    applied[k] = true;
-                }
-            }
-        }
-
-    }
-}
-
-void GenericJoinSuccessor::get_indices_and_constants_in_preconditions(vector<int> &indices,
-                                                                      vector<int> &constants,
-                                                                      const Atom &a)
-{
-    int cont = 0;
-    for (Argument arg : a.get_arguments()) {
-        if (!arg.is_constant())
-            indices.push_back(arg.get_index());
-        else {
-            indices.push_back((arg.get_index() + 1) * -1);
-            constants.push_back(cont);
-        }
-        cont++;
-    }
-}
-
-/*
- * Select only those tuples matching the constants of a partially grounded
- * precondition.
- */
-void GenericJoinSuccessor::select_tuples(const DBState &s,
-                                         const Atom &a,
-                                         std::vector<GroundAtom> &tuples,
-                                         const std::vector<int> &constants)
-{
-    for (const GroundAtom &atom : s.get_relations()[a.get_predicate_symbol_idx()].tuples) {
-        bool match_constants = true;
-        for (int c : constants) {
-            assert(a.get_arguments()[c].is_constant());
-            if (atom[c] != a.get_arguments()[c].get_index()) {
-                match_constants = false;
-                break;
-            }
-        }
-        if (match_constants) tuples.push_back(atom);
-    }
+    // TODO: for now, we assume all static preconditions are
+    //       (in)equalities. This may change in future
+    join_program::filter_equalities(action.get_static_precondition(),
+                                    working_table, applied);
 }
 
 std::vector<PrecompiledActionData>
@@ -187,12 +80,14 @@ GenericJoinSuccessor::precompile_action_data(const std::vector<ActionSchema>& ac
 }
 
 PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionSchema& action) {
-    PrecompiledActionData data;
+    if (action.get_parameters().empty()) {
+        // We won't need anything from this action
+        PrecompiledActionData data;
+        data.is_ground = true;
+        return data;
+    }
 
-    data.is_ground = action.get_parameters().empty();
-    if (data.is_ground) return data; // We won't need anything from this action
-
-
+    vector<Atom> relevant_atoms;
     for (const Atom &p : action.get_precondition()) {
         bool is_ineq = (p.get_name() == "=");
         if (p.is_negated() and !is_ineq) {
@@ -201,43 +96,15 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
 
         // Nullary atoms are handled differently, they don't result in DB tables
         if (!p.is_ground() and !is_ineq) {
-            data.relevant_precondition_atoms.push_back(p);
+            relevant_atoms.push_back(p);
         }
     }
 
     // TODO (GFM): Not sure why this assert is here and why should we fail for it :-)
-    assert(!data.relevant_precondition_atoms.empty());
+    assert(!relevant_atoms.empty());
 
-    // Create N empty tables
-    data.precompiled_db.resize(data.relevant_precondition_atoms.size());
-
-    for (std::size_t i = 0; i < data.relevant_precondition_atoms.size(); ++i) {
-        const Atom &atom = data.relevant_precondition_atoms[i];
-
-        if (!is_static(atom.get_predicate_symbol_idx())) {
-            // If the atom is fluent, we just flag it as such and we're done: we'll have to deal
-            // with it during search time
-            data.fluent_tables.push_back(i);
-            continue;
-        }
-
-        // Otherwise the atom is static, so we precompile the table corresponding to it
-        vector<GroundAtom> tuples;
-        vector<int> constants, indices;
-
-        get_indices_and_constants_in_preconditions(indices, constants, atom);
-
-        select_tuples(static_information, atom, tuples, constants);
-
-        if (tuples.empty()) {
-            data.statically_inapplicable = true;
-            return data;
-        }
-
-        data.precompiled_db[i] = Table(std::move(tuples), std::move(indices));
-    }
-
-    return data;
+    return join_program::precompile(std::move(relevant_atoms),
+                                    is_predicate_static, static_information);
 }
 
 
@@ -245,41 +112,7 @@ PrecompiledActionData GenericJoinSuccessor::precompile_action_data(const ActionS
 bool GenericJoinSuccessor::parse_precond_into_join_program(
     const PrecompiledActionData &adata, const DBState &state, std::vector<Table>& tables)
 {
-    /*
-     * Parse the state and the atom preconditions into a set of tables
-     * to perform the join-program more easily.
-     *
-     * We first obtain all indices in the precondition that are constants.
-     * Then, we create the table applying the projection over the arguments
-     * that satisfy the instantiation of the constants. There are two cases
-     * for the projection:
-     *    1. The table comes from the static information; or
-     *    2. The table comes directly from the current state.
-     *
-     */
-    if (adata.statically_inapplicable) return false;
-
-    tables = adata.precompiled_db;  // This performs the copy that we'll return
-    for (unsigned i:adata.fluent_tables) {
-        // Let's fill in those (currently empty) tables that correspond to
-        // fluent symbols in the precondition
-        const Atom &atom = adata.relevant_precondition_atoms[i];
-        assert(!is_static(atom.get_predicate_symbol_idx()));
-
-        vector<GroundAtom> tuples;
-        vector<int> constants, indices;
-
-        // TODO the call next line should be performed at preprocessing as well. We should keep in
-        //      adata the vector of constants and indices *for each precondition atom*
-        get_indices_and_constants_in_preconditions(indices, constants, atom);
-        select_tuples(state, atom, tuples, constants);
-
-        if (tuples.empty()) return false;
-
-        tables[i] = Table(std::move(tuples), std::move(indices));
-    }
-
-    return true;
+    return join_program::fill_tables(adata, state, tables);
 }
 
 
@@ -359,7 +192,15 @@ DBState GenericJoinSuccessor::generate_successor(
                                     new_relation, op.get_fresh_vars_mapping());
     }
 
-    return DBState(std::move(new_relation), std::move(new_nullary_atoms), state.get_number_objects()+action.get_fresh_variables().size());
+    DBState successor(std::move(new_relation), std::move(new_nullary_atoms),
+                      state.get_number_objects()+action.get_fresh_variables().size());
+    // Recompute the derived predicates: the relations copied from the parent
+    // contain the parent's derived atoms, which the evaluator discards and
+    // rederives from the new fluents. Every state that leaves the successor
+    // generator is therefore fully evaluated, which the packed (duplicate
+    // detection) representation relies on.
+    axiom_evaluator.evaluate(successor);
+    return successor;
 }
 
 void GenericJoinSuccessor::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,

@@ -224,7 +224,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     if (!res) return Table::EMPTY_TABLE();
 
     assert (!tables.empty());
-    assert(tables.size() == actiondata.relevant_precondition_atoms.size());
+    assert(tables.size() == actiondata.relevant_atoms.size());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = hash_semi_join(tables[sj.second], tables[sj.first]);
