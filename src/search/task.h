@@ -3,6 +3,7 @@
 
 #include "action_schema.h"
 #include "axiom.h"
+#include "axiom_evaluator.h"
 #include "goal_condition.h"
 #include "object.h"
 #include "predicate.h"
@@ -39,6 +40,7 @@ public:
     StaticInformation static_info;
     std::vector<Axiom> axioms;
     int number_of_axiom_strata = 0;
+    AxiomEvaluator axiom_evaluator;
 
     Task(const std::string &domain_name, const std::string &task_name)
         : domain_name(domain_name), task_name(task_name) {
@@ -66,6 +68,19 @@ public:
 
     const std::vector<Axiom> &get_axioms() const {
         return axioms;
+    }
+
+    //! Precompile the axiom join programs and evaluate the derived
+    //! predicates of the initial state. Must be called once the predicates,
+    //! static information, initial state and axioms have all been parsed.
+    void initialize_axiom_evaluator() {
+        axiom_evaluator = AxiomEvaluator(axioms, number_of_axiom_strata,
+                                         predicates, static_info);
+        axiom_evaluator.evaluate(initial_state);
+    }
+
+    const AxiomEvaluator &get_axiom_evaluator() const {
+        return axiom_evaluator;
     }
 
     void add_object(const std::string &name, int index,

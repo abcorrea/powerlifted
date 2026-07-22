@@ -6,15 +6,21 @@
 #include "../atom.h"
 #include "../structures.h"
 
+#include "../database/join_program.h"
+
 #include <map>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-class PrecompiledActionData;
+class AxiomEvaluator;
 class Task;
-class Table;
+
+//! Precompiled join-program data of an action schema precondition; the
+//! shared machinery lives in database/join_program.h so that axiom bodies
+//! are evaluated with the same code.
+using PrecompiledActionData = PrecompiledJoinProgram;
 
 /**
  * This class is not a successor generator per se. It just contain most of the common functions
@@ -82,21 +88,15 @@ public:
 protected:
     const StaticInformation& static_information;
 
+    //! Evaluator recomputing the derived predicates of every successor state.
+    const AxiomEvaluator& axiom_evaluator;
+
     std::vector<bool> is_predicate_static;
 
     //! Some data relevant to each action schema, indexed by schema index
     std::vector<PrecompiledActionData> action_data;
 
     bool is_static(size_t i) const { return is_predicate_static[i]; }
-
-    static void get_indices_and_constants_in_preconditions(std::vector<int> &indices,
-                                                           std::vector<int> &constants,
-                                                           const Atom &a);
-
-    static void select_tuples(const DBState &s,
-                              const Atom &a,
-                              std::vector<GroundAtom> &tuples,
-                              const std::vector<int> &constants);
 
     static void filter_static(const ActionSchema &action,
                               Table &working_table,
@@ -140,30 +140,6 @@ protected:
     static void compute_map_indices_to_table_positions(const Table &instantiations,
                                                        std::vector<int> &free_var_indices,
                                                        std::vector<int> &map_indices_to_position) ;
-};
-
-class PrecompiledActionData {
-public:
-    PrecompiledActionData() :
-        is_ground(false), statically_inapplicable(false),
-        relevant_precondition_atoms(), fluent_tables(),
-        precompiled_db()
-    {}
-
-    //! Whether the action has no parameters
-    bool is_ground;
-
-    //! Whether the schema is statically inapplicable
-    bool statically_inapplicable;
-
-    std::vector<Atom> relevant_precondition_atoms;
-
-    //! A list of the indices in `relevant_precondition_atoms` that correspond to fluent atoms,
-    //! and hence their tables need to be created for each state.
-    std::vector<unsigned> fluent_tables;
-
-    //! A set of tables with all static info precompiled for faster access at runtime
-    std::vector<Table> precompiled_db;
 };
 
 #endif //SEARCH_GENERIC_JOIN_SUCCESSOR_H

@@ -61,7 +61,7 @@ Table OrderedJoinSuccessorGenerator<OrderT>::instantiate(const ActionSchema &act
     if (!res) return Table::EMPTY_TABLE();
 
     assert(!tables.empty());
-    assert(tables.size() == actiondata.relevant_precondition_atoms.size());
+    assert(tables.size() == actiondata.relevant_atoms.size());
 
     Table &working_table = tables[order[0]];
     std::vector<bool> applied(action.get_static_precondition().size(), false);

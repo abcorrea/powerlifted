@@ -93,6 +93,8 @@ bool parse(Task &task, const ifstream &in)
          << number_axiom_strata << " strata" << endl;
     parse_axioms(task, number_axioms, number_axiom_strata);
 
+    task.initialize_axiom_evaluator();
+
     return true;
 }
 

@@ -75,6 +75,18 @@ public:
         relations[id].tuples.insert(ga);
     }
 
+    //! Insert a tuple and report whether it was new (used by the fixpoint
+    //! of the axiom evaluator).
+    bool insert_tuple_if_new(GroundAtom ga, int id) {
+        return relations[id].tuples.insert(std::move(ga)).second;
+    }
+
+    //! Drop all tuples of a relation (used to discard stale derived atoms
+    //! before re-evaluating the axioms).
+    void clear_relation(int id) {
+        relations[id].tuples.clear();
+    }
+
     void set_number_objects(int n) {
         num_objects = n;
     }

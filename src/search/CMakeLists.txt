@@ -15,6 +15,7 @@ set(CORE_SOURCES
         main.cc
         action.cc
         action_schema.cc
+        axiom_evaluator.cc
         hash_structures.cc
         parser.cc
         plan_manager.cc
@@ -26,6 +27,7 @@ set(CORE_SOURCES
 set(DATABASE_SOURCES
         database/hash_join.cc
         database/hash_semi_join.cc
+        database/join_program.cc
         database/project.cc
         database/table.cc
         database/utils.cc)
