@@ -1,0 +1,6 @@
+(define (problem axioms-invalid-not-stratifiable-01)
+  (:domain axioms-invalid-not-stratifiable)
+  (:objects c1 - item)
+  (:init)
+  (:goal (done))
+)

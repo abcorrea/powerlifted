@@ -60,6 +60,13 @@ def main():
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
 
+    with timers.timing("Removing actions with unsatisfiable preconditions"):
+        # Normalization (e.g. of quantified conditions) can simplify a
+        # precondition to falsity; such actions are never applicable, and
+        # keeping them would misread the empty condition as always true.
+        task.actions = [action for action in task.actions
+                        if not isinstance(action.precondition, pddl.Falsity)]
+
     with timers.timing("Validating axioms"):
         axiom_rules.validate_axioms(task)
         axiom_strata, num_strata = axiom_rules.compute_axiom_strata(task)
@@ -334,8 +341,6 @@ def print_axioms(output, task, object_index, predicate_index, type_index,
             print(par.name, index, type_index[par.type_name], file=output)
         for literal in sorted(body):
             assert isinstance(literal, pddl.Literal)
-            assert not literal.negated or literal.predicate == "=", \
-                "Non-equality negated literal in axiom body: %s" % literal
             args_list = []
             for x in literal.args:
                 if x in parameter_index:

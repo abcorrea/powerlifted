@@ -305,6 +305,116 @@ AXIOM_PLAN_TESTS = [
                     ('gbfs', 'add', 'full_reducer'),
                     ('gbfs', 'ff', 'full_reducer')],
     },
+    {
+        # Stratified negation: negated fluent in an axiom body, a negated
+        # derived predicate in an axiom body (three strata), and finish
+        # using the top-stratum derived predicate positively.
+        'instance': 'domains/axioms-negation/prob01.pddl',
+        'label': 'axioms-negation-01',
+        'cost': 2,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'yannakakis'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'ff', 'full_reducer')],
+    },
+    {
+        # Negated derived predicate in an action precondition.
+        'instance': 'domains/axioms-negation/prob02.pddl',
+        'label': 'axioms-negation-02',
+        'cost': 1,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'full_reducer')],
+    },
+    {
+        # rescue only before making c1 safe, finish only after.
+        'instance': 'domains/axioms-negation/prob03.pddl',
+        'label': 'axioms-negation-03',
+        'cost': 3,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('astar', 'blind', 'yannakakis'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('gbfs', 'hmax', 'full_reducer'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'rff', 'yannakakis')],
+        'required_output_by_config': {
+            ('gbfs', 'add', 'full_reducer'): ['Initial heuristic value 2'],
+            ('gbfs', 'hmax', 'full_reducer'): ['Initial heuristic value 1'],
+            ('gbfs', 'ff', 'full_reducer'): ['Initial heuristic value 2'],
+        },
+    },
+    {
+        # Universally quantified goal (negated auxiliary derived atom in
+        # the goal).
+        'instance': 'domains/axioms-negation/prob04.pddl',
+        'label': 'axioms-negation-04',
+        'cost': 2,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'add', 'yannakakis')],
+    },
+    {
+        # Universally quantified axiom body (the philosophers 'blocked'
+        # pattern): normalizes to negation over an auxiliary derived
+        # predicate with a negated fluent in its body.
+        'instance': 'domains/axioms-forall-body/prob01.pddl',
+        'label': 'axioms-forall-body-01',
+        'cost': 3,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'yannakakis'),
+                    ('gbfs', 'ff', 'full_reducer'),
+                    ('gbfs', 'add', 'full_reducer')],
+    },
+    {
+        # Universally quantified action precondition, no derived predicate
+        # in the PDDL at all.
+        'instance': 'domains/forall-preconditions/prob01.pddl',
+        'label': 'forall-preconditions-01',
+        'cost': 3,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'full_reducer'),
+                    ('gbfs', 'ff', 'yannakakis'),
+                    ('gbfs', 'add', 'full_reducer')],
+    },
+    {
+        # Existentially quantified action precondition: the extra parameter
+        # of grab is not external, so the plan prints (grab) without
+        # arguments and must still validate.
+        'instance': 'domains/forall-preconditions/prob02.pddl',
+        'label': 'forall-preconditions-02',
+        'cost': 2,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'yannakakis'),
+                    ('gbfs', 'ff', 'full_reducer')],
+    },
+]
+
+# The IPC derived-predicate domains that fall inside the supported fragment
+# end to end (stratified negation plus quantified preconditions and goals).
+# Optimal costs verified with Fast Downward (blind A*). Only run when the
+# benchmarks are available.
+IPC_AXIOM_PLAN_TESTS = [
+    {
+        'instance': 'philosophers/p01-phil2.pddl',
+        'label': 'ipc-philosophers-p01',
+        'cost': 18,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'yannakakis'),
+                    ('gbfs', 'ff', 'yannakakis')],
+    },
+    {
+        'instance': 'optical-telegraphs/p01-opt2.pddl',
+        'label': 'ipc-optical-telegraphs-p01',
+        'cost': 28,
+        'validate': True,
+        'configs': [('gbfs', 'ff', 'yannakakis')],
+    },
 ]
 
 # Exhaustive searches with a known reachable state count: derived atoms are
@@ -359,22 +469,10 @@ UNSOLVABLE_TESTS = [
 # them with an informative message (and a non-zero exit code).
 TRANSLATOR_REJECTION_TESTS = [
     {
-        'name': 'axioms-negated-body',
-        'domain': 'domains/axioms-invalid/negated-body-domain.pddl',
-        'instance': 'domains/axioms-invalid/negated-body-prob01.pddl',
-        'expected_text': 'contains the negated atom',
-    },
-    {
-        'name': 'axioms-forall-body',
-        'domain': 'domains/axioms-invalid/forall-body-domain.pddl',
-        'instance': 'domains/axioms-invalid/forall-body-prob01.pddl',
-        'expected_text': 'negation over the derived predicate',
-    },
-    {
-        'name': 'axioms-negated-derived-precond',
-        'domain': 'domains/axioms-invalid/negated-derived-precond-domain.pddl',
-        'instance': 'domains/axioms-invalid/negated-derived-precond-prob01.pddl',
-        'expected_text': 'negated derived predicate',
+        'name': 'axioms-not-stratifiable',
+        'domain': 'domains/axioms-invalid/not-stratifiable-domain.pddl',
+        'instance': 'domains/axioms-invalid/not-stratifiable-prob01.pddl',
+        'expected_text': 'not stratifiable',
     },
     {
         'name': 'axioms-derived-in-effect',
@@ -390,24 +488,11 @@ TRANSLATOR_REJECTION_TESTS = [
     },
 ]
 
-# The four IPC domains with derived predicates all fall outside the
-# supported fragment (negation over derived predicates after normalization,
-# or quantified action conditions); they must be rejected cleanly. Only run
-# when the benchmarks are available.
+# The psr domains still fall outside the supported fragment: their wait
+# action has a universally quantified conditional effect. They must be
+# rejected cleanly. Only run when the benchmarks are available.
 DOWNWARD_BENCHMARKS = os.environ.get('DOWNWARD_BENCHMARKS')
 IPC_AXIOM_REJECTION_TESTS = [
-    {
-        'name': 'ipc-philosophers',
-        'domain': 'philosophers/domain.pddl',
-        'instance': 'philosophers/p01-phil2.pddl',
-        'expected_text': 'not supported',
-    },
-    {
-        'name': 'ipc-optical-telegraphs',
-        'domain': 'optical-telegraphs/domain.pddl',
-        'instance': 'optical-telegraphs/p01-opt2.pddl',
-        'expected_text': 'not supported',
-    },
     {
         'name': 'ipc-psr-middle',
         'domain': 'psr-middle/domain.pddl',
@@ -945,12 +1030,18 @@ if __name__ == '__main__':
         results.append(run_translator_rejection_test(
             rejection_test, BASEDIR / 'dev'))
     if DOWNWARD_BENCHMARKS:
+        ipc_plan_tests = []
+        for test in IPC_AXIOM_PLAN_TESTS:
+            resolved = dict(test)
+            resolved['instance'] = str(
+                Path(DOWNWARD_BENCHMARKS) / test['instance'])
+            ipc_plan_tests.append(resolved)
+        run_plan_test_cases(results, ipc_plan_tests)
         for rejection_test in IPC_AXIOM_REJECTION_TESTS:
             results.append(run_translator_rejection_test(
                 rejection_test, Path(DOWNWARD_BENCHMARKS)))
     else:
-        print("Skipping IPC axiom rejection tests "
-              "(DOWNWARD_BENCHMARKS not set).")
+        print("Skipping IPC axiom tests (DOWNWARD_BENCHMARKS not set).")
 
     for unit_test in UNIT_TESTS:
         results.append(run_unit_test(unit_test))

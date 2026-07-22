@@ -31,7 +31,15 @@ class PreconditionProxy(ConditionProxy):
         rule_body = condition_to_rule_body(action.parameters, self.condition, add_inequalities)
         rules.append((rule_body, rule_head, action))
     def get_type_map(self):
-        return self.owner.type_map
+        # Powerlifted actions do not uniquify their variables upfront
+        # (Action.uniquify_variables is disabled), so collect the type map
+        # here: the action parameters plus the quantifier-bound variables of
+        # the precondition. Storing the re-uniquified condition also renames
+        # any bound variable that shadows an action parameter.
+        type_map = dict((par.name, par.type_name)
+                        for par in self.owner.parameters)
+        self.set(self.condition.uniquify_variables(type_map))
+        return type_map
 
 class EffectConditionProxy(ConditionProxy):
     def __init__(self, action, effect):

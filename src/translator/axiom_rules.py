@@ -2,16 +2,19 @@
 
 """Validation and stratification of axioms (derived predicates).
 
-Powerlifted currently supports the following axiom fragment: after
-normalization, every axiom body must be a conjunction of positive atoms,
-possibly with (in)equality literals over '='. Variables occurring only in the
-body are implicitly existentially quantified (they have been turned into
-axiom parameters by the normalization). Positive recursion is allowed.
+Powerlifted supports stratifiable axiom sets whose normalized bodies are
+conjunctions of literals (positive or negated atoms, plus (in)equality
+literals over '='). Variables occurring only in the body are implicitly
+existentially quantified (they have been turned into axiom parameters by
+the normalization). Positive recursion is allowed; negation is evaluated as
+negation as failure with respect to strictly lower strata. Derived
+predicates may appear negated in action preconditions and in the goal
+(those occurrences do not constrain the stratification, since states are
+fully evaluated before applicability and goal tests).
 
-Everything else -- in particular any negated atom in an axiom body, and any
-negated occurrence of a derived predicate in action preconditions or in the
-goal -- is rejected here with an error message. The search component relies
-on this module being the gatekeeper.
+Axiom bodies that are not conjunctions of literals after normalization, and
+axiom sets that are not stratifiable, are rejected here with an error
+message. The search component relies on this module being the gatekeeper.
 
 The stratifiability check implements the standard condition (see Thiebaux,
 Hoffmann & Nebel, "In Defense of PDDL Axioms", AIJ 2005): build the
@@ -19,10 +22,9 @@ dependency graph over derived predicates, with an edge q -> p whenever q
 occurs in the body of an axiom with head p, labeled negative if q occurs
 negated. The axiom set is stratifiable iff no strongly connected component
 contains a negative edge. Each derived predicate is assigned a stratum index
-(a topological level of the SCC condensation); axioms are evaluated stratum
-by stratum in the search component. With the positive-only fragment the
-check trivially succeeds, but the general check is implemented (and unit
-tested) so that support for negation can slot into it later.
+(a topological level of the SCC condensation, with negated dependencies in
+strictly lower strata); axioms are evaluated stratum by stratum in the
+search component.
 """
 
 from collections import defaultdict
@@ -80,67 +82,18 @@ def _axiom_body_literals(axiom, task):
 def validate_axioms(task):
     """Check that all axioms fall into the supported fragment.
 
-    Must be called after normalization. Axioms whose body simplified to
-    falsity can never fire and are removed from the task.
+    Must be called after normalization: every axiom body must be a
+    conjunction of literals (checked by _axiom_body_literals). Axioms whose
+    body simplified to falsity can never fire and are removed from the task.
     """
-    derived = get_derived_predicates(task)
-
     kept_axioms = []
     for axiom in task.axioms:
         if isinstance(axiom.condition, pddl.Falsity):
             # The body is unsatisfiable; the axiom can never derive anything.
             continue
-        for literal in _axiom_body_literals(axiom, task):
-            if literal.negated and literal.predicate != "=":
-                message = ("the body of an axiom for %s contains the negated "
-                           "atom (not %s)"
-                           % (_describe_predicate(axiom.name, task),
-                              literal.negate()))
-                if literal.predicate in derived:
-                    message += ("; negation over the derived predicate %s is "
-                                "not supported"
-                                % _describe_predicate(literal.predicate, task))
-                else:
-                    message += ("; only positive atoms and (in)equalities are "
-                                "supported in axiom bodies")
-                raise AxiomError(message)
+        _axiom_body_literals(axiom, task)
         kept_axioms.append(axiom)
     task.axioms = kept_axioms
-
-    _reject_negated_derived_conditions(task, derived)
-
-
-def _condition_literals(condition):
-    """Return the literals of a normalized (conjunctive) condition.
-
-    Unlike Action.get_action_preconditions, this also handles a condition
-    that consists of a single negated literal.
-    """
-    if isinstance(condition, pddl.Literal):
-        return [condition]
-    if isinstance(condition, pddl.Conjunction):
-        return [part for part in condition.parts
-                if isinstance(part, pddl.Literal)]
-    return []
-
-
-def _reject_negated_derived_conditions(task, derived):
-    """Derived predicates may only be used positively outside axiom bodies."""
-    for action in task.actions:
-        for literal in _condition_literals(action.precondition):
-            if literal.negated and literal.predicate in derived:
-                raise AxiomError(
-                    "the precondition of action '%s' contains the negated "
-                    "derived predicate %s; negation over derived predicates "
-                    "is not supported"
-                    % (action.name, _describe_predicate(literal.predicate,
-                                                        task)))
-    for literal in _condition_literals(task.goal):
-        if literal.negated and literal.predicate in derived:
-            raise AxiomError(
-                "the goal contains the negated derived predicate %s; "
-                "negation over derived predicates is not supported"
-                % _describe_predicate(literal.predicate, task))
 
 
 def check_stratification(derived_predicates, pos_edges, neg_edges):
