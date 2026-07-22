@@ -114,8 +114,8 @@ void parse_axioms(Task &task, int number_axioms, int number_axiom_strata)
             cin >> param_name >> index >> type;
             parameters.emplace_back(param_name, index, type);
         }
-        vector<Atom> body, equalities;
-        vector<int> positive_nullary_body;
+        vector<Atom> body, equalities, negated_body;
+        vector<int> positive_nullary_body, negative_nullary_body;
         for (int j = 0; j < body_size; ++j) {
             string atom_name;
             int index;
@@ -124,8 +124,10 @@ void parse_axioms(Task &task, int number_axioms, int number_axiom_strata)
             cin >> atom_name >> index >> negated >> arguments_size;
             if (arguments_size == 0) {
                 assert(task.nullary_predicates.count(index) > 0);
-                assert(!negated);
-                positive_nullary_body.push_back(index);
+                if (negated)
+                    negative_nullary_body.push_back(index);
+                else
+                    positive_nullary_body.push_back(index);
                 continue;
             }
             vector<Argument> arguments;
@@ -150,8 +152,11 @@ void parse_axioms(Task &task, int number_axioms, int number_axiom_strata)
                 equalities.emplace_back(
                     std::move(arguments), std::move(atom_name), index, negated);
             }
+            else if (negated) {
+                negated_body.emplace_back(
+                    std::move(arguments), std::move(atom_name), index, negated);
+            }
             else {
-                assert(!negated);
                 body.emplace_back(
                     std::move(arguments), std::move(atom_name), index, negated);
             }
@@ -164,7 +169,9 @@ void parse_axioms(Task &task, int number_axioms, int number_axiom_strata)
                             num_head_params,
                             std::move(body),
                             std::move(equalities),
-                            std::move(positive_nullary_body));
+                            std::move(negated_body),
+                            std::move(positive_nullary_body),
+                            std::move(negative_nullary_body));
     }
     task.initialize_axioms(std::move(axioms), number_axiom_strata);
 }
