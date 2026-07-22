@@ -251,6 +251,16 @@ AXIOM_UNSOLVABLE_TESTS = [
         'required_output': ['No solution found!',
                            'Number of registered states: 16'],
     },
+    {
+        # Exercises delete effects: stale derived (above ...) atoms
+        # surviving an unstack would raise the state count above 10.
+        'name': 'axioms-above-03-stale-derived',
+        'instance': 'domains/axioms-above/prob03.pddl',
+        'configs': [('bfs', 'blind', 'join'),
+                    ('bfs', 'blind', 'yannakakis')],
+        'required_output': ['No solution found!',
+                           'Number of registered states: 10'],
+    },
 ]
 
 # Tasks outside the supported axiom fragment: the translator must reject
