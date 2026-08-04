@@ -42,7 +42,10 @@ correctness regressions quickly before running larger experiments elsewhere.
    has unit tests in `src/translator/tests/`. When `DOWNWARD_BENCHMARKS`
    is set, philosophers and optical-telegraphs are solved end to end with
    costs cross-checked against Fast Downward, and the psr domains are
-   checked for clean rejection.
+   checked for clean rejection. `axioms-object-creation/` combines both
+   features: the recursive derived predicate must be computed through
+   freshly created objects (blind search and goalcount only, since the
+   Datalog heuristics do not support object creation).
 6. Negated-precondition and quantified-precondition tests.
    `negated-preconditions/` covers negated fluent/static preconditions and
    negated goals; `forall-preconditions/` covers universally and
