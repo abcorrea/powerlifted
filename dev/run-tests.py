@@ -393,6 +393,20 @@ AXIOM_PLAN_TESTS = [
                     ('bfs', 'blind', 'yannakakis'),
                     ('gbfs', 'ff', 'full_reducer')],
     },
+    {
+        # Axioms combined with object creation: the recursive reach chain
+        # is derived through freshly created objects, and the negated
+        # precondition and inequality filter over them. Only blind and
+        # goalcount support object creation, and VAL cannot parse plans
+        # with created objects, so validation is skipped.
+        'instance': 'domains/axioms-object-creation/prob01.pddl',
+        'label': 'axioms-object-creation-01',
+        'cost': 3,
+        'validate': False,
+        'configs': [('bfs', 'blind', 'full_reducer'),
+                    ('bfs', 'blind', 'yannakakis'),
+                    ('gbfs', 'goalcount', 'full_reducer')],
+    },
 ]
 
 # The IPC derived-predicate domains that fall inside the supported fragment
