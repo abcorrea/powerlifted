@@ -3,6 +3,7 @@ class Predicate(object):
         self.name = name
         self.arguments = arguments
         self.static = False
+        self.derived = False
 
     def __str__(self):
         return "%s(%s)" % (self.name, ", ".join(map(str, self.arguments)))
@@ -12,4 +13,8 @@ class Predicate(object):
 
     def set_static(self):
         self.static = True
+        return
+
+    def set_derived(self):
+        self.derived = True
         return

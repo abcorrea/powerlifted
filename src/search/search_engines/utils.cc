@@ -58,7 +58,15 @@ void print_plan(const std::vector<LiftedOperatorId>& plan, const Task &task) {
         total_plan_cost += action.get_cost();
         total_plan_length += 1;
         plan_file << total_plan_length << ": (" << action.get_name() << " ";
-        for (const int obj : a.get_instantiation()) {
+        // Only the external parameters form the ground action name; the
+        // instantiation may carry further values for parameters introduced
+        // by the translator for existentially quantified preconditions.
+        const std::vector<int> &instantiation = a.get_instantiation();
+        size_t num_printed_args =
+            std::min(instantiation.size(),
+                     size_t(action.get_num_external_parameters()));
+        for (size_t i = 0; i < num_printed_args; ++i) {
+            const int obj = instantiation[i];
             if (obj < int(task.objects.size()))
                 plan_file << task.objects[obj].get_name() << " ";
             else

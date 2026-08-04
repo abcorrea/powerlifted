@@ -42,6 +42,11 @@ def mark_static_predicates(task, static_predicates):
 
 def check(task):
     fluent_predicates = get_fluent_predicates_from_effects(task.actions)
+    # Derived predicates never appear in action effects, but their extension
+    # changes from state to state (it is recomputed from the fluents), so
+    # they must not be classified as static.
+    for axiom in task.axioms:
+        fluent_predicates.add(axiom.name)
     predicates_as_str = get_str_predicates(task.predicates)
     static_predicates = predicates_as_str - fluent_predicates
     mark_static_predicates(task, static_predicates)

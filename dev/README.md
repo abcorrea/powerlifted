@@ -29,6 +29,29 @@ correctness regressions quickly before running larger experiments elsewhere.
 4. Novelty / width-based smoke tests.
    These tests evaluate `bfws1`, `bfws1-rx`, `alt-bfws1`, and `dq-bfws1-rx`,
    including the novelty-related command-line flags.
+5. Axiom (derived predicate) tests.
+   The `axioms-*` domains cover recursion, multiple strata, existential body
+   variables, constants and inequalities in axiom bodies, disjunctive and
+   quantified goals, stratified negation (negated fluent and derived atoms
+   in axiom bodies, negated derived preconditions), and derived predicates
+   in goals and preconditions, across generators and heuristics (with
+   pinned initial heuristic values). Exhaustive unsolvable instances check
+   that derived atoms do not pollute duplicate detection, `axioms-invalid/`
+   checks that the translator rejects tasks outside the supported fragment
+   (including non-stratifiable axiom sets), and the stratification check
+   has unit tests in `src/translator/tests/`. When `DOWNWARD_BENCHMARKS`
+   is set, philosophers and optical-telegraphs are solved end to end with
+   costs cross-checked against Fast Downward, and the psr domains are
+   checked for clean rejection. `axioms-object-creation/` combines both
+   features: the recursive derived predicate must be computed through
+   freshly created objects (blind search and goalcount only, since the
+   Datalog heuristics do not support object creation).
+6. Negated-precondition and quantified-precondition tests.
+   `negated-preconditions/` covers negated fluent/static preconditions and
+   negated goals; `forall-preconditions/` covers universally and
+   existentially quantified action preconditions (including plan printing
+   of actions with non-external parameters); `inequality/` is a regression
+   test for (in)equality filters on single-table join programs.
 
 The local suite does not try to be exhaustive. The tests are also quite superficial,
 and full experiments should be always used.

@@ -187,6 +187,17 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
             distinguished_variables[action_index].insert(args[1].get_index());
         }
     }
+
+    // Variables of negated precondition atoms are enforced by a filter on
+    // the final table, so their columns must survive the projections.
+    for (const Atom &atom : action.get_precondition()) {
+        if (!atom.is_negated())
+            continue;
+        for (const Argument &arg : atom.get_arguments()) {
+            if (!arg.is_constant())
+                distinguished_variables[action_index].insert(arg.get_index());
+        }
+    }
 }
 
 /**
@@ -224,7 +235,7 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
     if (!res) return Table::EMPTY_TABLE();
 
     assert (!tables.empty());
-    assert(tables.size() == actiondata.relevant_precondition_atoms.size());
+    assert(tables.size() == actiondata.relevant_atoms.size());
 
     for (const pair<int, int> &sj : full_reducer_order[action.get_index()]) {
         size_t s = hash_semi_join(tables[sj.second], tables[sj.first]);
@@ -274,6 +285,16 @@ Table YannakakisSuccessorGenerator::instantiate(const ActionSchema &action,
             return working_table;
         }
     }
+
+    // Catch-all for join programs whose loops above never ran (e.g. a
+    // single-table program): re-check every static precondition on the final
+    // table, and enforce the negated precondition atoms. Variables of
+    // (in)equalities and of negated atoms are distinguished, so their
+    // columns survive the projections.
+    std::vector<bool> applied_final(action.get_static_precondition().size(), false);
+    filter_static(action, working_table, applied_final);
+    std::vector<bool> applied_neg(actiondata.negated_atoms.size(), false);
+    filter_negated_preconditions(actiondata, state, working_table, applied_neg);
 
     project(working_table, distinguished_variables[action.get_index()]);
     return working_table;

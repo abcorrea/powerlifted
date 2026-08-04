@@ -205,11 +205,28 @@ void CliqueSuccessorGenerator::build_assignment_sets(const DBState &atoms)
 CliqueSuccessorGenerator::CliqueSuccessorGenerator(const Task &task, const CliquePivot &pivot)
     : GenericJoinSuccessor(task), task(task), pivot(pivot)
 {
+    // The clique-based applicability test does not enforce (in)equality
+    // literals correctly (its pairwise assignment consistency check misses
+    // them in several cases), and it does not apply the negated-atom
+    // filters of the join-based generators at all. Refuse such schemas
+    // instead of silently producing invalid plans.
+    for (const auto &action : task.get_action_schemas()) {
+        for (const Atom &literal : action.get_precondition()) {
+            if (literal.is_negated()) {
+                throw std::runtime_error(
+                    "The clique successor generator does not support negated "
+                    "preconditions. Use a join-based successor generator.");
+            }
+        }
+        if (!action.get_static_precondition().empty()) {
+            throw std::runtime_error(
+                "The clique successor generator does not support (in)equality "
+                "preconditions. Use a join-based successor generator.");
+        }
+    }
+
     // Types are static information, precompute the set of object that
     // can be assigned to each parameter based on type information.
-
-    // Inequality is translated to static binary relations, we do not
-    // need to take special care of these.
 
     build_assignment_sets(task.get_static_info());
 
