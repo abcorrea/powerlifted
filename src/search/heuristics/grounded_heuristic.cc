@@ -4,6 +4,7 @@
 #include "../states/state.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <limits>
 
@@ -250,9 +251,74 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
         new_action;
     no_pre_ops.clear();
     relevant_action.assign(g.operators.size(), 0);
+    // Number the relevant operators by their smallest precondition, so that
+    // the operators sharing a precondition are close in memory (the
+    // exploration visits them together).
+    vector<int> order;
     for (int r = 0; r < num_ops; ++r) {
-        if (!relevant_op[r])
-            continue;
+        if (relevant_op[r])
+            order.push_back(r);
+    }
+    if (!getenv("PWL_NO_OP_REORDER")) {
+        auto first_pre = [&](int r) {
+            return op_pre_start[r] < op_pre_start[r + 1] ? op_pre[op_pre_start[r]] : -1;
+        };
+        if (!getenv("PWL_OP_ORDER_FIRST_PRE")) {
+            // Layer (unit-cost h-max) at which each operator becomes
+            // applicable in the relaxed exploration from the initial state.
+            vector<int> fact_level(num_facts, numeric_limits<int>::max());
+            vector<int> op_level(num_ops, numeric_limits<int>::max());
+            vector<int> unsat(op_num_pre.begin(), op_num_pre.end());
+            vector<int> init = g.initial_facts;
+            vector<char> init_true(num_base_facts, 0);
+            for (int f : g.initial_facts)
+                init_true[f] = 1;
+            for (int c = num_base_facts; c < num_facts; ++c) {
+                if (!init_true[complement_base[c - num_base_facts]])
+                    init.push_back(c);
+            }
+            // Precondition-of lists of the unpruned operators.
+            vector<vector<int>> pre_of_tmp(num_facts);
+            for (int r = 0; r < num_ops; ++r)
+                for (int i = op_pre_start[r]; i < op_pre_start[r + 1]; ++i)
+                    pre_of_tmp[op_pre[i]].push_back(r);
+            vector<int> layer = init, next_layer;
+            for (int f : init)
+                fact_level[f] = 0;
+            for (int r = 0; r < num_ops; ++r) {
+                if (unsat[r] == 0)
+                    op_level[r] = 0;
+            }
+            int level = 0;
+            while (!layer.empty()) {
+                next_layer.clear();
+                for (int f : layer) {
+                    for (int r : pre_of_tmp[f]) {
+                        if (--unsat[r] == 0) {
+                            op_level[r] = level;
+                            for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i) {
+                                int e = op_eff[i];
+                                if (fact_level[e] == numeric_limits<int>::max()) {
+                                    fact_level[e] = level + 1;
+                                    next_layer.push_back(e);
+                                }
+                            }
+                        }
+                    }
+                }
+                layer.swap(next_layer);
+                ++level;
+            }
+            stable_sort(order.begin(), order.end(), [&](int a, int b) {
+                return make_pair(op_level[a], first_pre(a)) < make_pair(op_level[b], first_pre(b));
+            });
+        }
+        else {
+            stable_sort(order.begin(), order.end(),
+                        [&](int a, int b) { return first_pre(a) < first_pre(b); });
+        }
+    }
+    for (int r : order) {
         int id = new_base_cost.size();
         new_pre_start.push_back(new_pre.size());
         new_pre.insert(new_pre.end(), op_pre.begin() + op_pre_start[r],

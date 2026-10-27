@@ -15,6 +15,7 @@
 #include <malloc.h>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <new>
 
 using namespace std;
@@ -61,6 +62,117 @@ int GroundTask::add_fact(int predicate, const GroundAtom &args) {
     if (res.second)
         facts.emplace_back(predicate, args);
     return res.first->second;
+}
+
+/*
+  Renumber the facts by the layer in which they are reached in the relaxed
+  exploration from the initial state (ties by the previous numbering), so
+  that facts that are explored together are close in memory.
+*/
+void GroundTask::renumber_facts() {
+    int n = facts.size();
+    vector<int> layer(n, numeric_limits<int>::max());
+    vector<int> current;
+    for (int f : initial_facts) {
+        if (layer[f] != 0) {
+            layer[f] = 0;
+            current.push_back(f);
+        }
+    }
+    // Relaxed operators: (preconditions, effects).
+    vector<pair<const vector<int> *, const vector<int> *>> rel;
+    vector<vector<int>> ce_pre;
+    ce_pre.reserve(conditional_effects.size());
+    for (const GroundOperator &op : operators)
+        rel.emplace_back(&op.pre, &op.add);
+    for (const GroundConditionalEffect &ce : conditional_effects) {
+        ce_pre.push_back(operators[ce.op].pre);
+        ce_pre.back().insert(ce_pre.back().end(), ce.condition.begin(), ce.condition.end());
+    }
+    for (size_t i = 0; i < conditional_effects.size(); ++i)
+        rel.emplace_back(&ce_pre[i], &conditional_effects[i].add);
+    vector<vector<int>> heads(axioms.size());
+    for (size_t i = 0; i < axioms.size(); ++i) {
+        heads[i] = {axioms[i].head};
+        rel.emplace_back(&axioms[i].body, &heads[i]);
+    }
+    vector<int> unsat(rel.size());
+    vector<vector<int>> pre_of(n);
+    for (size_t r = 0; r < rel.size(); ++r) {
+        unsat[r] = rel[r].first->size();
+        for (int p : *rel[r].first)
+            pre_of[p].push_back(r);
+    }
+    vector<int> next;
+    auto fire = [&](size_t r, int l) {
+        for (int e : *rel[r].second) {
+            if (layer[e] == numeric_limits<int>::max()) {
+                layer[e] = l;
+                next.push_back(e);
+            }
+        }
+    };
+    for (size_t r = 0; r < rel.size(); ++r) {
+        if (unsat[r] == 0)
+            fire(r, 1);
+    }
+    int l = 0;
+    while (!current.empty() || !next.empty()) {
+        for (int f : current) {
+            for (int r : pre_of[f]) {
+                if (--unsat[r] == 0)
+                    fire(r, l + 1);
+            }
+        }
+        current.swap(next);
+        next.clear();
+        ++l;
+    }
+    vector<int> order(n);
+    for (int f = 0; f < n; ++f)
+        order[f] = f;
+    stable_sort(order.begin(), order.end(), [&](int a, int b) { return layer[a] < layer[b]; });
+    vector<int> new_id(n);
+    for (int i = 0; i < n; ++i)
+        new_id[order[i]] = i;
+
+    auto remap = [&](vector<int> &v) {
+        for (int &f : v)
+            f = new_id[f];
+        sort(v.begin(), v.end());
+    };
+    for (GroundOperator &op : operators) {
+        remap(op.pre);
+        remap(op.negated_pre);
+        remap(op.add);
+        remap(op.del);
+    }
+    for (GroundConditionalEffect &ce : conditional_effects) {
+        remap(ce.condition);
+        remap(ce.negated_condition);
+        remap(ce.add);
+        remap(ce.del);
+    }
+    for (GroundAxiom &ax : axioms) {
+        ax.head = new_id[ax.head];
+        remap(ax.body);
+        remap(ax.negated_body);
+    }
+    remap(goal);
+    remap(negated_goal);
+    remap(initial_facts);
+    vector<pair<int, GroundAtom>> new_facts(n);
+    for (int f = 0; f < n; ++f)
+        new_facts[new_id[f]] = std::move(facts[f]);
+    facts.swap(new_facts);
+    for (auto &m : atom_to_fact) {
+        for (auto &entry : m)
+            entry.second = new_id[entry.second];
+    }
+    for (int &f : nullary_fact) {
+        if (f >= 0)
+            f = new_id[f];
+    }
 }
 
 void GroundTask::get_state_facts(const DBState &state, vector<int> &out) const {
@@ -564,6 +676,8 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
                  << " instances, " << per_schema_kept[a] << " operators" << endl;
     }
     get_state_facts(task.initial_state, initial_facts);
+    if (getenv("PWL_FACT_RENUMBER"))
+        renumber_facts();
     cout << "Grounded task: " << facts.size() << " facts, " << operators.size()
          << " operators, " << conditional_effects.size() << " conditional effects, "
          << axioms.size() << " axioms." << endl;

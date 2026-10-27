@@ -57,6 +57,7 @@ class GroundTask {
     std::vector<int> nullary_fact;
 
     int add_fact(int predicate, const GroundAtom &args);
+    void renumber_facts();
 
 public:
     std::vector<std::pair<int, GroundAtom>> facts;
