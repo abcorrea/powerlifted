@@ -19,6 +19,7 @@ SEARCH_CHOICES = ["astar",
                   "lama",
                   "portfolio",
                   "dual-bfws",
+                  "bfws2-lmnov",
                   "gbfs",
                   "iw1",
                   "iw1gc",
@@ -58,7 +59,7 @@ def parse_options():
     parser.add_argument('--cxx-compiler',
                         default='default', help="Path to CXX compiler used by CMake.")
     parser.add_argument('-s', '--search', dest='search', action='store',
-                        default='alt-bfws2',
+                        default='bfws2-lmnov',
                         help='Search algorithm',
                         choices=SEARCH_CHOICES)
     parser.add_argument('-e', '--evaluator', dest='heuristic', action='store',

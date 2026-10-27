@@ -69,13 +69,15 @@ Currently, the best configuration for satisficing planning (with respect to
 total coverage) is:
 
 ```bash
-./powerlifted.py [-d DOMAIN] -i INSTANCE -s alt-bfws2 -e ff -g yannakakis
+./powerlifted.py [-d DOMAIN] -i INSTANCE -s bfws2-lmnov -e ff -g yannakakis
 ```
 
 These are also the default values for `-s`, `-e`, and `-g`. On ground
-tasks, `alt-bfws2` uses width-2 novelty (falling back to width 1 for tasks
-with more than 4096 facts); if the task cannot be grounded, Powerlifted
-falls back to lifted `alt-bfws1`. By default,
+tasks, `bfws2-lmnov` alternates between a width-2 novelty open list
+partitioned by the landmark count (as in NOLAN, Corrêa and Seipp 2025), an
+h-FF open list, and a landmark-count open list, each with a preferred
+variant (falling back to width 1 for tasks with more than 4096 facts); if
+the task cannot be grounded, Powerlifted falls back to lifted `alt-bfws1`. By default,
 Powerlifted uses the lazy effects-only novelty check from Corrêa and Seipp
 (2022). To maximize coverage, we also recommend adding `--unit-cost` (see
 below).
@@ -111,6 +113,7 @@ delete-relaxation heuristics when grounding succeeds.
 | `alt-bfws1-lm`, `alt-bfws2-lm` | Same, plus a third queue ordered by the landmark-count heuristic (ground tasks only)    |
 | `lama`                       | FF and landmark-count queues with preferred operators, LAMA-style (ground tasks only)     |
 | `portfolio`                  | Interleaves `alt-bfws2`, `alt-bfws1` with an h-add queue, and `lama` (ground tasks only)    |
+| `bfws2-lmnov`                | Width-2 novelty partitioned by the landmark count, plus h-FF and landmark queues (default) |
 | `dual-bfws`                  | `alt-bfws1` with novelty pruning (at most 10s), then `alt-bfws1` (ground tasks only)        |
 | `astar`                      | A* Search                                                                                 |
 | `bfs`                        | Breadth-First Search                                                                      |

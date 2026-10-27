@@ -62,7 +62,8 @@ SearchBase *SearchFactory::create(const Options &opt, const std::string &method)
         // falls back to alternated BFWS.
         return new AlternatedBFWS<SparsePackedState>(1, opt);
     }
-    else if (utils::iequals(method, "alt-bfws2") || utils::iequals(method, "alt-bfws2-lm")) {
+    else if (utils::iequals(method, "alt-bfws2") || utils::iequals(method, "alt-bfws2-lm") ||
+             utils::iequals(method, "bfws2-lmnov")) {
         return new AlternatedBFWS<SparsePackedState>(2, opt);
     }
     else if (utils::iequals(method, "gbfs")) {

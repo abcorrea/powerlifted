@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     const std::string &engine = opt.get_search_engine();
     bool grounded_engine = engine == "alt-bfws1" || engine == "alt-bfws2" ||
         engine == "lama" || engine == "alt-bfws1-lm" || engine == "alt-bfws2-lm" ||
-        engine == "portfolio" || engine == "dual-bfws";
+        engine == "portfolio" || engine == "dual-bfws" || engine == "bfws2-lmnov";
     if (grounded_engine && !std::getenv("PWL_LIFTED_SEARCH")) {
         try {
             std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
@@ -126,7 +126,14 @@ int main(int argc, char *argv[])
                     c.name = name;
                     c.novelty = name != "lama";
                     c.lm = name == "lama" || name == "alt-bfws1-lm" || name == "alt-bfws2-lm";
-                    c.width = (name == "alt-bfws2" || name == "alt-bfws2-lm") ? 2 : 1;
+                    c.width = (name == "alt-bfws2" || name == "alt-bfws2-lm" ||
+                               name == "bfws2-lmnov") ? 2 : 1;
+                    if (name == "bfws2-lmnov") {
+                        // NOLAN-like: width-2 novelty partitioned by the
+                        // landmark count, plus h-FF and landmark queues.
+                        c.lm = true;
+                        c.novelty_by_lm = true;
+                    }
                     return c;
                 };
                 if (engine == "dual-bfws") {
@@ -211,7 +218,8 @@ int main(int argc, char *argv[])
     // Let's create a couple unique_ptr's that deal with mem allocation themselves
     // Without grounding, use width 1 unless lifted search was requested.
     std::string lifted_engine = opt.get_search_engine();
-    if (lifted_engine == "alt-bfws2" && !opt.get_force_lifted())
+    if ((lifted_engine == "alt-bfws2" || lifted_engine == "bfws2-lmnov") &&
+        !opt.get_force_lifted())
         lifted_engine = "alt-bfws1";
     std::unique_ptr<SearchBase> search(SearchFactory::create(opt, lifted_engine));
     std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt, task));

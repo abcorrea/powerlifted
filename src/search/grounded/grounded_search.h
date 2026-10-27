@@ -97,6 +97,8 @@ struct GroundSearchConfig {
     long long max_expansions = -1;
     //! Time limit (seconds) of a staged run.
     double max_seconds = 1e9;
+    //! Partition novelty by the landmark count instead of (#g, #r).
+    bool novelty_by_lm = false;
 };
 
 class GroundSearchRun;

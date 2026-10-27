@@ -75,7 +75,7 @@ def parse_output(out):
     m = re.search(r'Total time: ([\d.e+-]+)', out)
     if m:
         res['search_time'] = float(m.group(1))
-    m = re.search(r'Total plan cost: (\d+)', out)
+    m = re.search(r'(?:Total plan cost|Plan cost): (\d+)', out)
     if m:
         res['cost'] = int(m.group(1))
     m = re.search(r'Plan length: (\d+)', out)
@@ -97,11 +97,18 @@ def run_one(config, instance, time_limit, mem_mb, validate, keep_logs):
     domain = find_domain(instance)
     with tempfile.TemporaryDirectory(prefix='pwl-ab-') as tmp:
         plan_file = os.path.join(tmp, 'plan')
-        cmd = ['/usr/bin/time', '-f', 'MAXRSS %M',
-               sys.executable, os.path.join(config['root'], 'powerlifted.py'),
-               '-d', domain, '-i', instance,
-               '--translator-output-file', os.path.join(tmp, 'output.lifted'),
-               '--plan-file', plan_file] + config['args']
+        fd_driver = os.path.join(config['root'], 'fast-downward.py')
+        if os.path.exists(fd_driver):
+            # Fast Downward-based planner (e.g., Scorpion): ARGS are driver
+            # options placed before the domain and problem files.
+            cmd = ['/usr/bin/time', '-f', 'MAXRSS %M', sys.executable, fd_driver,
+                   '--plan-file', plan_file] + config['args'] + [domain, instance]
+        else:
+            cmd = ['/usr/bin/time', '-f', 'MAXRSS %M',
+                   sys.executable, os.path.join(config['root'], 'powerlifted.py'),
+                   '-d', domain, '-i', instance,
+                   '--translator-output-file', os.path.join(tmp, 'output.lifted'),
+                   '--plan-file', plan_file] + config['args']
         start = time.time()
         env = dict(os.environ)
         env.update(config.get('env', {}))
