@@ -49,6 +49,12 @@ private:
     // For each fact, the relaxed operators having it as precondition.
     std::vector<int> pre_of_start;
     std::vector<int> pre_of;
+    // For each fact, the relaxed operators adding it.
+    std::vector<int> ach_start;
+    std::vector<int> ach;
+    //! If non-negative, relaxed plan extraction prefers achievers of
+    //! actions already in the plan costing at most this much more.
+    int reuse_slack = -1;
     std::vector<int> goal;
     bool goal_unreachable;
 
@@ -85,6 +91,44 @@ private:
     //! Ground actions that can contribute to reaching the goal.
     std::vector<char> relevant_action;
 
+    /*
+      Join decomposition of the relaxed operators of large action schemas
+      (see add_decomposed_operators()). Facts from first_aux_fact on are
+      auxiliary facts of the decomposition.
+    */
+    struct DecomposedRule {
+        //! Variables (schema parameters) bound by an instance.
+        std::vector<int> vars;
+        //! For final rules, the operator index to find the ground operator
+        //! of an instance; -1 for auxiliary rules.
+        int op_index;
+    };
+    struct OperatorIndex {
+        int schema;
+        std::vector<int> vars;
+        //! Ground operators of the schema, sorted by their values on vars.
+        std::vector<int> ops;
+    };
+    std::vector<DecomposedRule> decomposed_rules;
+    std::vector<OperatorIndex> operator_indices;
+    int first_aux_fact;
+    //! Per relaxed operator: its decomposed rule (or -1) and the offset of
+    //! the values of the rule's variables in rule_values.
+    std::vector<int> op_rule;
+    std::vector<int> op_values_start;
+    std::vector<int> rule_values;
+    std::vector<int> binding;
+    std::vector<int> reconstruct_stack;
+    //! Ground operators of the decomposed schemas.
+    std::vector<int> decomposed_operators;
+
+    int add_relaxed_op(const std::vector<int> &pre1, const std::vector<int> *pre2,
+                       const std::vector<int> &eff, int base_cost, int action);
+    void add_decomposed_operators(const Task &task, const GroundTask &g,
+                                  std::vector<char> &decomposed);
+    //! Ground operator of the (closed) decomposed final relaxed operator r,
+    //! following the supporters of its auxiliary preconditions; -1 if none.
+    int reconstruct_operator(int r);
     void push(int fact, int cost);
     int explore();
     void prune_irrelevant(const GroundTask &g, bool some_negation_relaxed);
@@ -135,6 +179,9 @@ public:
 
     // Relaxed operators (CSR form), used by the landmark generator.
     int get_num_facts() const { return num_facts; }
+    //! Facts below this are base and complement facts; the others are
+    //! auxiliary facts of decomposed relaxed operators.
+    int get_first_aux_fact() const { return first_aux_fact; }
     int get_num_relaxed_ops() const { return op_base_cost.size(); }
     const std::vector<int> &get_op_pre_start() const { return op_pre_start; }
     const std::vector<int> &get_op_pre() const { return op_pre; }
@@ -146,6 +193,13 @@ public:
     const std::vector<int> &get_no_pre_ops() const { return no_pre_ops; }
     //! Goal facts of the relaxed task (including complement facts).
     const std::vector<int> &get_goal() const { return goal; }
+    //! Ground operators whose relaxed operators were decomposed (their
+    //! decomposed final operators have action -2).
+    const std::vector<int> &get_decomposed_operators() const {
+        return decomposed_operators;
+    }
+    //! Precondition and effect of the relaxed version of ground operator o.
+    void get_ground_relaxed_operator(int o, std::vector<int> &pre, std::vector<int> &eff) const;
 
     //! Append the complement facts true in the state with the given true
     //! base facts.

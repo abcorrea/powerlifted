@@ -117,6 +117,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const GroundedHeuristic &rel,
     }
     sort(landmarks.begin(), landmarks.end());
     landmarks.erase(unique(landmarks.begin(), landmarks.end()), landmarks.end());
+    // Auxiliary facts of decomposed relaxed operators are no landmarks.
+    landmarks.erase(lower_bound(landmarks.begin(), landmarks.end(), rel.get_first_aux_fact()),
+                    landmarks.end());
 
     fact_to_lm.assign(num_facts, -1);
     for (size_t i = 0; i < landmarks.size(); ++i)
@@ -150,22 +153,22 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const GroundedHeuristic &rel,
     }
 
     // Greedy-necessary predecessors: landmarks in the precondition of every
-    // (reachable) achiever.
+    // (reachable) achiever. Decomposed relaxed operators are replaced by
+    // the ground operators they stand for.
     vector<char> has_gn(num_lms, 0);
     vector<vector<int>> gn(num_lms);
     vector<int> pre_lms;
-    for (int r = 0; r < num_ops; ++r) {
-        if (pending[r] != 0)
-            continue;
+    auto add_achiever = [&](const int *pre_begin, const int *pre_end, const int *eff_begin,
+                            const int *eff_end) {
         pre_lms.clear();
-        for (int i = pre_start[r]; i < pre_start[r + 1]; ++i) {
-            int j = fact_to_lm[pre[i]];
+        for (const int *p = pre_begin; p != pre_end; ++p) {
+            int j = fact_to_lm[*p];
             if (j >= 0)
                 pre_lms.push_back(j);
         }
         sort(pre_lms.begin(), pre_lms.end());
-        for (int i = eff_start[r]; i < eff_start[r + 1]; ++i) {
-            int m = fact_to_lm[eff[i]];
+        for (const int *e = eff_begin; e != eff_end; ++e) {
+            int m = fact_to_lm[*e];
             if (m < 0)
                 continue;
             if (!has_gn[m]) {
@@ -179,6 +182,22 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const GroundedHeuristic &rel,
                 gn[m].swap(intersection);
             }
         }
+    };
+    const auto &op_action = rel.get_op_action();
+    for (int r = 0; r < num_ops; ++r) {
+        if (pending[r] != 0 || op_action[r] == -2)
+            continue;
+        add_achiever(pre.data() + pre_start[r], pre.data() + pre_start[r + 1],
+                     eff.data() + eff_start[r], eff.data() + eff_start[r + 1]);
+    }
+    vector<int> ground_pre, ground_eff;
+    for (int o : rel.get_decomposed_operators()) {
+        rel.get_ground_relaxed_operator(o, ground_pre, ground_eff);
+        bool reachable = all_of(ground_pre.begin(), ground_pre.end(),
+                                [&](int p) { return reached[p]; });
+        if (reachable)
+            add_achiever(ground_pre.data(), ground_pre.data() + ground_pre.size(),
+                         ground_eff.data(), ground_eff.data() + ground_eff.size());
     }
     // Store the reverse relation: gn_predecessors[l] lists the landmarks m
     // that have l as greedy-necessary predecessor.

@@ -94,7 +94,15 @@ the ground task: states are bitsets, successors come from a
 watched-precondition successor generator, and the delete-relaxation
 heuristics (`add`, `hmax`, `ff`) are computed on ground operators, with
 complement facts for negated preconditions and goals (negated derived atoms
-via negated axioms) and without goal-irrelevant operators. Forced chains (states
+via negated axioms) and without goal-irrelevant operators. For action schemas
+with many ground operators, the relaxed operators are replaced by a join
+decomposition: for each group of effects, the precondition variables not in
+the effects are eliminated one at a time by auxiliary rules (grounded on the
+projections of the ground operators). This gives the same h-add and h-max
+values with far fewer relaxed operators (e.g., 60x fewer in
+recharging-robots); h-FF finds the ground operators of its relaxed plan by
+following the supporters of the auxiliary facts (disable with
+`PWL_NO_DECOMPOSE`). Forced chains (states
 with exactly one applicable operator) are applied without evaluating the
 intermediate states, and chains ending in dead ends are pruned. After each
 evaluation, the operators of the relaxed plan are applied greedily
