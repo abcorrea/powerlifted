@@ -610,8 +610,8 @@ private:
     //! achieving a relaxed plan atom).
     bool helpful_actions = getenv("PWL_HELPFUL_ACTIONS") != nullptr;
     vector<char> in_relaxed_plan;
-    //! Relaxed plan lookahead (PWL_LOOKAHEAD).
-    bool lookahead = getenv("PWL_LOOKAHEAD") != nullptr;
+    //! Relaxed plan lookahead (disabled with PWL_NO_LOOKAHEAD).
+    bool lookahead = getenv("PWL_NO_LOOKAHEAD") == nullptr;
     vector<int> lookahead_order;
     int best_h, best_h_add, best_h_lm;
     int goal_state = -1;

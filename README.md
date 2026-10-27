@@ -94,7 +94,10 @@ heuristics (`add`, `hmax`, `ff`) are computed on ground operators, with
 complement facts for negated preconditions and goals (negated derived atoms
 via negated axioms) and without goal-irrelevant operators. Forced chains (states
 with exactly one applicable operator) are applied without evaluating the
-intermediate states, and chains ending in dead ends are pruned.
+intermediate states, and chains ending in dead ends are pruned. After each
+evaluation, the operators of the relaxed plan are applied greedily
+(relaxed plan lookahead, as in YAHSP) and the resulting state is added as a
+preferred successor.
 
 Otherwise (or with `--force-lifted`), the lifted machinery is used. The
 other search engines and heuristics also use the ground task for the
