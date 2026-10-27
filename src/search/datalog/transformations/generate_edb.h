@@ -19,6 +19,9 @@ void Datalog::set_permanent_edb(StaticInformation static_information) {
             permanent_edb.emplace_back(Arguments(args), r.predicate_symbol, false);
         }
     }
+    if (true_predicate_idx >= 0) {
+        permanent_edb.emplace_back(Arguments(), true_predicate_idx, 0, true);
+    }
     get_always_reachable_rule_heads();
 }
 

@@ -1,6 +1,7 @@
 #ifndef SEARCH_GENERIC_JOIN_SUCCESSOR_H
 #define SEARCH_GENERIC_JOIN_SUCCESSOR_H
 
+#include "conditional_effects.h"
 #include "successor_generator.h"
 
 #include "../atom.h"
@@ -95,6 +96,17 @@ protected:
 
     //! Some data relevant to each action schema, indexed by schema index
     std::vector<PrecompiledActionData> action_data;
+
+    //! Evaluator of the conditional effects of the action schemas
+    ConditionalEffectEvaluator conditional_effects;
+    std::vector<std::pair<int, GroundAtom>> ce_deletes;
+    std::vector<std::pair<int, GroundAtom>> ce_adds;
+
+    void apply_effects_with_conditional_effects(const LiftedOperatorId &op,
+                                                const ActionSchema &action,
+                                                const DBState &state,
+                                                std::vector<Relation> &new_relation,
+                                                std::vector<bool> &new_nullary_atoms);
 
     bool is_static(size_t i) const { return is_predicate_static[i]; }
 

@@ -76,6 +76,7 @@ set(SUCCESSOR_GENERATOR_SOURCES
         successor_generators/clique_help_functions.cc
         successor_generators/clique_successor_generator.cc
         successor_generators/clique_successor_generator_apply.cc
+        successor_generators/conditional_effects.cc
         successor_generators/full_reducer_successor_generator.cc
         successor_generators/generic_join_successor.cc
         successor_generators/ordered_join_successor.cc

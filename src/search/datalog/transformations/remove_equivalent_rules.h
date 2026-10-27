@@ -42,6 +42,11 @@ bool Datalog::remove_duplicate_rules() {
                 continue;
             if (!rules[i]->is_equivalent(*rules[j]))
                 continue;
+            // Annotated rules stand for different actions (e.g., relaxed
+            // plan extraction counts them separately), so they are never
+            // merged.
+            if (rules[i]->has_annotation() || rules[j]->has_annotation())
+                continue;
             int predicate_j = rules[j]->get_effect().get_predicate_index();
             if (predicate_j == predicate_i) {
                 // A literal duplicate of rule i is safe to drop without any

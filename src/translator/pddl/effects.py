@@ -14,15 +14,26 @@ def cartesian_product(*sequences):
 
 
 class Effect(object):
-    def __init__(self, parameters, condition, literal):
+    def __init__(self, parameters, condition, literal, fresh=False):
+        # If fresh is True, the parameters are fresh variables of an object
+        # creation effect (:new); otherwise they are universally quantified
+        # variables of a (conditional) effect.
         self.parameters = parameters
         self.condition = condition
         self.literal = literal
+        self.fresh = fresh
     def __eq__(self, other):
         return (self.__class__ is other.__class__ and
                 self.parameters == other.parameters and
                 self.condition == other.condition and
-                self.literal == other.literal)
+                self.literal == other.literal and
+                self.fresh == other.fresh)
+    def is_conditional(self):
+        # Universally quantified or conditional effect (object creation
+        # effects are not conditional).
+        if self.fresh:
+            return False
+        return bool(self.parameters) or not isinstance(self.condition, conditions.Truth)
     def dump(self):
         indent = "  "
         if self.parameters:
@@ -35,7 +46,7 @@ class Effect(object):
             indent += "  "
         print("%s%s" % (indent, self.literal))
     def copy(self):
-        return Effect(self.parameters, self.condition, self.literal)
+        return Effect(self.parameters, self.condition, self.literal, self.fresh)
     def uniquify_variables(self, type_map):
         renamings = {}
         self.parameters = [par.uniquify_name(type_map, renamings)
@@ -69,9 +80,9 @@ class Effect(object):
         if self.literal.negated:
             return None
         else:
-            return Effect(self.parameters, self.condition.relaxed(), self.literal)
+            return Effect(self.parameters, self.condition.relaxed(), self.literal, self.fresh)
     def simplified(self):
-        return Effect(self.parameters, self.condition.simplified(), self.literal)
+        return Effect(self.parameters, self.condition.simplified(), self.literal, self.fresh)
 
 
 class ConditionalEffect(object):

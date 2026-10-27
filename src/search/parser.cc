@@ -176,14 +176,88 @@ void parse_axioms(Task &task, int number_axioms, int number_axiom_strata)
     task.initialize_axioms(std::move(axioms), number_axiom_strata);
 }
 
+static vector<Argument> parse_literal_arguments(int arguments_size, const string &name)
+{
+    vector<Argument> arguments;
+    for (int k = 0; k < arguments_size; ++k) {
+        char c;
+        int obj_index;
+        cin >> c >> obj_index;
+        if (c == 'c') {
+            arguments.emplace_back(obj_index, true, false);
+        }
+        else if (c == 'p') {
+            arguments.emplace_back(obj_index, false, false);
+        }
+        else {
+            cerr << "Error while reading conditional effect of action schema " << name
+                 << ". Argument is neither constant or variable" << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+        }
+    }
+    return arguments;
+}
+
+static void parse_conditional_effect(Task &task, const string &action_name,
+                                     ConditionalEffect &ce)
+{
+    int num_vars, cond_size, eff_size;
+    cin >> num_vars >> cond_size >> eff_size;
+    for (int j = 0; j < num_vars; ++j) {
+        string param_name;
+        int index, type;
+        cin >> param_name >> index >> type;
+        ce.parameters.emplace_back(param_name, index, type);
+    }
+    for (int j = 0; j < cond_size; ++j) {
+        string atom_name;
+        int index;
+        bool negated;
+        int arguments_size;
+        cin >> atom_name >> index >> negated >> arguments_size;
+        vector<Argument> arguments = parse_literal_arguments(arguments_size, action_name);
+        if (arguments_size == 0) {
+            assert(task.nullary_predicates.find(index) != task.nullary_predicates.end());
+            if (negated)
+                ce.negative_nullary_condition.push_back(index);
+            else
+                ce.positive_nullary_condition.push_back(index);
+        }
+        else if (utils::iequals(atom_name, "=")) {
+            ce.equalities.emplace_back(std::move(arguments), std::move(atom_name), index, negated);
+        }
+        else {
+            ce.condition.emplace_back(std::move(arguments), std::move(atom_name), index, negated);
+        }
+    }
+    for (int j = 0; j < eff_size; ++j) {
+        string atom_name;
+        int index;
+        bool negated;
+        int arguments_size;
+        cin >> atom_name >> index >> negated >> arguments_size;
+        vector<Argument> arguments = parse_literal_arguments(arguments_size, action_name);
+        if (arguments_size == 0) {
+            if (negated)
+                ce.negative_nullary_effects.push_back(index);
+            else
+                ce.positive_nullary_effects.push_back(index);
+        }
+        else {
+            ce.effects.emplace_back(std::move(arguments), std::move(atom_name), index, negated);
+        }
+    }
+}
+
 void parse_action_schemas(Task &task, int number_action_schemas)
 {
     vector<ActionSchema> actions;
     for (int i = 0; i < number_action_schemas; ++i) {
         string name;
-        int cost, args, num_external_params, num_fresh_vars, precond_size, eff_size;
+        int cost, args, num_external_params, num_fresh_vars, precond_size, eff_size,
+            num_cond_effs;
         cin >> name >> cost >> args >> num_external_params >> num_fresh_vars
-            >> precond_size >> eff_size;
+            >> precond_size >> eff_size >> num_cond_effs;
         vector<Parameter> parameters;
         vector<FreshVariable> fresh_vars;
         vector<Atom> preconditions, static_preconditions, effects;
@@ -291,6 +365,10 @@ void parse_action_schemas(Task &task, int number_action_schemas)
             }
             effects.emplace_back(std::move(arguments), std::move(eff_name), index, negated);
         }
+        vector<ConditionalEffect> conditional_effects(num_cond_effs);
+        for (ConditionalEffect &ce : conditional_effects) {
+            parse_conditional_effect(task, name, ce);
+        }
         ActionSchema a(name,
                        i,
                        cost,
@@ -304,6 +382,7 @@ void parse_action_schemas(Task &task, int number_action_schemas)
                        negative_nul_precond,
                        positive_nul_eff,
                        negative_nul_eff);
+        a.set_conditional_effects(std::move(conditional_effects));
         actions.push_back(a);
     }
     task.initialize_action_schemas(actions);

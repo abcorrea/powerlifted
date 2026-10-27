@@ -28,7 +28,7 @@ uniq_fresh_var_id = naturals_iterator()
 
 
 def is_tag_supported(tag, allow_quantifiers=False):
-    if allow_quantifiers and tag in ("forall", "exists"):
+    if allow_quantifiers and tag in ("forall", "exists", "imply"):
         # Quantifiers are allowed in conditions (axiom bodies, action
         # preconditions, goals): existentials are compiled into extra
         # parameters and universals into auxiliary axioms by the
@@ -205,7 +205,7 @@ def add_effect(tmp_effect, result):
         assert isinstance(tmp_effect.effect.effect, pddl.Atom) or isinstance(tmp_effect.effect.effect, pddl.NegatedAtom)
         effect = tmp_effect.effect.effect
         parameters = tmp_effect.parameters
-        new_effect = pddl.Effect(parameters, condition, effect)
+        new_effect = pddl.Effect(parameters, condition, effect, fresh=True)
         result.append(new_effect)
     else:
         parameters = []
@@ -241,7 +241,9 @@ def add_effect(tmp_effect, result):
 
 def parse_effect(alist, type_dict, predicate_dict, fresh_var_set):
     tag = alist[0]
-    is_tag_supported(tag)
+    if tag not in ("forall", "when"):
+        # Universal and conditional effects are supported.
+        is_tag_supported(tag)
     if tag == "and":
         return pddl.ConjunctiveEffect(
             [parse_effect(eff, type_dict, predicate_dict, fresh_var_set) for eff in alist[1:]])
@@ -284,7 +286,7 @@ def parse_effect(alist, type_dict, predicate_dict, fresh_var_set):
     elif tag == "when":
         assert len(alist) == 3
         condition = parse_condition(
-            alist[1], type_dict, predicate_dict)
+            alist[1], type_dict, predicate_dict, allow_quantifiers=True)
         effect = parse_effect(alist[2], type_dict, predicate_dict, fresh_var_set)
         return pddl.ConditionalEffect(condition, effect)
     elif tag == "increase":
@@ -359,8 +361,20 @@ def parse_action(alist, type_dict, predicate_dict):
     for rest in iterator:
         assert False, rest
     if eff:
-        return pddl.Action(name, parameters, len(parameters),
-                           precondition, eff, cost)
+        # Give every quantified variable (of the precondition and of the
+        # universal effects) a name unique within the action, so that the
+        # variables of different effects never clash with each other, with
+        # the action parameters, or with compiled-away existential variables
+        # of the precondition.
+        type_map = dict((par.name, par.type_name) for par in parameters)
+        precondition = precondition.uniquify_variables(type_map)
+        for effect in eff:
+            if not effect.fresh:
+                effect.uniquify_variables(type_map)
+        action = pddl.Action(name, parameters, len(parameters),
+                             precondition, eff, cost)
+        action.type_map = type_map
+        return action
     else:
         return None
 

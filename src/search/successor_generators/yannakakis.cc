@@ -188,6 +188,20 @@ void YannakakisSuccessorGenerator::get_distinguished_variables(const ActionSchem
         }
     }
 
+    // Action parameters used by conditional effects (in their conditions or
+    // effects) determine the outcome of the action.
+    int num_params = action.get_parameters().size();
+    for (const ConditionalEffect &ce : action.get_conditional_effects()) {
+        for (const vector<Atom> *atoms : {&ce.condition, &ce.equalities, &ce.effects}) {
+            for (const Atom &atom : *atoms) {
+                for (const Argument &arg : atom.get_arguments()) {
+                    if (!arg.is_constant() && arg.get_index() < num_params)
+                        distinguished_variables[action_index].insert(arg.get_index());
+                }
+            }
+        }
+    }
+
     // Variables of negated precondition atoms are enforced by a filter on
     // the final table, so their columns must survive the projections.
     for (const Atom &atom : action.get_precondition()) {

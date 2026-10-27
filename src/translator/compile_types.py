@@ -103,7 +103,8 @@ def add_effects_to_actions(task, graph):
         new_eff = action.effects
         new_vars = set()
         for effect in action.effects:
-            new_vars = new_vars.union(set(effect.parameters))
+            if effect.fresh:
+                new_vars = new_vars.union(set(effect.parameters))
         types = set()
         for typed_obj in new_vars:
             name = typed_obj.name
@@ -119,6 +120,34 @@ def add_effects_to_actions(task, graph):
                 atom = pddl.Atom(_get_type_predicate_name(t), [name])
                 new_eff.append(pddl.Effect([], pddl.Truth, atom))
         action.effects = new_eff
+
+
+def add_conditions_to_conditional_effects(task, graph):
+    """Add unary type conditions to the condition of every universal or
+    conditional effect, one per universally quantified variable.
+
+    Besides enforcing the typing semantics, this guarantees that every
+    quantified variable occurs in at least one positive condition atom,
+    which the evaluation of the effect conditions in the search component
+    relies on.
+    """
+    for action in task.actions:
+        for effect in action.effects:
+            if not effect.is_conditional():
+                continue
+            condition = effect.condition
+            if isinstance(condition, pddl.Literal):
+                parts = [condition]
+            elif isinstance(condition, pddl.Truth) or condition is pddl.Truth:
+                parts = []
+            else:
+                assert isinstance(condition, pddl.Conjunction), \
+                    "Effect condition is not normalized: %r" % condition
+                parts = list(condition.parts)
+            for param in effect.parameters:
+                parts.append(pddl.Atom(_get_type_predicate_name(param.type_name),
+                                       [param.name]))
+            effect.condition = pddl.Conjunction(parts)
 
 
 def add_conditions_to_axioms(task, graph):
@@ -163,6 +192,9 @@ def adjust_initial_state(task, graph):
             # being added in the initial state.
             types.add(type_name)
             type_name = graph.edges[type_name]
+        # Every object is of type 'object' (parameters of type 'object' get
+        # a 'type@object' condition, which must hold for objects of any type).
+        types.add('object')
         for t in types:
             task.init.append(pddl.Atom(_get_type_predicate_name(t), [name]))
 
@@ -218,6 +250,7 @@ def compile_types(task):
     compile_into_unary_predicates(task)
     add_conditions_to_actions(task, graph)
     add_conditions_to_axioms(task, graph)
+    add_conditions_to_conditional_effects(task, graph)
     add_effects_to_actions(task, graph)
     adjust_initial_state(task, graph)
     return graph

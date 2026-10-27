@@ -18,7 +18,7 @@ using namespace std;
 GenericJoinSuccessor::GenericJoinSuccessor(const Task &task)
     : static_information(task.get_static_info()),
       axiom_evaluator(task.get_axiom_evaluator()),
-      is_predicate_static(), action_data()
+      is_predicate_static(), action_data(), conditional_effects(task)
 {
     is_predicate_static.reserve(static_information.get_relations().size());
     for (const auto &r : static_information.get_relations()) {
@@ -208,14 +208,19 @@ DBState GenericJoinSuccessor::generate_successor(
     added_atoms.clear();
     vector<bool> new_nullary_atoms(state.get_nullary_atoms());
     vector<Relation> new_relation(state.get_relations());
-    apply_nullary_effects(action, new_nullary_atoms);
-
-    if (action.is_ground()) {
-        apply_ground_action_effects(action, new_relation, op.get_fresh_vars_mapping());
+    if (action.has_conditional_effects()) {
+        apply_effects_with_conditional_effects(op, action, state, new_relation,
+                                               new_nullary_atoms);
     }
     else {
-        apply_lifted_action_effects(action, op.get_instantiation(),
-                                    new_relation, op.get_fresh_vars_mapping());
+        apply_nullary_effects(action, new_nullary_atoms);
+        if (action.is_ground()) {
+            apply_ground_action_effects(action, new_relation, op.get_fresh_vars_mapping());
+        }
+        else {
+            apply_lifted_action_effects(action, op.get_instantiation(),
+                                        new_relation, op.get_fresh_vars_mapping());
+        }
     }
 
     DBState successor(std::move(new_relation), std::move(new_nullary_atoms),
@@ -227,6 +232,67 @@ DBState GenericJoinSuccessor::generate_successor(
     // detection) representation relies on.
     axiom_evaluator.evaluate(successor);
     return successor;
+}
+
+/*
+ * All effect conditions are evaluated in the state where the action is
+ * applied. All delete effects (unconditional and conditional) are applied
+ * before all add effects (add-after-delete semantics).
+ */
+void GenericJoinSuccessor::apply_effects_with_conditional_effects(
+    const LiftedOperatorId &op,
+    const ActionSchema &action,
+    const DBState &state,
+    vector<Relation> &new_relation,
+    vector<bool> &new_nullary_atoms)
+{
+    ce_deletes.clear();
+    ce_adds.clear();
+    const auto new_objs = op.get_fresh_vars_mapping();
+    conditional_effects.evaluate(action, op.get_instantiation(), new_objs, state,
+                                 ce_deletes, ce_adds);
+
+    const auto &neg_nullary = action.get_negative_nullary_effects();
+    for (size_t i = 0; i < neg_nullary.size(); ++i) {
+        if (neg_nullary[i])
+            new_nullary_atoms[i] = false;
+    }
+    for (const Atom &eff : action.get_effects()) {
+        if (eff.is_negated()) {
+            new_relation[eff.get_predicate_symbol_idx()].tuples.erase(
+                tuple_to_atom(op.get_instantiation(), eff, new_objs));
+        }
+    }
+    for (const auto &del : ce_deletes) {
+        if (del.second.empty())
+            new_nullary_atoms[del.first] = false;
+        else
+            new_relation[del.first].tuples.erase(del.second);
+    }
+
+    const auto &pos_nullary = action.get_positive_nullary_effects();
+    for (size_t i = 0; i < pos_nullary.size(); ++i) {
+        if (pos_nullary[i]) {
+            new_nullary_atoms[i] = true;
+            add_to_added_atoms(i, GroundAtom());
+        }
+    }
+    for (const Atom &eff : action.get_effects()) {
+        if (!eff.is_negated()) {
+            GroundAtom ga = tuple_to_atom(op.get_instantiation(), eff, new_objs);
+            if (new_relation[eff.get_predicate_symbol_idx()].tuples.insert(ga).second)
+                add_to_added_atoms(eff.get_predicate_symbol_idx(), ga);
+        }
+    }
+    for (auto &add : ce_adds) {
+        if (add.second.empty()) {
+            new_nullary_atoms[add.first] = true;
+            add_to_added_atoms(add.first, GroundAtom());
+        }
+        else if (new_relation[add.first].tuples.insert(add.second).second) {
+            add_to_added_atoms(add.first, add.second);
+        }
+    }
 }
 
 void GenericJoinSuccessor::order_tuple_by_free_variable_order(const vector<int> &free_var_indices,

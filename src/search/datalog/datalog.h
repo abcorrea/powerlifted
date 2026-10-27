@@ -28,6 +28,12 @@ class Datalog {
     std::vector<std::string> predicate_names;
     std::unordered_map<std::string, int> map_new_predicates_to_idx;
 
+    //! Auxiliary nullary predicate that is always true (part of the
+    //! permanent EDB). It is the body of action rules whose action has no
+    //! (positive) precondition, so that these rules are not turned into EDB
+    //! facts (which would hide the action from relaxed plan extraction).
+    int true_predicate_idx = -1;
+
     std::vector<std::vector<GroundAtom>> useful_atoms;
 
     void create_rules(AnnotationGenerator ann);

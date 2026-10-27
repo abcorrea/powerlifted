@@ -8,6 +8,36 @@
 #include <utility>
 #include <vector>
 
+/**
+ * @brief A universally quantified conditional effect of an action schema:
+ * for all instantiations of the quantified variables satisfying the
+ * condition (in the state where the action is applied), apply the effects.
+ *
+ * Variables are indexed like action parameters: indices below the index of
+ * the first quantified variable refer to the action parameters (or fresh
+ * variables), the quantified variables follow. Every quantified variable
+ * occurs in some positive condition atom (the translator adds type atoms).
+ *
+ * @var parameters: quantified variables.
+ * @var condition: non-nullary, non-'=' condition literals (positive and
+ * negated).
+ * @var equalities: '=' condition literals (equalities and inequalities).
+ * @var positive_nullary_condition, negative_nullary_condition: nullary
+ * condition atoms (predicate indices).
+ * @var effects: non-nullary effect literals.
+ * @var positive_nullary_effects, negative_nullary_effects: nullary effects.
+ */
+struct ConditionalEffect {
+    std::vector<Parameter> parameters;
+    std::vector<Atom> condition;
+    std::vector<Atom> equalities;
+    std::vector<int> positive_nullary_condition;
+    std::vector<int> negative_nullary_condition;
+    std::vector<Atom> effects;
+    std::vector<int> positive_nullary_effects;
+    std::vector<int> negative_nullary_effects;
+};
+
 class ActionSchema {
 
     std::string name;
@@ -33,6 +63,8 @@ class ActionSchema {
     std::vector<bool> negative_nullary_precond;
     std::vector<bool> positive_nullary_effects;
     std::vector<bool> negative_nullary_effects;
+
+    std::vector<ConditionalEffect> conditional_effects;
 
 public:
     explicit ActionSchema(std::string name,
@@ -99,6 +131,18 @@ public:
 
     const std::vector<bool> &get_negative_nullary_effects() const {
         return negative_nullary_effects;
+    }
+
+    const std::vector<ConditionalEffect> &get_conditional_effects() const {
+        return conditional_effects;
+    }
+
+    bool has_conditional_effects() const {
+        return !conditional_effects.empty();
+    }
+
+    void set_conditional_effects(std::vector<ConditionalEffect> &&ces) {
+        conditional_effects = std::move(ces);
     }
 
     bool is_ground() const {

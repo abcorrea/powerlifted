@@ -195,14 +195,18 @@ before or after planner execution.
   Non-stratifiable axiom sets are rejected by the translator. The
   delete-relaxation heuristics treat axioms as zero-cost rules and relax
   negated literals away, following Fast Downward's semantics.
-- **Conditional effects**: not supported (this includes the IPC psr
-  domains, whose wait action has a universally quantified conditional
-  effect)
+- **Conditional effects**: universally quantified conditional effects are
+  supported by the join-based successor generators. Effect conditions are
+  normalized like preconditions (quantifiers, disjunctions, and negation),
+  evaluated in the state where the action is applied, and all deletes are
+  applied before all adds. The delete-relaxation heuristics turn each
+  conditional effect into a rule whose body is the action predicate plus
+  the positive condition atoms.
 - **Negated preconditions**: supported by the join-based successor
   generators (the clique-based generator rejects them, as well as
   (in)equality preconditions)
-- **Quantifiers**: supported in axiom bodies, action preconditions, and
-  goals; not supported in effects
+- **Quantifiers**: supported in axiom bodies, action preconditions, goals,
+  and effects (universal effects)
 
 ## References
 

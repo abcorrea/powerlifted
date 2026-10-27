@@ -228,16 +228,46 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
         fresh_vars = set()
         fresh_var_names = set() # set like the one above to make output code easier
         for eff in action.effects:
+            if not eff.fresh:
+                continue
             for v in eff.parameters:
                 fresh_vars.add(v)
                 fresh_var_names.add(v.name)
         fresh_vars = list(fresh_vars)
         fresh_vars.sort()
 
+        # Universal/conditional effects are grouped by their quantified
+        # variables and condition; the remaining effects are simple.
+        conditional_effects = []
+        conditional_effect_index = {}
+        simple_effects = []
+        for eff in action.effects:
+            if not eff.is_conditional():
+                simple_effects.append(eff)
+                continue
+            if isinstance(eff.condition, pddl.Falsity):
+                continue
+            # Rename the quantified variables canonically, so that effects
+            # that only differ in variable names share one condition.
+            renamings = dict((p.name, '?ce%d' % k)
+                             for k, p in enumerate(eff.parameters))
+            parameters = [pddl.TypedObject(renamings[p.name], p.type_name)
+                          for p in eff.parameters]
+            condition = rename_condition(eff.condition, renamings)
+            key = (tuple((p.name, p.type_name) for p in parameters),
+                   condition)
+            if key not in conditional_effect_index:
+                conditional_effect_index[key] = len(conditional_effects)
+                conditional_effects.append((parameters, condition, []))
+            conditional_effects[conditional_effect_index[key]][2].append(
+                eff.literal.rename_variables(renamings))
+        action.effects = simple_effects
+
         assert 0 <= action.num_external_parameters <= len(action.parameters)
         print(action.name, action.cost, len(list(action.parameters)),
               action.num_external_parameters, len(fresh_vars),
-              len(precond), len(list(action.effects)), file=output)
+              len(precond), len(list(action.effects)),
+              len(conditional_effects), file=output)
         for index, par in enumerate(action.parameters):
             parameter_index[par.name] = index
             print(par.name, index, type_index[par.type_name], file=output)
@@ -282,6 +312,71 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
                   len(eff.literal.args),
                   ' '.join(i for i in args_list),
                   file=output)
+        print_conditional_effects(output, conditional_effects, parameter_index,
+                                  object_index, predicate_index, type_index)
+
+
+def rename_condition(condition, renamings):
+    if isinstance(condition, pddl.Literal):
+        return condition.rename_variables(renamings)
+    if isinstance(condition, pddl.Conjunction):
+        return pddl.Conjunction(
+            sorted(part.rename_variables(renamings) for part in condition.parts))
+    return condition
+
+
+def print_conditional_effects(output, conditional_effects, parameter_index,
+                              object_index, predicate_index, type_index):
+    # Each universal/conditional effect is printed as
+    #    - number of quantified variables, size of condition, number of
+    #      effect literals
+    #    - the quantified variables, one per line (name, index, type index);
+    #      their indices continue after the action parameters and fresh
+    #      variables
+    #    - the condition literals, in the same format as preconditions
+    #    - the effect literals (delete effects first), in the same format as
+    #      the effects; arguments are constants ('c') or variables ('p'),
+    #      which can be action parameters or quantified variables.
+    # All conditions are evaluated in the state where the action is applied.
+    for parameters, condition, literals in conditional_effects:
+        local_index = dict(parameter_index)
+        if isinstance(condition, pddl.Literal):
+            cond_parts = [condition]
+        elif isinstance(condition, pddl.Truth) or condition is pddl.Truth:
+            cond_parts = []
+        else:
+            assert isinstance(condition, pddl.Conjunction), \
+                "Effect condition is not normalized: %r" % condition
+            cond_parts = list(condition.parts)
+        literals = sorted(set(literals), key=lambda l: (not l.negated, str(l)))
+        # Add-after-delete: a literal both added and deleted is added.
+        added = set(l for l in literals if not l.negated)
+        literals = [l for l in literals if not l.negated or l.negate() not in added]
+        print(len(parameters), len(cond_parts), len(literals), file=output)
+        for par in parameters:
+            index = len(local_index)
+            local_index[par.name] = index
+            print(par.name, index, type_index[par.type_name], file=output)
+
+        def args_of(literal):
+            args_list = []
+            for x in literal.args:
+                if x in local_index:
+                    args_list += ['p', str(local_index[x])]
+                else:
+                    args_list += ['c', str(object_index[x])]
+            return args_list
+
+        for cond in sorted(cond_parts):
+            assert isinstance(cond, pddl.Literal), \
+                "Effect condition is not normalized: %r" % cond
+            print(cond.predicate, predicate_index[cond.predicate],
+                  int(cond.negated), len(cond.args),
+                  ' '.join(args_of(cond)), file=output)
+        for literal in literals:
+            print(literal.predicate, predicate_index[literal.predicate],
+                  int(literal.negated), len(literal.args),
+                  ' '.join(args_of(literal)), file=output)
 
 
 def print_axioms(output, task, object_index, predicate_index, type_index,

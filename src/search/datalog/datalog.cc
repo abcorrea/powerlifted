@@ -93,6 +93,14 @@ void Datalog::generate_action_rule(const ActionSchema &schema,
     predicate_names.push_back(action_predicate);
     DatalogAtom eff(schema, idx);
     vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
+    if (body.empty()) {
+        if (true_predicate_idx < 0) {
+            true_predicate_idx = get_next_auxiliary_predicate_idx();
+            map_new_predicates_to_idx.emplace("@true", true_predicate_idx);
+            predicate_names.push_back("@true");
+        }
+        body.emplace_back(Arguments(), true_predicate_idx, true);
+    }
     // We reverse the body because this apparently has an affect in performance for some domains
     // (e.g., logistics). This was already done in the previous implementation.
     std::reverse(body.begin(), body.end());
@@ -116,6 +124,33 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
         DatalogAtom eff(Arguments(), eff_idx, false);
         std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
         rules.emplace_back(make_unique<GenericRule>(0, eff, body, std::move(ann), schema.get_index()));
+    }
+    /*
+     * Conditional effects: the body is the action predicate plus the
+     * positive atoms of the effect condition (negated atoms and '='
+     * literals are relaxed away; every quantified variable occurs in some
+     * positive atom).
+     */
+    for (const ConditionalEffect &ce : schema.get_conditional_effects()) {
+        vector<DatalogAtom> ce_body = body;
+        for (const Atom &condition : ce.condition) {
+            if (!condition.is_negated())
+                ce_body.emplace_back(DatalogAtom(condition));
+        }
+        for (int nullary_idx : ce.positive_nullary_condition) {
+            ce_body.emplace_back(DatalogAtom(Arguments(), nullary_idx, false));
+        }
+        for (const Atom &eff : ce.effects) {
+            if (eff.is_negated())
+                continue;
+            std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
+            rules.emplace_back(make_unique<GenericRule>(0, DatalogAtom(eff), ce_body, std::move(ann)));
+        }
+        for (int eff_idx : ce.positive_nullary_effects) {
+            DatalogAtom eff(Arguments(), eff_idx, false);
+            std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
+            rules.emplace_back(make_unique<GenericRule>(0, eff, ce_body, std::move(ann)));
+        }
     }
 }
 

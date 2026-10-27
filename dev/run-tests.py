@@ -64,6 +64,28 @@ SPECIAL_PLAN_TESTS = [
                     ('gbfs', 'rff', 'full_reducer')],
     },
     {
+        # Universally quantified conditional effects of parameterless
+        # actions without preconditions (rubiks-cube, IPC 2023).
+        'instance': 'domains/ce-rubiks/prob03.pddl',
+        'label': 'ce-rubiks-prob03',
+        'cost': 3,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'yannakakis'),
+                    ('bfs', 'blind', 'join')],
+    },
+    {
+        # Conditional effects with disjunctive conditions on static
+        # predicates, universal effects without conditions, and a
+        # universally quantified precondition (recharging-robots, IPC 2023).
+        'instance': 'domains/ce-recharging/prob05.pddl',
+        'label': 'ce-recharging-prob05',
+        'cost': None,
+        'validate': True,
+        'configs': [('gbfs', 'ff', 'yannakakis'),
+                    ('gbfs', 'add', 'full_reducer'),
+                    ('alt-bfws1', 'ff', 'yannakakis')],
+    },
+    {
         'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
         'label': 'probBLOCKS-4-0-full-novelty',
         'cost': None,
@@ -274,10 +296,9 @@ AXIOM_PLAN_TESTS = [
     {
         # Mutually recursive nullary derived predicates: exercises the
         # full-re-evaluation trigger for nullary recursive dependencies in
-        # the semi-naive axiom evaluation. (The FF value of 1 instead of 2
-        # is a pre-existing undercount for parameterless actions without
-        # preconditions, whose empty-body rules become EDB facts; the same
-        # value results without any axioms.)
+        # the semi-naive axiom evaluation. (Parameterless actions without
+        # preconditions get an always-true body atom in the Datalog program,
+        # so h-FF counts them.)
         'instance': 'domains/axioms-nullary-rec/prob01.pddl',
         'label': 'axioms-nullary-rec-01',
         'cost': 2,
@@ -289,7 +310,7 @@ AXIOM_PLAN_TESTS = [
         'required_output_by_config': {
             ('gbfs', 'add', 'full_reducer'): ['Initial heuristic value 2'],
             ('gbfs', 'hmax', 'yannakakis'): ['Initial heuristic value 2'],
-            ('gbfs', 'ff', 'full_reducer'): ['Initial heuristic value 1'],
+            ('gbfs', 'ff', 'full_reducer'): ['Initial heuristic value 2'],
         },
     },
     {
@@ -429,6 +450,23 @@ IPC_AXIOM_PLAN_TESTS = [
         'validate': True,
         'configs': [('gbfs', 'ff', 'yannakakis')],
     },
+    # The psr domains combine derived predicates with a universally
+    # quantified conditional effect (the wait action). Optimal costs found
+    # with breadth-first search.
+    {
+        'instance': 'psr-middle/p01-s17-n2-l2-f30.pddl',
+        'label': 'ipc-psr-middle-p01',
+        'cost': 4,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'yannakakis')],
+    },
+    {
+        'instance': 'psr-large/p01-s29-n2-l5-f30.pddl',
+        'label': 'ipc-psr-large-p01',
+        'cost': 6,
+        'validate': True,
+        'configs': [('bfs', 'blind', 'yannakakis')],
+    },
 ]
 
 # Exhaustive searches with a known reachable state count: derived atoms are
@@ -502,24 +540,7 @@ TRANSLATOR_REJECTION_TESTS = [
     },
 ]
 
-# The psr domains still fall outside the supported fragment: their wait
-# action has a universally quantified conditional effect. They must be
-# rejected cleanly. Only run when the benchmarks are available.
 DOWNWARD_BENCHMARKS = os.environ.get('DOWNWARD_BENCHMARKS')
-IPC_AXIOM_REJECTION_TESTS = [
-    {
-        'name': 'ipc-psr-middle',
-        'domain': 'psr-middle/domain.pddl',
-        'instance': 'psr-middle/p01-s17-n2-l2-f30.pddl',
-        'expected_text': 'not supported',
-    },
-    {
-        'name': 'ipc-psr-large',
-        'domain': 'psr-large/domain.pddl',
-        'instance': 'psr-large/p01-s29-n2-l5-f30.pddl',
-        'expected_text': 'not supported',
-    },
-]
 
 UNIT_TESTS = [
     {
@@ -1051,9 +1072,6 @@ if __name__ == '__main__':
                 Path(DOWNWARD_BENCHMARKS) / test['instance'])
             ipc_plan_tests.append(resolved)
         run_plan_test_cases(results, ipc_plan_tests)
-        for rejection_test in IPC_AXIOM_REJECTION_TESTS:
-            results.append(run_translator_rejection_test(
-                rejection_test, Path(DOWNWARD_BENCHMARKS)))
     else:
         print("Skipping IPC axiom tests (DOWNWARD_BENCHMARKS not set).")
 
