@@ -3,6 +3,8 @@
 #include "../action_schema.h"
 #include "../task.h"
 
+#include "fast_grounder.h"
+
 #include "../datalog/datalog.h"
 #include "../datalog/grounder/weighted_grounder.h"
 #include "../heuristics/utils.h"
@@ -10,6 +12,7 @@
 #include "../utils/timer.h"
 
 #include <algorithm>
+#include <malloc.h>
 #include <cstdlib>
 #include <iostream>
 
@@ -79,11 +82,14 @@ void GroundTask::get_state_facts(const DBState &state, vector<int> &out) const {
     }
 }
 
-bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_operators) {
+/*
+  Relaxed reachability with the Datalog engine (instance predicates),
+  converted to a RelaxedReachabilityResult. Kept for comparison with the
+  dedicated grounder (PWL_DATALOG_GROUNDING).
+*/
+static bool datalog_reachability(const Task &task, size_t max_datalog_facts,
+                                 RelaxedReachabilityResult &rr) {
     const size_t num_predicates = task.predicates.size();
-    atom_to_fact.assign(num_predicates, {});
-    nullary_fact.assign(num_predicates, -1);
-
     datalog::AnnotationGenerator no_annotation =
         [](int, const Task &) -> unique_ptr<datalog::Annotation> { return nullptr; };
     datalog::Datalog dl(task, no_annotation, true);
@@ -92,19 +98,6 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     dl.update_rule_indices();
     if (getenv("PWL_DEBUG_GROUNDING"))
         dl.output_rules();
-
-    datalog::WeightedGrounder grounder(dl, datalog::H_MAX, false);
-    grounder.set_fact_limit(max_datalog_facts);
-    vector<datalog::Fact> state_facts = get_datalog_facts_from_state(task.initial_state, task);
-    utils::Timer datalog_timer;
-    int result = grounder.ground(dl, state_facts, -1);
-    cout << "Datalog exploration: " << dl.get_number_of_facts() << " facts in "
-         << datalog_timer() << endl;
-    if (result == datalog::WeightedGrounder::GROUNDING_ABORTED) {
-        cout << "Grounding aborted: more than " << max_datalog_facts
-             << " Datalog facts." << endl;
-        return false;
-    }
 
     // Classify the auxiliary instance predicates.
     const auto &schemas = task.get_action_schemas();
@@ -131,38 +124,128 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
         owner[p] = i;
     }
 
-    // Facts: reachable atoms of non-static task predicates.
-    int num_dl_facts = dl.get_number_of_facts();
-    vector<int> action_facts, ce_facts, axiom_facts;
-    size_t num_action_facts = 0;
-    for (int i = 0; i < num_dl_facts; ++i) {
+    /*
+      Discard instances violating (in)equalities or negated static atoms as
+      soon as they are derived: they are not ground operators (axioms), and
+      their effects would make spurious atoms reachable.
+    */
+    const StaticInformation &static_info_ = task.get_static_info();
+    auto negated_static_holds = [&](const vector<Atom> &atoms, const vector<int> &binding) {
+        for (const Atom &a : atoms) {
+            if (!a.is_negated() || !task.predicates[a.get_predicate_symbol_idx()].isStaticPredicate())
+                continue;
+            if (static_info_.get_tuples_of_relation(a.get_predicate_symbol_idx())
+                    .count(instantiate_atom(a, binding)))
+                return true;
+        }
+        return false;
+    };
+    vector<int> filter_binding;
+    auto fact_filter = [&](const datalog::Fact &f) {
+        int p = f.get_predicate_index();
+        if (!f.is_pred_symbol_new() || p >= num_dl_predicates || kind[p] == 0)
+            return true;
+        filter_binding.clear();
+        for (const auto &t : f.get_arguments())
+            filter_binding.push_back(t.get_index());
+        if (kind[p] == 1) {
+            const ActionSchema &schema = schemas[owner[p]];
+            return equalities_hold(schema.get_static_precondition(), filter_binding) &&
+                   !negated_static_holds(schema.get_precondition(), filter_binding);
+        }
+        if (kind[p] == 2) {
+            const ActionSchema &schema = schemas[owner[p]];
+            const ConditionalEffect &ce = schema.get_conditional_effects()[sub[p]];
+            size_t num_params = schema.get_parameters().size();
+            vector<int> full(num_params + schema.get_fresh_variables().size()
+                             + ce.parameters.size(), -1);
+            for (size_t k = 0; k < num_params; ++k)
+                full[k] = filter_binding[k];
+            for (size_t k = 0; k < ce.parameters.size(); ++k)
+                full[ce.parameters[k].get_index()] = filter_binding[num_params + k];
+            return equalities_hold(ce.equalities, full) &&
+                   !negated_static_holds(ce.condition, full);
+        }
+        const Axiom &axiom = task_axioms[owner[p]];
+        return equalities_hold(axiom.get_equalities(), filter_binding) &&
+               !negated_static_holds(axiom.get_negated_body(), filter_binding);
+    };
+
+    datalog::WeightedGrounder grounder(dl, datalog::H_MAX, false);
+    grounder.set_fact_limit(max_datalog_facts);
+    grounder.set_fact_filter(fact_filter);
+    vector<datalog::Fact> state_facts = get_datalog_facts_from_state(task.initial_state, task);
+    utils::Timer datalog_timer;
+    int result = grounder.ground(dl, state_facts, -1);
+    cout << "Datalog exploration: " << dl.get_number_of_facts() << " facts in "
+         << datalog_timer() << endl;
+    if (result == datalog::WeightedGrounder::GROUNDING_ABORTED)
+        return false;
+
+    rr.atoms.assign(num_predicates, {});
+    rr.action_instances.assign(schemas.size(), {});
+    rr.ce_instances.assign(schemas.size(), {});
+    for (size_t a = 0; a < schemas.size(); ++a)
+        rr.ce_instances[a].resize(schemas[a].get_conditional_effects().size());
+    rr.axiom_instances.assign(task_axioms.size(), {});
+    for (int i = 0; i < dl.get_number_of_facts(); ++i) {
         const datalog::Fact &f = dl.get_fact_by_index(i);
         int p = f.get_predicate_index();
+        GroundAtom args;
+        for (const auto &t : f.get_arguments())
+            args.push_back(t.get_index());
         if (!f.is_pred_symbol_new()) {
-            if (p < int(num_predicates) && !task.predicates[p].isStaticPredicate()) {
-                GroundAtom args;
-                for (const auto &t : f.get_arguments())
-                    args.push_back(t.get_index());
-                add_fact(p, args);
-            }
+            if (p < int(num_predicates))
+                rr.atoms[p].push_back(args);
             continue;
         }
-        if (p >= num_dl_predicates)
+        if (p >= num_dl_predicates || kind[p] == 0)
             continue;
-        if (kind[p] == 1) {
-            action_facts.push_back(i);
-            ++num_action_facts;
-        }
-        else if (kind[p] == 2) {
-            ce_facts.push_back(i);
-        }
-        else if (kind[p] == 3) {
-            axiom_facts.push_back(i);
-        }
+        if (kind[p] == 1)
+            rr.action_instances[owner[p]].push_back(args);
+        else if (kind[p] == 2)
+            rr.ce_instances[owner[p]][sub[p]].push_back(args);
+        else
+            rr.axiom_instances[owner[p]].push_back(args);
     }
-    if (num_action_facts + ce_facts.size() > max_operators) {
+    return true;
+}
+
+bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_operators) {
+    const size_t num_predicates = task.predicates.size();
+    atom_to_fact.assign(num_predicates, {});
+    nullary_fact.assign(num_predicates, -1);
+
+    const auto &schemas = task.get_action_schemas();
+    const auto &task_axioms = task.get_axioms();
+    RelaxedReachabilityResult rr;
+    utils::Timer exploration_timer;
+    bool complete = getenv("PWL_DATALOG_GROUNDING")
+        ? datalog_reachability(task, max_datalog_facts, rr)
+        : compute_relaxed_reachability(task, max_datalog_facts, rr);
+    cout << "Relaxed reachability analysis: " << exploration_timer() << endl;
+    if (!complete) {
+        cout << "Grounding aborted: more than " << max_datalog_facts
+             << " atoms and instances." << endl;
+        return false;
+    }
+
+    // Facts: reachable atoms of non-static task predicates.
+    for (size_t p = 0; p < num_predicates; ++p) {
+        if (task.predicates[p].isStaticPredicate())
+            continue;
+        for (const GroundAtom &t : rr.atoms[p])
+            add_fact(p, t);
+    }
+    size_t num_action_facts = 0, num_ce_facts = 0;
+    for (size_t a = 0; a < schemas.size(); ++a) {
+        num_action_facts += rr.action_instances[a].size();
+        for (const auto &l : rr.ce_instances[a])
+            num_ce_facts += l.size();
+    }
+    if (num_action_facts + num_ce_facts > max_operators) {
         cout << "Grounding aborted: " << num_action_facts << " operators and "
-             << ce_facts.size() << " conditional effects." << endl;
+             << num_ce_facts << " conditional effects." << endl;
         return false;
     }
 
@@ -185,13 +268,10 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     vector<phmap::flat_hash_map<vector<int>, int, TupleHash>> op_index(schemas.size());
     operators.reserve(num_action_facts);
     vector<int> binding;
-    for (int i : action_facts) {
-        const datalog::Fact &f = dl.get_fact_by_index(i);
-        int a = owner[f.get_predicate_index()];
+    for (size_t a = 0; a < schemas.size(); ++a)
+    for (const GroundAtom &instance : rr.action_instances[a]) {
         const ActionSchema &schema = schemas[a];
-        binding.clear();
-        for (const auto &t : f.get_arguments())
-            binding.push_back(t.get_index());
+        binding.assign(instance.begin(), instance.end());
         if (!equalities_hold(schema.get_static_precondition(), binding))
             continue;
         GroundOperator op;
@@ -279,20 +359,18 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
                        back_inserter(del));
         op.del.swap(del);
         op.instantiation = binding;
-        op_index[a].emplace(binding, int(operators.size()));
+        if (schema.has_conditional_effects())
+            op_index[a].emplace(binding, int(operators.size()));
         operators.push_back(std::move(op));
     }
 
     // Ground conditional effects.
-    for (int i : ce_facts) {
-        const datalog::Fact &f = dl.get_fact_by_index(i);
-        int a = owner[f.get_predicate_index()];
-        int c = sub[f.get_predicate_index()];
+    for (size_t a = 0; a < schemas.size(); ++a)
+    for (size_t c = 0; c < rr.ce_instances[a].size(); ++c)
+    for (const GroundAtom &instance : rr.ce_instances[a][c]) {
         const ActionSchema &schema = schemas[a];
         const ConditionalEffect &ce = schema.get_conditional_effects()[c];
-        binding.clear();
-        for (const auto &t : f.get_arguments())
-            binding.push_back(t.get_index());
+        binding.assign(instance.begin(), instance.end());
         size_t num_params = schema.get_parameters().size();
         vector<int> params(binding.begin(), binding.begin() + num_params);
         auto it = op_index[a].find(params);
@@ -380,12 +458,10 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     }
 
     // Ground axioms.
-    for (int i : axiom_facts) {
-        const datalog::Fact &f = dl.get_fact_by_index(i);
-        const Axiom &axiom = task_axioms[owner[f.get_predicate_index()]];
-        binding.clear();
-        for (const auto &t : f.get_arguments())
-            binding.push_back(t.get_index());
+    for (size_t ax = 0; ax < task_axioms.size(); ++ax)
+    for (const GroundAtom &instance : rr.axiom_instances[ax]) {
+        const Axiom &axiom = task_axioms[ax];
+        binding.assign(instance.begin(), instance.end());
         if (!equalities_hold(axiom.get_equalities(), binding))
             continue;
         GroundAxiom gax;
@@ -478,8 +554,8 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
 
     if (getenv("PWL_DEBUG_GROUNDING")) {
         vector<int> per_schema(schemas.size(), 0), per_schema_kept(schemas.size(), 0);
-        for (int i : action_facts)
-            ++per_schema[owner[dl.get_fact_by_index(i).get_predicate_index()]];
+        for (size_t a = 0; a < schemas.size(); ++a)
+            per_schema[a] = rr.action_instances[a].size();
         for (const auto &op : operators)
             ++per_schema_kept[op.schema];
         for (size_t a = 0; a < schemas.size(); ++a)
@@ -510,6 +586,11 @@ shared_ptr<GroundTask> GroundTask::get_cached(const Task &task) {
     auto ground_task = make_shared<GroundTask>();
     if (ground_task->build(task, 4000000, 2000000)) {
         cached = ground_task;
+    }
+    else {
+        ground_task.reset();
+        // Return the memory of the aborted exploration to the system.
+        malloc_trim(0);
     }
     cout << "Grounding time: " << timer() << endl;
     return cached;

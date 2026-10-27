@@ -4,6 +4,7 @@
 #include "../states/state.h"
 
 #include <algorithm>
+#include <iostream>
 #include <limits>
 
 using namespace std;
@@ -16,24 +17,98 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
     num_base_facts = g.num_facts();
     complement.assign(num_base_facts, -1);
     num_facts = num_base_facts;
-    // Derived atoms are never deleted by operators, so their complements
-    // could only be "achieved" by the state; negated derived atoms are
-    // relaxed away instead (like the Datalog heuristics do).
-    auto need_complement = [&](const vector<int> &facts) {
-        for (int f : facts) {
-            if (task.predicates[g.facts[f].first].isDerivedPredicate())
-                continue;
-            if (complement[f] < 0) {
-                complement[f] = num_facts++;
-                complement_base.push_back(f);
+    /*
+      Complement facts. For a non-derived fact f, not-f is added by the
+      operators deleting f. Derived facts are never deleted by operators:
+      not-d holds iff the body of every ground axiom for d is false, i.e.,
+      iff some literal of each body is false. If this CNF has few
+      combinations, each combination (one falsified literal per body) becomes
+      a zero-cost relaxed operator achieving not-d (like Fast Downward's
+      negated axioms); otherwise the negated derived atom is relaxed away.
+    */
+    auto is_derived = [&](int f) {
+        return task.predicates[g.facts[f].first].isDerivedPredicate();
+    };
+    vector<int> needed;
+    for (const GroundOperator &op : g.operators)
+        needed.insert(needed.end(), op.negated_pre.begin(), op.negated_pre.end());
+    for (const GroundConditionalEffect &ce : g.conditional_effects)
+        needed.insert(needed.end(), ce.negated_condition.begin(), ce.negated_condition.end());
+    needed.insert(needed.end(), g.negated_goal.begin(), g.negated_goal.end());
+    sort(needed.begin(), needed.end());
+    needed.erase(unique(needed.begin(), needed.end()), needed.end());
+
+    vector<vector<int>> axioms_by_head(num_base_facts);
+    for (size_t i = 0; i < g.axioms.size(); ++i)
+        axioms_by_head[g.axioms[i].head].push_back(i);
+    // Combinations per negated derived fact; a requirement r >= 0 is the fact
+    // r itself, r < 0 is the complement of fact -r - 1.
+    vector<pair<int, vector<vector<int>>>> negated_axioms;
+    vector<int> needed_base;
+    int num_negations_relaxed_away = 0;
+    for (int d : needed) {
+        if (!is_derived(d)) {
+            needed_base.push_back(d);
+            continue;
+        }
+        vector<vector<int>> bodies;
+        bool possible = true;
+        long long combinations = 1;
+        for (int a : axioms_by_head[d]) {
+            const GroundAxiom &ax = g.axioms[a];
+            vector<int> literals;
+            for (int f : ax.body) {
+                if (is_derived(f)) {
+                    possible = false;
+                    break;
+                }
+                literals.push_back(-f - 1);
+            }
+            for (int f : ax.negated_body)
+                literals.push_back(f);
+            if (!possible)
+                break;
+            combinations *= max<size_t>(literals.size(), 1);
+            if (combinations > 32) {
+                possible = false;
+                break;
+            }
+            bodies.push_back(literals);
+        }
+        if (!possible) {
+            ++num_negations_relaxed_away;
+            continue;
+        }
+        vector<vector<int>> combos(1);
+        for (const vector<int> &body : bodies) {
+            vector<vector<int>> next;
+            for (const vector<int> &c : combos) {
+                for (int lit : body) {
+                    next.push_back(c);
+                    next.back().push_back(lit);
+                }
+            }
+            // An empty body is always true: not-d is unreachable.
+            combos.swap(next);
+        }
+        for (const vector<int> &c : combos) {
+            for (int lit : c) {
+                if (lit < 0)
+                    needed_base.push_back(-lit - 1);
             }
         }
+        negated_axioms.emplace_back(d, std::move(combos));
+    }
+    auto add_complement = [&](int f) {
+        if (complement[f] < 0) {
+            complement[f] = num_facts++;
+            complement_base.push_back(f);
+        }
     };
-    for (const GroundOperator &op : g.operators)
-        need_complement(op.negated_pre);
-    for (const GroundConditionalEffect &ce : g.conditional_effects)
-        need_complement(ce.negated_condition);
-    need_complement(g.negated_goal);
+    for (int f : needed_base)
+        add_complement(f);
+    for (const auto &entry : negated_axioms)
+        add_complement(entry.first);
     auto with_complements = [&](const vector<int> &pos, const vector<int> &neg) {
         vector<int> result = pos;
         for (int f : neg) {
@@ -79,10 +154,22 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
     for (const GroundAxiom &ax : g.axioms) {
         add_relaxed_op(ax.body, nullptr, vector<int>{ax.head}, 0, -1);
     }
+    for (const auto &entry : negated_axioms) {
+        vector<int> eff{complement[entry.first]};
+        for (const vector<int> &c : entry.second) {
+            vector<int> pre;
+            for (int lit : c)
+                pre.push_back(lit >= 0 ? lit : complement[-lit - 1]);
+            add_relaxed_op(pre, nullptr, eff, 0, -1);
+        }
+    }
     op_pre_start.push_back(op_pre.size());
     op_eff_start.push_back(op_eff.size());
     for (const GroundOperator &op : g.operators)
         op_action_cost.push_back(op.cost);
+
+    goal = with_complements(g.goal, g.negated_goal);
+    prune_irrelevant(g, num_negations_relaxed_away > 0);
 
     // Precondition-of lists.
     int num_ops = op_base_cost.size();
@@ -99,17 +186,117 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
             pre_of[pos[op_pre[i]]++] = r;
     }
 
-    goal = with_complements(g.goal, g.negated_goal);
     goal_unreachable = g.goal_unreachable;
 
-    fact_cost.resize(num_facts);
-    supporter.resize(num_facts);
-    op_unsatisfied.resize(num_ops);
-    op_cost.resize(num_ops);
+    fact_state.assign(num_facts, FactState());
+    relaxed_ops.resize(num_ops);
+    for (int r = 0; r < num_ops; ++r) {
+        RelaxedOp &o = relaxed_ops[r];
+        o.base_cost = op_base_cost[r];
+        o.num_pre = op_num_pre[r];
+        o.eff_begin = op_eff_start[r];
+        o.eff_end = op_eff_start[r + 1];
+    }
     in_state.assign(num_facts, 0);
     marked_fact.assign(num_facts, 0);
     marked_action.assign(g.operators.size(), 0);
     useful_atoms.resize(task.predicates.size());
+}
+
+/*
+  Backward relevance analysis: goal facts are relevant, and so are the
+  preconditions of relaxed operators achieving relevant facts. Relaxed
+  operators (and effects) achieving no relevant fact cannot influence the
+  heuristic and are removed. A ground action is relevant if some relaxed
+  operator of it achieves a relevant fact; irrelevant actions are never
+  needed in a plan, unless some negated condition was relaxed away
+  (negated derived atoms without negated axioms, negated axiom bodies).
+*/
+void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation_relaxed) {
+    int num_ops = op_base_cost.size();
+    vector<int> count(num_facts + 1, 0);
+    for (int e : op_eff)
+        ++count[e + 1];
+    for (int f = 0; f < num_facts; ++f)
+        count[f + 1] += count[f];
+    vector<int> achievers(op_eff.size());
+    vector<int> pos(count.begin(), count.end() - 1);
+    for (int r = 0; r < num_ops; ++r) {
+        for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i)
+            achievers[pos[op_eff[i]]++] = r;
+    }
+    vector<char> relevant_fact(num_facts, 0), relevant_op(num_ops, 0);
+    vector<int> stack;
+    for (int f : goal) {
+        if (!relevant_fact[f]) {
+            relevant_fact[f] = 1;
+            stack.push_back(f);
+        }
+    }
+    while (!stack.empty()) {
+        int f = stack.back();
+        stack.pop_back();
+        for (int k = count[f]; k < count[f + 1]; ++k) {
+            int r = achievers[k];
+            if (relevant_op[r])
+                continue;
+            relevant_op[r] = 1;
+            for (int i = op_pre_start[r]; i < op_pre_start[r + 1]; ++i) {
+                int p = op_pre[i];
+                if (!relevant_fact[p]) {
+                    relevant_fact[p] = 1;
+                    stack.push_back(p);
+                }
+            }
+        }
+    }
+
+    vector<int> new_pre_start, new_pre, new_eff_start, new_eff, new_base_cost, new_num_pre,
+        new_action;
+    no_pre_ops.clear();
+    relevant_action.assign(g.operators.size(), 0);
+    for (int r = 0; r < num_ops; ++r) {
+        if (!relevant_op[r])
+            continue;
+        int id = new_base_cost.size();
+        new_pre_start.push_back(new_pre.size());
+        new_pre.insert(new_pre.end(), op_pre.begin() + op_pre_start[r],
+                       op_pre.begin() + op_pre_start[r + 1]);
+        new_eff_start.push_back(new_eff.size());
+        for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i) {
+            if (relevant_fact[op_eff[i]])
+                new_eff.push_back(op_eff[i]);
+        }
+        new_base_cost.push_back(op_base_cost[r]);
+        new_num_pre.push_back(op_num_pre[r]);
+        new_action.push_back(op_action[r]);
+        if (op_action[r] >= 0)
+            relevant_action[op_action[r]] = 1;
+        if (op_num_pre[r] == 0)
+            no_pre_ops.push_back(id);
+    }
+    new_pre_start.push_back(new_pre.size());
+    new_eff_start.push_back(new_eff.size());
+    int num_relevant_actions = count_if(relevant_action.begin(), relevant_action.end(),
+                                        [](char c) { return c; });
+    cout << "Relevance analysis: " << new_base_cost.size() << " of " << num_ops
+         << " relaxed operators, " << num_relevant_actions << " of " << g.operators.size()
+         << " actions relevant." << endl;
+    op_pre_start.swap(new_pre_start);
+    op_pre.swap(new_pre);
+    op_eff_start.swap(new_eff_start);
+    op_eff.swap(new_eff);
+    op_base_cost.swap(new_base_cost);
+    op_num_pre.swap(new_num_pre);
+    op_action.swap(new_action);
+
+    bool negated_axiom_bodies = false;
+    for (const GroundAxiom &ax : g.axioms) {
+        if (!ax.negated_body.empty())
+            negated_axiom_bodies = true;
+    }
+    if (some_negation_relaxed || negated_axiom_bodies)
+        relevant_action.assign(g.operators.size(), 1);
 }
 
 void GroundedHeuristic::push(int fact, int cost) {
@@ -119,34 +306,44 @@ void GroundedHeuristic::push(int fact, int cost) {
 }
 
 int GroundedHeuristic::explore() {
-    fill(fact_cost.begin(), fact_cost.end(), INF);
-    copy(op_num_pre.begin(), op_num_pre.end(), op_unsatisfied.begin());
-    fill(op_cost.begin(), op_cost.end(), 0);
+    // Generation stamps make untouched facts and operators implicitly reset.
+    if (++generation == numeric_limits<int>::max()) {
+        generation = 1;
+        for (auto &f : fact_state)
+            f.stamp = 0;
+        for (auto &o : relaxed_ops)
+            o.stamp = 0;
+    }
+    const int gen = generation;
     for (auto &b : buckets)
         b.clear();
+    auto cost_of = [&](int f) {
+        return fact_state[f].stamp == gen ? fact_state[f].cost : INF;
+    };
+    auto improve = [&](int f, int cost, int r) {
+        FactState &fs = fact_state[f];
+        if (fs.stamp != gen) {
+            fs.stamp = gen;
+        }
+        else if (fs.cost < 0 || cost >= fs.cost) {
+            return;
+        }
+        fs.cost = cost;
+        fs.supporter = r;
+        push(f, cost);
+    };
 
-    for (int f : state_facts) {
-        if (fact_cost[f] != 0) {
-            fact_cost[f] = 0;
-            supporter[f] = -1;
-            push(f, 0);
-        }
-    }
+    for (int f : state_facts)
+        improve(f, 0, -1);
     for (int r : no_pre_ops) {
-        int cost = op_base_cost[r];
-        for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i) {
-            int e = op_eff[i];
-            if (cost < fact_cost[e]) {
-                fact_cost[e] = cost;
-                supporter[e] = r;
-                push(e, cost);
-            }
-        }
+        const RelaxedOp &o = relaxed_ops[r];
+        for (int i = o.eff_begin; i < o.eff_end; ++i)
+            improve(op_eff[i], o.base_cost, r);
     }
 
     int goals_remaining = 0;
     for (int f : goal) {
-        if (fact_cost[f] != 0)
+        if (cost_of(f) != 0)
             ++goals_remaining;
     }
     if (goals_remaining == 0)
@@ -156,27 +353,27 @@ int GroundedHeuristic::explore() {
     for (size_t c = 0; c < buckets.size(); ++c) {
         for (size_t i = 0; i < buckets[c].size(); ++i) {
             int f = buckets[c][i];
-            if (fact_cost[f] != int(c))
+            FactState &fs = fact_state[f];
+            if (fs.cost != int(c))
                 continue;
             // Mark as closed (a fact can be queued several times at the same
             // cost): costs are never negative, so -1 - c encodes "closed".
-            fact_cost[f] = -1 - int(c);
+            fs.cost = -1 - int(c);
             for (int k = pre_of_start[f]; k < pre_of_start[f + 1]; ++k) {
-                int r = pre_of[k];
+                RelaxedOp &o = relaxed_ops[pre_of[k]];
+                if (o.stamp != gen) {
+                    o.stamp = gen;
+                    o.unsatisfied = o.num_pre;
+                    o.cost = 0;
+                }
                 if (is_max)
-                    op_cost[r] = max(op_cost[r], int(c));
+                    o.cost = max(o.cost, int(c));
                 else
-                    op_cost[r] += c;
-                if (--op_unsatisfied[r] == 0) {
-                    int cost = op_cost[r] + op_base_cost[r];
-                    for (int j = op_eff_start[r]; j < op_eff_start[r + 1]; ++j) {
-                        int e = op_eff[j];
-                        if (fact_cost[e] >= 0 && cost < fact_cost[e]) {
-                            fact_cost[e] = cost;
-                            supporter[e] = r;
-                            push(e, cost);
-                        }
-                    }
+                    o.cost += c;
+                if (--o.unsatisfied == 0) {
+                    int cost = o.cost + o.base_cost;
+                    for (int j = o.eff_begin; j < o.eff_end; ++j)
+                        improve(op_eff[j], cost, pre_of[k]);
                 }
             }
         }
@@ -184,7 +381,7 @@ int GroundedHeuristic::explore() {
         // <= c are closed then.
         bool all_closed = true;
         for (int g : goal) {
-            if (fact_cost[g] >= 0) {
+            if (cost_of(g) >= 0) {
                 all_closed = false;
                 break;
             }
@@ -195,9 +392,10 @@ int GroundedHeuristic::explore() {
 
     int h = 0;
     for (int g : goal) {
-        if (fact_cost[g] >= 0)
+        int cost = cost_of(g);
+        if (cost >= 0)
             return UNSOLVABLE_STATE;
-        int cost = -1 - fact_cost[g];
+        cost = -1 - cost;
         if (is_max)
             h = max(h, cost);
         else
@@ -233,12 +431,14 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
     }
     relaxed_plan.clear();
     useful_facts.clear();
+    last_hadd = UNSOLVABLE_STATE;
     if (goal_unreachable)
         return UNSOLVABLE_STATE;
 
     state_facts = facts;
     add_complement_facts(facts, state_facts);
     int h = explore();
+    last_hadd = h;
     if (h == UNSOLVABLE_STATE || h == 0 || type != FF)
         return h;
 
@@ -258,7 +458,7 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
             continue;
         marked_fact[f] = 1;
         marked_facts_list.push_back(f);
-        int r = supporter[f];
+        int r = fact_state[f].supporter;
         int a = op_action[r];
         if (a >= 0 && !marked_action[a]) {
             marked_action[a] = 1;

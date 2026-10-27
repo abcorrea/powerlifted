@@ -13,6 +13,7 @@ endif()
 
 set(CORE_SOURCES
         main.cc
+        grounding/fast_grounder.cc
         grounding/ground_task.cc
         grounded/grounded_search.cc
         grounded/landmarks.cc

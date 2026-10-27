@@ -104,6 +104,9 @@ def parse_options():
                            help="flag if the actions should be treated as unit-cost actions")
     parser.add_argument("--force-lifted", action="store_true",
                         help="never ground the task (lifted search and heuristics only)")
+    parser.add_argument("--grounded-queues", default=None,
+                        help="open lists of the grounded search (comma-separated subset "
+                             "of novelty, ff, add, lm)")
     parser.add_argument("--keep-translator-file", action="store_true",
                         help="flag if the translator file should be kept")
     parser.add_argument("--validate", action="store_true",

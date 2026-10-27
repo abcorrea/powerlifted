@@ -52,11 +52,24 @@ private:
     std::vector<int> goal;
     bool goal_unreachable;
 
-    // Per-evaluation data.
-    std::vector<int> fact_cost;
-    std::vector<int> supporter;
-    std::vector<int> op_unsatisfied;
-    std::vector<int> op_cost;
+    // Per-evaluation data (valid if the stamp equals the generation).
+    struct FactState {
+        int stamp = 0;
+        int cost = 0;
+        int supporter = -1;
+    };
+    struct RelaxedOp {
+        int stamp = 0;
+        int unsatisfied = 0;
+        int cost = 0;
+        int base_cost = 0;
+        int num_pre = 0;
+        int eff_begin = 0;
+        int eff_end = 0;
+    };
+    std::vector<FactState> fact_state;
+    std::vector<RelaxedOp> relaxed_ops;
+    int generation = 0;
     std::vector<std::vector<int>> buckets;
     std::vector<int> state_facts;
     std::vector<char> in_state;
@@ -67,9 +80,14 @@ private:
     std::vector<int> stack;
     std::vector<int> relaxed_plan;
     std::vector<int> useful_facts;
+    int last_hadd = 0;
+
+    //! Ground actions that can contribute to reaching the goal.
+    std::vector<char> relevant_action;
 
     void push(int fact, int cost);
     int explore();
+    void prune_irrelevant(const GroundTask &g, bool some_negation_relaxed);
 
 public:
     GroundedHeuristic(const Task &task, std::shared_ptr<GroundTask> ground_task, Type type);
@@ -84,10 +102,21 @@ public:
      */
     int compute_for_facts(const std::vector<int> &facts, bool fill_useful_atoms);
 
+    //! h-add value of the last evaluated state (also computed by h-FF).
+    int get_last_hadd() const {
+        return last_hadd;
+    }
+
     //! Facts of the last relaxed plan that are false in the evaluated
     //! state (h-FF). Ids >= get_num_base_facts() are complement facts.
     const std::vector<int> &get_useful_facts() const {
         return useful_facts;
+    }
+
+    //! Ground actions that are relevant for the goal (all actions if the
+    //! analysis cannot rule out any).
+    const std::vector<char> &get_relevant_actions() const {
+        return relevant_action;
     }
 
     int get_num_base_facts() const {

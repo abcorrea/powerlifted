@@ -274,6 +274,26 @@ GroundSuccessorGenerator::GroundSuccessorGenerator(const GroundTask &task)
     ax_unsatisfied.assign(order.size(), 0);
 }
 
+void GroundSuccessorGenerator::restrict_operators(const vector<char> &allowed) {
+    vector<int> new_watch_start, new_watch;
+    for (size_t f = 0; f + 1 < watch_start.size(); ++f) {
+        new_watch_start.push_back(new_watch.size());
+        for (int i = watch_start[f]; i < watch_start[f + 1]; ++i) {
+            if (allowed[watch[i]])
+                new_watch.push_back(watch[i]);
+        }
+    }
+    new_watch_start.push_back(new_watch.size());
+    watch_start.swap(new_watch_start);
+    watch.swap(new_watch);
+    vector<int> new_no_pre;
+    for (int o : no_pre_ops) {
+        if (allowed[o])
+            new_no_pre.push_back(o);
+    }
+    no_pre_ops.swap(new_no_pre);
+}
+
 void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
                                               const vector<int> &true_facts,
                                               vector<int> &ops) const {
@@ -411,10 +431,11 @@ void GroundSuccessorGenerator::apply(const uint64_t *parent_bits, int o, uint64_
 
 GroundedSearch::GroundedSearch(const Task &task, shared_ptr<GroundTask> gt,
                                const string &heuristic_name, bool full_novelty_check,
-                               int width, bool use_novelty, bool use_ff, bool use_lm)
+                               int width, bool use_novelty, bool use_ff, bool use_add,
+                               bool use_lm)
     : task(task), ground_task(std::move(gt)), heuristic_name(heuristic_name),
       full_novelty_check(full_novelty_check), width(width),
-      use_novelty(use_novelty), use_ff(use_ff), use_lm(use_lm),
+      use_novelty(use_novelty), use_ff(use_ff), use_add(use_add), use_lm(use_lm),
       compress_chains(!getenv("PWL_NO_CHAINS")),
       registry(ground_task->num_facts()), generator(*ground_task) {
     GroundedHeuristic::Type type = GroundedHeuristic::FF;
@@ -423,6 +444,7 @@ GroundedSearch::GroundedSearch(const Task &task, shared_ptr<GroundTask> gt,
     else if (heuristic_name == "hmax")
         type = GroundedHeuristic::MAX;
     heuristic = make_unique<GroundedHeuristic>(task, ground_task, type);
+    generator.restrict_operators(heuristic->get_relevant_actions());
     num_words = registry.get_num_words();
     goal_pos = ground_task->goal;
     const GoalCondition &goal = task.get_goal();
@@ -481,8 +503,8 @@ void GroundedSearch::extract_and_print_plan(int state_id) const {
 
 utils::ExitCode GroundedSearch::search() {
     cout << "Starting grounded search (queues:" << (use_novelty ? " novelty" : "")
-         << (use_ff ? " ff" : "") << (use_lm ? " landmarks" : "") << ", width " << width
-         << ")" << endl;
+         << (use_ff ? " ff" : "") << (use_add ? " add" : "") << (use_lm ? " landmarks" : "")
+         << ", width " << width << ")" << endl;
     clock_t timer_start = clock();
 
     if (ground_task->goal_unreachable) {
@@ -545,7 +567,7 @@ utils::ExitCode GroundedSearch::search() {
         if (!lm->is_ok()) {
             lm.reset();
             use_lm = false;
-            if (!use_novelty && !use_ff)
+            if (!use_novelty && !use_ff && !use_add)
                 use_ff = true;
         }
         else {
@@ -571,7 +593,6 @@ utils::ExitCode GroundedSearch::search() {
             parent.resize(id + 1, -1);
             parent_op.resize(id + 1, -1);
             g_value.resize(id + 1, 0);
-            h_value.resize(id + 1, 0);
             num_unsat_goals.resize(id + 1, 0);
             num_unsat_relevant.resize(id + 1, 0);
             closed.resize(id + 1, 0);
@@ -587,7 +608,6 @@ utils::ExitCode GroundedSearch::search() {
     const uint64_t *root_bits = registry.get(root);
     num_unsat_goals[root] = count_unsatisfied_goals(root_bits);
     num_unsat_relevant[root] = count_unsatisfied_relevant(root_bits);
-    h_value[root] = h0;
     full_novelty(root_bits, num_unsat_goals[root], num_unsat_relevant[root]);
     int h_lm0 = 0;
     if (lm) {
@@ -606,18 +626,23 @@ utils::ExitCode GroundedSearch::search() {
     }
 
     // Open lists: one regular and one preferred list per queue type.
-    enum {NOVELTY_QUEUE, FF_QUEUE, LM_QUEUE};
+    enum {NOVELTY_QUEUE, FF_QUEUE, ADD_QUEUE, LM_QUEUE};
     vector<int> queue_types;
     if (use_novelty)
         queue_types.push_back(NOVELTY_QUEUE);
     if (use_ff)
         queue_types.push_back(FF_QUEUE);
+    if (use_add)
+        queue_types.push_back(ADD_QUEUE);
     if (use_lm)
         queue_types.push_back(LM_QUEUE);
+    if (queue_types.empty())
+        queue_types.push_back(FF_QUEUE);
     int num_queues = queue_types.size();
     vector<KeyedOpenList<3>> regular(num_queues), preferred_lists(num_queues);
     size_t turn = 0;
     int priority = 1000;
+    int h_add = 0;
     auto insert = [&](int id, int h_ff, int h_lm, int g, int gc, int novelty, bool preferred) {
         for (int q = 0; q < num_queues; ++q) {
             array<int, 3> key;
@@ -625,6 +650,8 @@ utils::ExitCode GroundedSearch::search() {
                 key = {novelty, gc, g};
             else if (queue_types[q] == FF_QUEUE)
                 key = {h_ff, g, 0};
+            else if (queue_types[q] == ADD_QUEUE)
+                key = {h_add, g, 0};
             else
                 key = {h_lm, h_ff, 0};
             regular[q].push(key, id);
@@ -650,6 +677,8 @@ utils::ExitCode GroundedSearch::search() {
 
     int best_h = h0;
     int best_h_lm = h_lm0;
+    int best_h_add = heuristic->get_last_hadd();
+    cout << "Initial h-add value: " << best_h_add << endl;
     vector<int> applicable;
     vector<int> added, removed;
     // Indexed by base fact. Bit 1: the fact is in the relaxed plan, bit 2:
@@ -684,10 +713,14 @@ utils::ExitCode GroundedSearch::search() {
         ++evaluated;
         if (h == UNSOLVABLE_STATE)
             continue;
-        h_value[sid] = h;
+        h_add = heuristic->get_last_hadd();
         bool progress = false;
         if (h < best_h) {
             best_h = h;
+            progress = true;
+        }
+        if (use_add && h_add < best_h_add) {
+            best_h_add = h_add;
             progress = true;
         }
         if (lm) {
@@ -701,6 +734,8 @@ utils::ExitCode GroundedSearch::search() {
         if (progress) {
             priority += 1000;
             cout << "New heuristic value expanded: h=" << best_h;
+            if (use_add)
+                cout << ", h_add=" << best_h_add;
             if (lm)
                 cout << ", h_lm=" << best_h_lm;
             cout << " [expansions: " << expanded << ", evaluations: " << evaluated
@@ -831,7 +866,6 @@ utils::ExitCode GroundedSearch::search() {
             parent[cid] = sid;
             parent_op[cid] = op_ref;
             g_value[cid] = dist;
-            h_value[cid] = h;
             int gc = count_unsatisfied_goals(child.data());
             int rc = count_unsatisfied_relevant(child.data());
             num_unsat_goals[cid] = gc;

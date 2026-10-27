@@ -50,6 +50,9 @@ class GroundSuccessorGenerator {
 public:
     explicit GroundSuccessorGenerator(const GroundTask &task);
 
+    //! Only generate the operators marked in `allowed`.
+    void restrict_operators(const std::vector<char> &allowed);
+
     void get_applicable(const uint64_t *bits, const std::vector<int> &true_facts,
                         std::vector<int> &ops) const;
 
@@ -86,6 +89,7 @@ class GroundedSearch {
     int width;
     bool use_novelty;
     bool use_ff;
+    bool use_add;
     bool use_lm;
     bool compress_chains;
 
@@ -101,7 +105,6 @@ class GroundedSearch {
     std::vector<int> parent;
     std::vector<int> parent_op;
     std::vector<int> g_value;
-    std::vector<int> h_value;
     std::vector<short> num_unsat_goals;
     std::vector<int> num_unsat_relevant;
     std::vector<char> closed;
@@ -125,7 +128,7 @@ class GroundedSearch {
 public:
     GroundedSearch(const Task &task, std::shared_ptr<GroundTask> ground_task,
                    const std::string &heuristic_name, bool full_novelty_check, int width,
-                   bool use_novelty, bool use_ff, bool use_lm);
+                   bool use_novelty, bool use_ff, bool use_add, bool use_lm);
     ~GroundedSearch();
 
     utils::ExitCode search();

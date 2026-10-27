@@ -120,12 +120,24 @@ int main(int argc, char *argv[])
             if (ground_task) {
                 PlanManager::set_plan_filename(opt.get_plan_file());
                 bool use_novelty = engine != "lama";
+                bool use_ff = true;
+                bool use_add = false;
                 bool use_lm = engine == "lama" || engine == "alt-bfws1-lm" ||
                     engine == "alt-bfws2-lm";
+                const std::string &queues = opt.get_grounded_queues();
+                if (!queues.empty()) {
+                    auto has = [&](const std::string &q) {
+                        return ("," + queues + ",").find("," + q + ",") != std::string::npos;
+                    };
+                    use_novelty = has("novelty");
+                    use_ff = has("ff");
+                    use_add = has("add");
+                    use_lm = has("lm");
+                }
                 int width = (engine == "alt-bfws2" || engine == "alt-bfws2-lm") ? 2 : 1;
                 GroundedSearch search(task, ground_task, opt.get_evaluator(),
                                       opt.use_full_novelty_check(), width,
-                                      use_novelty, true, use_lm);
+                                      use_novelty, use_ff, use_add, use_lm);
                 auto exitcode = search.search();
                 search.print_statistics();
                 utils::report_exit_code_reentrant(exitcode);

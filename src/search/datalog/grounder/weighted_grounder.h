@@ -14,6 +14,7 @@
 #include <iostream>
 #include <limits>
 #include <unordered_set>
+#include <functional>
 #include <vector>
 
 namespace datalog {
@@ -75,6 +76,10 @@ class WeightedGrounder : public Grounder {
     //! If positive, ground() gives up (and returns GROUNDING_ABORTED) as
     //! soon as more facts than this have been produced.
     size_t fact_limit = 0;
+
+    //! Optional filter on newly derived facts: a fact is discarded if the
+    //! filter returns false.
+    std::function<bool(const Fact &)> fact_filter;
 
     void compute_abstract_costs(Datalog &datalog,
                                 const std::vector<Fact> &state_facts,
@@ -138,6 +143,10 @@ public:
 
     void set_fact_limit(size_t limit) {
         fact_limit = limit;
+    }
+
+    void set_fact_filter(std::function<bool(const Fact &)> filter) {
+        fact_filter = std::move(filter);
     }
 
     int ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) override;

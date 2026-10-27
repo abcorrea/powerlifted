@@ -78,6 +78,8 @@ def set_extra_options(options):
         CPP_EXTRA_OPTIONS += ['--novelty-early-stop', str(1)]
     if options.force_lifted:
         CPP_EXTRA_OPTIONS.append('--force-lifted')
+    if options.grounded_queues:
+        CPP_EXTRA_OPTIONS += ['--grounded-queues', options.grounded_queues]
 
 
     # Checks if unit-cost flag is true

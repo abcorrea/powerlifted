@@ -258,6 +258,8 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
             // Note: using for loop for performance reasons, this is a heavily used loop
             for (unsigned i=0, sz=newfacts.size(); i < sz; ++i) {
                 auto& new_fact = newfacts[i];
+                if (fact_filter && !fact_filter(new_fact))
+                    continue;
                 int id = is_cheapest_path_to_achieve_fact(new_fact, reached_facts, datalog);
                 //datalog.output_atom(new_fact);
                 //std::cout << std::endl << std::flush;

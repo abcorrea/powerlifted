@@ -18,6 +18,7 @@ class Options {
     bool full_novelty_check;
     bool novelty_early_stop;
     bool force_lifted = false;
+    std::string grounded_queues;
     unsigned seed;
 
     static void print_help()
@@ -35,7 +36,9 @@ class Options {
                   << "  --novelty-early-stop[=BOOL] Stop evaluating novelty early "
                      "(default: false)\n"
                   << "  --force-lifted[=BOOL] Never ground the task: lifted search and "
-                     "heuristics only (default: false)\n";
+                     "heuristics only (default: false)\n"
+                  << "  --grounded-queues    Open lists of the grounded search, e.g. "
+                     "novelty,ff,add,lm\n";
     }
 
     static bool is_option_name(const std::string &arg)
@@ -178,6 +181,10 @@ public:
                          has_inline_value(arg, "--novelty-early-stop")) {
                     novelty_early_stop = take_bool_value(args, i, "--novelty-early-stop");
                 }
+                else if (is_named_option(arg, "--grounded-queues") ||
+                         has_inline_value(arg, "--grounded-queues")) {
+                    grounded_queues = take_required_value(args, i, "--grounded-queues");
+                }
                 else if (is_named_option(arg, "--force-lifted") ||
                          has_inline_value(arg, "--force-lifted")) {
                     force_lifted = take_bool_value(args, i, "--force-lifted");
@@ -215,6 +222,10 @@ public:
 
     //! Never ground the task (lifted search and lifted heuristics only).
     bool get_force_lifted() const { return force_lifted; }
+
+    //! Comma-separated open lists of the grounded search (novelty, ff, add,
+    //! lm); empty to derive them from the search engine name.
+    const std::string &get_grounded_queues() const { return grounded_queues; }
 
     unsigned get_seed() const { return seed; }
 };
