@@ -74,7 +74,8 @@ SPECIAL_PLAN_TESTS = [
                     ('alt-bfws1', 'add', 'yannakakis'),
                     ('alt-bfws2', 'ff', 'yannakakis'),
                     ('alt-bfws1-lm', 'ff', 'yannakakis'),
-                    ('lama', 'ff', 'yannakakis')],
+                    ('lama', 'ff', 'yannakakis'),
+                    ('portfolio', 'ff', 'yannakakis')],
         'required_output': ['Starting grounded search'],
     },
     {

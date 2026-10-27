@@ -190,13 +190,6 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
 
     fact_state.assign(num_facts, FactState());
     relaxed_ops.resize(num_ops);
-    for (int r = 0; r < num_ops; ++r) {
-        RelaxedOp &o = relaxed_ops[r];
-        o.base_cost = op_base_cost[r];
-        o.num_pre = op_num_pre[r];
-        o.eff_begin = op_eff_start[r];
-        o.eff_end = op_eff_start[r + 1];
-    }
     in_state.assign(num_facts, 0);
     marked_fact.assign(num_facts, 0);
     marked_action.assign(g.operators.size(), 0);
@@ -336,9 +329,8 @@ int GroundedHeuristic::explore() {
     for (int f : state_facts)
         improve(f, 0, -1);
     for (int r : no_pre_ops) {
-        const RelaxedOp &o = relaxed_ops[r];
-        for (int i = o.eff_begin; i < o.eff_end; ++i)
-            improve(op_eff[i], o.base_cost, r);
+        for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i)
+            improve(op_eff[i], op_base_cost[r], r);
     }
 
     int goals_remaining = 0;
@@ -360,10 +352,11 @@ int GroundedHeuristic::explore() {
             // cost): costs are never negative, so -1 - c encodes "closed".
             fs.cost = -1 - int(c);
             for (int k = pre_of_start[f]; k < pre_of_start[f + 1]; ++k) {
-                RelaxedOp &o = relaxed_ops[pre_of[k]];
+                int r = pre_of[k];
+                RelaxedOp &o = relaxed_ops[r];
                 if (o.stamp != gen) {
                     o.stamp = gen;
-                    o.unsatisfied = o.num_pre;
+                    o.unsatisfied = op_num_pre[r];
                     o.cost = 0;
                 }
                 if (is_max)
@@ -371,9 +364,9 @@ int GroundedHeuristic::explore() {
                 else
                     o.cost += c;
                 if (--o.unsatisfied == 0) {
-                    int cost = o.cost + o.base_cost;
-                    for (int j = o.eff_begin; j < o.eff_end; ++j)
-                        improve(op_eff[j], cost, pre_of[k]);
+                    int cost = o.cost + op_base_cost[r];
+                    for (int j = op_eff_start[r]; j < op_eff_start[r + 1]; ++j)
+                        improve(op_eff[j], cost, r);
                 }
             }
         }

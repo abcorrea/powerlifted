@@ -58,14 +58,12 @@ private:
         int cost = 0;
         int supporter = -1;
     };
+    // Hot per-operator data of the exploration (the static data is read
+    // from op_base_cost, op_num_pre, and op_eff_start).
     struct RelaxedOp {
         int stamp = 0;
         int unsatisfied = 0;
         int cost = 0;
-        int base_cost = 0;
-        int num_pre = 0;
-        int eff_begin = 0;
-        int eff_end = 0;
     };
     std::vector<FactState> fact_state;
     std::vector<RelaxedOp> relaxed_ops;

@@ -31,6 +31,9 @@ class GroundSuccessorGenerator {
     std::vector<int> pre_start, pre;
     std::vector<int> neg_start, neg;
     std::vector<int> watch_start, watch;
+    //! Facts watching some operator.
+    std::vector<uint64_t> watch_mask;
+    void compute_watch_mask();
     std::vector<int> no_pre_ops;
 
     // Axioms, sorted by stratum.
@@ -67,71 +70,76 @@ public:
     void evaluate_axioms(uint64_t *bits);
 };
 
+//! Configuration of one search run of the ground search.
+struct GroundSearchConfig {
+    std::string name;
+    bool novelty = true;
+    bool ff = true;
+    bool add = false;
+    bool lm = false;
+    int width = 1;
+    //! Generate successors in random order (seeded).
+    bool shuffle = false;
+    unsigned seed = 0;
+};
+
+class GroundSearchRun;
+class LandmarkCountHeuristic;
+
 /**
  * @brief Search on the ground task.
  *
- * Greedy search alternating (round robin) between up to three open lists,
- * each with a preferred variant (successors achieving an atom of the
- * parent's relaxed plan or an interesting landmark) that gets priority
- * after every heuristic improvement:
+ * Each search run is a greedy search alternating (round robin) between up
+ * to four open lists, each with a preferred variant (successors achieving an
+ * atom of the parent's relaxed plan or an interesting landmark) that gets
+ * priority after every heuristic improvement:
  *  - novelty (width 1 or 2, partitioned by the number of unsatisfied goals
  *    and of unsatisfied relevant atoms), ties broken by unsatisfied goals;
- *  - the delete-relaxation heuristic of the parent (lazy evaluation);
+ *  - h-FF of the parent (lazy evaluation);
+ *  - h-add of the parent;
  *  - the landmark-count heuristic of the state.
- * Novelty plus FF is alternated BFWS (alt-bfws1); FF plus landmarks is
+ * Novelty plus h-FF is alternated BFWS (alt-bfws1); h-FF plus landmarks is
  * LAMA-like.
+ *
+ * Several runs (a portfolio) are interleaved: the run that has used the
+ * least time so far expands the next batch of states. The runs share the
+ * ground task, the successor generator, and the heuristics. If the runs use
+ * too much memory, the largest one is dropped.
  */
 class GroundedSearch {
+    friend class GroundSearchRun;
+
     const Task &task;
     std::shared_ptr<GroundTask> ground_task;
-    std::string heuristic_name;
     bool full_novelty_check;
-    int width;
-    bool use_novelty;
-    bool use_ff;
-    bool use_add;
-    bool use_lm;
     bool compress_chains;
 
-    GroundStateRegistry registry;
     GroundSuccessorGenerator generator;
     std::unique_ptr<GroundedHeuristic> heuristic;
+    std::unique_ptr<LandmarkCountHeuristic> landmarks;
 
     int num_words;
     std::vector<int> goal_pos;
     std::vector<int> goal_neg;
+    // Relevant atoms (atoms of the relaxed plan of the initial state); the
+    // second list contains the base facts of relevant complement facts.
+    std::vector<int> relevant_pos;
+    std::vector<int> relevant_neg;
+    std::vector<uint64_t> initial_bits;
+    int initial_h = 0;
 
-    // Search nodes, indexed by state id.
-    std::vector<int> parent;
-    std::vector<int> parent_op;
-    std::vector<int> g_value;
-    std::vector<short> num_unsat_goals;
-    std::vector<int> num_unsat_relevant;
-    std::vector<char> closed;
-    //! Operator sequences of compressed chains; parent_op[s] = -k - 2 refers
-    //! to chains[k].
-    std::vector<std::vector<int>> chains;
-    long long compressed_chains = 0;
-    long long chain_length_sum = 0;
-    long long pruned_dead_ends = 0;
-
-    long long expanded = 0;
-    long long generated = 0;
-    long long evaluated = 0;
+    std::vector<std::unique_ptr<GroundSearchRun>> runs;
 
     int count_unsatisfied_goals(const uint64_t *bits) const;
-    bool is_goal(const uint64_t *bits) const {
-        return count_unsatisfied_goals(bits) == 0;
-    }
-    void extract_and_print_plan(int state_id) const;
+    int count_unsatisfied_relevant(const uint64_t *bits) const;
+    void print_plan_of_ops(const std::vector<int> &ops) const;
 
 public:
     GroundedSearch(const Task &task, std::shared_ptr<GroundTask> ground_task,
-                   const std::string &heuristic_name, bool full_novelty_check, int width,
-                   bool use_novelty, bool use_ff, bool use_add, bool use_lm);
+                   const std::string &heuristic_name, bool full_novelty_check);
     ~GroundedSearch();
 
-    utils::ExitCode search();
+    utils::ExitCode search(const std::vector<GroundSearchConfig> &configs);
     void print_statistics() const;
 };
 

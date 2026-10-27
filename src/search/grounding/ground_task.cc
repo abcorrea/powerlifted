@@ -562,6 +562,7 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
             cout << "  schema " << schemas[a].get_name() << ": " << per_schema[a]
                  << " instances, " << per_schema_kept[a] << " operators" << endl;
     }
+    get_state_facts(task.initial_state, initial_facts);
     cout << "Grounded task: " << facts.size() << " facts, " << operators.size()
          << " operators, " << conditional_effects.size() << " conditional effects, "
          << axioms.size() << " axioms." << endl;
@@ -583,8 +584,12 @@ shared_ptr<GroundTask> GroundTask::get_cached(const Task &task) {
     if (grounding_disabled || getenv("PWL_NO_GROUNDING") || task.has_object_creation())
         return nullptr;
     utils::Timer timer;
+    size_t max_instances = getenv("PWL_MAX_GROUND_INSTANCES")
+        ? atol(getenv("PWL_MAX_GROUND_INSTANCES")) : 4000000;
+    size_t max_operators = getenv("PWL_MAX_GROUND_OPERATORS")
+        ? atol(getenv("PWL_MAX_GROUND_OPERATORS")) : 2000000;
     auto ground_task = make_shared<GroundTask>();
-    if (ground_task->build(task, 4000000, 2000000)) {
+    if (ground_task->build(task, max_instances, max_operators)) {
         cached = ground_task;
     }
     else {

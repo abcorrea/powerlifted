@@ -113,32 +113,48 @@ int main(int argc, char *argv[])
         GroundTask::disable_grounding();
     const std::string &engine = opt.get_search_engine();
     bool grounded_engine = engine == "alt-bfws1" || engine == "alt-bfws2" ||
-        engine == "lama" || engine == "alt-bfws1-lm" || engine == "alt-bfws2-lm";
+        engine == "lama" || engine == "alt-bfws1-lm" || engine == "alt-bfws2-lm" ||
+        engine == "portfolio";
     if (grounded_engine && !std::getenv("PWL_LIFTED_SEARCH")) {
         try {
             std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
             if (ground_task) {
                 PlanManager::set_plan_filename(opt.get_plan_file());
-                bool use_novelty = engine != "lama";
-                bool use_ff = true;
-                bool use_add = false;
-                bool use_lm = engine == "lama" || engine == "alt-bfws1-lm" ||
-                    engine == "alt-bfws2-lm";
+                vector<GroundSearchConfig> configs;
+                auto make_config = [&](const std::string &name) {
+                    GroundSearchConfig c;
+                    c.name = name;
+                    c.novelty = name != "lama";
+                    c.lm = name == "lama" || name == "alt-bfws1-lm" || name == "alt-bfws2-lm";
+                    c.width = (name == "alt-bfws2" || name == "alt-bfws2-lm") ? 2 : 1;
+                    return c;
+                };
+                if (engine == "portfolio") {
+                    configs.push_back(make_config("alt-bfws2"));
+                    GroundSearchConfig add_config = make_config("alt-bfws1");
+                    add_config.name = "alt-bfws1-add";
+                    add_config.add = true;
+                    configs.push_back(add_config);
+                    configs.push_back(make_config("lama"));
+                }
+                else {
+                    configs.push_back(make_config(engine));
+                }
                 const std::string &queues = opt.get_grounded_queues();
                 if (!queues.empty()) {
                     auto has = [&](const std::string &q) {
                         return ("," + queues + ",").find("," + q + ",") != std::string::npos;
                     };
-                    use_novelty = has("novelty");
-                    use_ff = has("ff");
-                    use_add = has("add");
-                    use_lm = has("lm");
+                    for (GroundSearchConfig &c : configs) {
+                        c.novelty = has("novelty");
+                        c.ff = has("ff");
+                        c.add = has("add");
+                        c.lm = has("lm");
+                    }
                 }
-                int width = (engine == "alt-bfws2" || engine == "alt-bfws2-lm") ? 2 : 1;
                 GroundedSearch search(task, ground_task, opt.get_evaluator(),
-                                      opt.use_full_novelty_check(), width,
-                                      use_novelty, use_ff, use_add, use_lm);
-                auto exitcode = search.search();
+                                      opt.use_full_novelty_check());
+                auto exitcode = search.search(configs);
                 search.print_statistics();
                 utils::report_exit_code_reentrant(exitcode);
                 return static_cast<int>(exitcode);

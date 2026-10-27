@@ -79,15 +79,17 @@ below).
 
 ### Ground and Lifted Search
 
-Powerlifted first tries to *ground* the task: the Datalog exploration of the
-delete relaxation from the initial state yields the relaxed-reachable ground
-operators, conditional effects, and axioms. If grounding stays within its
+Powerlifted first tries to *ground* the task: a semi-naive relaxed
+reachability analysis from the initial state (indexed joins, with
+(in)equalities and negated static atoms checked during the joins) yields
+the relaxed-reachable ground operators, conditional effects, and axioms. If grounding stays within its
 limits (Datalog facts and number of operators), the search engines
 `alt-bfws1`, `alt-bfws2`, `alt-bfws1-lm`, `alt-bfws2-lm`, and `lama` run on
 the ground task: states are bitsets, successors come from a
 watched-precondition successor generator, and the delete-relaxation
 heuristics (`add`, `hmax`, `ff`) are computed on ground operators, with
-complement facts for negated preconditions and goals. Forced chains (states
+complement facts for negated preconditions and goals (negated derived atoms
+via negated axioms) and without goal-irrelevant operators. Forced chains (states
 with exactly one applicable operator) are applied without evaluating the
 intermediate states, and chains ending in dead ends are pruned.
 
@@ -146,6 +148,7 @@ delete-relaxation heuristics when grounding succeeds.
 | `--translator-output-file FILE` | Path for the intermediate representation file (default: `output.lifted`)                                                                                                                                                                               |
 | `--unit-cost`                   | Use unit cost (all costs equal to 1) instead of costs from the domain file                                                                                                                                                                             |
 | `--force-lifted`                | Never ground the task: lifted search and lifted (Datalog) heuristics only                                                                                                                                                                              |
+| `--grounded-queues LIST`        | Open lists of the ground search: comma-separated subset of `novelty`, `ff` (h of the parent), `add` (h-add of the parent), `lm` (landmark count). Overrides the defaults of the search engine name.                                                     |
 | `--validate`                    | Run [VAL](https://github.com/KCL-Planning/VAL) after a plan is found. Requires `validate` on `PATH`.                                                                                                                                                   |
 
 ## Multiple Search Algorithms

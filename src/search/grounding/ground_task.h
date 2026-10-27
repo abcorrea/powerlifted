@@ -63,6 +63,8 @@ public:
     std::vector<GroundOperator> operators;
     std::vector<GroundConditionalEffect> conditional_effects;
     std::vector<GroundAxiom> axioms;
+    //! Facts true in the initial state (without derived facts).
+    std::vector<int> initial_facts;
     //! Positive goal facts.
     std::vector<int> goal;
     //! Facts that must be false in a goal state (negated goal atoms).

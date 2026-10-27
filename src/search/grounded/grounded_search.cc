@@ -11,17 +11,22 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <deque>
 #include <iostream>
+#include <limits>
+#include <malloc.h>
 #include <map>
+#include <random>
 #include <unordered_map>
+#include <unistd.h>
 
 using namespace std;
 
-namespace {
+namespace ground_search_detail {
 inline bool test_bit(const uint64_t *b, int f) {
     return (b[f >> 6] >> (f & 63)) & 1ULL;
 }
@@ -108,14 +113,22 @@ class GroundNovelty {
     int num_goals;
     unordered_map<long long, Table> tables;
 
+    // Memory used by pair tables; beyond the limit, new partitions only get
+    // width-1 tables.
+    size_t pair_memory = 0;
+    static const size_t PAIR_MEMORY_LIMIT = size_t(512) * 1024 * 1024;
+
     Table &get_table(int gc, int rc) {
         long long key = (long long)rc * (num_goals + 1) + gc;
         auto it = tables.find(key);
         if (it == tables.end()) {
             Table t;
             t.singles.assign(num_words, 0);
-            if (width > 1)
-                t.pairs.assign((size_t(num_facts) * num_facts + 63) / 64, 0);
+            size_t pair_words = (size_t(num_facts) * num_facts + 63) / 64;
+            if (width > 1 && pair_memory + pair_words * 8 <= PAIR_MEMORY_LIMIT) {
+                t.pairs.assign(pair_words, 0);
+                pair_memory += pair_words * 8;
+            }
             it = tables.emplace(key, std::move(t)).first;
         }
         return it->second;
@@ -132,13 +145,14 @@ class GroundNovelty {
 
 public:
     static const int NOT_NOVEL = 3;
+    static const int MAX_FACTS_FOR_WIDTH_2 = 4096;
 
     GroundNovelty(int width, int num_facts, int num_goals)
         : width(width), num_facts(num_facts), num_words((num_facts + 63) / 64),
           num_goals(num_goals) {
         if (num_words == 0)
             num_words = 1;
-        if (width > 1 && num_facts > 4096) {
+        if (width > 1 && num_facts > MAX_FACTS_FOR_WIDTH_2) {
             cout << "Too many facts for width-2 novelty; using width 1." << endl;
             this->width = 1;
         }
@@ -146,6 +160,14 @@ public:
 
     int get_width() const {
         return width;
+    }
+
+    size_t memory_usage() const {
+        size_t bytes = 0;
+        for (const auto &entry : tables)
+            bytes += (entry.second.singles.capacity() + entry.second.pairs.capacity()) *
+                sizeof(uint64_t);
+        return bytes;
     }
 
     //! Novelty of the state with the given bits (and, for width 2, true
@@ -159,7 +181,7 @@ public:
                 t.singles[w] |= bits[w];
             }
         }
-        if (width == 1)
+        if (width == 1 || t.pairs.empty())
             return novel ? 1 : NOT_NOVEL;
         bool novel_pair = false;
         for (size_t i = 0; i < facts.size(); ++i) {
@@ -181,7 +203,7 @@ public:
             if (test_and_set(t.singles, f))
                 novel = true;
         }
-        if (width == 1)
+        if (width == 1 || t.pairs.empty())
             return novel ? 1 : NOT_NOVEL;
         bool novel_pair = false;
         for (int a : added) {
@@ -196,7 +218,9 @@ public:
         return novel ? 1 : (novel_pair ? 2 : NOT_NOVEL);
     }
 };
-}  // namespace
+}  // namespace ground_search_detail
+
+using namespace ground_search_detail;
 
 
 GroundSuccessorGenerator::GroundSuccessorGenerator(const GroundTask &task)
@@ -212,12 +236,28 @@ GroundSuccessorGenerator::GroundSuccessorGenerator(const GroundTask &task)
     build_csr(pre_lists, pre_start, pre);
     build_csr(neg_lists, neg_start, neg);
 
-    // Watch every operator by its precondition occurring in the fewest
-    // operator preconditions.
+    /*
+      Watch every operator by the precondition that is least likely to be
+      true: the one whose predicate has the smallest fraction of facts true
+      in the initial state, then the one occurring in the fewest operator
+      preconditions.
+    */
     int num_facts = task.num_facts();
     vector<int> occurrences(num_facts, 0);
     for (int f : pre)
         ++occurrences[f];
+    int num_predicates = 0;
+    for (const auto &fact : task.facts)
+        num_predicates = max(num_predicates, fact.first + 1);
+    vector<int> facts_of_pred(num_predicates, 0), true_of_pred(num_predicates, 0);
+    for (const auto &fact : task.facts)
+        ++facts_of_pred[fact.first];
+    for (int f : task.initial_facts)
+        ++true_of_pred[task.facts[f].first];
+    auto true_fraction = [&](int f) {
+        int p = task.facts[f].first;
+        return double(true_of_pred[p]) / facts_of_pred[p];
+    };
     vector<vector<int>> watched_by(num_facts);
     for (size_t o = 0; o < ops.size(); ++o) {
         if (ops[o].pre.empty()) {
@@ -226,7 +266,8 @@ GroundSuccessorGenerator::GroundSuccessorGenerator(const GroundTask &task)
         }
         int best = ops[o].pre[0];
         for (int f : ops[o].pre) {
-            if (occurrences[f] < occurrences[best])
+            double tf = true_fraction(f), tb = true_fraction(best);
+            if (tf < tb || (tf == tb && occurrences[f] < occurrences[best]))
                 best = f;
         }
         watched_by[best].push_back(o);
@@ -235,6 +276,7 @@ GroundSuccessorGenerator::GroundSuccessorGenerator(const GroundTask &task)
     for (const auto &l : watched_by)
         watch_lists.push_back(&l);
     build_csr(watch_lists, watch_start, watch);
+    compute_watch_mask();
 
     // Axioms sorted by stratum.
     has_axioms = !task.axioms.empty();
@@ -274,6 +316,14 @@ GroundSuccessorGenerator::GroundSuccessorGenerator(const GroundTask &task)
     ax_unsatisfied.assign(order.size(), 0);
 }
 
+void GroundSuccessorGenerator::compute_watch_mask() {
+    watch_mask.assign(num_words, 0);
+    for (size_t f = 0; f + 1 < watch_start.size(); ++f) {
+        if (watch_start[f + 1] > watch_start[f])
+            set_bit(watch_mask.data(), f);
+    }
+}
+
 void GroundSuccessorGenerator::restrict_operators(const vector<char> &allowed) {
     vector<int> new_watch_start, new_watch;
     for (size_t f = 0; f + 1 < watch_start.size(); ++f) {
@@ -286,6 +336,7 @@ void GroundSuccessorGenerator::restrict_operators(const vector<char> &allowed) {
     new_watch_start.push_back(new_watch.size());
     watch_start.swap(new_watch_start);
     watch.swap(new_watch);
+    compute_watch_mask();
     vector<int> new_no_pre;
     for (int o : no_pre_ops) {
         if (allowed[o])
@@ -313,11 +364,17 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
         if (check(o))
             ops.push_back(o);
     }
-    for (int f : true_facts) {
-        for (int i = watch_start[f]; i < watch_start[f + 1]; ++i) {
-            int o = watch[i];
-            if (check(o))
-                ops.push_back(o);
+    (void)true_facts;
+    for (int w = 0; w < num_words; ++w) {
+        uint64_t word = bits[w] & watch_mask[w];
+        while (word) {
+            int f = w * 64 + __builtin_ctzll(word);
+            word &= word - 1;
+            for (int i = watch_start[f]; i < watch_start[f + 1]; ++i) {
+                int o = watch[i];
+                if (check(o))
+                    ops.push_back(o);
+            }
         }
     }
 }
@@ -429,15 +486,473 @@ void GroundSuccessorGenerator::apply(const uint64_t *parent_bits, int o, uint64_
 }
 
 
+/*
+  One search run: the open lists, novelty tables, state registry, and search
+  nodes of one configuration. step() expands states until its time slice is
+  used up, so that runs can be interleaved.
+*/
+class GroundSearchRun {
+public:
+    enum Status {RUNNING, SOLVED, EXHAUSTED};
+
+private:
+    GroundedSearch &ctx;
+    GroundSearchConfig config;
+    const GroundTask &task;
+    GroundedHeuristic &heuristic;
+    const LandmarkCountHeuristic *lm;
+    int num_words;
+    int num_base_facts;
+    int lm_words = 0;
+
+    GroundStateRegistry registry;
+    GroundNovelty novelty;
+    mt19937 rng;
+
+    // Search nodes, indexed by state id.
+    vector<int> parent;
+    vector<int> parent_op;
+    vector<int> g_value;
+    vector<short> num_unsat_goals;
+    vector<int> num_unsat_relevant;
+    vector<char> closed;
+    //! Heuristic value with which the node was inserted (its own value if
+    //! it was evaluated, the parent's otherwise).
+    vector<int> h_node;
+    vector<uint64_t> accepted_store;
+    //! Operator sequences of compressed chains; parent_op[s] = -k - 2 refers
+    //! to chains[k].
+    vector<vector<int>> chains;
+
+    enum {NOVELTY_QUEUE, FF_QUEUE, ADD_QUEUE, LM_QUEUE};
+    vector<int> queue_types;
+    vector<KeyedOpenList<3>> regular, preferred_lists;
+    size_t turn = 0;
+    int priority = 1000;
+    int h_add = 0;
+    //! Type of the open list of the last popped state.
+    int popped_queue_type = -1;
+    //! Do not evaluate states popped from the novelty open list.
+    bool skip_novelty_evaluation = getenv("PWL_SKIP_NOVELTY_H") != nullptr;
+    int best_h, best_h_add, best_h_lm;
+    int goal_state = -1;
+
+    // Scratch data.
+    vector<uint64_t> buffer, child, chain_child;
+    vector<int> state_facts, child_facts, applicable, added, removed;
+    vector<int> chain, chain_facts, chain_ops, chain_added, chain_removed;
+    vector<uint64_t> child_accepted, chain_accepted, parent_accepted;
+    // Indexed by base fact. Bit 1: the fact is in the relaxed plan, bit 2:
+    // its complement is; bit 4: the fact is an interesting landmark, bit 8:
+    // its complement is.
+    vector<char> marks;
+    vector<int> marked, interesting;
+
+public:
+    long long expanded = 0;
+    long long generated = 0;
+    long long evaluated = 0;
+    long long compressed_chains = 0;
+    long long chain_length_sum = 0;
+    long long pruned_dead_ends = 0;
+    double time_used = 0;
+    long long step_limit = getenv("PWL_EXPANSION_LIMIT") ? atoll(getenv("PWL_EXPANSION_LIMIT")) : -1;
+
+private:
+    void add_node(int id) {
+        if (id >= int(parent.size())) {
+            parent.resize(id + 1, -1);
+            parent_op.resize(id + 1, -1);
+            g_value.resize(id + 1, 0);
+            num_unsat_goals.resize(id + 1, 0);
+            num_unsat_relevant.resize(id + 1, 0);
+            closed.resize(id + 1, 0);
+            h_node.resize(id + 1, 0);
+            if (lm_words)
+                accepted_store.resize(size_t(id + 1) * lm_words, 0);
+        }
+    }
+
+    uint64_t *accepted_of(int id) {
+        return accepted_store.data() + size_t(id) * lm_words;
+    }
+
+    int full_novelty(const uint64_t *bits, int gc, int rc) {
+        if (novelty.get_width() > 1)
+            collect_true_facts(bits, num_words, child_facts);
+        return novelty.full(bits, child_facts, gc, rc);
+    }
+
+    int effects_novelty(const uint64_t *bits, int gc, int rc) {
+        if (novelty.get_width() > 1)
+            collect_true_facts(bits, num_words, child_facts);
+        return novelty.effects(added, child_facts, gc, rc);
+    }
+
+    void insert(int id, int h_ff, int h_lm, int g, int gc, int nov, bool preferred) {
+        for (size_t q = 0; q < queue_types.size(); ++q) {
+            array<int, 3> key;
+            if (queue_types[q] == NOVELTY_QUEUE)
+                key = {nov, gc, g};
+            else if (queue_types[q] == FF_QUEUE)
+                key = {h_ff, g, 0};
+            else if (queue_types[q] == ADD_QUEUE)
+                key = {h_add, g, 0};
+            else
+                key = {h_lm, h_ff, 0};
+            regular[q].push(key, id);
+            if (preferred)
+                preferred_lists[q].push(key, id);
+        }
+    }
+
+    int pop() {
+        int num_queues = queue_types.size();
+        for (int k = 0; k < num_queues; ++k) {
+            int q = (turn + k) % num_queues;
+            if (regular[q].empty() && preferred_lists[q].empty())
+                continue;
+            turn = q + 1;
+            popped_queue_type = queue_types[q];
+            if ((priority > 0 && !preferred_lists[q].empty()) || regular[q].empty()) {
+                --priority;
+                return preferred_lists[q].pop();
+            }
+            return regular[q].pop();
+        }
+        return -1;
+    }
+
+    void expand(int sid);
+
+public:
+    GroundSearchRun(GroundedSearch &ctx, const GroundSearchConfig &config)
+        : ctx(ctx), config(config), task(*ctx.ground_task), heuristic(*ctx.heuristic),
+          lm(config.lm ? ctx.landmarks.get() : nullptr), num_words(ctx.num_words),
+          num_base_facts(ctx.heuristic->get_num_base_facts()),
+          registry(ctx.ground_task->num_facts()),
+          novelty(config.width, ctx.ground_task->num_facts(),
+                  ctx.goal_pos.size() + ctx.goal_neg.size()),
+          rng(config.seed) {
+        if (config.novelty)
+            queue_types.push_back(NOVELTY_QUEUE);
+        if (config.ff)
+            queue_types.push_back(FF_QUEUE);
+        if (config.add)
+            queue_types.push_back(ADD_QUEUE);
+        if (lm)
+            queue_types.push_back(LM_QUEUE);
+        if (queue_types.empty())
+            queue_types.push_back(FF_QUEUE);
+        regular.resize(queue_types.size());
+        preferred_lists.resize(queue_types.size());
+        if (lm)
+            lm_words = lm->get_num_words();
+
+        buffer.assign(num_words, 0);
+        child.assign(num_words, 0);
+        chain_child.assign(num_words, 0);
+        child_accepted.assign(max(lm_words, 1), 0);
+        chain_accepted.assign(max(lm_words, 1), 0);
+        parent_accepted.assign(max(lm_words, 1), 0);
+        marks.assign(task.num_facts(), 0);
+
+        int root = registry.insert(ctx.initial_bits.data()).first;
+        add_node(root);
+        const uint64_t *root_bits = registry.get(root);
+        num_unsat_goals[root] = ctx.count_unsatisfied_goals(root_bits);
+        num_unsat_relevant[root] = ctx.count_unsatisfied_relevant(root_bits);
+        full_novelty(root_bits, num_unsat_goals[root], num_unsat_relevant[root]);
+        int h_lm0 = 0;
+        if (lm) {
+            lm->initial_accepted(root_bits, accepted_of(root));
+            h_lm0 = lm->compute(accepted_of(root), root_bits);
+        }
+        best_h = ctx.initial_h;
+        h_node[root] = ctx.initial_h;
+        best_h_add = numeric_limits<int>::max();
+        best_h_lm = h_lm0;
+        insert(root, ctx.initial_h, h_lm0, 0, num_unsat_goals[root], 1, false);
+        cout << "Search run " << config.name << ": queues"
+             << (config.novelty ? " novelty" : "") << (config.ff ? " ff" : "")
+             << (config.add ? " add" : "") << (lm ? " landmarks" : "")
+             << ", width " << novelty.get_width() << (config.shuffle ? ", shuffled" : "")
+             << endl;
+    }
+
+    const string &get_name() const {
+        return config.name;
+    }
+
+    size_t memory_usage() const {
+        return registry.memory_usage_bytes() + novelty.memory_usage() +
+            parent.capacity() * (3 * sizeof(int) + sizeof(short) + sizeof(int) + 1) +
+            accepted_store.capacity() * sizeof(uint64_t);
+    }
+
+    Status step(double time_slice) {
+        clock_t start = clock();
+        while (true) {
+            int sid = pop();
+            if (sid < 0)
+                return EXHAUSTED;
+            if (closed[sid])
+                continue;
+            closed[sid] = 1;
+            ++expanded;
+            expand(sid);
+            if (goal_state >= 0)
+                return SOLVED;
+            if ((expanded & 0xFFFF) == 0) {
+                cout << "[" << config.name << ": expanded " << expanded << ", registered "
+                     << registry.size() << ", best h " << best_h << ", "
+                     << utils::get_peak_memory_in_kb() << " KB]" << endl;
+            }
+            if ((expanded & 0xF) == 0 &&
+                (double(clock() - start) / CLOCKS_PER_SEC > time_slice ||
+                 (step_limit > 0 && expanded >= step_limit)))
+                return RUNNING;
+        }
+    }
+
+    void get_plan(vector<int> &ops) const {
+        int state_id = goal_state;
+        while (parent[state_id] >= 0) {
+            int o = parent_op[state_id];
+            if (o >= 0) {
+                ops.push_back(o);
+            }
+            else {
+                const vector<int> &c = chains[-o - 2];
+                for (auto it = c.rbegin(); it != c.rend(); ++it)
+                    ops.push_back(*it);
+            }
+            state_id = parent[state_id];
+        }
+        reverse(ops.begin(), ops.end());
+    }
+
+    size_t num_registered() const {
+        return registry.size();
+    }
+};
+
+void GroundSearchRun::expand(int sid) {
+    // Copy: the registry may grow while generating successors.
+    memcpy(buffer.data(), registry.get(sid), sizeof(uint64_t) * num_words);
+    collect_true_facts(buffer.data(), num_words, state_facts);
+    bool evaluate = !(skip_novelty_evaluation && popped_queue_type == NOVELTY_QUEUE &&
+                      queue_types.size() > 1);
+    int h = h_node[sid];
+    if (evaluate) {
+        h = heuristic.compute_for_facts(state_facts, false);
+        ++evaluated;
+        if (h == UNSOLVABLE_STATE)
+            return;
+        h_add = heuristic.get_last_hadd();
+    }
+    bool progress = false;
+    if (h < best_h) {
+        best_h = h;
+        progress = true;
+    }
+    if (config.add && h_add < best_h_add) {
+        best_h_add = h_add;
+        progress = true;
+    }
+    if (lm) {
+        memcpy(parent_accepted.data(), accepted_of(sid), sizeof(uint64_t) * lm_words);
+        int h_lm = lm->compute(parent_accepted.data(), buffer.data());
+        if (h_lm < best_h_lm) {
+            best_h_lm = h_lm;
+            progress = true;
+        }
+    }
+    if (progress) {
+        priority += 1000;
+        cout << "[" << config.name << "] New heuristic value expanded: h=" << best_h;
+        if (config.add)
+            cout << ", h_add=" << best_h_add;
+        if (lm)
+            cout << ", h_lm=" << best_h_lm;
+        cout << " [expansions: " << expanded << ", evaluations: " << evaluated
+             << ", generations: " << generated << "]" << endl;
+    }
+    marked.clear();
+    static const vector<int> no_facts;
+    const vector<int> &useful = evaluate ? heuristic.get_useful_facts() : no_facts;
+    for (int f : useful) {
+        if (f < num_base_facts) {
+            marks[f] |= 1;
+            marked.push_back(f);
+        }
+        else {
+            int b = heuristic.get_complement_base(f);
+            marks[b] |= 2;
+            marked.push_back(b);
+        }
+    }
+    if (lm) {
+        lm->get_interesting_facts(parent_accepted.data(), buffer.data(), interesting);
+        for (int f : interesting) {
+            if (f < num_base_facts) {
+                marks[f] |= 4;
+                marked.push_back(f);
+            }
+            else {
+                int b = heuristic.get_complement_base(f);
+                marks[b] |= 8;
+                marked.push_back(b);
+            }
+        }
+    }
+
+    GroundSuccessorGenerator &generator = ctx.generator;
+    generator.get_applicable(buffer.data(), state_facts, applicable);
+    if (config.shuffle)
+        shuffle(applicable.begin(), applicable.end(), rng);
+    generated += applicable.size();
+    int g = g_value[sid];
+    int parent_gc = num_unsat_goals[sid];
+    int parent_rc = num_unsat_relevant[sid];
+    for (int o : applicable) {
+        added.clear();
+        removed.clear();
+        generator.apply(buffer.data(), o, child.data(), added, removed);
+        int dist = g + task.operators[o].cost;
+        int op_ref = o;
+        if (lm)
+            lm->update_accepted(parent_accepted.data(), child.data(), child_accepted.data());
+        if (ctx.compress_chains) {
+            /*
+              Follow forced chains: while the successor has exactly one
+              applicable operator (and is not a goal), apply it right away,
+              without evaluating or registering the intermediate states.
+              Chains ending in a state without applicable operators (a dead
+              end) are pruned.
+            */
+            chain.clear();
+            bool dead_end = false;
+            for (int steps = 0; steps < 10000; ++steps) {
+                if (ctx.count_unsatisfied_goals(child.data()) == 0)
+                    break;
+                generator.get_applicable(child.data(), chain_facts, chain_ops);
+                if (chain_ops.empty()) {
+                    dead_end = true;
+                    break;
+                }
+                if (chain_ops.size() != 1)
+                    break;
+                if (chain.empty())
+                    chain.push_back(o);
+                int next = chain_ops[0];
+                chain_added.clear();
+                chain_removed.clear();
+                generator.apply(child.data(), next, chain_child.data(),
+                                chain_added, chain_removed);
+                child.swap(chain_child);
+                chain.push_back(next);
+                dist += task.operators[next].cost;
+                if (lm) {
+                    lm->update_accepted(child_accepted.data(), child.data(),
+                                        chain_accepted.data());
+                    child_accepted.swap(chain_accepted);
+                }
+            }
+            if (dead_end) {
+                ++pruned_dead_ends;
+                continue;
+            }
+            if (!chain.empty()) {
+                ++compressed_chains;
+                chain_length_sum += chain.size();
+                added.clear();
+                removed.clear();
+                for (int w = 0; w < num_words; ++w) {
+                    uint64_t word = child[w] & ~buffer[w];
+                    while (word) {
+                        added.push_back(w * 64 + __builtin_ctzll(word));
+                        word &= word - 1;
+                    }
+                    word = buffer[w] & ~child[w];
+                    while (word) {
+                        removed.push_back(w * 64 + __builtin_ctzll(word));
+                        word &= word - 1;
+                    }
+                }
+                op_ref = -int(chains.size()) - 2;
+            }
+        }
+        auto res = registry.insert(child.data());
+        int cid = res.first;
+        if (op_ref < -1 && (res.second || dist < g_value[cid]))
+            chains.push_back(chain);
+        if (!res.second) {
+            if (dist < g_value[cid]) {
+                g_value[cid] = dist;
+                parent[cid] = sid;
+                parent_op[cid] = op_ref;
+                if (closed[cid]) {
+                    closed[cid] = 0;
+                    int nov = full_novelty(child.data(), num_unsat_goals[cid],
+                                           num_unsat_relevant[cid]);
+                    int h_lm = lm ? lm->compute(accepted_of(cid), child.data()) : 0;
+                    insert(cid, h, h_lm, dist, num_unsat_goals[cid], nov, false);
+                }
+            }
+            continue;
+        }
+        add_node(cid);
+        parent[cid] = sid;
+        parent_op[cid] = op_ref;
+        g_value[cid] = dist;
+        h_node[cid] = h;
+        int gc = ctx.count_unsatisfied_goals(child.data());
+        int rc = ctx.count_unsatisfied_relevant(child.data());
+        num_unsat_goals[cid] = gc;
+        num_unsat_relevant[cid] = rc;
+        if (gc == 0) {
+            goal_state = cid;
+            break;
+        }
+        int nov = 0;
+        if (config.novelty) {
+            if (!ctx.full_novelty_check && gc == parent_gc && rc == parent_rc)
+                nov = effects_novelty(child.data(), gc, rc);
+            else
+                nov = full_novelty(child.data(), gc, rc);
+        }
+        int h_lm = 0;
+        if (lm) {
+            memcpy(accepted_of(cid), child_accepted.data(), sizeof(uint64_t) * lm_words);
+            h_lm = lm->compute(accepted_of(cid), child.data());
+        }
+        bool preferred = false;
+        for (int f : added) {
+            if (marks[f] & 5) {
+                preferred = true;
+                break;
+            }
+        }
+        if (!preferred) {
+            for (int f : removed) {
+                if (marks[f] & 10) {
+                    preferred = true;
+                    break;
+                }
+            }
+        }
+        insert(cid, h, h_lm, dist, gc, nov, preferred);
+    }
+    for (int f : marked)
+        marks[f] = 0;
+}
+
+
 GroundedSearch::GroundedSearch(const Task &task, shared_ptr<GroundTask> gt,
-                               const string &heuristic_name, bool full_novelty_check,
-                               int width, bool use_novelty, bool use_ff, bool use_add,
-                               bool use_lm)
-    : task(task), ground_task(std::move(gt)), heuristic_name(heuristic_name),
-      full_novelty_check(full_novelty_check), width(width),
-      use_novelty(use_novelty), use_ff(use_ff), use_add(use_add), use_lm(use_lm),
-      compress_chains(!getenv("PWL_NO_CHAINS")),
-      registry(ground_task->num_facts()), generator(*ground_task) {
+                               const string &heuristic_name, bool full_novelty_check)
+    : task(task), ground_task(std::move(gt)), full_novelty_check(full_novelty_check),
+      compress_chains(!getenv("PWL_NO_CHAINS")), generator(*ground_task) {
     GroundedHeuristic::Type type = GroundedHeuristic::FF;
     if (heuristic_name == "add")
         type = GroundedHeuristic::ADD;
@@ -445,21 +960,11 @@ GroundedSearch::GroundedSearch(const Task &task, shared_ptr<GroundTask> gt,
         type = GroundedHeuristic::MAX;
     heuristic = make_unique<GroundedHeuristic>(task, ground_task, type);
     generator.restrict_operators(heuristic->get_relevant_actions());
-    num_words = registry.get_num_words();
+    num_words = (ground_task->num_facts() + 63) / 64;
+    if (num_words == 0)
+        num_words = 1;
     goal_pos = ground_task->goal;
-    const GoalCondition &goal = task.get_goal();
-    for (const AtomicGoal &g : goal.goal) {
-        if (!g.is_negated() || task.predicates[g.get_predicate_index()].isStaticPredicate())
-            continue;
-        int f = ground_task->get_fact(g.get_predicate_index(), g.get_arguments());
-        if (f >= 0)
-            goal_neg.push_back(f);
-    }
-    for (int p : goal.negative_nullary_goals) {
-        int f = ground_task->get_fact(p, GroundAtom());
-        if (f >= 0)
-            goal_neg.push_back(f);
-    }
+    goal_neg = ground_task->negated_goal;
 }
 
 GroundedSearch::~GroundedSearch() = default;
@@ -477,21 +982,20 @@ int GroundedSearch::count_unsatisfied_goals(const uint64_t *bits) const {
     return count;
 }
 
-void GroundedSearch::extract_and_print_plan(int state_id) const {
-    vector<int> ops;
-    while (parent[state_id] >= 0) {
-        int o = parent_op[state_id];
-        if (o >= 0) {
-            ops.push_back(o);
-        }
-        else {
-            const vector<int> &chain = chains[-o - 2];
-            for (auto it = chain.rbegin(); it != chain.rend(); ++it)
-                ops.push_back(*it);
-        }
-        state_id = parent[state_id];
+int GroundedSearch::count_unsatisfied_relevant(const uint64_t *bits) const {
+    int count = 0;
+    for (int f : relevant_pos) {
+        if (!test_bit(bits, f))
+            ++count;
     }
-    reverse(ops.begin(), ops.end());
+    for (int f : relevant_neg) {
+        if (test_bit(bits, f))
+            ++count;
+    }
+    return count;
+}
+
+void GroundedSearch::print_plan_of_ops(const vector<int> &ops) const {
     vector<LiftedOperatorId> plan;
     for (int o : ops) {
         const GroundOperator &op = ground_task->operators[o];
@@ -501,10 +1005,21 @@ void GroundedSearch::extract_and_print_plan(int state_id) const {
     print_plan(plan, task);
 }
 
-utils::ExitCode GroundedSearch::search() {
-    cout << "Starting grounded search (queues:" << (use_novelty ? " novelty" : "")
-         << (use_ff ? " ff" : "") << (use_add ? " add" : "") << (use_lm ? " landmarks" : "")
-         << ", width " << width << ")" << endl;
+// Current size of the address space of the process in bytes (0 if
+// unknown).
+static size_t current_address_space() {
+    FILE *f = fopen("/proc/self/statm", "r");
+    if (!f)
+        return 0;
+    unsigned long pages = 0;
+    if (fscanf(f, "%lu", &pages) != 1)
+        pages = 0;
+    fclose(f);
+    return size_t(pages) * size_t(sysconf(_SC_PAGESIZE));
+}
+
+utils::ExitCode GroundedSearch::search(const vector<GroundSearchConfig> &configs) {
+    cout << "Starting grounded search" << endl;
     clock_t timer_start = clock();
 
     if (ground_task->goal_unreachable) {
@@ -513,414 +1028,145 @@ utils::ExitCode GroundedSearch::search() {
         return utils::ExitCode::SEARCH_UNSOLVABLE;
     }
 
-    vector<uint64_t> buffer(num_words, 0);
-    {
-        vector<int> init_facts;
-        ground_task->get_state_facts(task.initial_state, init_facts);
-        for (int f : init_facts)
-            set_bit(buffer.data(), f);
-        generator.evaluate_axioms(buffer.data());
-    }
-    int root = registry.insert(buffer.data()).first;
+    initial_bits.assign(num_words, 0);
+    for (int f : ground_task->initial_facts)
+        set_bit(initial_bits.data(), f);
+    generator.evaluate_axioms(initial_bits.data());
 
     vector<int> state_facts;
-    collect_true_facts(registry.get(root), num_words, state_facts);
-    int h0 = heuristic->compute_for_facts(state_facts, false);
-    ++evaluated;
-    cout << "Initial heuristic value: " << h0 << endl;
-
-    // Relevant atoms: the atoms of the relaxed plan of the initial state.
+    collect_true_facts(initial_bits.data(), num_words, state_facts);
+    initial_h = heuristic->compute_for_facts(state_facts, false);
+    cout << "Initial heuristic value: " << initial_h << endl;
+    cout << "Initial h-add value: " << heuristic->get_last_hadd() << endl;
     vector<int> relevant = heuristic->get_useful_facts();
     sort(relevant.begin(), relevant.end());
     cout << "Total number of relevant atoms: " << relevant.size() << endl;
-    int num_goals = goal_pos.size() + goal_neg.size();
-    // Relevant complement facts are satisfied iff their base fact is false.
     const int num_base_facts = heuristic->get_num_base_facts();
-    vector<int> relevant_pos, relevant_neg;
     for (int f : relevant) {
         if (f < num_base_facts)
             relevant_pos.push_back(f);
         else
             relevant_neg.push_back(heuristic->get_complement_base(f));
     }
-    auto count_unsatisfied_relevant = [&](const uint64_t *bits) {
-        int count = 0;
-        for (int f : relevant_pos) {
-            if (!test_bit(bits, f))
-                ++count;
-        }
-        for (int f : relevant_neg) {
-            if (test_bit(bits, f))
-                ++count;
-        }
-        return count;
-    };
 
-    // Landmarks.
-    unique_ptr<LandmarkCountHeuristic> lm;
-    int lm_words = 0;
-    vector<uint64_t> accepted_store;
-    if (use_lm) {
-        vector<int> init_relaxed = state_facts;
-        heuristic->add_complement_facts(state_facts, init_relaxed);
-        lm = make_unique<LandmarkCountHeuristic>(*heuristic, init_relaxed, 200000000LL);
-        if (!lm->is_ok()) {
-            lm.reset();
-            use_lm = false;
-            if (!use_novelty && !use_ff && !use_add)
-                use_ff = true;
-        }
-        else {
-            lm_words = lm->get_num_words();
-        }
-    }
-
-    GroundNovelty novelty_evaluator(width, ground_task->num_facts(), num_goals);
-    vector<int> child_facts;
-    auto full_novelty = [&](const uint64_t *bits, int gc, int rc) {
-        if (novelty_evaluator.get_width() > 1)
-            collect_true_facts(bits, num_words, child_facts);
-        return novelty_evaluator.full(bits, child_facts, gc, rc);
-    };
-    auto effects_novelty = [&](const uint64_t *bits, const vector<int> &added, int gc, int rc) {
-        if (novelty_evaluator.get_width() > 1)
-            collect_true_facts(bits, num_words, child_facts);
-        return novelty_evaluator.effects(added, child_facts, gc, rc);
-    };
-
-    auto add_node = [&](int id) {
-        if (id >= int(parent.size())) {
-            parent.resize(id + 1, -1);
-            parent_op.resize(id + 1, -1);
-            g_value.resize(id + 1, 0);
-            num_unsat_goals.resize(id + 1, 0);
-            num_unsat_relevant.resize(id + 1, 0);
-            closed.resize(id + 1, 0);
-            if (lm_words)
-                accepted_store.resize(size_t(id + 1) * lm_words, 0);
-        }
-    };
-    auto accepted_of = [&](int id) {
-        return accepted_store.data() + size_t(id) * lm_words;
-    };
-
-    add_node(root);
-    const uint64_t *root_bits = registry.get(root);
-    num_unsat_goals[root] = count_unsatisfied_goals(root_bits);
-    num_unsat_relevant[root] = count_unsatisfied_relevant(root_bits);
-    full_novelty(root_bits, num_unsat_goals[root], num_unsat_relevant[root]);
-    int h_lm0 = 0;
-    if (lm) {
-        lm->initial_accepted(root_bits, accepted_of(root));
-        h_lm0 = lm->compute(accepted_of(root), root_bits);
-        cout << "Initial landmark heuristic value: " << h_lm0 << endl;
-    }
-    if (num_unsat_goals[root] == 0) {
+    if (count_unsatisfied_goals(initial_bits.data()) == 0) {
         print_goal_time(timer_start);
-        extract_and_print_plan(root);
+        print_plan_of_ops({});
         return utils::ExitCode::SUCCESS;
     }
-    if (h0 == UNSOLVABLE_STATE) {
+    if (initial_h == UNSOLVABLE_STATE) {
         print_no_solution_found(timer_start);
         return utils::ExitCode::SEARCH_UNSOLVABLE;
     }
 
-    // Open lists: one regular and one preferred list per queue type.
-    enum {NOVELTY_QUEUE, FF_QUEUE, ADD_QUEUE, LM_QUEUE};
-    vector<int> queue_types;
-    if (use_novelty)
-        queue_types.push_back(NOVELTY_QUEUE);
-    if (use_ff)
-        queue_types.push_back(FF_QUEUE);
-    if (use_add)
-        queue_types.push_back(ADD_QUEUE);
-    if (use_lm)
-        queue_types.push_back(LM_QUEUE);
-    if (queue_types.empty())
-        queue_types.push_back(FF_QUEUE);
-    int num_queues = queue_types.size();
-    vector<KeyedOpenList<3>> regular(num_queues), preferred_lists(num_queues);
-    size_t turn = 0;
-    int priority = 1000;
-    int h_add = 0;
-    auto insert = [&](int id, int h_ff, int h_lm, int g, int gc, int novelty, bool preferred) {
-        for (int q = 0; q < num_queues; ++q) {
-            array<int, 3> key;
-            if (queue_types[q] == NOVELTY_QUEUE)
-                key = {novelty, gc, g};
-            else if (queue_types[q] == FF_QUEUE)
-                key = {h_ff, g, 0};
-            else if (queue_types[q] == ADD_QUEUE)
-                key = {h_add, g, 0};
-            else
-                key = {h_lm, h_ff, 0};
-            regular[q].push(key, id);
-            if (preferred)
-                preferred_lists[q].push(key, id);
-        }
-    };
-    auto pop = [&]() {
-        for (int k = 0; k < num_queues; ++k) {
-            int q = (turn + k) % num_queues;
-            if (regular[q].empty() && preferred_lists[q].empty())
-                continue;
-            turn = q + 1;
-            if ((priority > 0 && !preferred_lists[q].empty()) || regular[q].empty()) {
-                --priority;
-                return preferred_lists[q].pop();
-            }
-            return regular[q].pop();
-        }
-        return -1;
-    };
-    insert(root, h0, h_lm0, 0, num_unsat_goals[root], 1, false);
-
-    int best_h = h0;
-    int best_h_lm = h_lm0;
-    int best_h_add = heuristic->get_last_hadd();
-    cout << "Initial h-add value: " << best_h_add << endl;
-    vector<int> applicable;
-    vector<int> added, removed;
-    // Indexed by base fact. Bit 1: the fact is in the relaxed plan, bit 2:
-    // its complement is; bit 4: the fact is an interesting landmark, bit 8:
-    // its complement is.
-    vector<char> marks(ground_task->num_facts(), 0);
-    vector<int> marked, interesting;
-    vector<uint64_t> child(num_words), chain_child(num_words);
-    vector<int> chain, chain_facts, chain_ops, chain_added, chain_removed;
-    vector<uint64_t> child_accepted(max(lm_words, 1)), chain_accepted(max(lm_words, 1));
-    vector<uint64_t> parent_accepted(max(lm_words, 1));
-
-    while (true) {
-        int sid = pop();
-        if (sid < 0)
-            break;
-        if (closed[sid])
-            continue;
-        closed[sid] = 1;
-        ++expanded;
-        if ((expanded & 0xFFFF) == 0) {
-            cout << "[expanded " << expanded << ", registered " << registry.size()
-                 << ", best h " << best_h << ", t="
-                 << double(clock() - timer_start) / CLOCKS_PER_SEC << "s, "
-                 << utils::get_peak_memory_in_kb() << " KB]" << endl;
-        }
-
-        // Copy: the registry may grow while generating successors.
-        memcpy(buffer.data(), registry.get(sid), sizeof(uint64_t) * num_words);
-        collect_true_facts(buffer.data(), num_words, state_facts);
-        int h = heuristic->compute_for_facts(state_facts, false);
-        ++evaluated;
-        if (h == UNSOLVABLE_STATE)
-            continue;
-        h_add = heuristic->get_last_hadd();
-        bool progress = false;
-        if (h < best_h) {
-            best_h = h;
-            progress = true;
-        }
-        if (use_add && h_add < best_h_add) {
-            best_h_add = h_add;
-            progress = true;
-        }
-        if (lm) {
-            memcpy(parent_accepted.data(), accepted_of(sid), sizeof(uint64_t) * lm_words);
-            int h_lm = lm->compute(parent_accepted.data(), buffer.data());
-            if (h_lm < best_h_lm) {
-                best_h_lm = h_lm;
-                progress = true;
-            }
-        }
-        if (progress) {
-            priority += 1000;
-            cout << "New heuristic value expanded: h=" << best_h;
-            if (use_add)
-                cout << ", h_add=" << best_h_add;
-            if (lm)
-                cout << ", h_lm=" << best_h_lm;
-            cout << " [expansions: " << expanded << ", evaluations: " << evaluated
-                 << ", generations: " << generated << ", time: "
-                 << double(clock() - timer_start) / CLOCKS_PER_SEC << "]" << endl;
-        }
-        marked.clear();
-        for (int f : heuristic->get_useful_facts()) {
-            if (f < num_base_facts) {
-                marks[f] |= 1;
-                marked.push_back(f);
-            }
-            else {
-                int b = heuristic->get_complement_base(f);
-                marks[b] |= 2;
-                marked.push_back(b);
-            }
-        }
-        if (lm) {
-            lm->get_interesting_facts(parent_accepted.data(), buffer.data(), interesting);
-            for (int f : interesting) {
-                if (f < num_base_facts) {
-                    marks[f] |= 4;
-                    marked.push_back(f);
-                }
-                else {
-                    int b = heuristic->get_complement_base(f);
-                    marks[b] |= 8;
-                    marked.push_back(b);
-                }
-            }
-        }
-
-        generator.get_applicable(buffer.data(), state_facts, applicable);
-        generated += applicable.size();
-        int g = g_value[sid];
-        int parent_gc = num_unsat_goals[sid];
-        int parent_rc = num_unsat_relevant[sid];
-        for (int o : applicable) {
-            added.clear();
-            removed.clear();
-            generator.apply(buffer.data(), o, child.data(), added, removed);
-            int dist = g + ground_task->operators[o].cost;
-            int op_ref = o;
-            if (lm)
-                lm->update_accepted(parent_accepted.data(), child.data(), child_accepted.data());
-            if (compress_chains) {
-                /*
-                  Follow forced chains: while the successor has exactly one
-                  applicable operator (and is not a goal), apply it right
-                  away, without evaluating or registering the intermediate
-                  states. Chains ending in a state without applicable
-                  operators (a dead end) are pruned.
-                */
-                chain.clear();
-                bool dead_end = false;
-                for (int steps = 0; steps < 10000; ++steps) {
-                    if (count_unsatisfied_goals(child.data()) == 0)
-                        break;
-                    collect_true_facts(child.data(), num_words, chain_facts);
-                    generator.get_applicable(child.data(), chain_facts, chain_ops);
-                    if (chain_ops.empty()) {
-                        dead_end = true;
-                        break;
-                    }
-                    if (chain_ops.size() != 1)
-                        break;
-                    if (chain.empty())
-                        chain.push_back(o);
-                    int next = chain_ops[0];
-                    chain_added.clear();
-                    chain_removed.clear();
-                    generator.apply(child.data(), next, chain_child.data(),
-                                    chain_added, chain_removed);
-                    child.swap(chain_child);
-                    chain.push_back(next);
-                    dist += ground_task->operators[next].cost;
-                    if (lm) {
-                        lm->update_accepted(child_accepted.data(), child.data(),
-                                            chain_accepted.data());
-                        child_accepted.swap(chain_accepted);
-                    }
-                }
-                if (dead_end) {
-                    ++pruned_dead_ends;
-                    continue;
-                }
-                if (!chain.empty()) {
-                    ++compressed_chains;
-                    chain_length_sum += chain.size();
-                    added.clear();
-                    removed.clear();
-                    for (int w = 0; w < num_words; ++w) {
-                        uint64_t word = child[w] & ~buffer[w];
-                        while (word) {
-                            added.push_back(w * 64 + __builtin_ctzll(word));
-                            word &= word - 1;
-                        }
-                        word = buffer[w] & ~child[w];
-                        while (word) {
-                            removed.push_back(w * 64 + __builtin_ctzll(word));
-                            word &= word - 1;
-                        }
-                    }
-                    op_ref = -int(chains.size()) - 2;
-                }
-            }
-            auto res = registry.insert(child.data());
-            int cid = res.first;
-            if (op_ref < -1 && (res.second || dist < g_value[cid]))
-                chains.push_back(chain);
-            if (!res.second) {
-                if (dist < g_value[cid]) {
-                    g_value[cid] = dist;
-                    parent[cid] = sid;
-                    parent_op[cid] = op_ref;
-                    if (closed[cid]) {
-                        closed[cid] = 0;
-                        int novelty = full_novelty(child.data(), num_unsat_goals[cid],
-                                                   num_unsat_relevant[cid]);
-                        int h_lm = lm ? lm->compute(accepted_of(cid), child.data()) : 0;
-                        insert(cid, h, h_lm, dist, num_unsat_goals[cid], novelty, false);
-                    }
-                }
-                continue;
-            }
-            add_node(cid);
-            parent[cid] = sid;
-            parent_op[cid] = op_ref;
-            g_value[cid] = dist;
-            int gc = count_unsatisfied_goals(child.data());
-            int rc = count_unsatisfied_relevant(child.data());
-            num_unsat_goals[cid] = gc;
-            num_unsat_relevant[cid] = rc;
-            if (gc == 0) {
-                print_goal_time(timer_start);
-                extract_and_print_plan(cid);
-                return utils::ExitCode::SUCCESS;
-            }
-            int novelty = 0;
-            if (use_novelty) {
-                if (!full_novelty_check && gc == parent_gc && rc == parent_rc)
-                    novelty = effects_novelty(child.data(), added, gc, rc);
-                else
-                    novelty = full_novelty(child.data(), gc, rc);
-            }
-            int h_lm = 0;
-            if (lm) {
-                memcpy(accepted_of(cid), child_accepted.data(), sizeof(uint64_t) * lm_words);
-                h_lm = lm->compute(accepted_of(cid), child.data());
-            }
-            bool preferred = false;
-            for (int f : added) {
-                if (marks[f] & 5) {
-                    preferred = true;
-                    break;
-                }
-            }
-            if (!preferred) {
-                for (int f : removed) {
-                    if (marks[f] & 10) {
-                        preferred = true;
-                        break;
-                    }
-                }
-            }
-            insert(cid, h, h_lm, dist, gc, novelty, preferred);
-        }
-        for (int f : marked)
-            marks[f] = 0;
+    bool need_landmarks = false;
+    for (const GroundSearchConfig &c : configs)
+        need_landmarks = need_landmarks || c.lm;
+    if (need_landmarks) {
+        vector<int> init_relaxed = state_facts;
+        heuristic->add_complement_facts(state_facts, init_relaxed);
+        landmarks = make_unique<LandmarkCountHeuristic>(*heuristic, init_relaxed, 200000000LL);
+        if (!landmarks->is_ok())
+            landmarks.reset();
+        else
+            cout << "Initial landmark count: " << landmarks->get_num_landmarks() << endl;
     }
 
+    for (GroundSearchConfig c : configs) {
+        if (configs.size() > 1 && c.width > 1 &&
+            ground_task->num_facts() > GroundNovelty::MAX_FACTS_FOR_WIDTH_2) {
+            // Width 2 is infeasible: diversify with a random successor order.
+            c.width = 1;
+            c.shuffle = true;
+            c.seed = 1;
+            c.name += "-w1-shuffled";
+        }
+        runs.push_back(make_unique<GroundSearchRun>(*this, c));
+    }
+
+    // If the address space of the process grows beyond this, the largest
+    // run is dropped (the address space is limited to 4 GiB).
+    const size_t memory_budget = size_t(3300) * 1024 * 1024;
+    vector<char> active(runs.size(), 1);
+    int num_active = runs.size();
+    const double time_slice = runs.size() > 1 ? 0.05 : 1e9;
+    // For benchmarking: stop after this many expansions.
+    long long expansion_limit = getenv("PWL_EXPANSION_LIMIT")
+        ? atoll(getenv("PWL_EXPANSION_LIMIT")) : -1;
+    while (num_active > 0) {
+        if (expansion_limit >= 0) {
+            long long total = 0;
+            for (const auto &r : runs)
+                total += r ? r->expanded : 0;
+            if (total >= expansion_limit) {
+                cout << "Expansion limit reached after "
+                     << double(clock() - timer_start) / CLOCKS_PER_SEC << "s" << endl;
+                return utils::ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
+            }
+        }
+        int best = -1;
+        for (size_t i = 0; i < runs.size(); ++i) {
+            if (active[i] && (best < 0 || runs[i]->time_used < runs[best]->time_used))
+                best = i;
+        }
+        GroundSearchRun &run = *runs[best];
+        clock_t start = clock();
+        GroundSearchRun::Status status = run.step(time_slice);
+        run.time_used += double(clock() - start) / CLOCKS_PER_SEC;
+        if (status == GroundSearchRun::SOLVED) {
+            print_goal_time(timer_start);
+            cout << "Solved by search run " << run.get_name() << endl;
+            vector<int> ops;
+            run.get_plan(ops);
+            print_plan_of_ops(ops);
+            return utils::ExitCode::SUCCESS;
+        }
+        if (status == GroundSearchRun::EXHAUSTED) {
+            cout << "Search run " << run.get_name() << " exhausted its search space." << endl;
+            // Searches are complete (only dead ends are pruned).
+            print_no_solution_found(timer_start);
+            return utils::ExitCode::SEARCH_UNSOLVABLE;
+        }
+        if (num_active > 1) {
+            int largest = -1;
+            for (size_t i = 0; i < runs.size(); ++i) {
+                if (active[i] &&
+                    (largest < 0 || runs[i]->memory_usage() > runs[largest]->memory_usage()))
+                    largest = i;
+            }
+            if (current_address_space() > memory_budget) {
+                cout << "Dropping search run " << runs[largest]->get_name()
+                     << " to save memory (" << runs[largest]->expanded << " expanded)."
+                     << endl;
+                active[largest] = 0;
+                --num_active;
+                runs[largest].reset();
+                malloc_trim(0);
+            }
+        }
+    }
     print_no_solution_found(timer_start);
     return utils::ExitCode::SEARCH_UNSOLVABLE;
 }
 
 void GroundedSearch::print_statistics() const {
+    long long expanded = 0, evaluated = 0, generated = 0, registered = 0;
+    for (const auto &run : runs) {
+        if (!run)
+            continue;
+        expanded += run->expanded;
+        evaluated += run->evaluated;
+        generated += run->generated;
+        registered += run->num_registered();
+        cout << "Search run " << run->get_name() << ": " << run->expanded << " expanded, "
+             << run->num_registered() << " registered, " << run->time_used << "s, "
+             << run->compressed_chains << " compressed chains (average length "
+             << (run->compressed_chains ? double(run->chain_length_sum) / run->compressed_chains
+                                        : 0.0)
+             << "), " << run->pruned_dead_ends << " pruned dead ends" << endl;
+    }
     cout << "Expanded " << expanded << " state(s)." << endl;
     cout << "Evaluated " << evaluated << " state(s)." << endl;
     cout << "Generated " << generated << " state(s)." << endl;
-    cout << "Registered " << registry.size() << " state(s)." << endl;
-    if (compress_chains) {
-        cout << "Compressed chains: " << compressed_chains << " (average length "
-             << (compressed_chains ? double(chain_length_sum) / compressed_chains : 0.0)
-             << "), pruned dead ends: " << pruned_dead_ends << endl;
-    }
-    cout << "State registry memory: " << registry.memory_usage_bytes() / 1024 << " KB" << endl;
+    cout << "Registered " << registered << " state(s)." << endl;
 }
