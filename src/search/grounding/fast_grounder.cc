@@ -47,9 +47,15 @@ struct Relation {
         return key;
     }
 
+    //! A sink relation is never joined (no triggers, no indices): its atoms
+    //! are only kept in `members`.
+    bool sink = false;
+
     bool add(const GroundAtom &t) {
         if (!members.insert(t).second)
             return false;
+        if (sink)
+            return true;
         int id = tuples.size();
         tuples.push_back(t);
         for (Index &index : indices)
@@ -549,8 +555,10 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
     // Initial atoms: static information, initial state (nullary atoms
     // included, also those of static predicates).
     auto add_atom = [&](int relation, const GroundAtom &t) {
-        if (relations[relation].add(t)) {
-            queue.emplace_back(relation, relations[relation].tuples.size() - 1);
+        Relation &rel = relations[relation];
+        if (rel.add(t)) {
+            if (!rel.sink)
+                queue.emplace_back(relation, rel.tuples.size() - 1);
             ++total;
         }
     };
@@ -567,6 +575,16 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
     // Compile the join plans (static relation sizes are known now).
     for (Rule &rule : rules)
         compile(rule);
+    for (size_t r = 0; r < relations.size(); ++r) {
+        if (triggers[r].empty() && relations[r].indices.empty())
+            relations[r].sink = true;
+    }
+    auto export_tuples = [&](int r) {
+        Relation &rel = relations[r];
+        if (rel.sink)
+            return vector<GroundAtom>(rel.members.begin(), rel.members.end());
+        return std::move(rel.tuples);
+    };
 
     size_t max_vars = 0;
     for (const Rule &rule : rules)
@@ -615,17 +633,17 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
 
     result.atoms.resize(num_predicates);
     for (int p = 0; p < num_predicates; ++p)
-        result.atoms[p] = std::move(relations[p].tuples);
+        result.atoms[p] = export_tuples(p);
     result.action_instances.resize(schemas.size());
     result.ce_instances.resize(schemas.size());
     for (size_t a = 0; a < schemas.size(); ++a) {
-        result.action_instances[a] = std::move(relations[action_relation[a]].tuples);
+        result.action_instances[a] = export_tuples(action_relation[a]);
         for (int r : ce_relation[a])
-            result.ce_instances[a].push_back(std::move(relations[r].tuples));
+            result.ce_instances[a].push_back(export_tuples(r));
     }
     result.axiom_instances.resize(axioms.size());
     for (size_t i = 0; i < axioms.size(); ++i)
-        result.axiom_instances[i] = std::move(relations[axiom_relation[i]].tuples);
+        result.axiom_instances[i] = export_tuples(axiom_relation[i]);
     return true;
 }
 }  // namespace

@@ -316,12 +316,72 @@ GroundSuccessorGenerator::GroundSuccessorGenerator(const GroundTask &task)
     ax_unsatisfied.assign(order.size(), 0);
 }
 
+/*
+  Second level of the watch index: the operators watched by a fact f are
+  grouped by a second precondition g (the one occurring in the fewest of
+  these operators), so that only groups whose fact g is true are scanned.
+*/
 void GroundSuccessorGenerator::compute_watch_mask() {
     watch_mask.assign(num_words, 0);
     for (size_t f = 0; f + 1 < watch_start.size(); ++f) {
         if (watch_start[f + 1] > watch_start[f])
             set_bit(watch_mask.data(), f);
     }
+
+    group_start.clear();
+    group_fact.clear();
+    group_op_start.clear();
+    group_ops.clear();
+    int num_facts = watch_start.size() - 1;
+    vector<int> count(num_facts, 0);
+    vector<int> touched;
+    vector<pair<int, int>> keyed;
+    for (int f = 0; f < num_facts; ++f) {
+        group_start.push_back(group_fact.size());
+        int begin = watch_start[f], end = watch_start[f + 1];
+        if (end - begin <= 16) {
+            if (end > begin) {
+                group_fact.push_back(-1);
+                group_op_start.push_back(group_ops.size());
+                group_ops.insert(group_ops.end(), watch.begin() + begin, watch.begin() + end);
+            }
+            continue;
+        }
+        touched.clear();
+        for (int i = begin; i < end; ++i) {
+            int o = watch[i];
+            for (int k = pre_start[o]; k < pre_start[o + 1]; ++k) {
+                int g = pre[k];
+                if (g == f)
+                    continue;
+                if (count[g]++ == 0)
+                    touched.push_back(g);
+            }
+        }
+        keyed.clear();
+        for (int i = begin; i < end; ++i) {
+            int o = watch[i];
+            int best = -1;
+            for (int k = pre_start[o]; k < pre_start[o + 1]; ++k) {
+                int g = pre[k];
+                if (g != f && (best < 0 || count[g] < count[best]))
+                    best = g;
+            }
+            keyed.emplace_back(best, o);
+        }
+        for (int g : touched)
+            count[g] = 0;
+        sort(keyed.begin(), keyed.end());
+        for (size_t i = 0; i < keyed.size(); ++i) {
+            if (i == 0 || keyed[i].first != keyed[i - 1].first) {
+                group_fact.push_back(keyed[i].first);
+                group_op_start.push_back(group_ops.size());
+            }
+            group_ops.push_back(keyed[i].second);
+        }
+    }
+    group_start.push_back(group_fact.size());
+    group_op_start.push_back(group_ops.size());
 }
 
 void GroundSuccessorGenerator::restrict_operators(const vector<char> &allowed) {
@@ -370,10 +430,15 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
         while (word) {
             int f = w * 64 + __builtin_ctzll(word);
             word &= word - 1;
-            for (int i = watch_start[f]; i < watch_start[f + 1]; ++i) {
-                int o = watch[i];
-                if (check(o))
-                    ops.push_back(o);
+            for (int i = group_start[f]; i < group_start[f + 1]; ++i) {
+                int g = group_fact[i];
+                if (g >= 0 && !test_bit(bits, g))
+                    continue;
+                for (int k = group_op_start[i]; k < group_op_start[i + 1]; ++k) {
+                    int o = group_ops[k];
+                    if (check(o))
+                        ops.push_back(o);
+                }
             }
         }
     }
@@ -516,9 +581,6 @@ private:
     vector<short> num_unsat_goals;
     vector<int> num_unsat_relevant;
     vector<char> closed;
-    //! Heuristic value with which the node was inserted (its own value if
-    //! it was evaluated, the parent's otherwise).
-    vector<int> h_node;
     vector<uint64_t> accepted_store;
     //! Operator sequences of compressed chains; parent_op[s] = -k - 2 refers
     //! to chains[k].
@@ -530,10 +592,8 @@ private:
     size_t turn = 0;
     int priority = 1000;
     int h_add = 0;
-    //! Type of the open list of the last popped state.
-    int popped_queue_type = -1;
-    //! Do not evaluate states popped from the novelty open list.
-    bool skip_novelty_evaluation = getenv("PWL_SKIP_NOVELTY_H") != nullptr;
+    //! Break ties in the novelty open list by h instead of g.
+    bool novelty_tiebreak_h = getenv("PWL_NOVELTY_TIEBREAK_H") != nullptr;
     int best_h, best_h_add, best_h_lm;
     int goal_state = -1;
 
@@ -567,7 +627,6 @@ private:
             num_unsat_goals.resize(id + 1, 0);
             num_unsat_relevant.resize(id + 1, 0);
             closed.resize(id + 1, 0);
-            h_node.resize(id + 1, 0);
             if (lm_words)
                 accepted_store.resize(size_t(id + 1) * lm_words, 0);
         }
@@ -593,7 +652,7 @@ private:
         for (size_t q = 0; q < queue_types.size(); ++q) {
             array<int, 3> key;
             if (queue_types[q] == NOVELTY_QUEUE)
-                key = {nov, gc, g};
+                key = {nov, gc, novelty_tiebreak_h ? h_ff : g};
             else if (queue_types[q] == FF_QUEUE)
                 key = {h_ff, g, 0};
             else if (queue_types[q] == ADD_QUEUE)
@@ -613,7 +672,6 @@ private:
             if (regular[q].empty() && preferred_lists[q].empty())
                 continue;
             turn = q + 1;
-            popped_queue_type = queue_types[q];
             if ((priority > 0 && !preferred_lists[q].empty()) || regular[q].empty()) {
                 --priority;
                 return preferred_lists[q].pop();
@@ -669,7 +727,6 @@ public:
             h_lm0 = lm->compute(accepted_of(root), root_bits);
         }
         best_h = ctx.initial_h;
-        h_node[root] = ctx.initial_h;
         best_h_add = numeric_limits<int>::max();
         best_h_lm = h_lm0;
         insert(root, ctx.initial_h, h_lm0, 0, num_unsat_goals[root], 1, false);
@@ -741,16 +798,11 @@ void GroundSearchRun::expand(int sid) {
     // Copy: the registry may grow while generating successors.
     memcpy(buffer.data(), registry.get(sid), sizeof(uint64_t) * num_words);
     collect_true_facts(buffer.data(), num_words, state_facts);
-    bool evaluate = !(skip_novelty_evaluation && popped_queue_type == NOVELTY_QUEUE &&
-                      queue_types.size() > 1);
-    int h = h_node[sid];
-    if (evaluate) {
-        h = heuristic.compute_for_facts(state_facts, false);
-        ++evaluated;
-        if (h == UNSOLVABLE_STATE)
-            return;
-        h_add = heuristic.get_last_hadd();
-    }
+    int h = heuristic.compute_for_facts(state_facts, false);
+    ++evaluated;
+    if (h == UNSOLVABLE_STATE)
+        return;
+    h_add = heuristic.get_last_hadd();
     bool progress = false;
     if (h < best_h) {
         best_h = h;
@@ -779,9 +831,7 @@ void GroundSearchRun::expand(int sid) {
              << ", generations: " << generated << "]" << endl;
     }
     marked.clear();
-    static const vector<int> no_facts;
-    const vector<int> &useful = evaluate ? heuristic.get_useful_facts() : no_facts;
-    for (int f : useful) {
+    for (int f : heuristic.get_useful_facts()) {
         if (f < num_base_facts) {
             marks[f] |= 1;
             marked.push_back(f);
@@ -906,7 +956,6 @@ void GroundSearchRun::expand(int sid) {
         parent[cid] = sid;
         parent_op[cid] = op_ref;
         g_value[cid] = dist;
-        h_node[cid] = h;
         int gc = ctx.count_unsatisfied_goals(child.data());
         int rc = ctx.count_unsatisfied_relevant(child.data());
         num_unsat_goals[cid] = gc;

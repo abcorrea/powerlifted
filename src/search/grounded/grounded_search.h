@@ -33,6 +33,11 @@ class GroundSuccessorGenerator {
     std::vector<int> watch_start, watch;
     //! Facts watching some operator.
     std::vector<uint64_t> watch_mask;
+    // Operators watched by fact f, grouped by a second precondition:
+    // groups [group_start[f], group_start[f + 1]), group i requires fact
+    // group_fact[i] (if non-negative) and contains the operators
+    // group_ops[group_op_start[i] .. group_op_start[i + 1]).
+    std::vector<int> group_start, group_fact, group_op_start, group_ops;
     void compute_watch_mask();
     std::vector<int> no_pre_ops;
 
