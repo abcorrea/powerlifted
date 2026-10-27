@@ -78,6 +78,7 @@ private:
     std::vector<int> marked_facts_list;
     std::vector<int> stack;
     std::vector<int> relaxed_plan;
+    std::vector<int> relaxed_plan_levels;
     std::vector<int> useful_facts;
     int last_hadd = 0;
 
@@ -153,6 +154,12 @@ public:
     //! Ground operators of the last relaxed plan computed (h-FF only).
     const std::vector<int> &get_relaxed_plan() const {
         return relaxed_plan;
+    }
+
+    //! For each operator of the relaxed plan, the h-add cost of the fact
+    //! it was selected for (a layer for ordering the relaxed plan).
+    const std::vector<int> &get_relaxed_plan_levels() const {
+        return relaxed_plan_levels;
     }
 };
 

@@ -15,6 +15,7 @@
 #include <malloc.h>
 #include <cstdlib>
 #include <iostream>
+#include <new>
 
 using namespace std;
 
@@ -589,7 +590,14 @@ shared_ptr<GroundTask> GroundTask::get_cached(const Task &task) {
     size_t max_operators = getenv("PWL_MAX_GROUND_OPERATORS")
         ? atol(getenv("PWL_MAX_GROUND_OPERATORS")) : 2000000;
     auto ground_task = make_shared<GroundTask>();
-    if (ground_task->build(task, max_instances, max_operators)) {
+    bool success = false;
+    try {
+        success = ground_task->build(task, max_instances, max_operators);
+    }
+    catch (const bad_alloc &) {
+        cout << "Grounding aborted: out of memory." << endl;
+    }
+    if (success) {
         cached = ground_task;
     }
     else {

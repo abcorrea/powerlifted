@@ -182,6 +182,7 @@ def adjust_initial_state(task, graph):
     append them to the initial state description.
 
     """
+    either_types = [t.name for t in task.types if t.name.startswith('either@')]
     for obj in task.objects:
         type_name = obj.type_name
         name = obj.name
@@ -195,6 +196,10 @@ def adjust_initial_state(task, graph):
         # Every object is of type 'object' (parameters of type 'object' get
         # a 'type@object' condition, which must hold for objects of any type).
         types.add('object')
+        # Union types (either t1 ... tn).
+        for t in either_types:
+            if any(m in types for m in t[len('either@'):].split('@')):
+                types.add(t)
         for t in types:
             task.init.append(pddl.Atom(_get_type_predicate_name(t), [name]))
 

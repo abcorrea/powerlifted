@@ -120,6 +120,7 @@ class Grounder {
     vector<pair<int, GroundAtom>> pending_heads;
     size_t total = 0;
     size_t max_total;
+    bool aborted = false;
 
     vector<int> binding;
 
@@ -144,6 +145,10 @@ class Grounder {
     }
 
     void fire(const Rule &rule) {
+        if (total + pending_heads.size() > max_total) {
+            aborted = true;
+            return;
+        }
         for (const RuleAtom &h : rule.heads) {
             GroundAtom t;
             for (const RuleArg &a : h.args)
@@ -153,6 +158,8 @@ class Grounder {
     }
 
     void join(const Rule &rule, const vector<Step> &plan, size_t depth) {
+        if (aborted)
+            return;
         if (depth == plan.size()) {
             fire(rule);
             return;
@@ -624,6 +631,8 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
                 continue;
             join(rule, rule.plans[position], 0);
         }
+        if (aborted)
+            return false;
         for (auto &h : pending_heads)
             add_atom(h.first, h.second);
         pending_heads.clear();

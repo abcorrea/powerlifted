@@ -405,6 +405,18 @@ void GroundSuccessorGenerator::restrict_operators(const vector<char> &allowed) {
     no_pre_ops.swap(new_no_pre);
 }
 
+bool GroundSuccessorGenerator::is_applicable(const uint64_t *bits, int o) const {
+    for (int i = pre_start[o]; i < pre_start[o + 1]; ++i) {
+        if (!test_bit(bits, pre[i]))
+            return false;
+    }
+    for (int i = neg_start[o]; i < neg_start[o + 1]; ++i) {
+        if (test_bit(bits, neg[i]))
+            return false;
+    }
+    return true;
+}
+
 void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
                                               const vector<int> &true_facts,
                                               vector<int> &ops) const {
@@ -598,6 +610,9 @@ private:
     //! achieving a relaxed plan atom).
     bool helpful_actions = getenv("PWL_HELPFUL_ACTIONS") != nullptr;
     vector<char> in_relaxed_plan;
+    //! Relaxed plan lookahead (PWL_LOOKAHEAD).
+    bool lookahead = getenv("PWL_LOOKAHEAD") != nullptr;
+    vector<int> lookahead_order;
     int best_h, best_h_add, best_h_lm;
     int goal_state = -1;
 
@@ -620,6 +635,7 @@ public:
     long long chain_length_sum = 0;
     long long pruned_dead_ends = 0;
     long long pruned_by_novelty = 0;
+    long long lookahead_states = 0;
     double time_used = 0;
     long long step_limit = getenv("PWL_EXPANSION_LIMIT") ? atoll(getenv("PWL_EXPANSION_LIMIT")) : -1;
 
@@ -687,6 +703,9 @@ private:
     }
 
     void expand(int sid);
+    bool process_child(int sid, int o, int op_ref, int dist, int h, int parent_gc,
+                       int parent_rc, bool force_preferred);
+    void relaxed_plan_lookahead(int sid, int g, int h, int parent_gc, int parent_rc);
 
 public:
     GroundSearchRun(GroundedSearch &ctx, const GroundSearchConfig &config)
@@ -951,70 +970,11 @@ void GroundSearchRun::expand(int sid) {
                 op_ref = -int(chains.size()) - 2;
             }
         }
-        auto res = registry.insert(child.data());
-        int cid = res.first;
-        if (op_ref < -1 && (res.second || dist < g_value[cid]))
-            chains.push_back(chain);
-        if (!res.second) {
-            if (dist < g_value[cid]) {
-                g_value[cid] = dist;
-                parent[cid] = sid;
-                parent_op[cid] = op_ref;
-                if (closed[cid]) {
-                    closed[cid] = 0;
-                    int nov = full_novelty(child.data(), num_unsat_goals[cid],
-                                           num_unsat_relevant[cid]);
-                    int h_lm = lm ? lm->compute(accepted_of(cid), child.data()) : 0;
-                    insert(cid, h, h_lm, dist, num_unsat_goals[cid], nov, false);
-                }
-            }
-            continue;
-        }
-        add_node(cid);
-        parent[cid] = sid;
-        parent_op[cid] = op_ref;
-        g_value[cid] = dist;
-        int gc = ctx.count_unsatisfied_goals(child.data());
-        int rc = ctx.count_unsatisfied_relevant(child.data());
-        num_unsat_goals[cid] = gc;
-        num_unsat_relevant[cid] = rc;
-        if (gc == 0) {
-            goal_state = cid;
-            break;
-        }
-        int nov = 0;
-        if (config.novelty) {
-            if (!ctx.full_novelty_check && gc == parent_gc && rc == parent_rc)
-                nov = effects_novelty(child.data(), gc, rc);
-            else
-                nov = full_novelty(child.data(), gc, rc);
-            if (config.prune_novelty > 0 && nov > config.prune_novelty) {
-                ++pruned_by_novelty;
-                continue;
-            }
-        }
-        int h_lm = 0;
-        if (lm) {
-            memcpy(accepted_of(cid), child_accepted.data(), sizeof(uint64_t) * lm_words);
-            h_lm = lm->compute(accepted_of(cid), child.data());
-        }
-        bool preferred = helpful_actions && in_relaxed_plan[o];
-        for (int f : added) {
-            if (marks[f] & (helpful_actions ? 4 : 5)) {
-                preferred = true;
-                break;
-            }
-        }
-        if (!preferred) {
-            for (int f : removed) {
-                if (marks[f] & (helpful_actions ? 8 : 10)) {
-                    preferred = true;
-                    break;
-                }
-            }
-        }
-        insert(cid, h, h_lm, dist, gc, nov, preferred);
+        if (!process_child(sid, o, op_ref, dist, h, parent_gc, parent_rc, false))
+            return;
     }
+    if (lookahead && h > 0)
+        relaxed_plan_lookahead(sid, g, h, parent_gc, parent_rc);
     for (int f : marked)
         marks[f] = 0;
     if (helpful_actions) {
@@ -1023,6 +983,163 @@ void GroundSearchRun::expand(int sid) {
     }
 }
 
+
+/*
+  Register the successor in `child` (reached from sid by op_ref with cost
+  dist; added/removed/child_accepted describe it). Returns false if it is a
+  goal state.
+*/
+bool GroundSearchRun::process_child(int sid, int o, int op_ref, int dist, int h,
+                                    int parent_gc, int parent_rc, bool force_preferred) {
+    auto res = registry.insert(child.data());
+    int cid = res.first;
+    if (op_ref < -1 && (res.second || dist < g_value[cid]))
+        chains.push_back(chain);
+    if (!res.second) {
+        if (dist < g_value[cid]) {
+            g_value[cid] = dist;
+            parent[cid] = sid;
+            parent_op[cid] = op_ref;
+            if (closed[cid]) {
+                closed[cid] = 0;
+                int nov = full_novelty(child.data(), num_unsat_goals[cid],
+                                       num_unsat_relevant[cid]);
+                int h_lm = lm ? lm->compute(accepted_of(cid), child.data()) : 0;
+                insert(cid, h, h_lm, dist, num_unsat_goals[cid], nov, false);
+            }
+        }
+        return true;
+    }
+    add_node(cid);
+    parent[cid] = sid;
+    parent_op[cid] = op_ref;
+    g_value[cid] = dist;
+    int gc = ctx.count_unsatisfied_goals(child.data());
+    int rc = ctx.count_unsatisfied_relevant(child.data());
+    num_unsat_goals[cid] = gc;
+    num_unsat_relevant[cid] = rc;
+    if (gc == 0) {
+        goal_state = cid;
+        return false;
+    }
+    int nov = 0;
+    if (config.novelty) {
+        if (!ctx.full_novelty_check && gc == parent_gc && rc == parent_rc)
+            nov = effects_novelty(child.data(), gc, rc);
+        else
+            nov = full_novelty(child.data(), gc, rc);
+        if (config.prune_novelty > 0 && nov > config.prune_novelty) {
+            ++pruned_by_novelty;
+            return true;
+        }
+    }
+    int h_lm = 0;
+    if (lm) {
+        memcpy(accepted_of(cid), child_accepted.data(), sizeof(uint64_t) * lm_words);
+        h_lm = lm->compute(accepted_of(cid), child.data());
+    }
+    bool preferred = force_preferred || (helpful_actions && in_relaxed_plan[o]);
+    for (int f : added) {
+        if (marks[f] & (helpful_actions ? 4 : 5)) {
+            preferred = true;
+            break;
+        }
+    }
+    if (!preferred) {
+        for (int f : removed) {
+            if (marks[f] & (helpful_actions ? 8 : 10)) {
+                preferred = true;
+                break;
+            }
+        }
+    }
+    insert(cid, h, h_lm, dist, gc, nov, preferred);
+    return true;
+}
+
+/*
+  Relaxed plan lookahead (Vidal 2004): apply the operators of the relaxed
+  plan of the expanded state, in the order of their h-add layers, as long
+  as some of them is applicable; the resulting state is added as a
+  preferred successor.
+*/
+void GroundSearchRun::relaxed_plan_lookahead(int sid, int g, int h, int parent_gc,
+                                             int parent_rc) {
+    const vector<int> &rp = heuristic.get_relaxed_plan();
+    const vector<int> &levels = heuristic.get_relaxed_plan_levels();
+    if (rp.size() < 2)
+        return;
+    lookahead_order.resize(rp.size());
+    for (size_t i = 0; i < rp.size(); ++i)
+        lookahead_order[i] = i;
+    stable_sort(lookahead_order.begin(), lookahead_order.end(),
+                [&](int a, int b) { return levels[a] < levels[b]; });
+    vector<char> used(rp.size(), 0);
+    memcpy(child.data(), buffer.data(), sizeof(uint64_t) * num_words);
+    chain.clear();
+    int dist = g;
+    GroundSuccessorGenerator &generator = ctx.generator;
+    while (true) {
+        int found = -1;
+        for (int i : lookahead_order) {
+            if (!used[i] && generator.is_applicable(child.data(), rp[i])) {
+                found = i;
+                break;
+            }
+        }
+        if (found < 0)
+            break;
+        used[found] = 1;
+        chain_added.clear();
+        chain_removed.clear();
+        generator.apply(child.data(), rp[found], chain_child.data(), chain_added, chain_removed);
+        child.swap(chain_child);
+        chain.push_back(rp[found]);
+        dist += task.operators[rp[found]].cost;
+        if (ctx.count_unsatisfied_goals(child.data()) == 0)
+            break;
+    }
+    if (chain.size() < 2)
+        return;
+    if (ctx.compress_chains) {
+        // Continue with forced operators (e.g., to finish a sequence of
+        // operators that only makes sense as a whole).
+        for (int steps = 0; steps < 10000; ++steps) {
+            if (ctx.count_unsatisfied_goals(child.data()) == 0)
+                break;
+            generator.get_applicable(child.data(), chain_facts, chain_ops);
+            if (chain_ops.empty())
+                return;
+            if (chain_ops.size() != 1)
+                break;
+            chain_added.clear();
+            chain_removed.clear();
+            generator.apply(child.data(), chain_ops[0], chain_child.data(), chain_added,
+                            chain_removed);
+            child.swap(chain_child);
+            chain.push_back(chain_ops[0]);
+            dist += task.operators[chain_ops[0]].cost;
+        }
+    }
+    ++lookahead_states;
+    added.clear();
+    removed.clear();
+    for (int w = 0; w < num_words; ++w) {
+        uint64_t word = child[w] & ~buffer[w];
+        while (word) {
+            added.push_back(w * 64 + __builtin_ctzll(word));
+            word &= word - 1;
+        }
+        word = buffer[w] & ~child[w];
+        while (word) {
+            removed.push_back(w * 64 + __builtin_ctzll(word));
+            word &= word - 1;
+        }
+    }
+    if (lm)
+        lm->update_accepted(parent_accepted.data(), child.data(), child_accepted.data());
+    process_child(sid, chain[0], -int(chains.size()) - 2, dist, h, parent_gc, parent_rc, true);
+}
 
 GroundedSearch::GroundedSearch(const Task &task, shared_ptr<GroundTask> gt,
                                const string &heuristic_name, bool full_novelty_check)

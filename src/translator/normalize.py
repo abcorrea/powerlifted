@@ -202,6 +202,11 @@ def remove_trivially_inapplicable_actions(task):
                     object_types_in_task.add(type_name)
                     type_name = graph.edges[type_name]
 
+    for t in task.types:
+        if t.name.startswith("either@") and any(
+                m in object_types_in_task for m in t.name[len("either@"):].split("@")):
+            object_types_in_task.add(t.name)
+
     new_actions = set()
     number_removals = 0
     for action in task.actions:

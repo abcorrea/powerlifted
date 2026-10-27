@@ -40,6 +40,19 @@ def is_tag_supported(tag, allow_quantifiers=False):
         print('ERROR: PDDL feature "%s" not supported yet.' % tag, file=sys.stderr)
         sys.exit(-1)
 
+EITHER_TYPES = set()
+
+
+def either_type_name(members):
+    name = "either@" + "@".join(sorted(set(members)))
+    EITHER_TYPES.add(name)
+    return name
+
+
+def either_type_members(name):
+    return name[len("either@"):].split("@")
+
+
 def parse_typed_list(alist, only_variables=False,
                      constructor=pddl.TypedObject,
                      default_type="object"):
@@ -55,6 +68,11 @@ def parse_typed_list(alist, only_variables=False,
             items = alist[:separator_position]
             _type = alist[separator_position + 1]
             alist = alist[separator_position + 2:]
+            if isinstance(_type, list):
+                # (either t1 ... tn): a union type, compiled into its own
+                # type predicate (see compile_types).
+                assert _type and _type[0] == "either", _type
+                _type = either_type_name(_type[1:])
         for item in items:
             assert not only_variables or item.startswith("?"), \
                    "Expected item to be a variable: %s in (%s)" % (
@@ -414,6 +432,10 @@ def parse_task(domain_pddl, task_pddl):
                 domain_requirements.requirements +
                 task_requirements.requirements)))
     objects = constants + objects
+    known_types = set(t.name for t in types)
+    for name in sorted(EITHER_TYPES):
+        if name not in known_types:
+            types.append(pddl.Type(name, "object"))
     check_for_duplicates(
         [o.name for o in objects],
         errmsg="error: duplicate object %r",

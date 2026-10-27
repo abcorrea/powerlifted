@@ -425,6 +425,7 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
             atoms.clear();
     }
     relaxed_plan.clear();
+    relaxed_plan_levels.clear();
     useful_facts.clear();
     last_hadd = UNSOLVABLE_STATE;
     if (goal_unreachable)
@@ -458,6 +459,8 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
         if (a >= 0 && !marked_action[a]) {
             marked_action[a] = 1;
             marked_actions_list.push_back(a);
+            // Cost (h-add) at which the action's relaxed operator fired.
+            relaxed_plan_levels.push_back(-1 - fact_state[f].cost);
             ff += op_action_cost[a];
         }
         for (int i = op_pre_start[r]; i < op_pre_start[r + 1]; ++i) {

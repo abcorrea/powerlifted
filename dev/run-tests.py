@@ -88,6 +88,15 @@ SPECIAL_PLAN_TESTS = [
         'required_output': ['Starting grounded search'],
     },
     {
+        # Predicates with (either ...) argument types (storage, IPC 2006).
+        'instance': 'domains/either-types/prob05.pddl',
+        'label': 'either-types-prob05',
+        'cost': None,
+        'validate': True,
+        'configs': [('alt-bfws2', 'ff', 'yannakakis'),
+                    ('gbfs', 'ff', 'yannakakis')],
+    },
+    {
         # Universally quantified conditional effects of parameterless
         # actions without preconditions (rubiks-cube, IPC 2023).
         'instance': 'domains/ce-rubiks/prob03.pddl',

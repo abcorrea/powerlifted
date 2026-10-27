@@ -64,6 +64,8 @@ public:
     void get_applicable(const uint64_t *bits, const std::vector<int> &true_facts,
                         std::vector<int> &ops) const;
 
+    bool is_applicable(const uint64_t *bits, int op) const;
+
     /**
      * Compute the successor of `parent` by `op` into `child`; the facts
      * true in the child but not in the parent are appended to `added`, the
