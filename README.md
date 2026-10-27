@@ -77,11 +77,31 @@ Powerlifted uses the lazy effects-only novelty check from Corrêa and Seipp
 (2022). To maximize coverage, we also recommend adding `--unit-cost` (see
 below).
 
+### Ground and Lifted Search
+
+Powerlifted first tries to *ground* the task: the Datalog exploration of the
+delete relaxation from the initial state yields the relaxed-reachable ground
+operators, conditional effects, and axioms. If grounding stays within its
+limits (Datalog facts and number of operators), the search engines
+`alt-bfws1`, `alt-bfws2`, `alt-bfws1-lm`, `alt-bfws2-lm`, and `lama` run on
+the ground task: states are bitsets, successors come from a
+watched-precondition successor generator, and the delete-relaxation
+heuristics (`add`, `hmax`, `ff`) are computed on ground operators, with
+complement facts for negated preconditions and goals. Forced chains (states
+with exactly one applicable operator) are applied without evaluating the
+intermediate states, and chains ending in dead ends are pruned.
+
+Otherwise (or with `--force-lifted`), the lifted machinery is used. The
+other search engines and heuristics also use the ground task for the
+delete-relaxation heuristics when grounding succeeds.
+
 ### Search Algorithms (`-s`)
 
 | Option                       | Description                                                                               |
 |------------------------------|-------------------------------------------------------------------------------------------|
 | `alt-bfws1`, `alt-bfws2`     | [R_x, h] with w=1 and w=2. The choice of h is given by `-e`. (See Corrêa and Seipp 2022.) |
+| `alt-bfws1-lm`, `alt-bfws2-lm` | Same, plus a third queue ordered by the landmark-count heuristic (ground tasks only)    |
+| `lama`                       | FF and landmark-count queues with preferred operators, LAMA-style (ground tasks only)     |
 | `astar`                      | A* Search                                                                                 |
 | `bfs`                        | Breadth-First Search                                                                      |
 | `bfws1`, `bfws2`             | Best-First Width Search with w=1 and w=2                                                  |
@@ -125,6 +145,7 @@ below).
 | `--seed SEED`                   | Random seed for the random number generator                                                                                                                                                                                                            |
 | `--translator-output-file FILE` | Path for the intermediate representation file (default: `output.lifted`)                                                                                                                                                                               |
 | `--unit-cost`                   | Use unit cost (all costs equal to 1) instead of costs from the domain file                                                                                                                                                                             |
+| `--force-lifted`                | Never ground the task: lifted search and lifted (Datalog) heuristics only                                                                                                                                                                              |
 | `--validate`                    | Run [VAL](https://github.com/KCL-Planning/VAL) after a plan is found. Requires `validate` on `PATH`.                                                                                                                                                   |
 
 ## Multiple Search Algorithms

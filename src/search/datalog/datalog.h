@@ -36,6 +36,19 @@ class Datalog {
 
     std::vector<std::vector<GroundAtom>> useful_atoms;
 
+    /*
+     * Instance-predicate mode (used to ground the task): conditional effects
+     * and axioms get auxiliary predicates whose atoms are the ground
+     * instances (all action parameters plus the quantified variables of the
+     * conditional effect; all parameters of the axiom).
+     */
+    bool instance_predicates = false;
+    //! Predicate index of the instance predicate of each action schema,
+    //! conditional effect (per schema), and axiom.
+    std::vector<int> action_instance_predicate;
+    std::vector<std::vector<int>> ce_instance_predicate;
+    std::vector<int> axiom_instance_predicate;
+
     void create_rules(AnnotationGenerator ann);
     void generate_action_rule(const ActionSchema &schema, std::vector<size_t> nullary_preconds, AnnotationGenerator &annotation_generator);
 
@@ -53,6 +66,9 @@ class Datalog {
     int get_next_auxiliary_predicate_idx() {
         return predicate_names.size();
     }
+
+    //! Atom of the always-true auxiliary predicate (created on demand).
+    DatalogAtom get_true_atom();
 
     void output_rule(const std::unique_ptr<RuleBase> &rule) const;
     void output_parameters(const Arguments& v) const;
@@ -91,7 +107,24 @@ class Datalog {
     void add_useful_atom(int achiever_idx);
 
 public:
-    Datalog(const Task &task, AnnotationGenerator annotation_generator);
+    Datalog(const Task &task, AnnotationGenerator annotation_generator,
+            bool instance_predicates = false);
+
+    int get_action_instance_predicate(int schema) const {
+        return action_instance_predicate[schema];
+    }
+
+    int get_ce_instance_predicate(int schema, int ce) const {
+        return ce_instance_predicate[schema][ce];
+    }
+
+    int get_axiom_instance_predicate(int axiom) const {
+        return axiom_instance_predicate[axiom];
+    }
+
+    int get_number_of_predicates() const {
+        return predicate_names.size();
+    }
 
 
     std::vector<std::unique_ptr<RuleBase>> &get_rules() {

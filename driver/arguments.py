@@ -14,6 +14,9 @@ SEARCH_CHOICES = ["astar",
                   "dq-bfws2-rx",
                   "alt-bfws1",
                   "alt-bfws2",
+                  "alt-bfws1-lm",
+                  "alt-bfws2-lm",
+                  "lama",
                   "gbfs",
                   "iw1",
                   "iw1gc",
@@ -99,6 +102,8 @@ def parse_options():
                         help="flag if the novelty evaluation of a state should stop as soon as the w-value is defined")
     parser.add_argument("--unit-cost", action="store_true",
                            help="flag if the actions should be treated as unit-cost actions")
+    parser.add_argument("--force-lifted", action="store_true",
+                        help="never ground the task (lifted search and heuristics only)")
     parser.add_argument("--keep-translator-file", action="store_true",
                         help="flag if the translator file should be kept")
     parser.add_argument("--validate", action="store_true",

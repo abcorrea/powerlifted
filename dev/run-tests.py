@@ -64,6 +64,29 @@ SPECIAL_PLAN_TESTS = [
                     ('gbfs', 'rff', 'full_reducer')],
     },
     {
+        # Grounded search (the default alt-bfws1 configuration on groundable
+        # tasks), with conditional effects, axioms, and negated goals.
+        'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
+        'label': 'probBLOCKS-4-0-grounded',
+        'cost': None,
+        'validate': True,
+        'configs': [('alt-bfws1', 'ff', 'yannakakis'),
+                    ('alt-bfws1', 'add', 'yannakakis'),
+                    ('alt-bfws2', 'ff', 'yannakakis'),
+                    ('alt-bfws1-lm', 'ff', 'yannakakis'),
+                    ('lama', 'ff', 'yannakakis')],
+        'required_output': ['Starting grounded search'],
+    },
+    {
+        'instance': 'domains/negated-preconditions/prob01.pddl',
+        'label': 'negated-preconditions-grounded',
+        'cost': None,
+        'validate': True,
+        'configs': [('alt-bfws1', 'ff', 'yannakakis'),
+                    ('lama', 'ff', 'yannakakis')],
+        'required_output': ['Starting grounded search'],
+    },
+    {
         # Universally quantified conditional effects of parameterless
         # actions without preconditions (rubiks-cube, IPC 2023).
         'instance': 'domains/ce-rubiks/prob03.pddl',
@@ -83,7 +106,8 @@ SPECIAL_PLAN_TESTS = [
         'validate': True,
         'configs': [('gbfs', 'ff', 'yannakakis'),
                     ('gbfs', 'add', 'full_reducer'),
-                    ('alt-bfws1', 'ff', 'yannakakis')],
+                    ('alt-bfws1', 'ff', 'yannakakis'),
+                    ('lama', 'ff', 'yannakakis')],
     },
     {
         'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
@@ -155,6 +179,7 @@ NOVELTY_PLAN_TESTS = [
         'required_output': ['Total number of goal atoms:', 'Initial heuristic value '],
         'extra_args_by_config': {
             ('bfws1-rx', 'blind', 'full_reducer'): ['--novelty-early-stop'],
+            ('alt-bfws1', 'ff', 'full_reducer'): ['--force-lifted'],
         },
         'required_output_by_config': {
             ('bfws1', 'blind', 'full_reducer'): ['Starting BFWS'],

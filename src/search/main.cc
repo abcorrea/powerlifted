@@ -3,6 +3,8 @@
 #include "plan_manager.h"
 #include "task.h"
 
+#include "grounded/grounded_search.h"
+#include "grounding/ground_task.h"
 #include "heuristics/heuristic.h"
 #include "heuristics/heuristic_factory.h"
 #include "search_engines/search.h"
@@ -11,6 +13,7 @@
 #include "successor_generators/successor_generator_factory.h"
 #include "utils/system.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <set>
@@ -96,6 +99,43 @@ int main(int argc, char *argv[])
     cout << "IMPORTANT: Assuming that negative effects are always listed first. "
             "(This is guaranteed by the default translator.)"
          << endl;
+
+    if (task.is_trivially_unsolvable()) {
+        cout << "Problem goal was statically determined to be unsatisfiable." << endl;
+        exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
+    }
+
+    /*
+      If the task can be grounded, search on the ground representation
+      (alt-bfws1 only); otherwise fall back to lifted search.
+     */
+    if (opt.get_force_lifted())
+        GroundTask::disable_grounding();
+    const std::string &engine = opt.get_search_engine();
+    bool grounded_engine = engine == "alt-bfws1" || engine == "alt-bfws2" ||
+        engine == "lama" || engine == "alt-bfws1-lm" || engine == "alt-bfws2-lm";
+    if (grounded_engine && !std::getenv("PWL_LIFTED_SEARCH")) {
+        try {
+            std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
+            if (ground_task) {
+                PlanManager::set_plan_filename(opt.get_plan_file());
+                bool use_novelty = engine != "lama";
+                bool use_lm = engine == "lama" || engine == "alt-bfws1-lm" ||
+                    engine == "alt-bfws2-lm";
+                int width = (engine == "alt-bfws2" || engine == "alt-bfws2-lm") ? 2 : 1;
+                GroundedSearch search(task, ground_task, opt.get_evaluator(),
+                                      opt.use_full_novelty_check(), width,
+                                      use_novelty, true, use_lm);
+                auto exitcode = search.search();
+                search.print_statistics();
+                utils::report_exit_code_reentrant(exitcode);
+                return static_cast<int>(exitcode);
+            }
+        }
+        catch (const bad_alloc &ex) {
+            exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
+        }
+    }
 
     // Let's create a couple unique_ptr's that deal with mem allocation themselves
     std::unique_ptr<SearchBase> search(SearchFactory::create(opt, opt.get_search_engine()));

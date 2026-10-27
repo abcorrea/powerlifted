@@ -39,13 +39,17 @@ BASEDIR = Path(__file__).resolve().parent.parent
 
 
 def parse_config(spec):
-    """NAME=ROOT[:ARGS] where ARGS are extra powerlifted.py arguments."""
+    """NAME=ROOT[:ARGS] where ARGS are extra powerlifted.py arguments.
+    Arguments of the form ENV:VAR=VALUE set environment variables."""
     name, rest = spec.split('=', 1)
     if ':' in rest:
         root, args = rest.split(':', 1)
     else:
         root, args = rest, ''
-    return {'name': name, 'root': str(Path(root).resolve()), 'args': shlex.split(args)}
+    tokens = shlex.split(args)
+    env = dict(t[4:].split('=', 1) for t in tokens if t.startswith('ENV:'))
+    tokens = [t for t in tokens if not t.startswith('ENV:')]
+    return {'name': name, 'root': str(Path(root).resolve()), 'args': tokens, 'env': env}
 
 
 def find_domain(instance):
@@ -99,9 +103,11 @@ def run_one(config, instance, time_limit, mem_mb, validate, keep_logs):
                '--translator-output-file', os.path.join(tmp, 'output.lifted'),
                '--plan-file', plan_file] + config['args']
         start = time.time()
+        env = dict(os.environ)
+        env.update(config.get('env', {}))
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 cwd=tmp, preexec_fn=set_limits(mem_mb), text=True,
-                                errors='replace')
+                                errors='replace', env=env)
         timed_out = False
         try:
             out, _ = proc.communicate(timeout=time_limit)

@@ -8,6 +8,13 @@
 #include "rff_heuristic.h"
 
 #include "datalog_transformation_options.h"
+#include "grounded_heuristic.h"
+
+#include "../grounding/ground_task.h"
+#include "../utils/timer.h"
+
+#include <cstdlib>
+#include <memory>
 
 #include <fstream>
 #include <iostream>
@@ -15,11 +22,32 @@
 #include "../utils/system.h"
 #include "../utils/string_utils.h"
 
+static Heuristic *create_grounded(const std::string &method, const Task &task)
+{
+    GroundedHeuristic::Type type;
+    if (utils::iequals(method, "add"))
+        type = GroundedHeuristic::ADD;
+    else if (utils::iequals(method, "ff"))
+        type = GroundedHeuristic::FF;
+    else if (utils::iequals(method, "hmax"))
+        type = GroundedHeuristic::MAX;
+    else
+        return nullptr;
+    std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
+    if (!ground_task)
+        return nullptr;
+    std::cout << "Using grounded " << method << " heuristic." << std::endl;
+    return new GroundedHeuristic(task, ground_task, type);
+}
+
 Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
 {
     const std::string &method = opt.get_evaluator();
 
     std::cout << "Creating heuristic factory..." << std::endl;
+
+    if (Heuristic *h = create_grounded(method, task))
+        return h;
 
     if (utils::iequals(method, "blind")) {
         return new BlindHeuristic();
@@ -48,6 +76,8 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
 Heuristic *HeuristicFactory::create_delete_free_heuristic(const std::string &method,
                                                           const Task &task)
 {
+    if (Heuristic *h = create_grounded(method, task))
+        return h;
     if (utils::iequals(method, "add")) {
         return new AdditiveHeuristic(task);
     }

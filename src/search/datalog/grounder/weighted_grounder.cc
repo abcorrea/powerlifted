@@ -252,6 +252,9 @@ int WeightedGrounder::ground(Datalog &datalog, std::vector<Fact> &state_facts, i
                 product(rule, current_fact, position_in_the_body, newfacts);
             }
 
+            if (fact_limit > 0 && size_t(datalog.get_number_of_facts()) > fact_limit) {
+                return GROUNDING_ABORTED;
+            }
             // Note: using for loop for performance reasons, this is a heavily used loop
             for (unsigned i=0, sz=newfacts.size(); i < sz; ++i) {
                 auto& new_fact = newfacts[i];
@@ -342,6 +345,8 @@ void WeightedGrounder::project(const RuleBase &rule_, const Fact &fact, std::vec
         }
     }
 
+    rule.fill_repeated_head_arguments(new_arguments);
+
     // Return a vector with one single fact. The single-int Achievers ctor keeps
     // the achiever body in the inline small_vector (no heap-allocated vector).
     newfacts.emplace_back(std::move(new_arguments),
@@ -423,6 +428,7 @@ void WeightedGrounder::join(
         }
 
         int cost = aggregation_function(fact.get_cost(), already_achieved_fact.get_cost()) + rule_weight;
+        rule.fill_repeated_head_arguments(new_arguments);
         newfacts.emplace_back(std::move(new_arguments),
                            rule.get_effect().get_predicate_index(),
                            cost, Achievers(achiever_first, achiever_second, rule_index, rule_weight),
@@ -493,11 +499,12 @@ void WeightedGrounder::product(
 
     int position_counter = 0;
     for (const auto& arg:args) {
-        if (arg.is_object()) continue;
-        int pos = rule.get_head_position_of_arg(arg);
-        if (pos!=-1) {
-            new_arguments_persistent.set_term_to_object(pos,
-                                                        fact.argument(position_counter).get_index());
+        if (!arg.is_object()) {
+            int pos = rule.get_head_position_of_arg(arg);
+            if (pos!=-1) {
+                new_arguments_persistent.set_term_to_object(pos,
+                                                            fact.argument(position_counter).get_index());
+            }
         }
         position_counter++;
     }
@@ -512,6 +519,7 @@ void WeightedGrounder::product(
         auto& next = q.front();
 
         if (next.index >= int(rule.get_conditions().size())) {
+            rule.fill_repeated_head_arguments(next.arguments);
             newfacts.emplace_back(next.arguments,
                                   rule.get_effect().get_predicate_index(),
                                   next.cost + rule.get_weight(),

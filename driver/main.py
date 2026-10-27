@@ -76,6 +76,8 @@ def set_extra_options(options):
         CPP_EXTRA_OPTIONS.append('--full-novelty-check')
     if options.novelty_early_stop:
         CPP_EXTRA_OPTIONS += ['--novelty-early-stop', str(1)]
+    if options.force_lifted:
+        CPP_EXTRA_OPTIONS.append('--force-lifted')
 
 
     # Checks if unit-cost flag is true

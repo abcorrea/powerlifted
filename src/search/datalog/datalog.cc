@@ -18,11 +18,16 @@
 using namespace datalog;
 using namespace std;
 
-Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator) : task(task) {
+Datalog::Datalog(const Task &task, AnnotationGenerator annotation_generator,
+                 bool instance_predicates)
+    : task(task), instance_predicates(instance_predicates) {
 
     for (auto p : task.predicates) {
         predicate_names.push_back(p.get_name());
     }
+    action_instance_predicate.assign(task.get_action_schemas().size(), -1);
+    ce_instance_predicate.resize(task.get_action_schemas().size());
+    axiom_instance_predicate.assign(task.get_axioms().size(), -1);
     create_rules(annotation_generator);
 
     useful_atoms.resize(task.get_initial_state().get_relations().size());
@@ -76,9 +81,38 @@ void Datalog::generate_axiom_rules(AnnotationGenerator &annotation_generator) {
         for (int nullary_idx : axiom.get_positive_nullary_body()) {
             body.emplace_back(DatalogAtom(Arguments(), nullary_idx, false));
         }
+        if (instance_predicates) {
+            for (const Atom &eq : axiom.get_equalities()) {
+                if (!eq.is_negated())
+                    body.emplace_back(DatalogAtom(eq));
+            }
+        }
+        if (body.empty())
+            body.emplace_back(get_true_atom());
+        if (instance_predicates) {
+            int idx = get_next_auxiliary_predicate_idx();
+            predicate_names.push_back("axiom-" + std::to_string(axiom.get_index()));
+            axiom_instance_predicate[axiom.get_index()] = idx;
+            vector<pair<int, int>> all_args;
+            for (const Parameter &p : axiom.get_parameters())
+                all_args.emplace_back(p.get_index(), VARIABLE);
+            DatalogAtom instance(Arguments(all_args), idx, true);
+            rules.emplace_back(make_unique<GenericRule>(0, instance, std::move(body), annotation_generator(-1, task)));
+            rules.emplace_back(make_unique<GenericRule>(0, head, vector<DatalogAtom>{instance}, annotation_generator(-1, task)));
+            continue;
+        }
         std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
         rules.emplace_back(make_unique<GenericRule>(0, head, std::move(body), std::move(ann)));
     }
+}
+
+DatalogAtom Datalog::get_true_atom() {
+    if (true_predicate_idx < 0) {
+        true_predicate_idx = get_next_auxiliary_predicate_idx();
+        map_new_predicates_to_idx.emplace("@true", true_predicate_idx);
+        predicate_names.push_back("@true");
+    }
+    return DatalogAtom(Arguments(), true_predicate_idx, true);
 }
 
 void Datalog::generate_action_rule(const ActionSchema &schema,
@@ -91,15 +125,19 @@ void Datalog::generate_action_rule(const ActionSchema &schema,
     int idx = get_next_auxiliary_predicate_idx();
     map_new_predicates_to_idx.emplace(action_predicate, idx);
     predicate_names.push_back(action_predicate);
+    action_instance_predicate[schema.get_index()] = idx;
     DatalogAtom eff(schema, idx);
     vector<DatalogAtom> body = get_atoms_in_rule_body(schema, nullary_preconds);
-    if (body.empty()) {
-        if (true_predicate_idx < 0) {
-            true_predicate_idx = get_next_auxiliary_predicate_idx();
-            map_new_predicates_to_idx.emplace("@true", true_predicate_idx);
-            predicate_names.push_back("@true");
+    if (instance_predicates) {
+        // Positive equalities restrict the joins (the '=' relation is part of
+        // the static information); inequalities are checked afterwards.
+        for (const Atom &eq : schema.get_static_precondition()) {
+            if (!eq.is_negated())
+                body.emplace_back(DatalogAtom(eq));
         }
-        body.emplace_back(Arguments(), true_predicate_idx, true);
+    }
+    if (body.empty()) {
+        body.emplace_back(get_true_atom());
     }
     // We reverse the body because this apparently has an affect in performance for some domains
     // (e.g., logistics). This was already done in the previous implementation.
@@ -131,6 +169,8 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
      * literals are relaxed away; every quantified variable occurs in some
      * positive atom).
      */
+    ce_instance_predicate[schema.get_index()].assign(schema.get_conditional_effects().size(), -1);
+    int ce_counter = 0;
     for (const ConditionalEffect &ce : schema.get_conditional_effects()) {
         vector<DatalogAtom> ce_body = body;
         for (const Atom &condition : ce.condition) {
@@ -140,6 +180,25 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
         for (int nullary_idx : ce.positive_nullary_condition) {
             ce_body.emplace_back(DatalogAtom(Arguments(), nullary_idx, false));
         }
+        if (instance_predicates) {
+            for (const Atom &eq : ce.equalities) {
+                if (!eq.is_negated())
+                    ce_body.emplace_back(DatalogAtom(eq));
+            }
+            int idx = get_next_auxiliary_predicate_idx();
+            predicate_names.push_back("ce-" + std::to_string(schema.get_index()) + "-"
+                                      + std::to_string(ce_counter));
+            ce_instance_predicate[schema.get_index()][ce_counter] = idx;
+            vector<pair<int, int>> all_args;
+            for (const Parameter &p : schema.get_parameters())
+                all_args.emplace_back(p.get_index(), VARIABLE);
+            for (const Parameter &p : ce.parameters)
+                all_args.emplace_back(p.get_index(), VARIABLE);
+            DatalogAtom instance(Arguments(all_args), idx, true);
+            rules.emplace_back(make_unique<GenericRule>(0, instance, ce_body, annotation_generator(-1, task)));
+            ce_body = vector<DatalogAtom>{instance};
+        }
+        ++ce_counter;
         for (const Atom &eff : ce.effects) {
             if (eff.is_negated())
                 continue;

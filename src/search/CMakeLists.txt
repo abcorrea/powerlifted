@@ -13,6 +13,9 @@ endif()
 
 set(CORE_SOURCES
         main.cc
+        grounding/ground_task.cc
+        grounded/grounded_search.cc
+        grounded/landmarks.cc
         action.cc
         action_schema.cc
         axiom_evaluator.cc
@@ -45,6 +48,7 @@ set(HEURISTIC_SOURCES
         heuristics/add_heuristic.cc
         heuristics/ff_heuristic.cc
         heuristics/goalcount.cc
+        heuristics/grounded_heuristic.cc
         heuristics/heuristic_factory.cc
         heuristics/hmax_heuristic.cc
         heuristics/rff_heuristic.cc

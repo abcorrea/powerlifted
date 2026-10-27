@@ -55,10 +55,13 @@ SearchBase *SearchFactory::create(const Options &opt, const std::string &method)
     else if (utils::iequals(method, "dq-bfws2-rx")) {
         return new DualQueueBFWS<SparsePackedState>(2, opt);
     }
-    else if (utils::iequals(method, "alt-bfws1")) {
+    else if (utils::iequals(method, "alt-bfws1") || utils::iequals(method, "alt-bfws1-lm") ||
+             utils::iequals(method, "lama")) {
+        // The landmark variants exist only for ground tasks; lifted search
+        // falls back to alternated BFWS.
         return new AlternatedBFWS<SparsePackedState>(1, opt);
     }
-    else if (utils::iequals(method, "alt-bfws2")) {
+    else if (utils::iequals(method, "alt-bfws2") || utils::iequals(method, "alt-bfws2-lm")) {
         return new AlternatedBFWS<SparsePackedState>(2, opt);
     }
     else if (utils::iequals(method, "gbfs")) {

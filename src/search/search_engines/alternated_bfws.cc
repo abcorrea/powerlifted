@@ -161,18 +161,50 @@ utils::ExitCode AlternatedBFWS<PackedStateT>::search(const Task &task,
         const auto applicable = generator.get_applicable_actions(action_schemas, state);
         statistics.inc_generated(applicable.size());
 
+        // Copy: the heuristic is evaluated again only at the next expansion,
+        // but chain compression below generates further successors.
+        const auto useful_atoms = delete_free_h->get_useful_atoms();
         for (const LiftedOperatorId& op_id : applicable) {
             const auto &action = action_schemas[op_id.get_index()];
             DBState s = generator.generate_successor(op_id, action, state);
-
-            bool is_preferred = is_useful_operator(task, s, delete_free_h->get_useful_atoms());
             int dist = g + action.get_cost();
+
+            /*
+              Follow forced chains: while the successor has exactly one
+              applicable action (and is not a goal), apply it right away,
+              without evaluating or registering the intermediate states.
+              Chains ending in a state without applicable actions (a dead
+              end) are pruned.
+            */
+            vector<LiftedOperatorId> chain;
+            bool dead_end = false;
+            if (compress_chains) {
+                for (int steps = 0; steps < 10000; ++steps) {
+                    if (task.is_goal(s))
+                        break;
+                    auto next = generator.get_applicable_actions(action_schemas, s);
+                    if (next.empty()) {
+                        dead_end = true;
+                        break;
+                    }
+                    if (next.size() != 1)
+                        break;
+                    const auto &next_action = action_schemas[next[0].get_index()];
+                    s = generator.generate_successor(next[0], next_action, s);
+                    dist += next_action.get_cost();
+                    chain.push_back(next[0]);
+                }
+                if (dead_end)
+                    continue;
+            }
+
+            bool is_preferred = is_useful_operator(task, s, useful_atoms);
             int unsatisfied_goals = gc.compute_heuristic(s, task);
             int unsatisfied_relevant_atoms = 0;
 
             unsatisfied_relevant_atoms = atom_counter.count_unachieved_atoms(s, task);
 
-            if (!full_novelty_check and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
+            if (!full_novelty_check and chain.empty() and (unsatisfied_goals == unsatisfied_goal_parent) and (unsatisfied_relevant_atoms == unsatisfied_relevant_atoms_parent)) {
                 novelty_value = novelty_evaluator.compute_novelty_from_operator(task,
                                                                                 s,
                                                                                 unsatisfied_goals,
@@ -194,8 +226,13 @@ utils::ExitCode AlternatedBFWS<PackedStateT>::search(const Task &task,
             if (child_node.status==SearchNode::Status::NEW) {
                 // Inserted for the first time in the map
                 child_node.open(dist, h);
-                if (check_goal(task, generator, timer_start, s, child_node, space))
+                if (!chain.empty())
+                    chains.emplace(child_node.state_id.id(), std::move(chain));
+                if (task.is_goal(s)) {
+                    print_goal_found(generator, timer_start);
+                    print_plan(extract_plan_with_chains(child_node), task);
                     return utils::ExitCode::SUCCESS;
+                }
                 open_list.do_insertion(child_node.state_id,
                                         h,
                                         dist,
@@ -222,6 +259,24 @@ utils::ExitCode AlternatedBFWS<PackedStateT>::search(const Task &task,
 
     return utils::ExitCode::SEARCH_UNSOLVABLE;
 
+}
+
+template <class PackedStateT>
+vector<LiftedOperatorId> AlternatedBFWS<PackedStateT>::extract_plan_with_chains(
+    const SearchNode &goal_node) {
+    vector<LiftedOperatorId> plan;
+    const SearchNode *n = &goal_node;
+    while (!(n->op == LiftedOperatorId::no_operator)) {
+        auto it = chains.find(n->state_id.id());
+        if (it != chains.end()) {
+            for (auto op = it->second.rbegin(); op != it->second.rend(); ++op)
+                plan.push_back(*op);
+        }
+        plan.push_back(n->op);
+        n = &space.get_node(n->parent_state_id);
+    }
+    reverse(plan.begin(), plan.end());
+    return plan;
 }
 
 template <class PackedStateT>

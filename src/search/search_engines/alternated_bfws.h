@@ -13,7 +13,10 @@
 #include "../open_lists/tiebreaking_open_list.h"
 #include "../open_lists/greedy_open_list.h"
 
+#include <cstdlib>
 #include <memory>
+#include <unordered_map>
+#include <vector>
 
 #include "../options.h"
 
@@ -29,6 +32,13 @@ class AlternatedBFWS : public SearchBase {
     // the grounder statistics of the heuristic that evaluated the states.
     std::unique_ptr<Heuristic> delete_free_h;
 
+    //! Apply forced actions right away (see search()).
+    bool compress_chains;
+    //! Actions applied after the creating action of a node (forced chain).
+    std::unordered_map<int, std::vector<LiftedOperatorId>> chains;
+
+    std::vector<LiftedOperatorId> extract_plan_with_chains(const SearchNode &goal_node);
+
 protected:
     SearchSpace<PackedStateT> space;
 
@@ -38,7 +48,8 @@ protected:
 
 public:
     explicit AlternatedBFWS(int width, const Options &opt)
-        : width(width), full_novelty_check(opt.use_full_novelty_check()) {
+        : width(width), full_novelty_check(opt.use_full_novelty_check()),
+          compress_chains(!std::getenv("PWL_NO_CHAINS")) {
         std::cout << "Using Dual-Queue BFWS" << std::endl;
         // By default we use h-add as heuristic, unless explicitly asked to use FF
         heuristic_type = opt.get_evaluator();

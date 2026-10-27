@@ -17,6 +17,7 @@ class Options {
     std::string plan_file;
     bool full_novelty_check;
     bool novelty_early_stop;
+    bool force_lifted = false;
     unsigned seed;
 
     static void print_help()
@@ -32,7 +33,9 @@ class Options {
                   << "  --full-novelty-check[=BOOL] Use full-state novelty checking "
                      "(default: false)\n"
                   << "  --novelty-early-stop[=BOOL] Stop evaluating novelty early "
-                     "(default: false)\n";
+                     "(default: false)\n"
+                  << "  --force-lifted[=BOOL] Never ground the task: lifted search and "
+                     "heuristics only (default: false)\n";
     }
 
     static bool is_option_name(const std::string &arg)
@@ -175,6 +178,10 @@ public:
                          has_inline_value(arg, "--novelty-early-stop")) {
                     novelty_early_stop = take_bool_value(args, i, "--novelty-early-stop");
                 }
+                else if (is_named_option(arg, "--force-lifted") ||
+                         has_inline_value(arg, "--force-lifted")) {
+                    force_lifted = take_bool_value(args, i, "--force-lifted");
+                }
                 else if (is_option_name(arg)) {
                     throw std::runtime_error("Unknown option '" + arg + "'.");
                 }
@@ -205,6 +212,9 @@ public:
     bool use_full_novelty_check() const { return full_novelty_check; }
 
     bool get_novelty_early_stop() const { return novelty_early_stop; }
+
+    //! Never ground the task (lifted search and lifted heuristics only).
+    bool get_force_lifted() const { return force_lifted; }
 
     unsigned get_seed() const { return seed; }
 };

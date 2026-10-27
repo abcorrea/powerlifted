@@ -25,13 +25,23 @@ class MapVariablePosition {
     // variables keep the *last* position (as an unordered_map would), so the
     // single-pass lookup below is behaviour-identical to the old map.
     std::vector<std::pair<Term, int>> mapping;
+    // Head positions (p, q) where position p holds a variable that is mapped
+    // to another position q (repeated head variables): after instantiating
+    // the head through position_of(), position p must be copied from q.
+    std::vector<std::pair<int, int>> repeated;
 
 public:
     MapVariablePosition() = default;
 
+    const std::vector<std::pair<int, int>> &get_repeated_positions() const
+    {
+        return repeated;
+    }
+
     void create_map(const DatalogAtom &effect)
     {
         mapping.clear();
+        repeated.clear();
         int position_counter = 0;
         for (const auto &eff : effect.get_arguments()) {
             if (!eff.is_object()) {
@@ -48,6 +58,15 @@ public:
                 if (!found) {
                     mapping.emplace_back(eff, position_counter);
                 }
+            }
+            ++position_counter;
+        }
+        position_counter = 0;
+        for (const auto &eff : effect.get_arguments()) {
+            if (!eff.is_object()) {
+                int q = position_of(eff);
+                if (q != position_counter)
+                    repeated.emplace_back(position_counter, q);
             }
             ++position_counter;
         }
@@ -133,6 +152,16 @@ public:
     int get_head_position_of_arg(const Term &arg) const
     {
         return variable_position.position_of(arg);
+    }
+
+    //! Complete the instantiation of a head whose variables were set through
+    //! get_head_position_of_arg(): copy the values of repeated variables.
+    void fill_repeated_head_arguments(Arguments &args) const
+    {
+        for (const auto &r : variable_position.get_repeated_positions()) {
+            if (args.is_object(r.second))
+                args.set_term_to_object(r.first, args[r.second].get_index());
+        }
     }
 
     void recreate_map_variable_position(const DatalogAtom &effect)

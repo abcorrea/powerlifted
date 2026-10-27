@@ -114,7 +114,7 @@ public:
         object_creation  = true;
     }
 
-    bool has_object_creation() {
+    bool has_object_creation() const {
         return object_creation;
     }
 

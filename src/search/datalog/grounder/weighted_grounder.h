@@ -72,6 +72,10 @@ class WeightedGrounder : public Grounder {
     std::vector<int> abstract_outside;
     bool order_by_outside;
 
+    //! If positive, ground() gives up (and returns GROUNDING_ABORTED) as
+    //! soon as more facts than this have been produced.
+    size_t fact_limit = 0;
+
     void compute_abstract_costs(Datalog &datalog,
                                 const std::vector<Fact> &state_facts,
                                 int goal_predicate);
@@ -129,6 +133,12 @@ public:
     }
 
     ~WeightedGrounder() override = default;
+
+    static const int GROUNDING_ABORTED = -2;
+
+    void set_fact_limit(size_t limit) {
+        fact_limit = limit;
+    }
 
     int ground(Datalog &datalog, std::vector<Fact> &state_facts, int goal_predicate) override;
 
