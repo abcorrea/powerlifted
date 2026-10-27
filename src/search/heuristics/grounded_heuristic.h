@@ -64,6 +64,7 @@ private:
         int stamp = 0;
         int unsatisfied = 0;
         int cost = 0;
+        int num_pre = 0;
     };
     std::vector<FactState> fact_state;
     std::vector<RelaxedOp> relaxed_ops;

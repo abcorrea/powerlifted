@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     const std::string &engine = opt.get_search_engine();
     bool grounded_engine = engine == "alt-bfws1" || engine == "alt-bfws2" ||
         engine == "lama" || engine == "alt-bfws1-lm" || engine == "alt-bfws2-lm" ||
-        engine == "portfolio";
+        engine == "portfolio" || engine == "dual-bfws";
     if (grounded_engine && !std::getenv("PWL_LIFTED_SEARCH")) {
         try {
             std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
@@ -129,7 +129,50 @@ int main(int argc, char *argv[])
                     c.width = (name == "alt-bfws2" || name == "alt-bfws2-lm") ? 2 : 1;
                     return c;
                 };
-                if (engine == "portfolio") {
+                if (engine == "dual-bfws") {
+                    // 1-BFWS (novelty > 1 pruned) for a short time, then
+                    // alternated BFWS.
+                    GroundSearchConfig pruned = make_config("alt-bfws1");
+                    pruned.name = "alt-bfws1-pruned";
+                    pruned.prune_novelty = 1;
+                    pruned.max_seconds = 10;
+                    configs.push_back(pruned);
+                    configs.push_back(make_config("alt-bfws1"));
+                }
+                else if (engine == "portfolio" && std::getenv("PWL_PORTFOLIO")) {
+                    // Comma-separated engine names; ":sN" shuffles the
+                    // successor order with seed N, ":add" adds an h-add queue.
+                    std::string spec = std::getenv("PWL_PORTFOLIO");
+                    size_t pos = 0;
+                    while (pos <= spec.size()) {
+                        size_t next = spec.find(',', pos);
+                        if (next == std::string::npos)
+                            next = spec.size();
+                        std::string item = spec.substr(pos, next - pos);
+                        pos = next + 1;
+                        if (item.empty())
+                            continue;
+                        std::string name = item.substr(0, item.find(':'));
+                        GroundSearchConfig c = make_config(name);
+                        c.name = item;
+                        size_t opt_pos = item.find(':');
+                        while (opt_pos != std::string::npos) {
+                            size_t opt_end = item.find(':', opt_pos + 1);
+                            std::string o = item.substr(opt_pos + 1, opt_end == std::string::npos
+                                                        ? std::string::npos : opt_end - opt_pos - 1);
+                            if (!o.empty() && o[0] == 's') {
+                                c.shuffle = true;
+                                c.seed = std::atoi(o.c_str() + 1);
+                            }
+                            else if (o == "add") {
+                                c.add = true;
+                            }
+                            opt_pos = opt_end;
+                        }
+                        configs.push_back(c);
+                    }
+                }
+                else if (engine == "portfolio") {
                     configs.push_back(make_config("alt-bfws2"));
                     GroundSearchConfig add_config = make_config("alt-bfws1");
                     add_config.name = "alt-bfws1-add";
@@ -166,7 +209,11 @@ int main(int argc, char *argv[])
     }
 
     // Let's create a couple unique_ptr's that deal with mem allocation themselves
-    std::unique_ptr<SearchBase> search(SearchFactory::create(opt, opt.get_search_engine()));
+    // Without grounding, use width 1 unless lifted search was requested.
+    std::string lifted_engine = opt.get_search_engine();
+    if (lifted_engine == "alt-bfws2" && !opt.get_force_lifted())
+        lifted_engine = "alt-bfws1";
+    std::unique_ptr<SearchBase> search(SearchFactory::create(opt, lifted_engine));
     std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt, task));
     std::unique_ptr<SuccessorGenerator> sgen(
         SuccessorGeneratorFactory::create(opt.get_successor_generator(), opt.get_seed(), task));

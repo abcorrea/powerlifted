@@ -190,6 +190,8 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
 
     fact_state.assign(num_facts, FactState());
     relaxed_ops.resize(num_ops);
+    for (int r = 0; r < num_ops; ++r)
+        relaxed_ops[r].num_pre = op_num_pre[r];
     in_state.assign(num_facts, 0);
     marked_fact.assign(num_facts, 0);
     marked_action.assign(g.operators.size(), 0);
@@ -356,7 +358,7 @@ int GroundedHeuristic::explore() {
                 RelaxedOp &o = relaxed_ops[r];
                 if (o.stamp != gen) {
                     o.stamp = gen;
-                    o.unsatisfied = op_num_pre[r];
+                    o.unsatisfied = o.num_pre;
                     o.cost = 0;
                 }
                 if (is_max)

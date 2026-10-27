@@ -86,6 +86,15 @@ struct GroundSearchConfig {
     //! Generate successors in random order (seeded).
     bool shuffle = false;
     unsigned seed = 0;
+    //! If positive, successors with novelty greater than this are pruned
+    //! (the search is incomplete). Requires the novelty open list.
+    int prune_novelty = 0;
+    //! If non-negative, the run stops after this many expansions. Runs with
+    //! pruning or an expansion limit run first, one after the other, before
+    //! the remaining runs are interleaved.
+    long long max_expansions = -1;
+    //! Time limit (seconds) of a staged run.
+    double max_seconds = 1e9;
 };
 
 class GroundSearchRun;
@@ -134,6 +143,9 @@ class GroundedSearch {
     int initial_h = 0;
 
     std::vector<std::unique_ptr<GroundSearchRun>> runs;
+    long long staged_expanded = 0;
+    long long staged_evaluated = 0;
+    long long staged_generated = 0;
 
     int count_unsatisfied_goals(const uint64_t *bits) const;
     int count_unsatisfied_relevant(const uint64_t *bits) const;
