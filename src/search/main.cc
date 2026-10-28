@@ -178,6 +178,9 @@ int main(int argc, char *argv[])
                             else if (o == "lazy") {
                                 c.lazy_novelty = true;
                             }
+                            else if (o == "lazyq") {
+                                c.lazy_queue = true;
+                            }
                             opt_pos = opt_end;
                         }
                         configs.push_back(c);

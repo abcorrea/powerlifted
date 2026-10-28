@@ -51,8 +51,12 @@ def run_search(build_dir, options, extra):
         return portfolio_runner.run(build_dir, options, extra)
 
 def run_translator(build_dir, options, extra):
+    # Fixed string hashing: the translation does not depend on the iteration
+    # order of Python sets, which otherwise varies between runs.
+    env = dict(os.environ, PYTHONHASHSEED='0')
     translator = subprocess.Popen([os.path.join(build_dir, 'translator', 'translate.py'),
-                                   options.domain, options.instance, '--output-file', options.translator_file] + extra)
+                                   options.domain, options.instance, '--output-file', options.translator_file] + extra,
+                                  env=env)
     translator.communicate()
     if translator.returncode != 0:
         raise RuntimeError("Error during preprocessing/translation.")

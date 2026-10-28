@@ -1309,7 +1309,8 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
     auto export_tuples = [&](int r) {
         Relation &rel = relations[r];
         if (rel.sink || (split && !getenv("PWL_NO_DISCOVERY_ORDER"))) {
-            // In the order in which the atoms were added.
+            // In the order in which the atoms were added (hash order varies
+            // between runs).
             vector<pair<int, const GroundAtom *>> order;
             for (const auto &entry : rel.members)
                 order.emplace_back(entry.second, &entry.first);
@@ -1374,9 +1375,14 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
         // Joins over the final relations need their tuples.
         for (Relation &rel : relations) {
             if (rel.sink) {
-                for (const auto &entry : rel.members) {
-                    rel.tuples.push_back(entry.first);
-                    rel.times.push_back(entry.second);
+                // In the order of addition (hash order varies between runs).
+                vector<pair<int, const GroundAtom *>> order;
+                for (const auto &entry : rel.members)
+                    order.emplace_back(entry.second, &entry.first);
+                sort(order.begin(), order.end());
+                for (const auto &entry : order) {
+                    rel.tuples.push_back(*entry.second);
+                    rel.times.push_back(entry.first);
                 }
                 rel.sink = false;
             }

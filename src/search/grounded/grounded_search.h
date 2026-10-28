@@ -38,6 +38,10 @@ class GroundSuccessorGenerator {
     // group_fact[i] (if non-negative) and contains the operators
     // group_ops[group_op_start[i] .. group_op_start[i + 1]).
     std::vector<int> group_start, group_fact, group_op_start, group_ops;
+    // For facts watching many groups: offset of the bitset of their groups'
+    // facts in group_masks (or -1).
+    std::vector<int> mask_start;
+    std::vector<uint64_t> group_masks;
     void compute_watch_mask();
     std::vector<int> no_pre_ops;
 
@@ -102,6 +106,8 @@ struct GroundSearchConfig {
     //! Compute the novelty of a state when it is expanded; its successors
     //! inherit it (as in lazy search).
     bool lazy_novelty = false;
+    //! Add a lazy novelty open list to the eager one.
+    bool lazy_queue = false;
 };
 
 class GroundSearchRun;

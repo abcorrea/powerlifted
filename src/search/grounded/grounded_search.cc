@@ -385,6 +385,27 @@ void GroundSuccessorGenerator::compute_watch_mask() {
     }
     group_start.push_back(group_fact.size());
     group_op_start.push_back(group_ops.size());
+
+    /*
+      Facts watching many groups get a bitset of their groups' facts: ANDed
+      with the state, it yields the groups to scan; a group's index is the
+      rank of its fact in the bitset (groups are sorted by fact).
+    */
+    mask_start.assign(num_facts, -1);
+    group_masks.clear();
+    const size_t max_mask_words = size_t(16) * 1024 * 1024;
+    for (int f = 0; f < num_facts; ++f) {
+        int first = group_start[f], last = group_start[f + 1];
+        if (first < last && group_fact[first] < 0)
+            ++first;
+        if (last - first <= 2 * num_words ||
+            group_masks.size() + num_words > max_mask_words)
+            continue;
+        mask_start[f] = group_masks.size();
+        group_masks.resize(group_masks.size() + num_words, 0);
+        for (int i = first; i < last; ++i)
+            set_bit(group_masks.data() + mask_start[f], group_fact[i]);
+    }
 }
 
 void GroundSuccessorGenerator::restrict_operators(const vector<char> &allowed) {
@@ -445,15 +466,38 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
         while (word) {
             int f = w * 64 + __builtin_ctzll(word);
             word &= word - 1;
-            for (int i = group_start[f]; i < group_start[f + 1]; ++i) {
-                int g = group_fact[i];
-                if (g >= 0 && !test_bit(bits, g))
-                    continue;
+            auto scan_group = [&](int i) {
                 for (int k = group_op_start[i]; k < group_op_start[i + 1]; ++k) {
                     int o = group_ops[k];
                     if (check(o))
                         ops.push_back(o);
                 }
+            };
+            if (mask_start[f] >= 0) {
+                int i = group_start[f];
+                if (i < group_start[f + 1] && group_fact[i] < 0)
+                    scan_group(i++);
+                const uint64_t *mask = group_masks.data() + mask_start[f];
+                int rank = i;
+                for (int mw = 0; mw < num_words; ++mw) {
+                    uint64_t m = mask[mw];
+                    if (!m)
+                        continue;
+                    uint64_t hit = m & bits[mw];
+                    while (hit) {
+                        int b = __builtin_ctzll(hit);
+                        hit &= hit - 1;
+                        scan_group(rank + __builtin_popcountll(m & ((1ULL << b) - 1)));
+                    }
+                    rank += __builtin_popcountll(m);
+                }
+                continue;
+            }
+            for (int i = group_start[f]; i < group_start[f + 1]; ++i) {
+                int g = group_fact[i];
+                if (g >= 0 && !test_bit(bits, g))
+                    continue;
+                scan_group(i);
             }
         }
     }
@@ -587,6 +631,11 @@ private:
 
     GroundStateRegistry registry;
     GroundNovelty novelty;
+    //! Lazy novelty open list (an extra queue): novelty of the expanded
+    //! state in its own tables, inherited by the successors.
+    bool lazy_queue;
+    GroundNovelty lazy_table;
+    int parent_lazy_novelty = 1;
     mt19937 rng;
 
     // Search nodes, indexed by state id.
@@ -601,7 +650,7 @@ private:
     //! to chains[k].
     vector<vector<int>> chains;
 
-    enum {NOVELTY_QUEUE, FF_QUEUE, ADD_QUEUE, LM_QUEUE};
+    enum {NOVELTY_QUEUE, FF_QUEUE, ADD_QUEUE, LM_QUEUE, LAZY_NOVELTY_QUEUE};
     vector<int> queue_types;
     vector<KeyedOpenList<3>> regular, preferred_lists;
     size_t turn = 0;
@@ -692,6 +741,8 @@ private:
                 key = {h_ff, g, 0};
             else if (queue_types[q] == ADD_QUEUE)
                 key = {h_add, g, 0};
+            else if (queue_types[q] == LAZY_NOVELTY_QUEUE)
+                key = {parent_lazy_novelty, novelty_by_lm ? parent_h_lm : gc, g};
             else
                 key = {h_lm, h_ff, 0};
             // NOLAN's list structure: no preferred novelty list, and only a
@@ -732,9 +783,14 @@ public:
           registry(ctx.ground_task->num_facts()),
           novelty(config.width, ctx.ground_task->num_facts(),
                   ctx.goal_pos.size() + ctx.goal_neg.size()),
+          lazy_queue(config.novelty && (config.lazy_queue || getenv("PWL_LAZY_QUEUE"))),
+          lazy_table(lazy_queue ? config.width : 1, lazy_queue ? ctx.ground_task->num_facts() : 0,
+                     ctx.goal_pos.size() + ctx.goal_neg.size()),
           rng(config.seed) {
         if (config.novelty)
             queue_types.push_back(NOVELTY_QUEUE);
+        if (lazy_queue)
+            queue_types.push_back(LAZY_NOVELTY_QUEUE);
         if (config.ff)
             queue_types.push_back(FF_QUEUE);
         if (config.add)
@@ -879,6 +935,14 @@ void GroundSearchRun::expand(int sid) {
             best_h_lm = h_lm;
             progress = true;
         }
+    }
+    if (lazy_queue) {
+        if (lazy_table.get_width() > 1)
+            collect_true_facts(buffer.data(), num_words, child_facts);
+        parent_lazy_novelty = novelty_by_lm
+            ? lazy_table.full(buffer.data(), child_facts, 0, parent_h_lm)
+            : lazy_table.full(buffer.data(), child_facts, num_unsat_goals[sid],
+                              num_unsat_relevant[sid]);
     }
     if (lazy_novelty && config.novelty) {
         // Lazy novelty: novelty of the expanded state, inherited by its

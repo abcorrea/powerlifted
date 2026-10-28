@@ -227,14 +227,14 @@ def remove_trivially_inapplicable_actions(task, graph):
             object_types_in_task.add(type_name)
             type_name = graph.edges[type_name]
 
-    new_actions = set()
+    new_actions = []
     for action in task.actions:
         keep_action = True
         for param in action.parameters:
             if param.type_name not in object_types_in_task:
                 keep_action = False
         if keep_action:
-            new_actions.add(action)
+            new_actions.append(action)
         else:
             print ("Removing action %s" % action.name)
 

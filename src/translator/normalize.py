@@ -22,7 +22,8 @@ class PreconditionProxy(ConditionProxy):
     def set(self, new_condition):
         self.owner.precondition = self.condition = new_condition
     def register_owner(self, task):
-        task.actions.add(self.owner)
+        # Actions are kept in a list (not a set) for a deterministic order.
+        task.actions.append(self.owner)
     def delete_owner(self, task):
         task.actions.remove(self.owner)
     def build_rules(self, rules, add_inequalities):
@@ -207,7 +208,7 @@ def remove_trivially_inapplicable_actions(task):
                 m in object_types_in_task for m in t.name[len("either@"):].split("@")):
             object_types_in_task.add(t.name)
 
-    new_actions = set()
+    new_actions = []
     number_removals = 0
     for action in task.actions:
         keep_action = True
@@ -215,7 +216,7 @@ def remove_trivially_inapplicable_actions(task):
             if param.type_name not in object_types_in_task:
                 keep_action = False
         if keep_action:
-            new_actions.add(action)
+            new_actions.append(action)
         else:
             number_removals += 1
 
@@ -225,12 +226,11 @@ def remove_trivially_inapplicable_actions(task):
 # [0b] Remove duplicated atoms from preconditions
 def remove_duplicated_preconditions(task):
     for action in task.actions:
-        precond = set()
         if not isinstance(action.precondition, pddl.Conjunction):
             continue
-        for p in action.precondition.parts:
-            precond.add(p)
-        action.precondition.parts = tuple(precond)
+        # Keep the first occurrence of each atom (in order, for a
+        # deterministic translation).
+        action.precondition.parts = tuple(dict.fromkeys(action.precondition.parts))
     return
 
 

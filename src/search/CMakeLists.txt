@@ -135,3 +135,9 @@ target_compile_options(search PRIVATE
 
 target_link_options(search PRIVATE
         $<$<CONFIG:Debug>:-pg -fsanitize=undefined>)
+
+# Hardware popcount (bitset ranks in the successor generator); every x86-64
+# CPU since 2008 has it.
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    target_compile_options(search PRIVATE -mpopcnt)
+endif()
