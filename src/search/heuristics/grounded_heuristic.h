@@ -77,6 +77,8 @@ private:
     std::vector<RelaxedOp> relaxed_ops;
     int generation = 0;
     std::vector<std::vector<int>> buckets;
+    //! Heap of (cost, fact) for costs beyond the bucket queue.
+    std::vector<std::pair<int, int>> overflow;
     std::vector<int> state_facts;
     std::vector<char> in_state;
     std::vector<char> marked_fact;

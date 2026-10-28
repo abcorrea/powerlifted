@@ -987,10 +987,25 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
         relevant_action.assign(g.operators.size(), 1);
 }
 
+/*
+  Costs below BUCKET_LIMIT go to a bucket queue; larger costs (h-add can
+  grow very large through double counting) go to a binary heap, processed
+  after all buckets (every cost in the heap is larger than the bucket
+  costs). Costs saturate at MAX_COST.
+*/
+static const int BUCKET_LIMIT = 1 << 16;
+static const int MAX_COST = 1000000000;
+
 void GroundedHeuristic::push(int fact, int cost) {
-    if (cost >= int(buckets.size()))
-        buckets.resize(cost + 1);
-    buckets[cost].push_back(fact);
+    if (cost < BUCKET_LIMIT) {
+        if (cost >= int(buckets.size()))
+            buckets.resize(cost + 1);
+        buckets[cost].push_back(fact);
+    }
+    else {
+        overflow.emplace_back(cost, fact);
+        push_heap(overflow.begin(), overflow.end(), greater<pair<int, int>>());
+    }
 }
 
 int GroundedHeuristic::explore() {
@@ -1005,6 +1020,7 @@ int GroundedHeuristic::explore() {
     const int gen = generation;
     for (auto &b : buckets)
         b.clear();
+    overflow.clear();
     auto cost_of = [&](int f) {
         return fact_state[f].stamp == gen ? fact_state[f].cost : INF;
     };
@@ -1037,45 +1053,60 @@ int GroundedHeuristic::explore() {
         return 0;
 
     const bool is_max = (type == MAX);
+    auto close = [&](int f, int c) {
+        // Mark as closed (a fact can be queued several times at the same
+        // cost): costs are never negative, so -1 - c encodes "closed".
+        fact_state[f].cost = -1 - c;
+        for (int k = pre_of_start[f]; k < pre_of_start[f + 1]; ++k) {
+            int r = pre_of[k];
+            RelaxedOp &o = relaxed_ops[r];
+            if (o.stamp != gen) {
+                o.stamp = gen;
+                o.unsatisfied = o.num_pre;
+                o.cost = 0;
+            }
+            if (is_max)
+                o.cost = max(o.cost, c);
+            else
+                o.cost = min(o.cost + c, MAX_COST);
+            if (--o.unsatisfied == 0) {
+                int cost = min(o.cost + op_base_cost[r], MAX_COST);
+                for (int j = op_eff_start[r]; j < op_eff_start[r + 1]; ++j)
+                    improve(op_eff[j], cost, r);
+            }
+        }
+    };
+    auto goals_closed = [&]() {
+        for (int g : goal) {
+            if (cost_of(g) >= 0)
+                return false;
+        }
+        return true;
+    };
+    bool done = false;
     for (size_t c = 0; c < buckets.size(); ++c) {
         for (size_t i = 0; i < buckets[c].size(); ++i) {
             int f = buckets[c][i];
-            FactState &fs = fact_state[f];
-            if (fs.cost != int(c))
-                continue;
-            // Mark as closed (a fact can be queued several times at the same
-            // cost): costs are never negative, so -1 - c encodes "closed".
-            fs.cost = -1 - int(c);
-            for (int k = pre_of_start[f]; k < pre_of_start[f + 1]; ++k) {
-                int r = pre_of[k];
-                RelaxedOp &o = relaxed_ops[r];
-                if (o.stamp != gen) {
-                    o.stamp = gen;
-                    o.unsatisfied = o.num_pre;
-                    o.cost = 0;
-                }
-                if (is_max)
-                    o.cost = max(o.cost, int(c));
-                else
-                    o.cost += c;
-                if (--o.unsatisfied == 0) {
-                    int cost = o.cost + op_base_cost[r];
-                    for (int j = op_eff_start[r]; j < op_eff_start[r + 1]; ++j)
-                        improve(op_eff[j], cost, r);
-                }
-            }
+            if (fact_state[f].cost == int(c))
+                close(f, c);
         }
         // Check the goals after each completed bucket: all facts of cost
         // <= c are closed then.
-        bool all_closed = true;
-        for (int g : goal) {
-            if (cost_of(g) >= 0) {
-                all_closed = false;
-                break;
-            }
-        }
-        if (all_closed)
+        if (goals_closed()) {
+            done = true;
             break;
+        }
+    }
+    int last_cost = -1;
+    while (!done && !overflow.empty()) {
+        pop_heap(overflow.begin(), overflow.end(), greater<pair<int, int>>());
+        auto [c, f] = overflow.back();
+        overflow.pop_back();
+        if (c != last_cost && last_cost >= 0 && goals_closed())
+            break;
+        last_cost = c;
+        if (fact_state[f].cost == c)
+            close(f, c);
     }
 
     int h = 0;
@@ -1087,7 +1118,7 @@ int GroundedHeuristic::explore() {
         if (is_max)
             h = max(h, cost);
         else
-            h += cost;
+            h = min(h + cost, MAX_COST);
     }
     return h;
 }
