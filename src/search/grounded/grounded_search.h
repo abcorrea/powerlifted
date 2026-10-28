@@ -65,8 +65,9 @@ public:
     //! Only generate the operators marked in `allowed`.
     void restrict_operators(const std::vector<char> &allowed);
 
+    //! Applicable operators (stops after max_ops of them).
     void get_applicable(const uint64_t *bits, const std::vector<int> &true_facts,
-                        std::vector<int> &ops) const;
+                        std::vector<int> &ops, size_t max_ops = SIZE_MAX) const;
 
     bool is_applicable(const uint64_t *bits, int op) const;
 

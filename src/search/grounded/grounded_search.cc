@@ -443,7 +443,7 @@ bool GroundSuccessorGenerator::is_applicable(const uint64_t *bits, int o) const 
 
 void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
                                               const vector<int> &true_facts,
-                                              vector<int> &ops) const {
+                                              vector<int> &ops, size_t max_ops) const {
     ops.clear();
     auto check = [&](int o) {
         for (int i = pre_start[o]; i < pre_start[o + 1]; ++i) {
@@ -457,8 +457,11 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
         return true;
     };
     for (int o : no_pre_ops) {
-        if (check(o))
+        if (check(o)) {
             ops.push_back(o);
+            if (ops.size() >= max_ops)
+                return;
+        }
     }
     (void)true_facts;
     for (int w = 0; w < num_words; ++w) {
@@ -473,6 +476,8 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
                         ops.push_back(o);
                 }
             };
+            if (ops.size() >= max_ops)
+                return;
             if (mask_start[f] >= 0) {
                 int i = group_start[f];
                 if (i < group_start[f + 1] && group_fact[i] < 0)
@@ -1025,7 +1030,9 @@ void GroundSearchRun::expand(int sid) {
             for (int steps = 0; steps < 10000; ++steps) {
                 if (ctx.count_unsatisfied_goals(child.data()) == 0)
                     break;
-                generator.get_applicable(child.data(), chain_facts, chain_ops);
+                // Only whether there are 0, 1, or more applicable operators
+                // matters.
+                generator.get_applicable(child.data(), chain_facts, chain_ops, 2);
                 if (chain_ops.empty()) {
                     dead_end = true;
                     break;
@@ -1233,7 +1240,7 @@ void GroundSearchRun::relaxed_plan_lookahead(int sid, int g, int h, int parent_g
         for (int steps = 0; steps < 10000; ++steps) {
             if (ctx.count_unsatisfied_goals(child.data()) == 0)
                 break;
-            generator.get_applicable(child.data(), chain_facts, chain_ops);
+            generator.get_applicable(child.data(), chain_facts, chain_ops, 2);
             if (chain_ops.empty())
                 return;
             if (chain_ops.size() != 1)

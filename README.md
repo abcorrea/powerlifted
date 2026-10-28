@@ -111,7 +111,10 @@ projections of the ground operators). This gives the same h-add and h-max
 values with far fewer relaxed operators (e.g., 60x fewer in
 recharging-robots); h-FF finds the ground operators of its relaxed plan by
 following the supporters of the auxiliary facts (disable with
-`PWL_NO_DECOMPOSE`). Forced chains (states
+`PWL_NO_DECOMPOSE`). When extracting a relaxed plan, h-FF prefers achievers
+of actions already in the plan among equally expensive ones, so actions
+with many (conditional) effects are counted once (`PWL_FF_REUSE=-1`
+disables this). Forced chains (states
 with exactly one applicable operator) are applied without evaluating the
 intermediate states, and chains ending in dead ends are pruned. After each
 evaluation, the operators of the relaxed plan are applied greedily
