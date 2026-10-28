@@ -683,7 +683,7 @@ private:
     int goal_state = -1;
 
     // Scratch data.
-    vector<uint64_t> buffer, child, chain_child;
+    vector<uint64_t> buffer, child, chain_child, cycle_ref;
     vector<int> state_facts, child_facts, applicable, added, removed;
     vector<int> chain, chain_facts, chain_ops, chain_added, chain_removed;
     vector<uint64_t> child_accepted, chain_accepted, parent_accepted;
@@ -905,6 +905,10 @@ public:
     size_t num_registered() const {
         return registry.size();
     }
+
+    double get_start_time() const {
+        return config.start_time;
+    }
 };
 
 void GroundSearchRun::expand(int sid) {
@@ -1027,6 +1031,9 @@ void GroundSearchRun::expand(int sid) {
             */
             chain.clear();
             bool dead_end = false;
+            // Brent's cycle detection: a forced cycle never reaches a goal.
+            cycle_ref = child;
+            int power = 1, length = 0;
             for (int steps = 0; steps < 10000; ++steps) {
                 if (ctx.count_unsatisfied_goals(child.data()) == 0)
                     break;
@@ -1053,6 +1060,15 @@ void GroundSearchRun::expand(int sid) {
                     lm->update_accepted(child_accepted.data(), child.data(),
                                         chain_accepted.data());
                     child_accepted.swap(chain_accepted);
+                }
+                if (child == cycle_ref) {
+                    dead_end = true;
+                    break;
+                }
+                if (++length == power) {
+                    cycle_ref = child;
+                    power *= 2;
+                    length = 0;
                 }
             }
             if (dead_end) {
@@ -1237,6 +1253,8 @@ void GroundSearchRun::relaxed_plan_lookahead(int sid, int g, int h, int parent_g
     if (ctx.compress_chains) {
         // Continue with forced operators (e.g., to finish a sequence of
         // operators that only makes sense as a whole).
+        cycle_ref = child;
+        int power = 1, length = 0;
         for (int steps = 0; steps < 10000; ++steps) {
             if (ctx.count_unsatisfied_goals(child.data()) == 0)
                 break;
@@ -1252,6 +1270,13 @@ void GroundSearchRun::relaxed_plan_lookahead(int sid, int g, int h, int parent_g
             child.swap(chain_child);
             chain.push_back(chain_ops[0]);
             dist += task.operators[chain_ops[0]].cost;
+            if (child == cycle_ref)
+                return;  // Forced cycle.
+            if (++length == power) {
+                cycle_ref = child;
+                power *= 2;
+                length = 0;
+            }
         }
     }
     ++lookahead_states;
@@ -1500,8 +1525,15 @@ utils::ExitCode GroundedSearch::search(const vector<GroundSearchConfig> &configs
     // If the address space of the process grows beyond this, the largest
     // run is dropped (the address space is limited to 4 GiB).
     const size_t memory_budget = size_t(3300) * 1024 * 1024;
+    // 1: active, 0: dropped, 2: not started yet (start_time not reached).
     vector<char> active(runs.size(), 1);
-    int num_active = runs.size();
+    int num_active = 0;
+    for (size_t i = 0; i < runs.size(); ++i) {
+        if (runs[i]->get_start_time() > 0)
+            active[i] = 2;
+        else
+            ++num_active;
+    }
     const double time_slice = runs.size() > 1 ? 0.05 : 1e9;
     // For benchmarking: stop after this many expansions.
     long long expansion_limit = getenv("PWL_EXPANSION_LIMIT")
@@ -1517,9 +1549,26 @@ utils::ExitCode GroundedSearch::search(const vector<GroundSearchConfig> &configs
                 return utils::ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
             }
         }
+        double elapsed = double(clock() - timer_start) / CLOCKS_PER_SEC;
+        for (size_t i = 0; i < runs.size(); ++i) {
+            if (active[i] == 2 && elapsed >= runs[i]->get_start_time()) {
+                // Start with the least time used so far, to share the time
+                // equally from now on.
+                double least = 1e18;
+                for (size_t j = 0; j < runs.size(); ++j) {
+                    if (active[j] == 1)
+                        least = min(least, runs[j]->time_used);
+                }
+                runs[i]->time_used = least < 1e18 ? least : 0;
+                active[i] = 1;
+                ++num_active;
+                cout << "Starting search run " << runs[i]->get_name() << " after " << elapsed
+                     << "s." << endl;
+            }
+        }
         int best = -1;
         for (size_t i = 0; i < runs.size(); ++i) {
-            if (active[i] && (best < 0 || runs[i]->time_used < runs[best]->time_used))
+            if (active[i] == 1 && (best < 0 || runs[i]->time_used < runs[best]->time_used))
                 best = i;
         }
         GroundSearchRun &run = *runs[best];
@@ -1543,7 +1592,7 @@ utils::ExitCode GroundedSearch::search(const vector<GroundSearchConfig> &configs
         if (num_active > 1) {
             int largest = -1;
             for (size_t i = 0; i < runs.size(); ++i) {
-                if (active[i] &&
+                if (active[i] == 1 &&
                     (largest < 0 || runs[i]->memory_usage() > runs[largest]->memory_usage()))
                     largest = i;
             }

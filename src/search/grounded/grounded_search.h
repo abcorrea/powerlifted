@@ -109,6 +109,8 @@ struct GroundSearchConfig {
     bool lazy_novelty = false;
     //! Add a lazy novelty open list to the eager one.
     bool lazy_queue = false;
+    //! In a portfolio, the run starts after this many seconds.
+    double start_time = 0;
 };
 
 class GroundSearchRun;
