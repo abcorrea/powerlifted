@@ -1731,4 +1731,5 @@ void GroundedSearch::print_statistics() const {
     cout << "Evaluated " << evaluated << " state(s)." << endl;
     cout << "Generated " << generated << " state(s)." << endl;
     cout << "Registered " << registered << " state(s)." << endl;
+    cout << "Peak memory usage: " << utils::get_peak_memory_in_kb() << " kB" << endl;
 }
