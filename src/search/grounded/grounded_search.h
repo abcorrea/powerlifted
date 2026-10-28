@@ -42,6 +42,10 @@ class GroundSuccessorGenerator {
     // facts in group_masks (or -1).
     std::vector<int> mask_start;
     std::vector<uint64_t> group_masks;
+    //! Per group: a negated precondition of all its operators, or -1.
+    std::vector<int> group_block;
+    //! Literals still to check for the operators in group_ops (aligned).
+    std::vector<int> group_lit_start, group_lit;
     void compute_watch_mask();
     std::vector<int> no_pre_ops;
 

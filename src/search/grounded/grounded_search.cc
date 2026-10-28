@@ -404,6 +404,49 @@ void GroundSuccessorGenerator::compute_watch_mask() {
     group_start.push_back(group_fact.size());
     group_op_start.push_back(group_ops.size());
 
+    // Remaining literals of the grouped operators, contiguous in group order
+    // (without the watched fact and the group's fact; negated preconditions
+    // f encoded as -1 - f), so that scanning a group reads memory in order.
+    group_lit_start.clear();
+    group_lit.clear();
+    for (int f = 0; f < num_facts; ++f) {
+        for (int i = group_start[f]; i < group_start[f + 1]; ++i) {
+            for (int k = group_op_start[i]; k < group_op_start[i + 1]; ++k) {
+                int o = group_ops[k];
+                group_lit_start.push_back(group_lit.size());
+                for (int j = pre_start[o]; j < pre_start[o + 1]; ++j) {
+                    if (pre[j] != f && pre[j] != group_fact[i])
+                        group_lit.push_back(pre[j]);
+                }
+                for (int j = neg_start[o]; j < neg_start[o + 1]; ++j)
+                    group_lit.push_back(-1 - neg[j]);
+            }
+        }
+    }
+    group_lit_start.push_back(group_lit.size());
+
+    // Blocker of each group: a negated precondition shared by all its
+    // operators (the group is skipped if it is true), or -1.
+    group_block.assign(group_fact.size(), -1);
+    vector<int> common, next_common;
+    for (size_t i = 0; i < group_fact.size(); ++i) {
+        int first = group_op_start[i], last = group_op_start[i + 1];
+        common.assign(neg.begin() + neg_start[group_ops[first]],
+                      neg.begin() + neg_start[group_ops[first] + 1]);
+        sort(common.begin(), common.end());
+        for (int k = first + 1; k < last && !common.empty(); ++k) {
+            int o = group_ops[k];
+            vector<int> n(neg.begin() + neg_start[o], neg.begin() + neg_start[o + 1]);
+            sort(n.begin(), n.end());
+            next_common.clear();
+            set_intersection(common.begin(), common.end(), n.begin(), n.end(),
+                             back_inserter(next_common));
+            common.swap(next_common);
+        }
+        if (!common.empty())
+            group_block[i] = common[0];
+    }
+
     /*
       Facts watching many groups get a bitset of their groups' facts: ANDed
       with the state, it yields the groups to scan; a group's index is the
@@ -488,10 +531,19 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
             int f = w * 64 + __builtin_ctzll(word);
             word &= word - 1;
             auto scan_group = [&](int i) {
+                if (group_block[i] >= 0 && test_bit(bits, group_block[i]))
+                    return;
                 for (int k = group_op_start[i]; k < group_op_start[i + 1]; ++k) {
-                    int o = group_ops[k];
-                    if (check(o))
-                        ops.push_back(o);
+                    bool applicable = true;
+                    for (int j = group_lit_start[k]; j < group_lit_start[k + 1]; ++j) {
+                        int lit = group_lit[j];
+                        if (lit >= 0 ? !test_bit(bits, lit) : test_bit(bits, -1 - lit)) {
+                            applicable = false;
+                            break;
+                        }
+                    }
+                    if (applicable)
+                        ops.push_back(group_ops[k]);
                 }
             };
             if (ops.size() >= max_ops)
