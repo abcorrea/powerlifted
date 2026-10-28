@@ -104,7 +104,10 @@ def parse_options():
     parser.add_argument("--novelty-early-stop", action="store_true",
                         help="flag if the novelty evaluation of a state should stop as soon as the w-value is defined")
     parser.add_argument("--unit-cost", action="store_true",
-                           help="flag if the actions should be treated as unit-cost actions")
+                           help="treat all actions as unit-cost actions (the default; kept "
+                                "for compatibility)")
+    parser.add_argument("--use-action-costs", action="store_true",
+                           help="use the action costs of the task instead of unit costs")
     parser.add_argument("--force-lifted", action="store_true",
                         help="never ground the task (lifted search and heuristics only)")
     parser.add_argument("--grounded-queues", default=None,

@@ -111,6 +111,8 @@ struct GroundSearchConfig {
     bool lazy_queue = false;
     //! In a portfolio, the run starts after this many seconds.
     double start_time = 0;
+    //! Blind breadth-first search (by g, no heuristic).
+    bool breadth_first = false;
 };
 
 class GroundSearchRun;

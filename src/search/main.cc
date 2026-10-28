@@ -184,6 +184,9 @@ int main(int argc, char *argv[])
                             else if (o == "lazyq") {
                                 c.lazy_queue = true;
                             }
+                            else if (o == "bfs") {
+                                c.breadth_first = true;
+                            }
                             else if (!o.empty() && o[0] == 't') {
                                 c.start_time = std::atof(o.c_str() + 1);
                             }

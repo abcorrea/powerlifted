@@ -655,7 +655,8 @@ private:
     //! to chains[k].
     vector<vector<int>> chains;
 
-    enum {NOVELTY_QUEUE, FF_QUEUE, ADD_QUEUE, LM_QUEUE, LAZY_NOVELTY_QUEUE};
+    enum {NOVELTY_QUEUE, FF_QUEUE, ADD_QUEUE, LM_QUEUE, LAZY_NOVELTY_QUEUE, G_QUEUE};
+    const vector<int> empty_facts;
     vector<int> queue_types;
     vector<KeyedOpenList<3>> regular, preferred_lists;
     size_t turn = 0;
@@ -746,6 +747,8 @@ private:
                 key = {h_ff, g, 0};
             else if (queue_types[q] == ADD_QUEUE)
                 key = {h_add, g, 0};
+            else if (queue_types[q] == G_QUEUE)
+                key = {g, 0, 0};
             else if (queue_types[q] == LAZY_NOVELTY_QUEUE)
                 key = {parent_lazy_novelty, novelty_by_lm ? parent_h_lm : gc, g};
             else
@@ -802,6 +805,8 @@ public:
             queue_types.push_back(ADD_QUEUE);
         if (lm)
             queue_types.push_back(LM_QUEUE);
+        if (config.breadth_first)
+            queue_types.assign(1, G_QUEUE);
         if (queue_types.empty())
             queue_types.push_back(FF_QUEUE);
         regular.resize(queue_types.size());
@@ -915,11 +920,14 @@ void GroundSearchRun::expand(int sid) {
     // Copy: the registry may grow while generating successors.
     memcpy(buffer.data(), registry.get(sid), sizeof(uint64_t) * num_words);
     collect_true_facts(buffer.data(), num_words, state_facts);
-    int h = heuristic.compute_for_facts(state_facts, false);
-    ++evaluated;
-    if (h == UNSOLVABLE_STATE)
-        return;
-    h_add = heuristic.get_last_hadd();
+    int h = 0;
+    if (!config.breadth_first) {
+        h = heuristic.compute_for_facts(state_facts, false);
+        ++evaluated;
+        if (h == UNSOLVABLE_STATE)
+            return;
+        h_add = heuristic.get_last_hadd();
+    }
     if (trace_expansions > 0) {
         --trace_expansions;
         cout << "Expand " << sid << " g=" << g_value[sid] << " h=" << h;
@@ -973,7 +981,7 @@ void GroundSearchRun::expand(int sid) {
              << ", generations: " << generated << "]" << endl;
     }
     marked.clear();
-    for (int f : heuristic.get_useful_facts()) {
+    for (int f : config.breadth_first ? empty_facts : heuristic.get_useful_facts()) {
         if (f < num_base_facts) {
             marks[f] |= 1;
             marked.push_back(f);
@@ -1098,7 +1106,7 @@ void GroundSearchRun::expand(int sid) {
         if (!process_child(sid, o, op_ref, dist, h, parent_gc, parent_rc, false))
             return;
     }
-    if (lookahead && h > 0)
+    if (lookahead && h > 0 && !config.breadth_first)
         relaxed_plan_lookahead(sid, g, h, parent_gc, parent_rc);
     for (int f : marked)
         marks[f] = 0;

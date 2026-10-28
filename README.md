@@ -81,8 +81,9 @@ h-FF open list, and a landmark-count open list, each with a preferred
 variant (falling back to width 1 for tasks with more than 4096 facts); if
 the task cannot be grounded, Powerlifted falls back to lifted `alt-bfws1`. By default,
 Powerlifted uses the lazy effects-only novelty check from Corrêa and Seipp
-(2022). To maximize coverage, we also recommend adding `--unit-cost` (see
-below).
+(2022). Actions are treated as unit-cost actions by default, since plan
+cost is ignored and the search (which breaks ties by g) is guided better by
+plan length; use `--use-action-costs` for the task's action costs.
 
 ### Ground and Lifted Search
 
@@ -182,7 +183,8 @@ ground task for the delete-relaxation heuristics when grounding succeeds.
 | `--preprocess-task`             | Preprocess PDDL files using [CPDDL](https://gitlab.com/danfis/cpddl). Requires `CPDDL_BIN` environment variable pointing to `cpddl/bin`. *Note*: Still not fully functional — CPDDL may leave negated static preconditions unsupported by Powerlifted. |
 | `--seed SEED`                   | Random seed for the random number generator                                                                                                                                                                                                            |
 | `--translator-output-file FILE` | Path for the intermediate representation file (default: `output.lifted`)                                                                                                                                                                               |
-| `--unit-cost`                   | Use unit cost (all costs equal to 1) instead of costs from the domain file                                                                                                                                                                             |
+| `--unit-cost`                   | Use unit costs (the default; kept for compatibility)                                                                                                                                                                                                   |
+| `--use-action-costs`            | Use the action costs of the domain file instead of unit costs                                                                                                                                                                                          |
 | `--force-lifted`                | Never ground the task: lifted search and lifted (Datalog) heuristics only                                                                                                                                                                              |
 | `--grounded-queues LIST`        | Open lists of the ground search: comma-separated subset of `novelty`, `ff` (h of the parent), `add` (h-add of the parent), `lm` (landmark count). Overrides the defaults of the search engine name.                                                     |
 | `--validate`                    | Run [VAL](https://github.com/KCL-Planning/VAL) after a plan is found. Requires `validate` on `PATH`.                                                                                                                                                   |

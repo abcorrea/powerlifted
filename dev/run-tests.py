@@ -679,7 +679,9 @@ class TestRun:
                '-i', str(BASEDIR / 'dev' / self.instance),
                '-s', self.search,
                '-e', self.heuristic,
-               '-g', self.generator]
+               '-g', self.generator,
+               # The tests check optimal plan costs.
+               '--use-action-costs']
         if self.validate:
             cmd.append('--validate')
         cmd.extend(self.extra_args)

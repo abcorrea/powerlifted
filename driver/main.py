@@ -86,8 +86,9 @@ def set_extra_options(options):
         CPP_EXTRA_OPTIONS += ['--grounded-queues', options.grounded_queues]
 
 
-    # Checks if unit-cost flag is true
-    if options.unit_cost:
+    # Unit costs by default: plan cost does not matter, and the search
+    # (g as tie-breaker) is guided better by plan length.
+    if options.unit_cost or not options.use_action_costs:
         PYTHON_EXTRA_OPTIONS += ["--unit-cost"]
 
     return PYTHON_EXTRA_OPTIONS, CPP_EXTRA_OPTIONS
