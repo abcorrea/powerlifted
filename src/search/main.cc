@@ -148,7 +148,8 @@ int main(int argc, char *argv[])
                 }
                 else if (engine == "portfolio" && std::getenv("PWL_PORTFOLIO")) {
                     // Comma-separated engine names; ":sN" shuffles the
-                    // successor order with seed N, ":add" adds an h-add queue.
+                    // successor order with seed N, ":add" adds an h-add queue,
+                    // ":lazy" uses lazy novelty.
                     std::string spec = std::getenv("PWL_PORTFOLIO");
                     size_t pos = 0;
                     while (pos <= spec.size()) {
@@ -173,6 +174,9 @@ int main(int argc, char *argv[])
                             }
                             else if (o == "add") {
                                 c.add = true;
+                            }
+                            else if (o == "lazy") {
+                                c.lazy_novelty = true;
                             }
                             opt_pos = opt_end;
                         }

@@ -42,6 +42,12 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
     for (const GroundConditionalEffect &ce : g.conditional_effects)
         needed.insert(needed.end(), ce.negated_condition.begin(), ce.negated_condition.end());
     needed.insert(needed.end(), g.negated_goal.begin(), g.negated_goal.end());
+    for (const GroundTask::RelaxationOperator &op : g.relaxation_operators) {
+        for (int f : op.pre) {
+            if (f < 0)
+                needed.push_back(-1 - f);
+        }
+    }
     sort(needed.begin(), needed.end());
     needed.erase(unique(needed.begin(), needed.end()), needed.end());
 
@@ -145,6 +151,8 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
     for (const GroundAxiom &ax : g.axioms) {
         add_relaxed_op(ax.body, nullptr, vector<int>{ax.head}, 0, -1);
     }
+    if (g.operators_omitted)
+        add_relaxation_operators(task, g);
     for (const auto &entry : negated_axioms) {
         vector<int> eff{complement[entry.first]};
         for (const vector<int> &c : entry.second) {
@@ -678,6 +686,82 @@ void GroundedHeuristic::get_ground_relaxed_operator(int o, vector<int> &pre,
     }
 }
 
+void GroundedHeuristic::add_relaxation_operators(const Task &task, const GroundTask &g) {
+    const int aux_base = num_facts;
+    num_facts += g.num_relaxation_aux;
+    const int rule_base = decomposed_rules.size();
+    for (const GroundTask::RelaxationRule &rule : g.relaxation_rules) {
+        DecomposedRule dr;
+        dr.vars = rule.vars;
+        dr.op_index = -1;
+        dr.schema = rule.schema;
+        dr.num_params = task.get_action_schema_by_index(rule.schema).get_parameters().size();
+        decomposed_rules.push_back(std::move(dr));
+    }
+    const int num_ground_facts = g.num_facts();
+    auto map_fact = [&](int f) {
+        if (f >= num_ground_facts)
+            return aux_base + (f - num_ground_facts);
+        if (f >= 0)
+            return f;
+        return complement[-1 - f];
+    };
+    vector<int> pre, eff;
+    for (const GroundTask::RelaxationOperator &op : g.relaxation_operators) {
+        pre.clear();
+        eff.clear();
+        for (int f : op.pre) {
+            int x = map_fact(f);
+            if (x >= 0)
+                pre.push_back(x);
+        }
+        for (int f : op.eff) {
+            int x = map_fact(f);
+            if (x >= 0)
+                eff.push_back(x);
+        }
+        const GroundTask::RelaxationRule &rule = g.relaxation_rules[op.rule];
+        int id = add_relaxed_op(pre, nullptr, eff, rule.cost, rule.final ? -3 : -1);
+        if (id < 0)
+            continue;
+        op_rule[id] = rule_base + op.rule;
+        op_values_start[id] = rule_values.size();
+        rule_values.insert(rule_values.end(), op.values.begin(), op.values.end());
+    }
+    cout << "Relaxed program operators: " << g.relaxation_operators.size() << "." << endl;
+}
+
+int GroundedHeuristic::extract_lifted_action(int r) {
+    const DecomposedRule &final_rule = decomposed_rules[op_rule[r]];
+    vector<int> action(final_rule.num_params + 1, -1);
+    action[0] = final_rule.schema;
+    reconstruct_stack.clear();
+    reconstruct_stack.push_back(r);
+    while (!reconstruct_stack.empty()) {
+        int x = reconstruct_stack.back();
+        reconstruct_stack.pop_back();
+        const DecomposedRule &rule = decomposed_rules[op_rule[x]];
+        const int *values = rule_values.data() + op_values_start[x];
+        for (size_t i = 0; i < rule.vars.size(); ++i) {
+            if (rule.vars[i] < final_rule.num_params)
+                action[rule.vars[i] + 1] = values[i];
+        }
+        for (int i = op_pre_start[x]; i < op_pre_start[x + 1]; ++i) {
+            int p = op_pre[i];
+            if (p >= first_aux_fact)
+                reconstruct_stack.push_back(fact_state[p].supporter);
+            else if (!marked_fact[p] && !in_state[p])
+                stack.push_back(p);
+        }
+    }
+    for (const vector<int> &a : lifted_plan_actions) {
+        if (a == action)
+            return 0;
+    }
+    lifted_plan_actions.push_back(std::move(action));
+    return op_base_cost[r];
+}
+
 int GroundedHeuristic::reconstruct_operator(int r) {
     const DecomposedRule &final_rule = decomposed_rules[op_rule[r]];
     const OperatorIndex &index = operator_indices[final_rule.op_index];
@@ -1051,6 +1135,7 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
     for (int f : state_facts)
         in_state[f] = 1;
     int ff = 0;
+    lifted_plan_actions.clear();
     stack.clear();
     for (int g : goal) {
         if (!in_state[g])
@@ -1082,6 +1167,11 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
                     break;
                 }
             }
+        }
+        if (a == -3) {
+            // Relaxed program operator (no ground operators).
+            ff += extract_lifted_action(r);
+            continue;
         }
         if (a == -2) {
             // Decomposed operator: the ground operator and its precondition.

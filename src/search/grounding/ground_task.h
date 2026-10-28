@@ -73,6 +73,33 @@ public:
     //! Some positive goal atom is not relaxed reachable.
     bool goal_unreachable = false;
 
+    /*
+      Set if there are too many ground operators to ground them: the task
+      has facts, axioms, initial state, and goal, but no operators. Instead,
+      it has the decomposed relaxed program of the action schemas (for the
+      heuristic of the lifted search). Its facts are encoded as: f in [0,
+      num_facts()) a fact, f < 0 the complement of fact -f - 1, and f >=
+      num_facts() the auxiliary fact f - num_facts().
+    */
+    bool operators_omitted = false;
+    struct RelaxationRule {
+        int schema;
+        int cost;
+        bool final;
+        //! Variables bound by an instance (schema parameters below the
+        //! schema's number of parameters).
+        std::vector<int> vars;
+    };
+    struct RelaxationOperator {
+        int rule;
+        std::vector<int> pre;
+        std::vector<int> eff;
+        std::vector<int> values;
+    };
+    std::vector<RelaxationRule> relaxation_rules;
+    std::vector<RelaxationOperator> relaxation_operators;
+    int num_relaxation_aux = 0;
+
     /**
      * Ground the task. Returns false if the grounding exceeds the given
      * limits (number of Datalog facts produced by the exploration, number
@@ -102,6 +129,13 @@ public:
      * ground (or if grounding is disabled with PWL_NO_GROUNDING).
      */
     static std::shared_ptr<GroundTask> get_cached(const Task &task);
+
+    /**
+     * If the task has too many ground operators, the task with facts and the
+     * relaxed program but without operators (see operators_omitted);
+     * nullptr otherwise.
+     */
+    static std::shared_ptr<GroundTask> get_cached_relaxation(const Task &task);
 
     //! Make get_cached() return nullptr (lifted planning only).
     static void disable_grounding();

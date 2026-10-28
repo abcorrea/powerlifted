@@ -335,8 +335,17 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     utils::Timer exploration_timer;
     bool complete = getenv("PWL_DATALOG_GROUNDING")
         ? datalog_reachability(task, max_datalog_facts, rr)
-        : compute_relaxed_reachability(task, max_datalog_facts, rr);
+        : compute_relaxed_reachability(task, max_datalog_facts, max_operators, rr);
     cout << "Relaxed reachability analysis: " << exploration_timer() << endl;
+    if (!complete && rr.too_many_operators) {
+        cout << "Grounding aborted: more than " << max_operators << " operators ("
+             << size_t(rr.counted_operators) << " counted)." << endl;
+        if (!rr.relaxed_program)
+            return false;
+        // Keep the facts, axioms, and goal for the relaxed program.
+        operators_omitted = true;
+        complete = true;
+    }
     if (!complete) {
         cout << "Grounding aborted: more than " << max_datalog_facts
              << " atoms and instances." << endl;
@@ -356,7 +365,7 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
         for (const auto &l : rr.ce_instances[a])
             num_ce_facts += l.size();
     }
-    if (num_action_facts + num_ce_facts > max_operators) {
+    if (!operators_omitted && num_action_facts + num_ce_facts > max_operators) {
         cout << "Grounding aborted: " << num_action_facts << " operators and "
              << num_ce_facts << " conditional effects." << endl;
         return false;
@@ -381,7 +390,7 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     vector<phmap::flat_hash_map<vector<int>, int, TupleHash>> op_index(schemas.size());
     operators.reserve(num_action_facts);
     vector<int> binding;
-    for (size_t a = 0; a < schemas.size(); ++a)
+    for (size_t a = 0; a < schemas.size() && !operators_omitted; ++a)
     for (const GroundAtom &instance : rr.action_instances[a]) {
         const ActionSchema &schema = schemas[a];
         binding.assign(instance.begin(), instance.end());
@@ -478,7 +487,7 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     }
 
     // Ground conditional effects.
-    for (size_t a = 0; a < schemas.size(); ++a)
+    for (size_t a = 0; a < schemas.size() && !operators_omitted; ++a)
     for (size_t c = 0; c < rr.ce_instances[a].size(); ++c)
     for (const GroundAtom &instance : rr.ce_instances[a][c]) {
         const ActionSchema &schema = schemas[a];
@@ -676,6 +685,64 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
                  << " instances, " << per_schema_kept[a] << " operators" << endl;
     }
     get_state_facts(task.initial_state, initial_facts);
+    if (operators_omitted) {
+        // Relaxed program: encode its atoms as facts.
+        const int num_preds = num_predicates;
+        vector<phmap::flat_hash_map<GroundAtom, int, TupleHash>> aux_ids;
+        auto encode = [&](const RelaxedProgram::ProgramAtom &atom, bool &skip) {
+            skip = false;
+            int r = atom.first;
+            if (r >= num_preds) {
+                int k = r - num_preds;
+                if (k >= int(aux_ids.size()))
+                    aux_ids.resize(k + 1);
+                auto it = aux_ids[k].emplace(atom.second, num_relaxation_aux);
+                if (it.second)
+                    ++num_relaxation_aux;
+                return int(facts.size()) + it.first->second;
+            }
+            int p = r >= 0 ? r : -1 - r;
+            if (is_static(p)) {
+                skip = true;
+                return 0;
+            }
+            int f = get_fact(p, atom.second);
+            if (f < 0) {
+                skip = true;
+                return 0;
+            }
+            return r >= 0 ? f : -1 - f;
+        };
+        // Auxiliary facts are numbered after all facts are known.
+        const RelaxedProgram &program = *rr.relaxed_program;
+        for (const auto &rule : program.rules)
+            relaxation_rules.push_back({rule.schema, rule.cost, rule.final, rule.vars});
+        for (const auto &inst : program.instances) {
+            RelaxationOperator op;
+            op.rule = inst.rule;
+            bool skip;
+            for (const auto &atom : inst.body) {
+                int f = encode(atom, skip);
+                if (!skip)
+                    op.pre.push_back(f);
+            }
+            for (const auto &atom : inst.heads) {
+                int f = encode(atom, skip);
+                if (!skip)
+                    op.eff.push_back(f);
+            }
+            if (op.eff.empty())
+                continue;
+            sort_unique(op.pre);
+            sort_unique(op.eff);
+            op.values.assign(inst.values.begin(), inst.values.end());
+            relaxation_operators.push_back(std::move(op));
+        }
+        cout << "Relaxation without ground operators: " << facts.size() << " facts, "
+             << relaxation_operators.size() << " relaxed operators, " << num_relaxation_aux
+             << " auxiliary facts, " << axioms.size() << " axioms." << endl;
+        return false;
+    }
     if (getenv("PWL_FACT_RENUMBER"))
         renumber_facts();
     cout << "Grounded task: " << facts.size() << " facts, " << operators.size()
@@ -690,6 +757,13 @@ void GroundTask::disable_grounding() {
     grounding_disabled = true;
 }
 
+static shared_ptr<GroundTask> relaxation_cached;
+
+shared_ptr<GroundTask> GroundTask::get_cached_relaxation(const Task &task) {
+    get_cached(task);
+    return relaxation_cached;
+}
+
 shared_ptr<GroundTask> GroundTask::get_cached(const Task &task) {
     static shared_ptr<GroundTask> cached;
     static bool tried = false;
@@ -702,7 +776,7 @@ shared_ptr<GroundTask> GroundTask::get_cached(const Task &task) {
     size_t max_instances = getenv("PWL_MAX_GROUND_INSTANCES")
         ? atol(getenv("PWL_MAX_GROUND_INSTANCES")) : 4000000;
     size_t max_operators = getenv("PWL_MAX_GROUND_OPERATORS")
-        ? atol(getenv("PWL_MAX_GROUND_OPERATORS")) : 2000000;
+        ? atol(getenv("PWL_MAX_GROUND_OPERATORS")) : 3000000;
     auto ground_task = make_shared<GroundTask>();
     bool success = false;
     try {
@@ -713,6 +787,9 @@ shared_ptr<GroundTask> GroundTask::get_cached(const Task &task) {
     }
     if (success) {
         cached = ground_task;
+    }
+    else if (ground_task->operators_omitted) {
+        relaxation_cached = ground_task;
     }
     else {
         ground_task.reset();

@@ -102,6 +102,10 @@ private:
         //! For final rules, the operator index to find the ground operator
         //! of an instance; -1 for auxiliary rules.
         int op_index;
+        //! Schema and its number of parameters (relaxed program of a task
+        //! without ground operators).
+        int schema = -1;
+        int num_params = 0;
     };
     struct OperatorIndex {
         int schema;
@@ -121,6 +125,15 @@ private:
     std::vector<int> reconstruct_stack;
     //! Ground operators of the decomposed schemas.
     std::vector<int> decomposed_operators;
+    //! Actions (schema, parameters) of the last relaxed plan of a task
+    //! without ground operators.
+    std::vector<std::vector<int>> lifted_plan_actions;
+    void add_relaxation_operators(const Task &task, const GroundTask &g);
+    //! Mark the relaxed plan part of the relaxed program operator r (no
+    //! ground operators): push its precondition facts and those of the
+    //! supporters of its auxiliary facts; return the action's cost if the
+    //! action is new in the relaxed plan, 0 otherwise.
+    int extract_lifted_action(int r);
 
     int add_relaxed_op(const std::vector<int> &pre1, const std::vector<int> *pre2,
                        const std::vector<int> &eff, int base_cost, int action);

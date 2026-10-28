@@ -99,6 +99,9 @@ struct GroundSearchConfig {
     double max_seconds = 1e9;
     //! Partition novelty by the landmark count instead of (#g, #r).
     bool novelty_by_lm = false;
+    //! Compute the novelty of a state when it is expanded; its successors
+    //! inherit it (as in lazy search).
+    bool lazy_novelty = false;
 };
 
 class GroundSearchRun;

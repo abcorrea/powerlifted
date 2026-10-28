@@ -84,10 +84,17 @@ below).
 
 ### Ground and Lifted Search
 
-Powerlifted first tries to *ground* the task: a semi-naive relaxed
-reachability analysis from the initial state (indexed joins, with
-(in)equalities and negated static atoms checked during the joins) yields
-the relaxed-reachable ground operators, conditional effects, and axioms. If grounding stays within its
+Powerlifted first tries to *ground* the task, counting before enumerating
+(as CounterAction does). A semi-naive relaxed reachability analysis from the
+initial state computes the reachable atoms without deriving action atoms:
+its rules are split by variable elimination into rules with smaller joins
+(indexed joins, with (in)equalities and negated static atoms checked during
+the joins), so it costs about as much as the reachable atoms. Then the
+ground operators of each schema are counted by sum-product variable
+elimination over the reachable atoms, and only if there are not too many
+(default 3 million, `PWL_MAX_GROUND_OPERATORS`) are the operators,
+conditional effects, and axioms enumerated, with one join each (disable with
+`PWL_NO_SPLIT_GROUNDING`). If grounding stays within its
 limits (Datalog facts and number of operators), the search engines
 `alt-bfws1`, `alt-bfws2`, `alt-bfws1-lm`, `alt-bfws2-lm`, and `lama` run on
 the ground task: states are bitsets, successors come from a
@@ -109,9 +116,14 @@ evaluation, the operators of the relaxed plan are applied greedily
 (relaxed plan lookahead, as in YAHSP) and the resulting state is added as a
 preferred successor.
 
-Otherwise (or with `--force-lifted`), the lifted machinery is used. The
-other search engines and heuristics also use the ground task for the
-delete-relaxation heuristics when grounding succeeds.
+Otherwise (or with `--force-lifted`), the lifted machinery is used. If
+there are too many ground operators, the lifted search still gets a ground
+delete-relaxation heuristic: the schemas are split by variable elimination
+as above and only the split rules are grounded over the reachable atoms
+(a decomposed relaxed program, usually much smaller than the ground
+operators); h-FF counts the lifted actions of its relaxed plan (disable with
+`PWL_NO_HYBRID`). The other search engines and heuristics also use the
+ground task for the delete-relaxation heuristics when grounding succeeds.
 
 ### Search Algorithms (`-s`)
 

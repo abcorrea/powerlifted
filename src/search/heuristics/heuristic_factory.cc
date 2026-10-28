@@ -34,8 +34,14 @@ static Heuristic *create_grounded(const std::string &method, const Task &task)
     else
         return nullptr;
     std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
-    if (!ground_task)
-        return nullptr;
+    if (!ground_task) {
+        // Too many ground operators: the relaxed program of the ground facts.
+        ground_task = GroundTask::get_cached_relaxation(task);
+        if (!ground_task)
+            return nullptr;
+        std::cout << "Using " << method << " heuristic on the decomposed relaxed program." << std::endl;
+        return new GroundedHeuristic(task, ground_task, type);
+    }
     std::cout << "Using grounded " << method << " heuristic." << std::endl;
     return new GroundedHeuristic(task, ground_task, type);
 }
