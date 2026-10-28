@@ -130,9 +130,11 @@ int main(int argc, char *argv[])
                                name == "bfws2-lmnov") ? 2 : 1;
                     if (name == "bfws2-lmnov") {
                         // NOLAN-like: width-2 novelty partitioned by the
-                        // landmark count, plus h-FF and landmark queues.
+                        // landmark count (eager and lazy), plus h-FF and
+                        // landmark queues.
                         c.lm = true;
                         c.novelty_by_lm = true;
+                        c.lazy_queue = !std::getenv("PWL_NO_LAZY_QUEUE");
                     }
                     return c;
                 };

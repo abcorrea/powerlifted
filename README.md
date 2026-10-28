@@ -74,7 +74,9 @@ total coverage) is:
 
 These are also the default values for `-s`, `-e`, and `-g`. On ground
 tasks, `bfws2-lmnov` alternates between a width-2 novelty open list
-partitioned by the landmark count (as in NOLAN, Corrêa and Seipp 2025), an
+partitioned by the landmark count (as in NOLAN, Corrêa and Seipp 2025), a
+lazy novelty open list (the novelty of the expanded state, in separate
+tables, inherited by its successors; disable with `PWL_NO_LAZY_QUEUE`), an
 h-FF open list, and a landmark-count open list, each with a preferred
 variant (falling back to width 1 for tasks with more than 4096 facts); if
 the task cannot be grounded, Powerlifted falls back to lifted `alt-bfws1`. By default,
