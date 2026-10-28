@@ -176,6 +176,9 @@ public:
     //! Novelty of the state with the given bits (and, for width 2, true
     //! facts in increasing order).
     int full(const uint64_t *bits, const vector<int> &facts, int gc, int rc) {
+        ++checks;
+        if (width > 1)
+            pair_work += (long long)facts.size() * facts.size() / 2;
         Table &t = get_table(gc, rc);
         bool novel = false;
         for (int w = 0; w < num_words; ++w) {
@@ -199,7 +202,22 @@ public:
 
     //! Novelty considering only the facts added with respect to the parent
     //! (which belongs to the same partition).
+    //! Work of the width-2 checks (pairs considered) and number of checks.
+    long long pair_work = 0;
+    long long checks = 0;
+
+    //! Use width 1 from now on (freeing the pair tables).
+    void downgrade_to_width_1() {
+        width = 1;
+        for (auto &entry : tables)
+            vector<uint64_t>().swap(entry.second.pairs);
+        pair_memory = 0;
+    }
+
     int effects(const vector<int> &added, const vector<int> &facts, int gc, int rc) {
+        ++checks;
+        if (width > 1)
+            pair_work += (long long)added.size() * facts.size();
         Table &t = get_table(gc, rc);
         bool novel = false;
         for (int f : added) {
@@ -874,6 +892,8 @@ public:
             closed[sid] = 1;
             ++expanded;
             expand(sid);
+            if (expanded == 32 || expanded == 256)
+                check_pair_work();
             if (goal_state >= 0)
                 return SOLVED;
             if (config.max_expansions >= 0 && expanded >= config.max_expansions)
@@ -913,6 +933,25 @@ public:
 
     double get_start_time() const {
         return config.start_time;
+    }
+
+    /*
+      Width-2 novelty checks cost |added facts| * |true facts| (or |true
+      facts|^2 / 2) pair updates. If they cost too much per check (e.g.,
+      chains changing many facts in states with many true facts), use width
+      1 from now on.
+    */
+    void check_pair_work() {
+        const long long max_pairs_per_check = 100000;
+        for (GroundNovelty *table : {&novelty, &lazy_table}) {
+            if (table->get_width() > 1 && table->checks > 0 &&
+                table->pair_work / table->checks > max_pairs_per_check) {
+                cout << "[" << config.name << "] Width-2 novelty too expensive ("
+                     << table->pair_work / table->checks << " pairs per check); using width 1."
+                     << endl;
+                table->downgrade_to_width_1();
+            }
+        }
     }
 };
 
