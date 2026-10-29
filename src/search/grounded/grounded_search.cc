@@ -542,16 +542,22 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
                             break;
                         }
                     }
-                    if (applicable)
+                    if (applicable) {
                         ops.push_back(group_ops[k]);
+                        if (ops.size() >= max_ops)
+                            return;
+                    }
                 }
             };
             if (ops.size() >= max_ops)
                 return;
             if (mask_start[f] >= 0) {
                 int i = group_start[f];
-                if (i < group_start[f + 1] && group_fact[i] < 0)
+                if (i < group_start[f + 1] && group_fact[i] < 0) {
                     scan_group(i++);
+                    if (ops.size() >= max_ops)
+                        return;
+                }
                 const uint64_t *mask = group_masks.data() + mask_start[f];
                 int rank = i;
                 for (int mw = 0; mw < num_words; ++mw) {
@@ -563,6 +569,8 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
                         int b = __builtin_ctzll(hit);
                         hit &= hit - 1;
                         scan_group(rank + __builtin_popcountll(m & ((1ULL << b) - 1)));
+                        if (ops.size() >= max_ops)
+                            return;
                     }
                     rank += __builtin_popcountll(m);
                 }
@@ -573,6 +581,8 @@ void GroundSuccessorGenerator::get_applicable(const uint64_t *bits,
                 if (g >= 0 && !test_bit(bits, g))
                     continue;
                 scan_group(i);
+                if (ops.size() >= max_ops)
+                    return;
             }
         }
     }
@@ -895,7 +905,9 @@ public:
 
         int root = registry.insert(ctx.initial_bits.data()).first;
         add_node(root);
-        const uint64_t *root_bits = registry.get(root);
+        const uint64_t *root_bits = ctx.initial_bits.data();
+        if (registry.is_sparse())
+            cout << "Storing states compactly (" << task.num_facts() << " facts)." << endl;
         num_unsat_goals[root] = ctx.count_unsatisfied_goals(root_bits);
         num_unsat_relevant[root] = ctx.count_unsatisfied_relevant(root_bits);
         int h_lm0 = 0;
@@ -1009,7 +1021,7 @@ public:
 
 void GroundSearchRun::expand(int sid) {
     // Copy: the registry may grow while generating successors.
-    memcpy(buffer.data(), registry.get(sid), sizeof(uint64_t) * num_words);
+    registry.copy_to(sid, buffer.data());
     collect_true_facts(buffer.data(), num_words, state_facts);
     int h = 0;
     if (!config.breadth_first) {

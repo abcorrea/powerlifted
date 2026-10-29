@@ -748,6 +748,7 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     cout << "Grounded task: " << facts.size() << " facts, " << operators.size()
          << " operators, " << conditional_effects.size() << " conditional effects, "
          << axioms.size() << " axioms." << endl;
+    cout << "Initial state: " << initial_facts.size() << " facts." << endl;
     return true;
 }
 

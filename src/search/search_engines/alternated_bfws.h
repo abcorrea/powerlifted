@@ -49,7 +49,10 @@ protected:
 public:
     explicit AlternatedBFWS(int width, const Options &opt)
         : width(width), full_novelty_check(opt.use_full_novelty_check()),
-          compress_chains(!std::getenv("PWL_NO_CHAINS")) {
+          // Checking for forced chains needs the applicable actions of every
+          // generated state, a full join per successor in lifted search
+          // (prohibitive on large tasks), so it is opt-in here.
+          compress_chains(std::getenv("PWL_LIFTED_CHAINS")) {
         std::cout << "Using Dual-Queue BFWS" << std::endl;
         // By default we use h-add as heuristic, unless explicitly asked to use FF
         heuristic_type = opt.get_evaluator();
