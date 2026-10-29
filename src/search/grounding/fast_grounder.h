@@ -75,6 +75,9 @@ struct RelaxedReachabilityResult {
     //! counted before enumerating them, and whether they exceed the limit.
     double counted_operators = -1;
     bool too_many_operators = false;
+    //! The grounding exceeded its wall-clock budget (PWL_GROUNDING_TIME_LIMIT
+    //! seconds, default 12); the result is incomplete.
+    bool timed_out = false;
     //! If there are too many operators: the decomposed relaxed program (if
     //! it is small enough), and the atoms and axiom instances are complete.
     std::shared_ptr<RelaxedProgram> relaxed_program;

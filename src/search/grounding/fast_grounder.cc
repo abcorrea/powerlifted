@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <deque>
 #include <functional>
 #include <iostream>
@@ -132,6 +133,19 @@ class Grounder {
     size_t max_total;
     size_t max_operators;
     bool aborted = false;
+    //! Wall-clock deadline of the whole grounding attempt (checked every few
+    //! thousand join steps); exceeding it aborts the grounding.
+    std::chrono::steady_clock::time_point deadline;
+    long long join_steps = 0;
+    bool timed_out = false;
+
+    bool past_deadline() {
+        if (std::chrono::steady_clock::now() > deadline) {
+            aborted = true;
+            timed_out = true;
+        }
+        return timed_out;
+    }
     //! Count-first mode: the fixpoint derives no instance atoms (rules are
     //! split by variable elimination), the instances are counted and then
     //! enumerated over the final atoms.
@@ -200,7 +214,7 @@ class Grounder {
     }
 
     void join(const Rule &rule, const vector<Step> &plan, size_t depth) {
-        if (aborted)
+        if (aborted || ((++join_steps & 0x3FFF) == 0 && past_deadline()))
             return;
         if (depth == plan.size()) {
             if (collect_times)
@@ -301,8 +315,14 @@ class Grounder {
                                const vector<pair<int, int>> &rule_schema, RelaxedProgram &program);
 
 public:
-    Grounder(const Task &task, size_t max_total, size_t max_operators)
-        : task(task), max_total(max_total), max_operators(max_operators) {}
+    Grounder(const Task &task, size_t max_total, size_t max_operators, double max_seconds)
+        : task(task), max_total(max_total), max_operators(max_operators),
+          deadline(std::chrono::steady_clock::now() +
+                   std::chrono::milliseconds(static_cast<long long>(max_seconds * 1000))) {}
+
+    bool is_timed_out() const {
+        return timed_out;
+    }
 
     bool run(RelaxedReachabilityResult &result);
 };
@@ -1008,7 +1028,7 @@ double Grounder::count_bindings(const Rule &rule) {
 bool Grounder::build_relaxed_program(const vector<Rule> &action_rules,
                                      const vector<pair<int, int>> &rule_schema,
                                      RelaxedProgram &program) {
-    const size_t max_instances = 5000000;
+    const size_t max_instances = 2000000;
     for (size_t k = 0; k < action_rules.size(); ++k) {
         Rule rule = action_rules[k];
         if (!normalize(rule) || rule.heads.empty())
@@ -1039,7 +1059,7 @@ bool Grounder::build_relaxed_program(const vector<Rule> &action_rules,
             collect_vars = &vars;
             enumerate(part, bindings, false, max_instances);
             collect_vars = nullptr;
-            if (bindings.size() > max_instances)
+            if (bindings.size() > max_instances || aborted)
                 return false;
             int rule_id = program.rules.size();
             program.rules.push_back(
@@ -1393,6 +1413,8 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
             if (instance_rule_owner[k].first != 0 || instance_rules[k].num_vars < 0)
                 continue;
             double c = count_bindings(instance_rules[k]);
+            if (past_deadline())
+                return false;
             if (c < 0)
                 known = false;
             else
@@ -1527,6 +1549,8 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
             vector<GroundAtom> &out = kind == 0 ? result.action_instances[index]
                                                 : result.axiom_instances[index];
             enumerate(instance_rules[k], out, !getenv("PWL_NO_DISCOVERY_ORDER"), max_operators);
+            if (aborted)
+                return false;
             if (kind == 0)
                 num_instances += out.size();
             if (num_instances > max_operators) {
@@ -1546,6 +1570,8 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
                     continue;
                 enumerate(ce_rule, result.ce_instances[a].back(), !getenv("PWL_NO_DISCOVERY_ORDER"),
                           max_operators);
+                if (aborted)
+                    return false;
                 num_instances += result.ce_instances[a].back().size();
                 if (num_instances > max_operators) {
                     result.too_many_operators = true;
@@ -1578,6 +1604,12 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
 
 bool compute_relaxed_reachability(const Task &task, size_t max_instances,
                                   size_t max_operators, RelaxedReachabilityResult &result) {
-    Grounder grounder(task, max_instances, max_operators);
-    return grounder.run(result);
+    double max_seconds = getenv("PWL_GROUNDING_TIME_LIMIT")
+        ? atof(getenv("PWL_GROUNDING_TIME_LIMIT")) : 12;
+    Grounder grounder(task, max_instances, max_operators, max_seconds);
+    bool complete = grounder.run(result);
+    result.timed_out = grounder.is_timed_out();
+    if (result.timed_out)
+        result.relaxed_program.reset();
+    return complete && !result.timed_out;
 }

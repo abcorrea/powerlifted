@@ -337,6 +337,10 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
         ? datalog_reachability(task, max_datalog_facts, rr)
         : compute_relaxed_reachability(task, max_datalog_facts, max_operators, rr);
     cout << "Relaxed reachability analysis: " << exploration_timer() << endl;
+    if (rr.timed_out) {
+        cout << "Grounding aborted: time limit reached." << endl;
+        return false;
+    }
     if (!complete && rr.too_many_operators) {
         cout << "Grounding aborted: more than " << max_operators << " operators ("
              << size_t(rr.counted_operators) << " counted)." << endl;

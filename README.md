@@ -97,7 +97,9 @@ ground operators of each schema are counted by sum-product variable
 elimination over the reachable atoms, and only if there are not too many
 (default 3 million, `PWL_MAX_GROUND_OPERATORS`) are the operators,
 conditional effects, and axioms enumerated, with one join each (disable with
-`PWL_NO_SPLIT_GROUNDING`). If grounding stays within its
+`PWL_NO_SPLIT_GROUNDING`). Grounding is abandoned after 12 seconds of wall
+time (`PWL_GROUNDING_TIME_LIMIT`), leaving the rest of the time to the
+lifted search. If grounding stays within its
 limits (Datalog facts and number of operators), the search engines
 `alt-bfws1`, `alt-bfws2`, `alt-bfws1-lm`, `alt-bfws2-lm`, and `lama` run on
 the ground task: states are bitsets, successors come from a
