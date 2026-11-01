@@ -5,17 +5,12 @@
 
 #include "fast_grounder.h"
 
-#include "../datalog/datalog.h"
-#include "../datalog/grounder/weighted_grounder.h"
-#include "../heuristics/utils.h"
 #include "../states/state.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
 #include <malloc.h>
-#include <cstdlib>
 #include <iostream>
-#include <limits>
 #include <new>
 
 using namespace std;
@@ -64,117 +59,6 @@ int GroundTask::add_fact(int predicate, const GroundAtom &args) {
     return res.first->second;
 }
 
-/*
-  Renumber the facts by the layer in which they are reached in the relaxed
-  exploration from the initial state (ties by the previous numbering), so
-  that facts that are explored together are close in memory.
-*/
-void GroundTask::renumber_facts() {
-    int n = facts.size();
-    vector<int> layer(n, numeric_limits<int>::max());
-    vector<int> current;
-    for (int f : initial_facts) {
-        if (layer[f] != 0) {
-            layer[f] = 0;
-            current.push_back(f);
-        }
-    }
-    // Relaxed operators: (preconditions, effects).
-    vector<pair<const vector<int> *, const vector<int> *>> rel;
-    vector<vector<int>> ce_pre;
-    ce_pre.reserve(conditional_effects.size());
-    for (const GroundOperator &op : operators)
-        rel.emplace_back(&op.pre, &op.add);
-    for (const GroundConditionalEffect &ce : conditional_effects) {
-        ce_pre.push_back(operators[ce.op].pre);
-        ce_pre.back().insert(ce_pre.back().end(), ce.condition.begin(), ce.condition.end());
-    }
-    for (size_t i = 0; i < conditional_effects.size(); ++i)
-        rel.emplace_back(&ce_pre[i], &conditional_effects[i].add);
-    vector<vector<int>> heads(axioms.size());
-    for (size_t i = 0; i < axioms.size(); ++i) {
-        heads[i] = {axioms[i].head};
-        rel.emplace_back(&axioms[i].body, &heads[i]);
-    }
-    vector<int> unsat(rel.size());
-    vector<vector<int>> pre_of(n);
-    for (size_t r = 0; r < rel.size(); ++r) {
-        unsat[r] = rel[r].first->size();
-        for (int p : *rel[r].first)
-            pre_of[p].push_back(r);
-    }
-    vector<int> next;
-    auto fire = [&](size_t r, int l) {
-        for (int e : *rel[r].second) {
-            if (layer[e] == numeric_limits<int>::max()) {
-                layer[e] = l;
-                next.push_back(e);
-            }
-        }
-    };
-    for (size_t r = 0; r < rel.size(); ++r) {
-        if (unsat[r] == 0)
-            fire(r, 1);
-    }
-    int l = 0;
-    while (!current.empty() || !next.empty()) {
-        for (int f : current) {
-            for (int r : pre_of[f]) {
-                if (--unsat[r] == 0)
-                    fire(r, l + 1);
-            }
-        }
-        current.swap(next);
-        next.clear();
-        ++l;
-    }
-    vector<int> order(n);
-    for (int f = 0; f < n; ++f)
-        order[f] = f;
-    stable_sort(order.begin(), order.end(), [&](int a, int b) { return layer[a] < layer[b]; });
-    vector<int> new_id(n);
-    for (int i = 0; i < n; ++i)
-        new_id[order[i]] = i;
-
-    auto remap = [&](vector<int> &v) {
-        for (int &f : v)
-            f = new_id[f];
-        sort(v.begin(), v.end());
-    };
-    for (GroundOperator &op : operators) {
-        remap(op.pre);
-        remap(op.negated_pre);
-        remap(op.add);
-        remap(op.del);
-    }
-    for (GroundConditionalEffect &ce : conditional_effects) {
-        remap(ce.condition);
-        remap(ce.negated_condition);
-        remap(ce.add);
-        remap(ce.del);
-    }
-    for (GroundAxiom &ax : axioms) {
-        ax.head = new_id[ax.head];
-        remap(ax.body);
-        remap(ax.negated_body);
-    }
-    remap(goal);
-    remap(negated_goal);
-    remap(initial_facts);
-    vector<pair<int, GroundAtom>> new_facts(n);
-    for (int f = 0; f < n; ++f)
-        new_facts[new_id[f]] = std::move(facts[f]);
-    facts.swap(new_facts);
-    for (auto &m : atom_to_fact) {
-        for (auto &entry : m)
-            entry.second = new_id[entry.second];
-    }
-    for (int &f : nullary_fact) {
-        if (f >= 0)
-            f = new_id[f];
-    }
-}
-
 void GroundTask::get_state_facts(const DBState &state, vector<int> &out) const {
     const auto &relations = state.get_relations();
     for (size_t p = 0; p < relations.size(); ++p) {
@@ -195,136 +79,8 @@ void GroundTask::get_state_facts(const DBState &state, vector<int> &out) const {
     }
 }
 
-/*
-  Relaxed reachability with the Datalog engine (instance predicates),
-  converted to a RelaxedReachabilityResult. Kept for comparison with the
-  dedicated grounder (PWL_DATALOG_GROUNDING).
-*/
-static bool datalog_reachability(const Task &task, size_t max_datalog_facts,
-                                 RelaxedReachabilityResult &rr) {
-    const size_t num_predicates = task.predicates.size();
-    datalog::AnnotationGenerator no_annotation =
-        [](int, const Task &) -> unique_ptr<datalog::Annotation> { return nullptr; };
-    datalog::Datalog dl(task, no_annotation, true);
-    dl.convert_rules_to_normal_form(task);
-    dl.set_permanent_edb(task.get_static_info());
-    dl.update_rule_indices();
-    if (getenv("PWL_DEBUG_GROUNDING"))
-        dl.output_rules();
-
-    // Classify the auxiliary instance predicates.
-    const auto &schemas = task.get_action_schemas();
-    const auto &task_axioms = task.get_axioms();
-    int num_dl_predicates = dl.get_number_of_predicates();
-    // kind: 0 = other, 1 = action, 2 = conditional effect, 3 = axiom
-    vector<int> kind(num_dl_predicates, 0), owner(num_dl_predicates, -1), sub(num_dl_predicates, -1);
-    for (size_t a = 0; a < schemas.size(); ++a) {
-        int p = dl.get_action_instance_predicate(a);
-        if (p >= 0) {
-            kind[p] = 1;
-            owner[p] = a;
-        }
-        for (size_t c = 0; c < schemas[a].get_conditional_effects().size(); ++c) {
-            int q = dl.get_ce_instance_predicate(a, c);
-            kind[q] = 2;
-            owner[q] = a;
-            sub[q] = c;
-        }
-    }
-    for (size_t i = 0; i < task_axioms.size(); ++i) {
-        int p = dl.get_axiom_instance_predicate(i);
-        kind[p] = 3;
-        owner[p] = i;
-    }
-
-    /*
-      Discard instances violating (in)equalities or negated static atoms as
-      soon as they are derived: they are not ground operators (axioms), and
-      their effects would make spurious atoms reachable.
-    */
-    const StaticInformation &static_info_ = task.get_static_info();
-    auto negated_static_holds = [&](const vector<Atom> &atoms, const vector<int> &binding) {
-        for (const Atom &a : atoms) {
-            if (!a.is_negated() || !task.predicates[a.get_predicate_symbol_idx()].isStaticPredicate())
-                continue;
-            if (static_info_.get_tuples_of_relation(a.get_predicate_symbol_idx())
-                    .count(instantiate_atom(a, binding)))
-                return true;
-        }
-        return false;
-    };
-    vector<int> filter_binding;
-    auto fact_filter = [&](const datalog::Fact &f) {
-        int p = f.get_predicate_index();
-        if (!f.is_pred_symbol_new() || p >= num_dl_predicates || kind[p] == 0)
-            return true;
-        filter_binding.clear();
-        for (const auto &t : f.get_arguments())
-            filter_binding.push_back(t.get_index());
-        if (kind[p] == 1) {
-            const ActionSchema &schema = schemas[owner[p]];
-            return equalities_hold(schema.get_static_precondition(), filter_binding) &&
-                   !negated_static_holds(schema.get_precondition(), filter_binding);
-        }
-        if (kind[p] == 2) {
-            const ActionSchema &schema = schemas[owner[p]];
-            const ConditionalEffect &ce = schema.get_conditional_effects()[sub[p]];
-            size_t num_params = schema.get_parameters().size();
-            vector<int> full(num_params + schema.get_fresh_variables().size()
-                             + ce.parameters.size(), -1);
-            for (size_t k = 0; k < num_params; ++k)
-                full[k] = filter_binding[k];
-            for (size_t k = 0; k < ce.parameters.size(); ++k)
-                full[ce.parameters[k].get_index()] = filter_binding[num_params + k];
-            return equalities_hold(ce.equalities, full) &&
-                   !negated_static_holds(ce.condition, full);
-        }
-        const Axiom &axiom = task_axioms[owner[p]];
-        return equalities_hold(axiom.get_equalities(), filter_binding) &&
-               !negated_static_holds(axiom.get_negated_body(), filter_binding);
-    };
-
-    datalog::WeightedGrounder grounder(dl, datalog::H_MAX, false);
-    grounder.set_fact_limit(max_datalog_facts);
-    grounder.set_fact_filter(fact_filter);
-    vector<datalog::Fact> state_facts = get_datalog_facts_from_state(task.initial_state, task);
-    utils::Timer datalog_timer;
-    int result = grounder.ground(dl, state_facts, -1);
-    cout << "Datalog exploration: " << dl.get_number_of_facts() << " facts in "
-         << datalog_timer() << endl;
-    if (result == datalog::WeightedGrounder::GROUNDING_ABORTED)
-        return false;
-
-    rr.atoms.assign(num_predicates, {});
-    rr.action_instances.assign(schemas.size(), {});
-    rr.ce_instances.assign(schemas.size(), {});
-    for (size_t a = 0; a < schemas.size(); ++a)
-        rr.ce_instances[a].resize(schemas[a].get_conditional_effects().size());
-    rr.axiom_instances.assign(task_axioms.size(), {});
-    for (int i = 0; i < dl.get_number_of_facts(); ++i) {
-        const datalog::Fact &f = dl.get_fact_by_index(i);
-        int p = f.get_predicate_index();
-        GroundAtom args;
-        for (const auto &t : f.get_arguments())
-            args.push_back(t.get_index());
-        if (!f.is_pred_symbol_new()) {
-            if (p < int(num_predicates))
-                rr.atoms[p].push_back(args);
-            continue;
-        }
-        if (p >= num_dl_predicates || kind[p] == 0)
-            continue;
-        if (kind[p] == 1)
-            rr.action_instances[owner[p]].push_back(args);
-        else if (kind[p] == 2)
-            rr.ce_instances[owner[p]][sub[p]].push_back(args);
-        else
-            rr.axiom_instances[owner[p]].push_back(args);
-    }
-    return true;
-}
-
-bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_operators) {
+bool GroundTask::build(const Task &task, size_t max_instances, size_t max_operators,
+                       double max_seconds) {
     const size_t num_predicates = task.predicates.size();
     atom_to_fact.assign(num_predicates, {});
     nullary_fact.assign(num_predicates, -1);
@@ -333,9 +89,8 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     const auto &task_axioms = task.get_axioms();
     RelaxedReachabilityResult rr;
     utils::Timer exploration_timer;
-    bool complete = getenv("PWL_DATALOG_GROUNDING")
-        ? datalog_reachability(task, max_datalog_facts, rr)
-        : compute_relaxed_reachability(task, max_datalog_facts, max_operators, rr);
+    bool complete = compute_relaxed_reachability(task, max_instances, max_operators, max_seconds,
+                                                 rr);
     cout << "Relaxed reachability analysis: " << exploration_timer() << endl;
     if (rr.timed_out) {
         cout << "Grounding aborted: time limit reached." << endl;
@@ -351,7 +106,7 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
         complete = true;
     }
     if (!complete) {
-        cout << "Grounding aborted: more than " << max_datalog_facts
+        cout << "Grounding aborted: more than " << max_instances
              << " atoms and instances." << endl;
         return false;
     }
@@ -678,16 +433,6 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
     }
     sort_unique(goal);
 
-    if (getenv("PWL_DEBUG_GROUNDING")) {
-        vector<int> per_schema(schemas.size(), 0), per_schema_kept(schemas.size(), 0);
-        for (size_t a = 0; a < schemas.size(); ++a)
-            per_schema[a] = rr.action_instances[a].size();
-        for (const auto &op : operators)
-            ++per_schema_kept[op.schema];
-        for (size_t a = 0; a < schemas.size(); ++a)
-            cout << "  schema " << schemas[a].get_name() << ": " << per_schema[a]
-                 << " instances, " << per_schema_kept[a] << " operators" << endl;
-    }
     get_state_facts(task.initial_state, initial_facts);
     if (operators_omitted) {
         // Relaxed program: encode its atoms as facts.
@@ -747,8 +492,6 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
              << " auxiliary facts, " << axioms.size() << " axioms." << endl;
         return false;
     }
-    if (getenv("PWL_FACT_RENUMBER"))
-        renumber_facts();
     cout << "Grounded task: " << facts.size() << " facts, " << operators.size()
          << " operators, " << conditional_effects.size() << " conditional effects, "
          << axioms.size() << " axioms." << endl;
@@ -757,9 +500,16 @@ bool GroundTask::build(const Task &task, size_t max_datalog_facts, size_t max_op
 }
 
 static bool grounding_disabled = false;
+static size_t max_ground_operators = 3000000;
+static double grounding_time_limit = 12;
 
 void GroundTask::disable_grounding() {
     grounding_disabled = true;
+}
+
+void GroundTask::set_limits(size_t max_operators, double max_seconds) {
+    max_ground_operators = max_operators;
+    grounding_time_limit = max_seconds;
 }
 
 static shared_ptr<GroundTask> relaxation_cached;
@@ -775,17 +525,16 @@ shared_ptr<GroundTask> GroundTask::get_cached(const Task &task) {
     if (tried)
         return cached;
     tried = true;
-    if (grounding_disabled || getenv("PWL_NO_GROUNDING") || task.has_object_creation())
+    if (grounding_disabled || task.has_object_creation())
         return nullptr;
     utils::Timer timer;
-    size_t max_instances = getenv("PWL_MAX_GROUND_INSTANCES")
-        ? atol(getenv("PWL_MAX_GROUND_INSTANCES")) : 4000000;
-    size_t max_operators = getenv("PWL_MAX_GROUND_OPERATORS")
-        ? atol(getenv("PWL_MAX_GROUND_OPERATORS")) : 3000000;
+    // Limit on the atoms and instances of the relaxed exploration.
+    const size_t max_instances = 4000000;
     auto ground_task = make_shared<GroundTask>();
     bool success = false;
     try {
-        success = ground_task->build(task, max_instances, max_operators);
+        success = ground_task->build(task, max_instances, max_ground_operators,
+                                     grounding_time_limit);
     }
     catch (const bad_alloc &) {
         cout << "Grounding aborted: out of memory." << endl;

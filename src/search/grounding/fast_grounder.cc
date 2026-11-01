@@ -146,10 +146,6 @@ class Grounder {
         }
         return timed_out;
     }
-    //! Count-first mode: the fixpoint derives no instance atoms (rules are
-    //! split by variable elimination), the instances are counted and then
-    //! enumerated over the final atoms.
-    bool split = getenv("PWL_NO_SPLIT_GROUNDING") == nullptr;
     //! If set, fire() collects the first head atom here instead.
     vector<GroundAtom> *collect = nullptr;
     //! If set, fire() collects the values of these variables instead.
@@ -1168,17 +1164,13 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
         else
             add_rule(std::move(rule));
     };
-    // Count-first mode: the rules deriving instance atoms are kept for the
-    // enumeration after the fixpoint; the fixpoint uses split rules deriving
-    // only the other heads.
+    // The rules deriving instance atoms are kept for the enumeration after
+    // the fixpoint; the fixpoint uses split rules deriving only the other
+    // heads.
     vector<Rule> instance_rules;
     vector<pair<int, int>> instance_rule_owner;  // (kind, index): 0 action, 1 axiom
     vector<vector<Rule>> ce_instance_rules(schemas.size());
     auto register_rule = [&](Rule rule) {
-        if (!split) {
-            register_one(std::move(rule));
-            return;
-        }
         Rule instance_rule = rule;
         instance_rule.heads.resize(1);
         rule.heads.erase(rule.heads.begin());
@@ -1221,8 +1213,7 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
         }
         add_effects(rule, schema.get_effects(), nullary_effects);
         Rule schema_rule = rule;
-        if (split)
-            instance_rule_owner.emplace_back(0, a);
+        instance_rule_owner.emplace_back(0, a);
         register_rule(std::move(rule));
 
         for (size_t c = 0; c < schema.get_conditional_effects().size(); ++c) {
@@ -1245,10 +1236,6 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
                 ce_instance.args.push_back({true, par.get_index()});
             ce_rule.heads.push_back(ce_instance);
             add_effects(ce_rule, ce.effects, ce.positive_nullary_effects);
-            if (!split) {
-                register_rule(std::move(ce_rule));
-                continue;
-            }
             // The instance rule joins the action instances; the fixpoint
             // rule joins the action's precondition instead.
             Rule ce_instance_rule = ce_rule;
@@ -1294,8 +1281,7 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
         for (int k = 0; k < axiom.get_head_arity(); ++k)
             head.args.push_back({true, k});
         rule.heads.push_back(head);
-        if (split)
-            instance_rule_owner.emplace_back(1, i);
+        instance_rule_owner.emplace_back(1, i);
         register_rule(std::move(rule));
     }
 
@@ -1327,21 +1313,17 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
             relations[r].sink = true;
     }
     auto export_tuples = [&](int r) {
-        Relation &rel = relations[r];
-        if (rel.sink || (split && !getenv("PWL_NO_DISCOVERY_ORDER"))) {
-            // In the order in which the atoms were added (hash order varies
-            // between runs).
-            vector<pair<int, const GroundAtom *>> order;
-            for (const auto &entry : rel.members)
-                order.emplace_back(entry.second, &entry.first);
-            sort(order.begin(), order.end());
-            vector<GroundAtom> atoms;
-            atoms.reserve(order.size());
-            for (const auto &entry : order)
-                atoms.push_back(*entry.second);
-            return atoms;
-        }
-        return std::move(rel.tuples);
+        // In the order in which the atoms were added (hash order varies
+        // between runs).
+        vector<pair<int, const GroundAtom *>> order;
+        for (const auto &entry : relations[r].members)
+            order.emplace_back(entry.second, &entry.first);
+        sort(order.begin(), order.end());
+        vector<GroundAtom> atoms;
+        atoms.reserve(order.size());
+        for (const auto &entry : order)
+            atoms.push_back(*entry.second);
+        return atoms;
     };
 
     size_t max_vars = 0;
@@ -1391,221 +1373,200 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
             return false;
     }
 
-    if (split) {
-        // Joins over the final relations need their tuples.
-        for (Relation &rel : relations) {
-            if (rel.sink) {
-                // In the order of addition (hash order varies between runs).
-                vector<pair<int, const GroundAtom *>> order;
-                for (const auto &entry : rel.members)
-                    order.emplace_back(entry.second, &entry.first);
-                sort(order.begin(), order.end());
-                for (const auto &entry : order) {
-                    rel.tuples.push_back(*entry.second);
-                    rel.times.push_back(entry.first);
-                }
-                rel.sink = false;
+    // Joins over the final relations need their tuples.
+    for (Relation &rel : relations) {
+        if (rel.sink) {
+            // In the order of addition (hash order varies between runs).
+            vector<pair<int, const GroundAtom *>> order;
+            for (const auto &entry : rel.members)
+                order.emplace_back(entry.second, &entry.first);
+            sort(order.begin(), order.end());
+            for (const auto &entry : order) {
+                rel.tuples.push_back(*entry.second);
+                rel.times.push_back(entry.first);
             }
+            rel.sink = false;
         }
-        double counted = 0;
-        bool known = true;
-        for (size_t k = 0; k < instance_rules.size(); ++k) {
-            if (instance_rule_owner[k].first != 0 || instance_rules[k].num_vars < 0)
-                continue;
-            double c = count_bindings(instance_rules[k]);
-            if (past_deadline())
-                return false;
-            if (c < 0)
-                known = false;
-            else
-                counted += c;
-        }
-        cout << "Counted operators: " << size_t(counted) << (known ? "" : " (lower bound)")
-             << " [" << total << " atoms]" << endl;
-        result.counted_operators = counted;
-        if (counted > max_operators) {
-            result.too_many_operators = true;
-            if (getenv("PWL_NO_HYBRID"))
-                return false;
-            // Relaxed program for the heuristic of the lifted search.
-            vector<Rule> program_rules;
-            vector<pair<int, int>> rule_schema;
-            auto add_negated = [&](Rule &rule, const Atom &atom) {
-                if (atom.is_negated() && atom.get_name() != "=" &&
-                    !predicates[atom.get_predicate_symbol_idx()].isStaticPredicate()) {
+    }
+    double counted = 0;
+    bool known = true;
+    for (size_t k = 0; k < instance_rules.size(); ++k) {
+        if (instance_rule_owner[k].first != 0 || instance_rules[k].num_vars < 0)
+            continue;
+        double c = count_bindings(instance_rules[k]);
+        if (past_deadline())
+            return false;
+        if (c < 0)
+            known = false;
+        else
+            counted += c;
+    }
+    cout << "Counted operators: " << size_t(counted) << (known ? "" : " (lower bound)")
+         << " [" << total << " atoms]" << endl;
+    result.counted_operators = counted;
+    if (counted > max_operators) {
+        result.too_many_operators = true;
+        // Relaxed program for the heuristic of the lifted search.
+        vector<Rule> program_rules;
+        vector<pair<int, int>> rule_schema;
+        auto add_negated = [&](Rule &rule, const Atom &atom) {
+            if (atom.is_negated() && atom.get_name() != "=" &&
+                !predicates[atom.get_predicate_symbol_idx()].isStaticPredicate()) {
+                Filter f;
+                f.type = Filter::NEGATED_FLUENT;
+                f.args = to_rule_atom(atom).args;
+                f.relation = atom.get_predicate_symbol_idx();
+                rule.filters.push_back(f);
+            }
+        };
+        auto add_negated_nullary = [&](Rule &rule, const vector<bool> &negated) {
+            for (size_t p = 0; p < negated.size(); ++p) {
+                if (negated[p] && !predicates[p].isStaticPredicate()) {
                     Filter f;
                     f.type = Filter::NEGATED_FLUENT;
-                    f.args = to_rule_atom(atom).args;
-                    f.relation = atom.get_predicate_symbol_idx();
+                    f.relation = p;
                     rule.filters.push_back(f);
                 }
-            };
-            auto add_negated_nullary = [&](Rule &rule, const vector<bool> &negated) {
-                for (size_t p = 0; p < negated.size(); ++p) {
-                    if (negated[p] && !predicates[p].isStaticPredicate()) {
+            }
+        };
+        auto add_all_effects = [&](Rule &rule, const vector<Atom> &effects,
+                                   const vector<int> &pos_nullary,
+                                   const vector<int> &neg_nullary) {
+            for (const Atom &eff : effects) {
+                RuleAtom ra = to_rule_atom(eff);
+                if (eff.is_negated())
+                    ra.relation = -1 - ra.relation;
+                rule.heads.push_back(ra);
+            }
+            for (int p : pos_nullary)
+                rule.heads.push_back(nullary_atom(p));
+            for (int p : neg_nullary)
+                rule.heads.push_back(nullary_atom(-1 - p));
+        };
+        for (size_t a = 0; a < schemas.size(); ++a) {
+            const ActionSchema &schema = schemas[a];
+            Rule rule;
+            rule.num_vars = schema.get_parameters().size() + schema.get_fresh_variables().size();
+            for (const Atom &pre : schema.get_precondition()) {
+                add_condition(rule, pre);
+                add_negated(rule, pre);
+            }
+            for (const Atom &eq : schema.get_static_precondition())
+                add_condition(rule, eq);
+            const auto &pos_nullary = schema.get_positive_nullary_precond();
+            for (size_t p = 0; p < pos_nullary.size(); ++p) {
+                if (pos_nullary[p])
+                    rule.body.push_back(nullary_atom(p));
+            }
+            add_negated_nullary(rule, schema.get_negative_nullary_precond());
+            vector<int> pos_eff, neg_eff;
+            for (size_t p = 0; p < schema.get_positive_nullary_effects().size(); ++p)
+                if (schema.get_positive_nullary_effects()[p])
+                    pos_eff.push_back(p);
+            for (size_t p = 0; p < schema.get_negative_nullary_effects().size(); ++p)
+                if (schema.get_negative_nullary_effects()[p])
+                    neg_eff.push_back(p);
+            Rule action_rule = rule;
+            add_all_effects(action_rule, schema.get_effects(), pos_eff, neg_eff);
+            program_rules.push_back(action_rule);
+            rule_schema.emplace_back(a, schema.get_cost());
+            for (const ConditionalEffect &ce : schema.get_conditional_effects()) {
+                Rule ce_rule = rule;
+                ce_rule.num_vars += ce.parameters.size();
+                for (const Atom &cond : ce.condition) {
+                    add_condition(ce_rule, cond);
+                    add_negated(ce_rule, cond);
+                }
+                for (const Atom &eq : ce.equalities)
+                    add_condition(ce_rule, eq);
+                for (int p : ce.positive_nullary_condition)
+                    ce_rule.body.push_back(nullary_atom(p));
+                for (int p : ce.negative_nullary_condition) {
+                    if (!predicates[p].isStaticPredicate()) {
                         Filter f;
                         f.type = Filter::NEGATED_FLUENT;
                         f.relation = p;
-                        rule.filters.push_back(f);
+                        ce_rule.filters.push_back(f);
                     }
                 }
-            };
-            auto add_all_effects = [&](Rule &rule, const vector<Atom> &effects,
-                                       const vector<int> &pos_nullary,
-                                       const vector<int> &neg_nullary) {
-                for (const Atom &eff : effects) {
-                    RuleAtom ra = to_rule_atom(eff);
-                    if (eff.is_negated())
-                        ra.relation = -1 - ra.relation;
-                    rule.heads.push_back(ra);
-                }
-                for (int p : pos_nullary)
-                    rule.heads.push_back(nullary_atom(p));
-                for (int p : neg_nullary)
-                    rule.heads.push_back(nullary_atom(-1 - p));
-            };
-            for (size_t a = 0; a < schemas.size(); ++a) {
-                const ActionSchema &schema = schemas[a];
-                Rule rule;
-                rule.num_vars = schema.get_parameters().size() + schema.get_fresh_variables().size();
-                for (const Atom &pre : schema.get_precondition()) {
-                    add_condition(rule, pre);
-                    add_negated(rule, pre);
-                }
-                for (const Atom &eq : schema.get_static_precondition())
-                    add_condition(rule, eq);
-                const auto &pos_nullary = schema.get_positive_nullary_precond();
-                for (size_t p = 0; p < pos_nullary.size(); ++p) {
-                    if (pos_nullary[p])
-                        rule.body.push_back(nullary_atom(p));
-                }
-                add_negated_nullary(rule, schema.get_negative_nullary_precond());
-                vector<int> pos_eff, neg_eff;
-                for (size_t p = 0; p < schema.get_positive_nullary_effects().size(); ++p)
-                    if (schema.get_positive_nullary_effects()[p])
-                        pos_eff.push_back(p);
-                for (size_t p = 0; p < schema.get_negative_nullary_effects().size(); ++p)
-                    if (schema.get_negative_nullary_effects()[p])
-                        neg_eff.push_back(p);
-                Rule action_rule = rule;
-                add_all_effects(action_rule, schema.get_effects(), pos_eff, neg_eff);
-                program_rules.push_back(action_rule);
+                add_all_effects(ce_rule, ce.effects, ce.positive_nullary_effects,
+                                ce.negative_nullary_effects);
+                program_rules.push_back(ce_rule);
                 rule_schema.emplace_back(a, schema.get_cost());
-                for (const ConditionalEffect &ce : schema.get_conditional_effects()) {
-                    Rule ce_rule = rule;
-                    ce_rule.num_vars += ce.parameters.size();
-                    for (const Atom &cond : ce.condition) {
-                        add_condition(ce_rule, cond);
-                        add_negated(ce_rule, cond);
-                    }
-                    for (const Atom &eq : ce.equalities)
-                        add_condition(ce_rule, eq);
-                    for (int p : ce.positive_nullary_condition)
-                        ce_rule.body.push_back(nullary_atom(p));
-                    for (int p : ce.negative_nullary_condition) {
-                        if (!predicates[p].isStaticPredicate()) {
-                            Filter f;
-                            f.type = Filter::NEGATED_FLUENT;
-                            f.relation = p;
-                            ce_rule.filters.push_back(f);
-                        }
-                    }
-                    add_all_effects(ce_rule, ce.effects, ce.positive_nullary_effects,
-                                    ce.negative_nullary_effects);
-                    program_rules.push_back(ce_rule);
-                    rule_schema.emplace_back(a, schema.get_cost());
-                }
             }
-            auto program = make_shared<RelaxedProgram>();
-            if (build_relaxed_program(program_rules, rule_schema, *program)) {
-                cout << "Relaxed program: " << program->rules.size() << " rules, "
-                     << program->instances.size() << " instances." << endl;
-                result.relaxed_program = program;
-                result.action_instances.assign(schemas.size(), {});
-                result.ce_instances.assign(schemas.size(), {});
-                for (size_t a = 0; a < schemas.size(); ++a)
-                    result.ce_instances[a].resize(schemas[a].get_conditional_effects().size());
-                result.axiom_instances.assign(axioms.size(), {});
-                for (size_t k = 0; k < instance_rules.size(); ++k) {
-                    if (instance_rules[k].num_vars < 0 || instance_rule_owner[k].first != 1)
-                        continue;
-                    enumerate(instance_rules[k], result.axiom_instances[instance_rule_owner[k].second],
-                              true, max_total);
-                }
-                result.atoms.resize(num_predicates);
-                for (int p = 0; p < num_predicates; ++p)
-                    result.atoms[p] = export_tuples(p);
+        }
+        auto program = make_shared<RelaxedProgram>();
+        if (build_relaxed_program(program_rules, rule_schema, *program)) {
+            cout << "Relaxed program: " << program->rules.size() << " rules, "
+                 << program->instances.size() << " instances." << endl;
+            result.relaxed_program = program;
+            result.action_instances.assign(schemas.size(), {});
+            result.ce_instances.assign(schemas.size(), {});
+            for (size_t a = 0; a < schemas.size(); ++a)
+                result.ce_instances[a].resize(schemas[a].get_conditional_effects().size());
+            result.axiom_instances.assign(axioms.size(), {});
+            for (size_t k = 0; k < instance_rules.size(); ++k) {
+                if (instance_rules[k].num_vars < 0 || instance_rule_owner[k].first != 1)
+                    continue;
+                enumerate(instance_rules[k], result.axiom_instances[instance_rule_owner[k].second],
+                          true, max_total);
             }
+            result.atoms.resize(num_predicates);
+            for (int p = 0; p < num_predicates; ++p)
+                result.atoms[p] = export_tuples(p);
+        }
+        return false;
+    }
+    result.action_instances.assign(schemas.size(), {});
+    result.ce_instances.assign(schemas.size(), {});
+    result.axiom_instances.assign(axioms.size(), {});
+    size_t num_instances = 0;
+    for (size_t k = 0; k < instance_rules.size(); ++k) {
+        if (instance_rules[k].num_vars < 0)
+            continue;
+        auto [kind, index] = instance_rule_owner[k];
+        vector<GroundAtom> &out = kind == 0 ? result.action_instances[index]
+                                            : result.axiom_instances[index];
+        enumerate(instance_rules[k], out, true, max_operators);
+        if (aborted)
+            return false;
+        if (kind == 0)
+            num_instances += out.size();
+        if (num_instances > max_operators) {
+            result.too_many_operators = true;
             return false;
         }
-        result.action_instances.assign(schemas.size(), {});
-        result.ce_instances.assign(schemas.size(), {});
-        result.axiom_instances.assign(axioms.size(), {});
-        size_t num_instances = 0;
-        for (size_t k = 0; k < instance_rules.size(); ++k) {
-            if (instance_rules[k].num_vars < 0)
+    }
+    for (size_t a = 0; a < schemas.size(); ++a) {
+        if (ce_instance_rules[a].empty())
+            continue;
+        Relation &rel = relations[action_relation[a]];
+        for (const GroundAtom &t : result.action_instances[a])
+            rel.add(t, clock++);
+        for (Rule &ce_rule : ce_instance_rules[a]) {
+            result.ce_instances[a].emplace_back();
+            if (ce_rule.num_vars < 0)
                 continue;
-            auto [kind, index] = instance_rule_owner[k];
-            vector<GroundAtom> &out = kind == 0 ? result.action_instances[index]
-                                                : result.axiom_instances[index];
-            enumerate(instance_rules[k], out, !getenv("PWL_NO_DISCOVERY_ORDER"), max_operators);
+            enumerate(ce_rule, result.ce_instances[a].back(), true, max_operators);
             if (aborted)
                 return false;
-            if (kind == 0)
-                num_instances += out.size();
+            num_instances += result.ce_instances[a].back().size();
             if (num_instances > max_operators) {
                 result.too_many_operators = true;
                 return false;
             }
         }
-        for (size_t a = 0; a < schemas.size(); ++a) {
-            if (ce_instance_rules[a].empty())
-                continue;
-            Relation &rel = relations[action_relation[a]];
-            for (const GroundAtom &t : result.action_instances[a])
-                rel.add(t, clock++);
-            for (Rule &ce_rule : ce_instance_rules[a]) {
-                result.ce_instances[a].emplace_back();
-                if (ce_rule.num_vars < 0)
-                    continue;
-                enumerate(ce_rule, result.ce_instances[a].back(), !getenv("PWL_NO_DISCOVERY_ORDER"),
-                          max_operators);
-                if (aborted)
-                    return false;
-                num_instances += result.ce_instances[a].back().size();
-                if (num_instances > max_operators) {
-                    result.too_many_operators = true;
-                    return false;
-                }
-            }
-        }
-        result.atoms.resize(num_predicates);
-        for (int p = 0; p < num_predicates; ++p)
-            result.atoms[p] = export_tuples(p);
-        return true;
     }
-
     result.atoms.resize(num_predicates);
     for (int p = 0; p < num_predicates; ++p)
         result.atoms[p] = export_tuples(p);
-    result.action_instances.resize(schemas.size());
-    result.ce_instances.resize(schemas.size());
-    for (size_t a = 0; a < schemas.size(); ++a) {
-        result.action_instances[a] = export_tuples(action_relation[a]);
-        for (int r : ce_relation[a])
-            result.ce_instances[a].push_back(export_tuples(r));
-    }
-    result.axiom_instances.resize(axioms.size());
-    for (size_t i = 0; i < axioms.size(); ++i)
-        result.axiom_instances[i] = export_tuples(axiom_relation[i]);
     return true;
 }
 }  // namespace
 
 bool compute_relaxed_reachability(const Task &task, size_t max_instances,
-                                  size_t max_operators, RelaxedReachabilityResult &result) {
-    double max_seconds = getenv("PWL_GROUNDING_TIME_LIMIT")
-        ? atof(getenv("PWL_GROUNDING_TIME_LIMIT")) : 12;
+                                  size_t max_operators, double max_seconds,
+                                  RelaxedReachabilityResult &result) {
     Grounder grounder(task, max_instances, max_operators, max_seconds);
     bool complete = grounder.run(result);
     result.timed_out = grounder.is_timed_out();

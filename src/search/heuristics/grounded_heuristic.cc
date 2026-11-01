@@ -10,7 +10,6 @@
 #include <cassert>
 #include <map>
 #include <set>
-#include <cstdlib>
 #include <iostream>
 #include <limits>
 
@@ -133,8 +132,7 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
 
     first_aux_fact = num_facts;
     vector<char> decomposed(task.get_action_schemas().size(), 0);
-    if (!getenv("PWL_NO_DECOMPOSE"))
-        add_decomposed_operators(task, g, decomposed);
+    add_decomposed_operators(task, g, decomposed);
     for (size_t o = 0; o < g.operators.size(); ++o) {
         const GroundOperator &op = g.operators[o];
         if (decomposed[op.schema])
@@ -198,8 +196,6 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
         for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i)
             ach[ach_pos[op_eff[i]]++] = r;
     }
-    if (getenv("PWL_FF_REUSE"))
-        reuse_slack = atoi(getenv("PWL_FF_REUSE"));
 
     goal_unreachable = g.goal_unreachable;
 
@@ -290,8 +286,8 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
     for (size_t o = 0; o < g.operators.size(); ++o)
         ops_of[g.operators[o].schema].push_back(o);
     auto is_static = [&](int p) { return task.predicates[p].isStaticPredicate(); };
-    const size_t min_operators = getenv("PWL_DECOMPOSE_MIN")
-        ? atoi(getenv("PWL_DECOMPOSE_MIN")) : 1000;
+    // Smaller schemas are not worth decomposing.
+    const size_t min_operators = 1000;
     size_t total_ground = 0, total_decomposed = 0;
 
     for (size_t a = 0; a < schemas.size(); ++a) {
@@ -855,73 +851,64 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
     no_pre_ops.clear();
     relevant_action.assign(g.operators.size(), 0);
     bool some_decomposed = false;
-    // Number the relevant operators by their smallest precondition, so that
-    // the operators sharing a precondition are close in memory (the
-    // exploration visits them together).
+    // Number the relevant operators by the layer (unit-cost h-max) at which
+    // they become applicable in the relaxed exploration from the initial
+    // state, then by their first precondition, so that operators explored
+    // together are close in memory.
     vector<int> order;
     for (int r = 0; r < num_ops; ++r) {
         if (relevant_op[r])
             order.push_back(r);
     }
-    if (!getenv("PWL_NO_OP_REORDER")) {
-        auto first_pre = [&](int r) {
-            return op_pre_start[r] < op_pre_start[r + 1] ? op_pre[op_pre_start[r]] : -1;
-        };
-        if (!getenv("PWL_OP_ORDER_FIRST_PRE")) {
-            // Layer (unit-cost h-max) at which each operator becomes
-            // applicable in the relaxed exploration from the initial state.
-            vector<int> fact_level(num_facts, numeric_limits<int>::max());
-            vector<int> op_level(num_ops, numeric_limits<int>::max());
-            vector<int> unsat(op_num_pre.begin(), op_num_pre.end());
-            vector<int> init = g.initial_facts;
-            vector<char> init_true(num_base_facts, 0);
-            for (int f : g.initial_facts)
-                init_true[f] = 1;
-            for (int c = num_base_facts; c < first_aux_fact; ++c) {
-                if (!init_true[complement_base[c - num_base_facts]])
-                    init.push_back(c);
-            }
-            // Precondition-of lists of the unpruned operators.
-            vector<vector<int>> pre_of_tmp(num_facts);
-            for (int r = 0; r < num_ops; ++r)
-                for (int i = op_pre_start[r]; i < op_pre_start[r + 1]; ++i)
-                    pre_of_tmp[op_pre[i]].push_back(r);
-            vector<int> layer = init, next_layer;
-            for (int f : init)
-                fact_level[f] = 0;
-            for (int r = 0; r < num_ops; ++r) {
-                if (unsat[r] == 0)
-                    op_level[r] = 0;
-            }
-            int level = 0;
-            while (!layer.empty()) {
-                next_layer.clear();
-                for (int f : layer) {
-                    for (int r : pre_of_tmp[f]) {
-                        if (--unsat[r] == 0) {
-                            op_level[r] = level;
-                            for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i) {
-                                int e = op_eff[i];
-                                if (fact_level[e] == numeric_limits<int>::max()) {
-                                    fact_level[e] = level + 1;
-                                    next_layer.push_back(e);
-                                }
-                            }
+    auto first_pre = [&](int r) {
+        return op_pre_start[r] < op_pre_start[r + 1] ? op_pre[op_pre_start[r]] : -1;
+    };
+    vector<int> fact_level(num_facts, numeric_limits<int>::max());
+    vector<int> op_level(num_ops, numeric_limits<int>::max());
+    vector<int> unsat(op_num_pre.begin(), op_num_pre.end());
+    vector<int> init = g.initial_facts;
+    vector<char> init_true(num_base_facts, 0);
+    for (int f : g.initial_facts)
+        init_true[f] = 1;
+    for (int c = num_base_facts; c < first_aux_fact; ++c) {
+        if (!init_true[complement_base[c - num_base_facts]])
+            init.push_back(c);
+    }
+    // Precondition-of lists of the unpruned operators.
+    vector<vector<int>> pre_of_tmp(num_facts);
+    for (int r = 0; r < num_ops; ++r)
+        for (int i = op_pre_start[r]; i < op_pre_start[r + 1]; ++i)
+            pre_of_tmp[op_pre[i]].push_back(r);
+    vector<int> layer = init, next_layer;
+    for (int f : init)
+        fact_level[f] = 0;
+    for (int r = 0; r < num_ops; ++r) {
+        if (unsat[r] == 0)
+            op_level[r] = 0;
+    }
+    int level = 0;
+    while (!layer.empty()) {
+        next_layer.clear();
+        for (int f : layer) {
+            for (int r : pre_of_tmp[f]) {
+                if (--unsat[r] == 0) {
+                    op_level[r] = level;
+                    for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i) {
+                        int e = op_eff[i];
+                        if (fact_level[e] == numeric_limits<int>::max()) {
+                            fact_level[e] = level + 1;
+                            next_layer.push_back(e);
                         }
                     }
                 }
-                layer.swap(next_layer);
-                ++level;
             }
-            stable_sort(order.begin(), order.end(), [&](int a, int b) {
-                return make_pair(op_level[a], first_pre(a)) < make_pair(op_level[b], first_pre(b));
-            });
         }
-        else {
-            stable_sort(order.begin(), order.end(),
-                        [&](int a, int b) { return first_pre(a) < first_pre(b); });
-        }
+        layer.swap(next_layer);
+        ++level;
     }
+    stable_sort(order.begin(), order.end(), [&](int a, int b) {
+        return make_pair(op_level[a], first_pre(a)) < make_pair(op_level[b], first_pre(b));
+    });
     for (int r : order) {
         int id = new_base_cost.size();
         new_pre_start.push_back(new_pre.size());
@@ -1181,9 +1168,10 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
         marked_facts_list.push_back(f);
         int r = fact_state[f].supporter;
         int a = op_action[r];
-        if (reuse_slack >= 0 && a >= 0 && !marked_action[a]) {
-            // Prefer an achiever of an action already in the relaxed plan
-            // if it is not much more expensive.
+        if (a >= 0 && !marked_action[a]) {
+            // Prefer an equally expensive achiever of an action already in
+            // the relaxed plan (e.g., another effect of an action with many
+            // conditional effects).
             int c = -1 - fact_state[f].cost;
             for (int k = ach_start[f]; k < ach_start[f + 1]; ++k) {
                 int r2 = ach[k];
@@ -1192,7 +1180,7 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
                     continue;
                 const RelaxedOp &o = relaxed_ops[r2];
                 if (o.stamp == generation && o.unsatisfied == 0 &&
-                    o.cost + op_base_cost[r2] <= c + reuse_slack) {
+                    o.cost + op_base_cost[r2] <= c) {
                     r = r2;
                     a = a2;
                     break;

@@ -52,10 +52,6 @@ private:
     // For each fact, the relaxed operators adding it.
     std::vector<int> ach_start;
     std::vector<int> ach;
-    //! If non-negative, relaxed plan extraction prefers achievers of
-    //! actions already in the plan costing at most this much more (default
-    //! 0: equally expensive achievers; PWL_FF_REUSE=-1 disables).
-    int reuse_slack = 0;
     std::vector<int> goal;
     bool goal_unreachable;
 

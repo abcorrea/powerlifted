@@ -13,7 +13,6 @@
 #include "successor_generators/successor_generator_factory.h"
 #include "utils/system.h"
 
-#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <set>
@@ -106,16 +105,17 @@ int main(int argc, char *argv[])
     }
 
     /*
-      If the task can be grounded, search on the ground representation
-      (alt-bfws1 only); otherwise fall back to lifted search.
+      If the task can be grounded, the search engines below search on the
+      ground representation; otherwise they fall back to lifted search.
      */
     if (opt.get_force_lifted())
         GroundTask::disable_grounding();
+    GroundTask::set_limits(opt.get_max_ground_operators(), opt.get_grounding_time_limit());
     const std::string &engine = opt.get_search_engine();
     bool grounded_engine = engine == "alt-bfws1" || engine == "alt-bfws2" ||
         engine == "lama" || engine == "alt-bfws1-lm" || engine == "alt-bfws2-lm" ||
-        engine == "portfolio" || engine == "dual-bfws" || engine == "bfws2-lmnov";
-    if (grounded_engine && !std::getenv("PWL_LIFTED_SEARCH")) {
+        engine == "portfolio" || engine == "bfws2-lmnov";
+    if (grounded_engine) {
         try {
             std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
             if (ground_task) {
@@ -134,68 +134,11 @@ int main(int argc, char *argv[])
                         // landmark queues.
                         c.lm = true;
                         c.novelty_by_lm = true;
-                        c.lazy_queue = !std::getenv("PWL_NO_LAZY_QUEUE");
+                        c.lazy_queue = true;
                     }
                     return c;
                 };
-                if (engine == "dual-bfws") {
-                    // 1-BFWS (novelty > 1 pruned) for a short time, then
-                    // alternated BFWS.
-                    GroundSearchConfig pruned = make_config("alt-bfws1");
-                    pruned.name = "alt-bfws1-pruned";
-                    pruned.prune_novelty = 1;
-                    pruned.max_seconds = 10;
-                    configs.push_back(pruned);
-                    configs.push_back(make_config("alt-bfws1"));
-                }
-                else if (engine == "portfolio" && std::getenv("PWL_PORTFOLIO")) {
-                    // Comma-separated engine names; ":sN" shuffles the
-                    // successor order with seed N, ":add" adds an h-add queue,
-                    // ":lazy" uses lazy novelty, ":tN" starts the run after N
-                    // seconds.
-                    std::string spec = std::getenv("PWL_PORTFOLIO");
-                    size_t pos = 0;
-                    while (pos <= spec.size()) {
-                        size_t next = spec.find(',', pos);
-                        if (next == std::string::npos)
-                            next = spec.size();
-                        std::string item = spec.substr(pos, next - pos);
-                        pos = next + 1;
-                        if (item.empty())
-                            continue;
-                        std::string name = item.substr(0, item.find(':'));
-                        GroundSearchConfig c = make_config(name);
-                        c.name = item;
-                        size_t opt_pos = item.find(':');
-                        while (opt_pos != std::string::npos) {
-                            size_t opt_end = item.find(':', opt_pos + 1);
-                            std::string o = item.substr(opt_pos + 1, opt_end == std::string::npos
-                                                        ? std::string::npos : opt_end - opt_pos - 1);
-                            if (!o.empty() && o[0] == 's') {
-                                c.shuffle = true;
-                                c.seed = std::atoi(o.c_str() + 1);
-                            }
-                            else if (o == "add") {
-                                c.add = true;
-                            }
-                            else if (o == "lazy") {
-                                c.lazy_novelty = true;
-                            }
-                            else if (o == "lazyq") {
-                                c.lazy_queue = true;
-                            }
-                            else if (o == "bfs") {
-                                c.breadth_first = true;
-                            }
-                            else if (!o.empty() && o[0] == 't') {
-                                c.start_time = std::atof(o.c_str() + 1);
-                            }
-                            opt_pos = opt_end;
-                        }
-                        configs.push_back(c);
-                    }
-                }
-                else if (engine == "portfolio") {
+                if (engine == "portfolio") {
                     configs.push_back(make_config("alt-bfws2"));
                     GroundSearchConfig add_config = make_config("alt-bfws1");
                     add_config.name = "alt-bfws1-add";

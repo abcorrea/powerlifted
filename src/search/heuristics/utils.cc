@@ -1,7 +1,5 @@
 #include "utils.h"
 
-#include <cstdlib>
-
 datalog::Datalog initialize_datalog(const Task &task,
                                     datalog::AnnotationGenerator annotation_generator,
                                     const DatalogTransformationOptions &opts,
@@ -27,10 +25,6 @@ datalog::Datalog initialize_datalog(const Task &task,
     dl.update_rule_indices();
 
     dl.print_statistics();
-    if (std::getenv("PWL_DUMP_DATALOG")) {
-        dl.output_rules();
-        dl.output_permanent_edb();
-    }
 
     return dl;
 }

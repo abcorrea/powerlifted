@@ -18,7 +18,6 @@ SEARCH_CHOICES = ["astar",
                   "alt-bfws2-lm",
                   "lama",
                   "portfolio",
-                  "dual-bfws",
                   "bfws2-lmnov",
                   "gbfs",
                   "iw1",
@@ -113,6 +112,12 @@ def parse_options():
     parser.add_argument("--grounded-queues", default=None,
                         help="open lists of the grounded search (comma-separated subset "
                              "of novelty, ff, add, lm)")
+    parser.add_argument("--max-ground-operators", type=int, default=None,
+                        help="search on the lifted task if it has more ground operators "
+                             "(default: 3000000)")
+    parser.add_argument("--grounding-time-limit", type=float, default=None,
+                        help="search on the lifted task if grounding takes more seconds "
+                             "(default: 12)")
     parser.add_argument("--keep-translator-file", action="store_true",
                         help="flag if the translator file should be kept")
     parser.add_argument("--validate", action="store_true",

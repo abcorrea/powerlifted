@@ -71,12 +71,12 @@ struct RelaxedReachabilityResult {
     std::vector<std::vector<std::vector<GroundAtom>>> ce_instances;
     //! Instances per axiom: values of all axiom parameters.
     std::vector<std::vector<GroundAtom>> axiom_instances;
-    //! Count-first grounding (the default): number of ground actions
-    //! counted before enumerating them, and whether they exceed the limit.
+    //! Number of ground actions, counted before enumerating them, and
+    //! whether they exceed the limit.
     double counted_operators = -1;
     bool too_many_operators = false;
-    //! The grounding exceeded its wall-clock budget (PWL_GROUNDING_TIME_LIMIT
-    //! seconds, default 12); the result is incomplete.
+    //! The grounding exceeded its wall-clock budget; the result is
+    //! incomplete.
     bool timed_out = false;
     //! If there are too many operators: the decomposed relaxed program (if
     //! it is small enough), and the atoms and axiom instances are complete.
@@ -86,17 +86,19 @@ struct RelaxedReachabilityResult {
 /**
  * Compute the relaxed-reachable instances. Returns false (and leaves the
  * result incomplete) if more than `max_instances` atoms and instances are
- * produced in total.
+ * produced in total, or if it takes more than `max_seconds` of wall-clock
+ * time (timed_out).
  *
- * By default (unless PWL_NO_SPLIT_GROUNDING), the fixpoint derives no instance atoms: its
- * rules are split by variable elimination (with auxiliary relations), so it
- * costs about as much as the reachable atoms. Then the ground actions are
- * counted by variable elimination; if there are more than `max_operators`,
- * the result is incomplete (too_many_operators). Otherwise the action,
- * conditional effect, and axiom instances are enumerated with one join each
- * over the reachable atoms.
+ * The fixpoint derives no instance atoms: its rules are split by variable
+ * elimination (with auxiliary relations), so it costs about as much as the
+ * reachable atoms. Then the ground actions are counted by variable
+ * elimination; if there are more than `max_operators`, the result is
+ * incomplete (too_many_operators). Otherwise the action, conditional effect,
+ * and axiom instances are enumerated with one join each over the reachable
+ * atoms.
  */
 bool compute_relaxed_reachability(const Task &task, size_t max_instances,
-                                  size_t max_operators, RelaxedReachabilityResult &result);
+                                  size_t max_operators, double max_seconds,
+                                  RelaxedReachabilityResult &result);
 
 #endif  // SEARCH_GROUNDING_FAST_GROUNDER_H

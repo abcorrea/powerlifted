@@ -76,7 +76,7 @@ These are also the default values for `-s`, `-e`, and `-g`. On ground
 tasks, `bfws2-lmnov` alternates between a width-2 novelty open list
 partitioned by the landmark count (as in NOLAN, Corrêa and Seipp 2025), a
 lazy novelty open list (the novelty of the expanded state, in separate
-tables, inherited by its successors; disable with `PWL_NO_LAZY_QUEUE`), an
+tables, inherited by its successors), an
 h-FF open list, and a landmark-count open list, each with a preferred
 variant (falling back to width 1 for tasks with more than 4096 facts); if
 the task cannot be grounded, Powerlifted falls back to lifted `alt-bfws1`. By default,
@@ -95,15 +95,14 @@ its rules are split by variable elimination into rules with smaller joins
 the joins), so it costs about as much as the reachable atoms. Then the
 ground operators of each schema are counted by sum-product variable
 elimination over the reachable atoms, and only if there are not too many
-(default 3 million, `PWL_MAX_GROUND_OPERATORS`) are the operators,
-conditional effects, and axioms enumerated, with one join each (disable with
-`PWL_NO_SPLIT_GROUNDING`). Grounding is abandoned after 12 seconds of wall
-time (`PWL_GROUNDING_TIME_LIMIT`), leaving the rest of the time to the
-lifted search. If grounding stays within its
-limits (Datalog facts and number of operators), the search engines
-`alt-bfws1`, `alt-bfws2`, `alt-bfws1-lm`, `alt-bfws2-lm`, and `lama` run on
-the ground task: states are bitsets, successors come from a
-watched-precondition successor generator, and the delete-relaxation
+(default 3 million, `--max-ground-operators`) are the operators,
+conditional effects, and axioms enumerated, with one join each. Grounding
+is abandoned after 12 seconds of wall time (`--grounding-time-limit`),
+leaving the rest of the time to the lifted search. If grounding stays within
+its limits, the search engines `alt-bfws1`, `alt-bfws2`, `alt-bfws1-lm`,
+`alt-bfws2-lm`, `lama`, `portfolio`, and `bfws2-lmnov` run on the ground
+task: states are bitsets, successors come from a watched-precondition
+successor generator, and the delete-relaxation
 heuristics (`add`, `hmax`, `ff`) are computed on ground operators, with
 complement facts for negated preconditions and goals (negated derived atoms
 via negated axioms) and without goal-irrelevant operators. For action schemas
@@ -113,25 +112,23 @@ the effects are eliminated one at a time by auxiliary rules (grounded on the
 projections of the ground operators). This gives the same h-add and h-max
 values with far fewer relaxed operators (e.g., 60x fewer in
 recharging-robots); h-FF finds the ground operators of its relaxed plan by
-following the supporters of the auxiliary facts (disable with
-`PWL_NO_DECOMPOSE`). When extracting a relaxed plan, h-FF prefers achievers
-of actions already in the plan among equally expensive ones, so actions
-with many (conditional) effects are counted once (`PWL_FF_REUSE=-1`
-disables this). Forced chains (states
-with exactly one applicable operator) are applied without evaluating the
-intermediate states, and chains ending in dead ends are pruned. After each
-evaluation, the operators of the relaxed plan are applied greedily
-(relaxed plan lookahead, as in YAHSP) and the resulting state is added as a
-preferred successor.
+following the supporters of the auxiliary facts. When extracting a relaxed
+plan, h-FF prefers achievers of actions already in the plan among equally
+expensive ones, so actions with many (conditional) effects are counted
+once. Forced chains (states with exactly one applicable operator) are
+applied without evaluating the intermediate states, and chains ending in
+dead ends or cycles are pruned. After each evaluation, the operators of the
+relaxed plan are applied greedily (relaxed plan lookahead, as in YAHSP) and
+the resulting state is added as a preferred successor.
 
 Otherwise (or with `--force-lifted`), the lifted machinery is used. If
 there are too many ground operators, the lifted search still gets a ground
 delete-relaxation heuristic: the schemas are split by variable elimination
 as above and only the split rules are grounded over the reachable atoms
 (a decomposed relaxed program, usually much smaller than the ground
-operators); h-FF counts the lifted actions of its relaxed plan (disable with
-`PWL_NO_HYBRID`). The other search engines and heuristics also use the
-ground task for the delete-relaxation heuristics when grounding succeeds.
+operators); h-FF counts the lifted actions of its relaxed plan. The other
+search engines and heuristics also use the ground task for the
+delete-relaxation heuristics when grounding succeeds.
 
 ### Search Algorithms (`-s`)
 
@@ -142,7 +139,6 @@ ground task for the delete-relaxation heuristics when grounding succeeds.
 | `lama`                       | FF and landmark-count queues with preferred operators, LAMA-style (ground tasks only)     |
 | `portfolio`                  | Interleaves `alt-bfws2`, `alt-bfws1` with an h-add queue, and `lama` (ground tasks only)    |
 | `bfws2-lmnov`                | Width-2 novelty partitioned by the landmark count, plus h-FF and landmark queues (default) |
-| `dual-bfws`                  | `alt-bfws1` with novelty pruning (at most 10s), then `alt-bfws1` (ground tasks only)        |
 | `astar`                      | A* Search                                                                                 |
 | `bfs`                        | Breadth-First Search                                                                      |
 | `bfws1`, `bfws2`             | Best-First Width Search with w=1 and w=2                                                  |
@@ -189,6 +185,8 @@ ground task for the delete-relaxation heuristics when grounding succeeds.
 | `--use-action-costs`            | Use the action costs of the domain file instead of unit costs                                                                                                                                                                                          |
 | `--force-lifted`                | Never ground the task: lifted search and lifted (Datalog) heuristics only                                                                                                                                                                              |
 | `--grounded-queues LIST`        | Open lists of the ground search: comma-separated subset of `novelty`, `ff` (h of the parent), `add` (h-add of the parent), `lm` (landmark count). Overrides the defaults of the search engine name.                                                     |
+| `--max-ground-operators N`      | Do not ground tasks with more than N ground operators (default: 3000000); they are searched lifted, with the decomposed relaxed program as heuristic if it is small enough.                                                                             |
+| `--grounding-time-limit SECONDS` | Give up grounding after this many seconds of wall-clock time (default: 12) and search on the lifted task.                                                                                                                                             |
 | `--validate`                    | Run [VAL](https://github.com/KCL-Planning/VAL) after a plan is found. Requires `validate` on `PATH`.                                                                                                                                                   |
 
 ## Multiple Search Algorithms

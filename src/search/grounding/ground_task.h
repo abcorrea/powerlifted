@@ -15,8 +15,8 @@ class Task;
 
 /**
  * @brief Ground (propositional) representation of a task, restricted to the
- * relaxed-reachable part (computed with the Datalog exploration from the
- * initial state).
+ * relaxed-reachable part (computed by compute_relaxed_reachability() from
+ * the initial state).
  *
  * Facts are the reachable ground atoms of non-static predicates (including
  * derived predicates and nullary predicates). Static atoms do not appear:
@@ -57,7 +57,6 @@ class GroundTask {
     std::vector<int> nullary_fact;
 
     int add_fact(int predicate, const GroundAtom &args);
-    void renumber_facts();
 
 public:
     std::vector<std::pair<int, GroundAtom>> facts;
@@ -102,10 +101,12 @@ public:
 
     /**
      * Ground the task. Returns false if the grounding exceeds the given
-     * limits (number of Datalog facts produced by the exploration, number
-     * of ground operators); the object is then unusable.
+     * limits (number of atoms and instances of the relaxed exploration,
+     * number of ground operators, wall-clock seconds); the object is then
+     * unusable, unless operators_omitted is set.
      */
-    bool build(const Task &task, size_t max_datalog_facts, size_t max_operators);
+    bool build(const Task &task, size_t max_instances, size_t max_operators,
+               double max_seconds);
 
     int num_facts() const {
         return facts.size();
@@ -126,7 +127,7 @@ public:
     /**
      * Ground the task once and cache the result. Returns nullptr if the task
      * is outside the groundable fragment (object creation) or too large to
-     * ground (or if grounding is disabled with PWL_NO_GROUNDING).
+     * ground (or if grounding is disabled).
      */
     static std::shared_ptr<GroundTask> get_cached(const Task &task);
 
@@ -139,6 +140,10 @@ public:
 
     //! Make get_cached() return nullptr (lifted planning only).
     static void disable_grounding();
+
+    //! Limits of the grounding in get_cached(): number of ground operators
+    //! (default 3 million) and wall-clock seconds (default 12).
+    static void set_limits(size_t max_operators, double max_seconds);
 };
 
 #endif  // SEARCH_GROUNDING_GROUND_TASK_H
