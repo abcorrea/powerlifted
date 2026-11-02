@@ -9,11 +9,13 @@
 #include "predicate.h"
 #include "states/state.h"
 
+#include <memory>
 #include <ostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+class GroundTask;
 
 /**
  * @brief Represents the task, with all its objects, goals, action schemas, etc.
@@ -30,6 +32,7 @@ class Task {
     std::vector<ActionSchema> action_schemas;
     GoalCondition goal;
     bool object_creation = false;
+    std::shared_ptr<GroundTask> ground_task;
 
 public:
     std::vector<Predicate> predicates;
@@ -114,9 +117,13 @@ public:
         object_creation  = true;
     }
 
-    bool has_object_creation() const {
-        return object_creation;
-    }
+    bool has_object_creation() const { return object_creation; }
+
+    void set_ground_task(std::shared_ptr<GroundTask> task) { ground_task = std::move(task); }
+
+    //! Ground representation of the task (see GroundTask), or nullptr if
+    //! the task was not ground.
+    const std::shared_ptr<GroundTask> &get_ground_task() const { return ground_task; }
 
     bool is_goal(const DBState &state) const;
 

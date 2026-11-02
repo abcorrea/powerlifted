@@ -14,10 +14,6 @@ SEARCH_CHOICES = ["astar",
                   "dq-bfws2-rx",
                   "alt-bfws1",
                   "alt-bfws2",
-                  "alt-bfws1-lm",
-                  "alt-bfws2-lm",
-                  "lama",
-                  "portfolio",
                   "bfws2-lmnov",
                   "gbfs",
                   "iw1",
@@ -103,15 +99,12 @@ def parse_options():
     parser.add_argument("--novelty-early-stop", action="store_true",
                         help="flag if the novelty evaluation of a state should stop as soon as the w-value is defined")
     parser.add_argument("--unit-cost", action="store_true",
-                           help="treat all actions as unit-cost actions (the default; kept "
-                                "for compatibility)")
+                        help="treat all actions as unit-cost actions (the default; kept "
+                             "for compatibility)")
     parser.add_argument("--use-action-costs", action="store_true",
-                           help="use the action costs of the task instead of unit costs")
+                        help="use the action costs of the task instead of unit costs")
     parser.add_argument("--force-lifted", action="store_true",
                         help="never ground the task (lifted search and heuristics only)")
-    parser.add_argument("--grounded-queues", default=None,
-                        help="open lists of the grounded search (comma-separated subset "
-                             "of novelty, ff, add, lm)")
     parser.add_argument("--max-ground-operators", type=int, default=None,
                         help="search on the lifted task if it has more ground operators "
                              "(default: 3000000)")

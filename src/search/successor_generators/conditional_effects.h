@@ -59,8 +59,10 @@ class ConditionalEffectEvaluator {
     CompiledConditionalEffect compile(const ActionSchema &action,
                                       const ConditionalEffect &ce) const;
 
-    void match(const CompiledConditionalEffect &ce, std::size_t depth,
-               std::vector<int> &binding, const DBState &state,
+    void match(const CompiledConditionalEffect &ce,
+               std::size_t depth,
+               std::vector<int> &binding,
+               const DBState &state,
                std::vector<std::pair<int, GroundAtom>> &deletes,
                std::vector<std::pair<int, GroundAtom>> &adds) const;
 

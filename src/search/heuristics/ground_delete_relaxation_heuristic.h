@@ -1,9 +1,11 @@
-#ifndef SEARCH_HEURISTICS_GROUNDED_HEURISTIC_H_
-#define SEARCH_HEURISTICS_GROUNDED_HEURISTIC_H_
+#ifndef SEARCH_HEURISTICS_GROUND_DELETE_RELAXATION_HEURISTIC_H
+#define SEARCH_HEURISTICS_GROUND_DELETE_RELAXATION_HEURISTIC_H
 
 #include "heuristic.h"
 
 #include <memory>
+#include <optional>
+#include <string>
 #include <vector>
 
 class GroundTask;
@@ -20,9 +22,24 @@ class GroundTask;
  * heuristic exposes the relaxed plan's atoms that are false in the
  * evaluated state as useful atoms.
  */
-class GroundedHeuristic : public Heuristic {
+class GroundDeleteRelaxationHeuristic : public Heuristic {
 public:
-    enum Type {ADD, MAX, FF};
+    enum Type { ADD, MAX, FF };
+
+    //! Type of the heuristic with the given name (add, hmax, or ff, ignoring
+    //! case), if any.
+    static std::optional<Type> get_type(const std::string &name);
+
+    /*
+      Action of a relaxed operator that is not (part of) a ground operator:
+      none (axioms and auxiliary rules of decompositions), a final rule of
+      the decomposition of a ground action schema (its ground operator is
+      reconstructed from the supporters), or a final rule of the relaxed
+      program of a task without ground operators.
+    */
+    static const int NO_ACTION = -1;
+    static const int DECOMPOSED_ACTION = -2;
+    static const int RELAXED_PROGRAM_ACTION = -3;
 
 private:
     Type type;
@@ -42,7 +59,8 @@ private:
     std::vector<int> op_eff;
     std::vector<int> op_base_cost;
     std::vector<int> op_num_pre;
-    //! Ground operator the relaxed operator belongs to (-1 for axioms).
+    //! Ground operator the relaxed operator belongs to, or one of the
+    //! values NO_ACTION, DECOMPOSED_ACTION, RELAXED_PROGRAM_ACTION.
     std::vector<int> op_action;
     std::vector<int> op_action_cost;
     std::vector<int> no_pre_ops;
@@ -50,8 +68,8 @@ private:
     std::vector<int> pre_of_start;
     std::vector<int> pre_of;
     // For each fact, the relaxed operators adding it.
-    std::vector<int> ach_start;
-    std::vector<int> ach;
+    std::vector<int> achiever_start;
+    std::vector<int> achievers;
     std::vector<int> goal;
     bool goal_unreachable;
 
@@ -85,7 +103,6 @@ private:
     std::vector<int> relaxed_plan;
     std::vector<int> relaxed_plan_levels;
     std::vector<int> useful_facts;
-    int last_hadd = 0;
 
     //! Ground actions that can contribute to reaching the goal.
     std::vector<char> relevant_action;
@@ -127,26 +144,30 @@ private:
     //! Actions (schema, parameters) of the last relaxed plan of a task
     //! without ground operators.
     std::vector<std::vector<int>> lifted_plan_actions;
-    void add_relaxation_operators(const Task &task, const GroundTask &g);
+    void add_relaxed_program_operators(const Task &task);
     //! Mark the relaxed plan part of the relaxed program operator r (no
     //! ground operators): push its precondition facts and those of the
     //! supporters of its auxiliary facts; return the action's cost if the
     //! action is new in the relaxed plan, 0 otherwise.
-    int extract_lifted_action(int r);
+    int extract_relaxed_program_action(int r);
 
-    int add_relaxed_op(const std::vector<int> &pre1, const std::vector<int> *pre2,
-                       const std::vector<int> &eff, int base_cost, int action);
-    void add_decomposed_operators(const Task &task, const GroundTask &g,
-                                  std::vector<char> &decomposed);
+    int add_relaxed_op(const std::vector<int> &pre1,
+                       const std::vector<int> *pre2,
+                       const std::vector<int> &eff,
+                       int base_cost,
+                       int action);
+    void add_decomposed_operators(const Task &task, std::vector<char> &decomposed);
     //! Ground operator of the (closed) decomposed final relaxed operator r,
     //! following the supporters of its auxiliary preconditions; -1 if none.
     int reconstruct_operator(int r);
     void push(int fact, int cost);
     int explore();
-    void prune_irrelevant(const GroundTask &g, bool some_negation_relaxed);
+    void prune_irrelevant(bool some_negation_relaxed);
 
 public:
-    GroundedHeuristic(const Task &task, std::shared_ptr<GroundTask> ground_task, Type type);
+    GroundDeleteRelaxationHeuristic(const Task &task,
+                                    std::shared_ptr<GroundTask> ground_task,
+                                    Type type);
 
     int compute_heuristic(const DBState &s, const Task &task) override;
 
@@ -158,36 +179,18 @@ public:
      */
     int compute_for_facts(const std::vector<int> &facts, bool fill_useful_atoms);
 
-    //! h-add value of the last evaluated state (also computed by h-FF).
-    int get_last_hadd() const {
-        return last_hadd;
-    }
-
     //! Facts of the last relaxed plan that are false in the evaluated
     //! state (h-FF). Ids >= get_num_base_facts() are complement facts.
-    const std::vector<int> &get_useful_facts() const {
-        return useful_facts;
-    }
+    const std::vector<int> &get_useful_facts() const { return useful_facts; }
 
     //! Ground actions that are relevant for the goal (all actions if the
     //! analysis cannot rule out any).
-    const std::vector<char> &get_relevant_actions() const {
-        return relevant_action;
-    }
+    const std::vector<char> &get_relevant_actions() const { return relevant_action; }
 
-    int get_num_base_facts() const {
-        return num_base_facts;
-    }
-
-    //! Complement fact of base fact f, or -1.
-    int get_complement(int f) const {
-        return complement[f];
-    }
+    int get_num_base_facts() const { return num_base_facts; }
 
     //! Base fact of complement fact c (c >= get_num_base_facts()).
-    int get_complement_base(int c) const {
-        return complement_base[c - num_base_facts];
-    }
+    int get_complement_base(int c) const { return complement_base[c - num_base_facts]; }
 
     // Relaxed operators (CSR form), used by the landmark generator.
     int get_num_facts() const { return num_facts; }
@@ -207,9 +210,7 @@ public:
     const std::vector<int> &get_goal() const { return goal; }
     //! Ground operators whose relaxed operators were decomposed (their
     //! decomposed final operators have action -2).
-    const std::vector<int> &get_decomposed_operators() const {
-        return decomposed_operators;
-    }
+    const std::vector<int> &get_decomposed_operators() const { return decomposed_operators; }
     //! Precondition and effect of the relaxed version of ground operator o.
     void get_ground_relaxed_operator(int o, std::vector<int> &pre, std::vector<int> &eff) const;
 
@@ -218,15 +219,11 @@ public:
     void add_complement_facts(const std::vector<int> &facts, std::vector<int> &out);
 
     //! Ground operators of the last relaxed plan computed (h-FF only).
-    const std::vector<int> &get_relaxed_plan() const {
-        return relaxed_plan;
-    }
+    const std::vector<int> &get_relaxed_plan() const { return relaxed_plan; }
 
     //! For each operator of the relaxed plan, the h-add cost of the fact
     //! it was selected for (a layer for ordering the relaxed plan).
-    const std::vector<int> &get_relaxed_plan_levels() const {
-        return relaxed_plan_levels;
-    }
+    const std::vector<int> &get_relaxed_plan_levels() const { return relaxed_plan_levels; }
 };
 
-#endif  // SEARCH_HEURISTICS_GROUNDED_HEURISTIC_H_
+#endif  // SEARCH_HEURISTICS_GROUND_DELETE_RELAXATION_HEURISTIC_H

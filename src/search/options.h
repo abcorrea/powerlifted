@@ -18,7 +18,6 @@ class Options {
     bool full_novelty_check;
     bool novelty_early_stop;
     bool force_lifted = false;
-    std::string grounded_queues;
     unsigned max_ground_operators = 3000000;
     double grounding_time_limit = 12;
     unsigned seed;
@@ -39,8 +38,6 @@ class Options {
                      "(default: false)\n"
                   << "  --force-lifted[=BOOL] Never ground the task: lifted search and "
                      "heuristics only (default: false)\n"
-                  << "  --grounded-queues    Open lists of the grounded search, e.g. "
-                     "novelty,ff,add,lm\n"
                   << "  --max-ground-operators N  Search on the lifted task if it has more "
                      "ground operators (default: 3000000)\n"
                   << "  --grounding-time-limit SECONDS  Search on the lifted task if "
@@ -142,7 +139,8 @@ class Options {
                 throw std::runtime_error("");
             }
             return result;
-        } catch (const std::exception &) {
+        }
+        catch (const std::exception &) {
             throw std::runtime_error("Invalid number of seconds '" + value + "' for option " +
                                      opt_name + ".");
         }
@@ -202,25 +200,21 @@ public:
                          has_inline_value(arg, "--novelty-early-stop")) {
                     novelty_early_stop = take_bool_value(args, i, "--novelty-early-stop");
                 }
-                else if (is_named_option(arg, "--grounded-queues") ||
-                         has_inline_value(arg, "--grounded-queues")) {
-                    grounded_queues = take_required_value(args, i, "--grounded-queues");
-                }
                 else if (is_named_option(arg, "--force-lifted") ||
                          has_inline_value(arg, "--force-lifted")) {
                     force_lifted = take_bool_value(args, i, "--force-lifted");
                 }
                 else if (is_named_option(arg, "--max-ground-operators") ||
                          has_inline_value(arg, "--max-ground-operators")) {
-                    max_ground_operators = parse_unsigned_value(
-                        take_required_value(args, i, "--max-ground-operators"),
-                        "--max-ground-operators");
+                    max_ground_operators =
+                        parse_unsigned_value(take_required_value(args, i, "--max-ground-operators"),
+                                             "--max-ground-operators");
                 }
                 else if (is_named_option(arg, "--grounding-time-limit") ||
                          has_inline_value(arg, "--grounding-time-limit")) {
-                    grounding_time_limit = parse_seconds_value(
-                        take_required_value(args, i, "--grounding-time-limit"),
-                        "--grounding-time-limit");
+                    grounding_time_limit =
+                        parse_seconds_value(take_required_value(args, i, "--grounding-time-limit"),
+                                            "--grounding-time-limit");
                 }
                 else if (is_option_name(arg)) {
                     throw std::runtime_error("Unknown option '" + arg + "'.");
@@ -255,10 +249,6 @@ public:
 
     //! Never ground the task (lifted search and lifted heuristics only).
     bool get_force_lifted() const { return force_lifted; }
-
-    //! Comma-separated open lists of the grounded search (novelty, ff, add,
-    //! lm); empty to derive them from the search engine name.
-    const std::string &get_grounded_queues() const { return grounded_queues; }
 
     //! Limits of the grounding: beyond them, the task is not ground (lifted
     //! search, with the relaxed program as heuristic if it is small enough).

@@ -1,4 +1,4 @@
-#include "fast_grounder.h"
+#include "relaxed_reachability.h"
 
 #include "../action_schema.h"
 #include "../axiom.h"
@@ -7,7 +7,6 @@
 #include "../parallel_hashmap/phmap.h"
 
 #include <algorithm>
-#include <cassert>
 #include <chrono>
 #include <deque>
 #include <functional>
@@ -20,6 +19,38 @@
 using namespace std;
 
 namespace {
+// The wall-clock deadline is checked every 2^14 join steps.
+const long long DEADLINE_CHECK_MASK = (1 << 14) - 1;
+
+// Counting the ground actions of a rule handles at most this many negative
+// filters exactly (by inclusion-exclusion over their subsets); the others
+// are ignored, which gives an upper bound.
+const size_t MAX_COUNTED_NEGATIVE_FILTERS = 6;
+
+// Counting gives up on a rule if an intermediate factor gets larger.
+const size_t MAX_FACTOR_SIZE = 4000000;
+
+// The relaxed program of a task with too many ground operators is only
+// used if it has at most this many instances.
+const size_t MAX_RELAXED_PROGRAM_INSTANCES = 2000000;
+
+/*
+  Relaxed reachability analysis over rules whose bodies are the positive
+  (non-'=') condition atoms of action schemas, conditional effects, and
+  axioms; (in)equalities and negated static atoms are checked as soon as
+  their variables are bound. Variables of positive equalities between two
+  variables are unified before evaluation. Rules are evaluated
+  semi-naively: every new atom is joined, in each body position it matches,
+  with the atoms reached so far, by backtracking over the remaining body
+  atoms in a fixed order using hash indices on the bound argument positions.
+  No intermediate join results are materialized.
+
+  The rules deriving the instances (of actions, conditional effects, and
+  axioms) do not take part in the fixpoint: the fixpoint only uses the
+  other heads of the rules, split by variable elimination (see
+  split_rule()). Afterwards, the instances are counted and, if there are
+  not too many, enumerated over the reached atoms.
+*/
 struct Relation {
     int arity = 0;
     vector<GroundAtom> tuples;
@@ -34,7 +65,8 @@ struct Relation {
     };
     vector<Index> indices;
 
-    int get_index(const vector<int> &positions) {
+    int get_index(const vector<int> &positions)
+    {
         for (size_t i = 0; i < indices.size(); ++i) {
             if (indices[i].positions == positions)
                 return i;
@@ -47,7 +79,8 @@ struct Relation {
         return indices.size() - 1;
     }
 
-    static GroundAtom project(const GroundAtom &t, const vector<int> &positions) {
+    static GroundAtom project(const GroundAtom &t, const vector<int> &positions)
+    {
         GroundAtom key;
         for (int p : positions)
             key.push_back(t[p]);
@@ -58,7 +91,8 @@ struct Relation {
     //! are only kept in `members`.
     bool sink = false;
 
-    bool add(const GroundAtom &t, int time) {
+    bool add(const GroundAtom &t, int time)
+    {
         if (!members.emplace(t, time).second)
             return false;
         if (sink)
@@ -89,7 +123,7 @@ struct RuleAtom {
 // relaxed reachability analysis) but is placed like the other filters when
 // rules are split (relaxed program of the heuristic).
 struct Filter {
-    enum Type {EQUAL, NOT_EQUAL, NOT_STATIC, NEGATED_FLUENT};
+    enum Type { EQUAL, NOT_EQUAL, NOT_STATIC, NEGATED_FLUENT };
     Type type;
     vector<RuleArg> args;
     int relation = -1;
@@ -121,7 +155,7 @@ struct Rule {
     vector<vector<int>> initial_filters;
 };
 
-class Grounder {
+class ReachabilityAnalysis {
     const Task &task;
     vector<Relation> relations;
     vector<Rule> rules;
@@ -138,8 +172,10 @@ class Grounder {
     std::chrono::steady_clock::time_point deadline;
     long long join_steps = 0;
     bool timed_out = false;
+    bool too_many_operators = false;
 
-    bool past_deadline() {
+    bool past_deadline()
+    {
         if (std::chrono::steady_clock::now() > deadline) {
             aborted = true;
             timed_out = true;
@@ -155,11 +191,13 @@ class Grounder {
     vector<int> *collect_times = nullptr;
     //! time_stack[d]: latest time of the atoms matched before join depth d.
     vector<int> time_stack;
-    int clock = 0;
+    //! Time of the next atom added to a relation.
+    int next_time = 0;
 
     vector<int> binding;
 
-    bool filter_holds(const Filter &f) const {
+    bool filter_holds(const Filter &f) const
+    {
         auto value = [&](const RuleArg &a) { return a.is_var ? binding[a.value] : a.value; };
         if (f.type == Filter::EQUAL)
             return value(f.args[0]) == value(f.args[1]);
@@ -173,7 +211,8 @@ class Grounder {
         return relations[f.relation].members.count(t) == 0;
     }
 
-    bool filters_hold(const Rule &rule, const vector<int> &filter_ids) const {
+    bool filters_hold(const Rule &rule, const vector<int> &filter_ids) const
+    {
         for (int f : filter_ids) {
             if (!filter_holds(rule.filters[f]))
                 return false;
@@ -181,7 +220,8 @@ class Grounder {
         return true;
     }
 
-    void fire(const Rule &rule) {
+    void fire(const Rule &rule)
+    {
         if (collect) {
             GroundAtom t;
             if (collect_vars) {
@@ -209,8 +249,9 @@ class Grounder {
         }
     }
 
-    void join(const Rule &rule, const vector<Step> &plan, size_t depth) {
-        if (aborted || ((++join_steps & 0x3FFF) == 0 && past_deadline()))
+    void join(const Rule &rule, const vector<Step> &plan, size_t depth)
+    {
+        if (aborted || ((++join_steps & DEADLINE_CHECK_MASK) == 0 && past_deadline()))
             return;
         if (depth == plan.size()) {
             if (collect_times)
@@ -259,8 +300,8 @@ class Grounder {
             auto it = rel.indices[step.index].map.find(key);
             if (it == rel.indices[step.index].map.end())
                 return;
-            // Copy the ids: the list cannot grow during the join (new atoms
-            // are buffered), but keep it robust.
+            // The list cannot grow during the join: new atoms are buffered
+            // in pending_heads.
             const vector<int> &ids = it->second;
             for (size_t k = 0; k < ids.size(); ++k)
                 process(rel.tuples[ids[k]], rel.times[ids[k]]);
@@ -271,7 +312,8 @@ class Grounder {
         }
     }
 
-    bool match_trigger(const Rule &rule, int position, const GroundAtom &t) {
+    bool match_trigger(const Rule &rule, int position, const GroundAtom &t)
+    {
         const RuleAtom &atom = rule.body[position];
         vector<char> bound(rule.num_vars, 0);
         for (size_t i = 0; i < atom.args.size(); ++i) {
@@ -293,7 +335,8 @@ class Grounder {
     }
 
     void compile(Rule &rule);
-    int add_relation(int arity) {
+    int add_relation(int arity)
+    {
         relations.emplace_back();
         relations.back().arity = arity;
         triggers.emplace_back();
@@ -304,26 +347,34 @@ class Grounder {
     void split_rule(const Rule &rule, vector<Rule> &out);
     //! Enumerate the instances of the first head (stops after `cap`
     //! instances); with by_time, in the order of a semi-naive fixpoint.
-    void enumerate(Rule &rule, vector<GroundAtom> &out, bool by_time,
-                   size_t cap);
+    void enumerate(Rule &rule, vector<GroundAtom> &out, bool by_time, size_t cap);
     double count_bindings(const Rule &rule);
     bool build_relaxed_program(const vector<Rule> &action_rules,
-                               const vector<pair<int, int>> &rule_schema, RelaxedProgram &program);
+                               const vector<pair<int, int>> &rule_schema,
+                               RelaxedProgram &program);
 
 public:
-    Grounder(const Task &task, size_t max_total, size_t max_operators, double max_seconds)
-        : task(task), max_total(max_total), max_operators(max_operators),
+    ReachabilityAnalysis(const Task &task,
+                         size_t max_total,
+                         size_t max_operators,
+                         double max_seconds)
+        : task(task),
+          max_total(max_total),
+          max_operators(max_operators),
           deadline(std::chrono::steady_clock::now() +
-                   std::chrono::milliseconds(static_cast<long long>(max_seconds * 1000))) {}
-
-    bool is_timed_out() const {
-        return timed_out;
+                   std::chrono::milliseconds(static_cast<long long>(max_seconds * 1000)))
+    {
     }
+
+    bool is_timed_out() const { return timed_out; }
+
+    bool has_too_many_operators() const { return too_many_operators; }
 
     bool run(RelaxedReachabilityResult &result);
 };
 
-void Grounder::compile(Rule &rule) {
+void ReachabilityAnalysis::compile(Rule &rule)
+{
     int n = rule.body.size();
     rule.plans.resize(n);
     rule.initial_filters.resize(n);
@@ -419,12 +470,15 @@ void Grounder::compile(Rule &rule) {
     }
 }
 
-bool Grounder::normalize(Rule &rule) {
+bool ReachabilityAnalysis::normalize(Rule &rule)
+{
     // Unify variables of positive equalities and substitute constants.
     vector<int> parent(rule.num_vars);
     iota(parent.begin(), parent.end(), 0);
     vector<int> constant(rule.num_vars, -1);
-    function<int(int)> find = [&](int v) { return parent[v] == v ? v : parent[v] = find(parent[v]); };
+    function<int(int)> find = [&](int v) {
+        return parent[v] == v ? v : parent[v] = find(parent[v]);
+    };
     vector<Filter> remaining;
     for (const Filter &f : rule.filters) {
         if (f.type != Filter::EQUAL) {
@@ -485,7 +539,8 @@ bool Grounder::normalize(Rule &rule) {
     return true;
 }
 
-bool Grounder::add_rule(Rule rule) {
+bool ReachabilityAnalysis::add_rule(Rule rule)
+{
     if (!normalize(rule))
         return false;
     int id = rules.size();
@@ -495,8 +550,8 @@ bool Grounder::add_rule(Rule rule) {
     return true;
 }
 
-namespace {
-vector<int> vars_of(const vector<RuleArg> &args) {
+vector<int> vars_of(const vector<RuleArg> &args)
+{
     vector<int> vars;
     for (const RuleArg &a : args) {
         if (a.is_var)
@@ -507,29 +562,31 @@ vector<int> vars_of(const vector<RuleArg> &args) {
     return vars;
 }
 
-bool contains(const vector<int> &sorted, int v) {
+bool contains(const vector<int> &sorted, int v)
+{
     return binary_search(sorted.begin(), sorted.end(), v);
 }
 
-string describe(const RuleAtom &atom) {
+string describe(const RuleAtom &atom)
+{
     string d = to_string(atom.relation) + "(";
     for (const RuleArg &a : atom.args)
         d += (a.is_var ? "v" : "c") + to_string(a.value) + ",";
     return d + ")";
 }
-}  // namespace
 
 /*
   Split a (normalized) rule into rules with smaller joins. The heads are
   grouped by their variables; for each group, the variables not in the
   heads are eliminated one at a time: eliminating X replaces the body atoms
   containing X by an auxiliary atom over their other variables, derived by a
-  new rule (as in the size-aware decomposition of CounterAction). We choose
+  new rule. We choose
   the variable whose auxiliary atom has the smallest bound on its size (the
   product of the variables' domain sizes, bounded by static unary atoms).
   Filters are checked in the first rule binding all their variables.
 */
-void Grounder::split_rule(const Rule &rule, vector<Rule> &out) {
+void ReachabilityAnalysis::split_rule(const Rule &rule, vector<Rule> &out)
+{
     const double num_objects = max<size_t>(task.objects.size(), 1);
     vector<double> domain(rule.num_vars, num_objects);
     for (const RuleAtom &atom : rule.body) {
@@ -672,7 +729,8 @@ void Grounder::split_rule(const Rule &rule, vector<Rule> &out) {
   Enumerate the instances of the first head of a rule over the current
   relations with a single join (no fixpoint).
 */
-void Grounder::enumerate(Rule &rule, vector<GroundAtom> &out, bool by_time, size_t cap) {
+void ReachabilityAnalysis::enumerate(Rule &rule, vector<GroundAtom> &out, bool by_time, size_t cap)
+{
     collect = &out;
     vector<int> times;
     if (by_time) {
@@ -719,8 +777,7 @@ void Grounder::enumerate(Rule &rule, vector<GroundAtom> &out, bool by_time, size
         // the last body atom was added.
         vector<int> order(out.size());
         iota(order.begin(), order.end(), 0);
-        stable_sort(order.begin(), order.end(),
-                    [&](int x, int y) { return times[x] < times[y]; });
+        stable_sort(order.begin(), order.end(), [&](int x, int y) { return times[x] < times[y]; });
         vector<GroundAtom> sorted;
         sorted.reserve(out.size());
         for (int i : order)
@@ -729,7 +786,6 @@ void Grounder::enumerate(Rule &rule, vector<GroundAtom> &out, bool by_time, size
     }
 }
 
-namespace {
 // A function from assignments of its variables to counts.
 struct Factor {
     vector<int> vars;
@@ -738,7 +794,8 @@ struct Factor {
 
 struct TooExpensive {};
 
-Factor join_factors(const Factor &a, const Factor &b, int drop, size_t max_size) {
+Factor join_factors(const Factor &a, const Factor &b, int drop, size_t max_size)
+{
     const Factor &small = a.table.size() <= b.table.size() ? a : b;
     const Factor &large = a.table.size() <= b.table.size() ? b : a;
     vector<int> shared_small, shared_large, extra;
@@ -794,7 +851,8 @@ Factor join_factors(const Factor &a, const Factor &b, int drop, size_t max_size)
     return result;
 }
 
-Factor sum_out(const Factor &f, const vector<char> &drop) {
+Factor sum_out(const Factor &f, const vector<char> &drop)
+{
     Factor result;
     vector<int> keep;
     for (size_t i = 0; i < f.vars.size(); ++i) {
@@ -813,7 +871,8 @@ Factor sum_out(const Factor &f, const vector<char> &drop) {
     return result;
 }
 
-double count_by_elimination(vector<Factor> factors, size_t max_size) {
+double count_by_elimination(vector<Factor> factors, size_t max_size)
+{
     while (true) {
         for (const Factor &f : factors) {
             if (f.table.empty())
@@ -874,12 +933,13 @@ double count_by_elimination(vector<Factor> factors, size_t max_size) {
             else
                 rest.push_back(std::move(f));
         }
-        sort(bucket.begin(), bucket.end(),
-             [](const Factor &x, const Factor &y) { return x.table.size() < y.table.size(); });
+        sort(bucket.begin(), bucket.end(), [](const Factor &x, const Factor &y) {
+            return x.table.size() < y.table.size();
+        });
         Factor product = std::move(bucket[0]);
         for (size_t i = 1; i < bucket.size(); ++i)
-            product = join_factors(product, bucket[i], i + 1 == bucket.size() ? best : -1,
-                                   max_size);
+            product =
+                join_factors(product, bucket[i], i + 1 == bucket.size() ? best : -1, max_size);
         rest.push_back(std::move(product));
         factors.swap(rest);
     }
@@ -890,7 +950,6 @@ double count_by_elimination(vector<Factor> factors, size_t max_size) {
     }
     return result;
 }
-}  // namespace
 
 /*
   Number of bindings of the variables of a (normalized) rule that satisfy
@@ -900,13 +959,13 @@ double count_by_elimination(vector<Factor> factors, size_t max_size) {
   which gives an upper bound). Returns -1 if an intermediate factor gets too
   large.
 */
-double Grounder::count_bindings(const Rule &rule) {
+double ReachabilityAnalysis::count_bindings(const Rule &rule)
+{
     vector<const Filter *> negative;
     for (const Filter &f : rule.filters) {
-        if (negative.size() < 6)
+        if (negative.size() < MAX_COUNTED_NEGATIVE_FILTERS)
             negative.push_back(&f);
     }
-    const size_t max_size = 4000000;
     double total = 0;
     try {
         for (size_t subset = 0; subset < (size_t(1) << negative.size()); ++subset) {
@@ -1004,7 +1063,7 @@ double Grounder::count_bindings(const Rule &rule) {
                 }
                 factors.push_back(std::move(f));
             }
-            double count = count_by_elimination(std::move(factors), max_size);
+            double count = count_by_elimination(std::move(factors), MAX_FACTOR_SIZE);
             total += size % 2 ? -count : count;
         }
     }
@@ -1021,10 +1080,10 @@ double Grounder::count_bindings(const Rule &rule) {
   parts over the final relations, in order (auxiliary relations are filled
   before the rules using them).
 */
-bool Grounder::build_relaxed_program(const vector<Rule> &action_rules,
-                                     const vector<pair<int, int>> &rule_schema,
-                                     RelaxedProgram &program) {
-    const size_t max_instances = 2000000;
+bool ReachabilityAnalysis::build_relaxed_program(const vector<Rule> &action_rules,
+                                                 const vector<pair<int, int>> &rule_schema,
+                                                 RelaxedProgram &program)
+{
     for (size_t k = 0; k < action_rules.size(); ++k) {
         Rule rule = action_rules[k];
         if (!normalize(rule) || rule.heads.empty())
@@ -1053,9 +1112,9 @@ bool Grounder::build_relaxed_program(const vector<Rule> &action_rules,
             if (part.body.empty() && !vars.empty())
                 continue;  // Unbound variables (cannot be grounded).
             collect_vars = &vars;
-            enumerate(part, bindings, false, max_instances);
+            enumerate(part, bindings, false, MAX_RELAXED_PROGRAM_INSTANCES);
             collect_vars = nullptr;
-            if (bindings.size() > max_instances || aborted)
+            if (bindings.size() > MAX_RELAXED_PROGRAM_INSTANCES || aborted)
                 return false;
             int rule_id = program.rules.size();
             program.rules.push_back(
@@ -1081,20 +1140,21 @@ bool Grounder::build_relaxed_program(const vector<Rule> &action_rules,
                 for (const RuleAtom &atom : part.heads) {
                     GroundAtom t = instantiate(atom.args, values);
                     if (is_aux)
-                        relations[atom.relation].add(t, clock++);
+                        relations[atom.relation].add(t, next_time++);
                     inst.heads.emplace_back(atom.relation, std::move(t));
                 }
                 inst.values = std::move(values);
                 program.instances.push_back(std::move(inst));
             }
-            if (program.instances.size() > max_instances)
+            if (program.instances.size() > MAX_RELAXED_PROGRAM_INSTANCES)
                 return false;
         }
     }
     return true;
 }
 
-bool Grounder::run(RelaxedReachabilityResult &result) {
+bool ReachabilityAnalysis::run(RelaxedReachabilityResult &result)
+{
     const auto &predicates = task.predicates;
     int num_predicates = predicates.size();
     for (int p = 0; p < num_predicates; ++p)
@@ -1108,8 +1168,8 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
     for (size_t a = 0; a < schemas.size(); ++a) {
         action_relation[a] = add_relation(schemas[a].get_parameters().size());
         for (const ConditionalEffect &ce : schemas[a].get_conditional_effects())
-            ce_relation[a].push_back(add_relation(schemas[a].get_parameters().size() +
-                                                  ce.parameters.size()));
+            ce_relation[a].push_back(
+                add_relation(schemas[a].get_parameters().size() + ce.parameters.size()));
     }
     for (size_t i = 0; i < axioms.size(); ++i)
         axiom_relation[i] = add_relation(axioms[i].get_parameters().size());
@@ -1146,15 +1206,15 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
             rule.body.push_back(to_rule_atom(atom));
         }
     };
-    auto add_effects = [&](Rule &rule, const vector<Atom> &effects,
-                           const vector<int> &positive_nullary) {
-        for (const Atom &eff : effects) {
-            if (!eff.is_negated())
-                rule.heads.push_back(to_rule_atom(eff));
-        }
-        for (int p : positive_nullary)
-            rule.heads.push_back(nullary_atom(p));
-    };
+    auto add_effects =
+        [&](Rule &rule, const vector<Atom> &effects, const vector<int> &positive_nullary) {
+            for (const Atom &eff : effects) {
+                if (!eff.is_negated())
+                    rule.heads.push_back(to_rule_atom(eff));
+            }
+            for (int p : positive_nullary)
+                rule.heads.push_back(nullary_atom(p));
+        };
 
     vector<Rule> empty_body_rules;
     auto register_one = [&](Rule rule) {
@@ -1168,7 +1228,12 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
     // the fixpoint; the fixpoint uses split rules deriving only the other
     // heads.
     vector<Rule> instance_rules;
-    vector<pair<int, int>> instance_rule_owner;  // (kind, index): 0 action, 1 axiom
+    //! Action schema or axiom of each instance rule.
+    struct InstanceRuleOwner {
+        bool is_axiom;
+        int index;
+    };
+    vector<InstanceRuleOwner> instance_rule_owner;
     vector<vector<Rule>> ce_instance_rules(schemas.size());
     auto register_rule = [&](Rule rule) {
         Rule instance_rule = rule;
@@ -1213,14 +1278,14 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
         }
         add_effects(rule, schema.get_effects(), nullary_effects);
         Rule schema_rule = rule;
-        instance_rule_owner.emplace_back(0, a);
+        instance_rule_owner.push_back({false, int(a)});
         register_rule(std::move(rule));
 
         for (size_t c = 0; c < schema.get_conditional_effects().size(); ++c) {
             const ConditionalEffect &ce = schema.get_conditional_effects()[c];
             Rule ce_rule;
-            ce_rule.num_vars = num_params + schema.get_fresh_variables().size() +
-                ce.parameters.size();
+            ce_rule.num_vars =
+                num_params + schema.get_fresh_variables().size() + ce.parameters.size();
             ce_rule.body.push_back(instance);
             for (const Atom &cond : ce.condition)
                 add_condition(ce_rule, cond);
@@ -1248,8 +1313,8 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
             fix_rule.body = schema_rule.body;
             fix_rule.filters = schema_rule.filters;
             fix_rule.body.insert(fix_rule.body.end(), ce_rule.body.begin() + 1, ce_rule.body.end());
-            fix_rule.filters.insert(fix_rule.filters.end(), ce_rule.filters.begin(),
-                                    ce_rule.filters.end());
+            fix_rule.filters.insert(
+                fix_rule.filters.end(), ce_rule.filters.begin(), ce_rule.filters.end());
             fix_rule.heads.assign(ce_rule.heads.begin() + 1, ce_rule.heads.end());
             if (fix_rule.heads.empty() || !normalize(fix_rule))
                 continue;
@@ -1281,7 +1346,7 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
         for (int k = 0; k < axiom.get_head_arity(); ++k)
             head.args.push_back({true, k});
         rule.heads.push_back(head);
-        instance_rule_owner.emplace_back(1, i);
+        instance_rule_owner.push_back({true, int(i)});
         register_rule(std::move(rule));
     }
 
@@ -1289,7 +1354,7 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
     // included, also those of static predicates).
     auto add_atom = [&](int relation, const GroundAtom &t) {
         Relation &rel = relations[relation];
-        if (rel.add(t, clock++)) {
+        if (rel.add(t, next_time++)) {
             if (!rel.sink)
                 queue.emplace_back(relation, rel.tuples.size() - 1);
             ++total;
@@ -1312,19 +1377,6 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
         if (triggers[r].empty() && relations[r].indices.empty())
             relations[r].sink = true;
     }
-    auto export_tuples = [&](int r) {
-        // In the order in which the atoms were added (hash order varies
-        // between runs).
-        vector<pair<int, const GroundAtom *>> order;
-        for (const auto &entry : relations[r].members)
-            order.emplace_back(entry.second, &entry.first);
-        sort(order.begin(), order.end());
-        vector<GroundAtom> atoms;
-        atoms.reserve(order.size());
-        for (const auto &entry : order)
-            atoms.push_back(*entry.second);
-        return atoms;
-    };
 
     size_t max_vars = 0;
     for (const Rule &rule : rules)
@@ -1391,7 +1443,7 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
     double counted = 0;
     bool known = true;
     for (size_t k = 0; k < instance_rules.size(); ++k) {
-        if (instance_rule_owner[k].first != 0 || instance_rules[k].num_vars < 0)
+        if (instance_rule_owner[k].is_axiom || instance_rules[k].num_vars < 0)
             continue;
         double c = count_bindings(instance_rules[k]);
         if (past_deadline())
@@ -1401,11 +1453,11 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
         else
             counted += c;
     }
-    cout << "Counted operators: " << size_t(counted) << (known ? "" : " (lower bound)")
-         << " [" << total << " atoms]" << endl;
+    cout << "Counted operators: " << size_t(counted) << (known ? "" : " (lower bound)") << " ["
+         << total << " atoms]" << endl;
     result.counted_operators = counted;
     if (counted > max_operators) {
-        result.too_many_operators = true;
+        too_many_operators = true;
         // Relaxed program for the heuristic of the lifted search.
         vector<Rule> program_rules;
         vector<pair<int, int>> rule_schema;
@@ -1429,7 +1481,8 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
                 }
             }
         };
-        auto add_all_effects = [&](Rule &rule, const vector<Atom> &effects,
+        auto add_all_effects = [&](Rule &rule,
+                                   const vector<Atom> &effects,
                                    const vector<int> &pos_nullary,
                                    const vector<int> &neg_nullary) {
             for (const Atom &eff : effects) {
@@ -1489,16 +1542,14 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
                         ce_rule.filters.push_back(f);
                     }
                 }
-                add_all_effects(ce_rule, ce.effects, ce.positive_nullary_effects,
-                                ce.negative_nullary_effects);
+                add_all_effects(
+                    ce_rule, ce.effects, ce.positive_nullary_effects, ce.negative_nullary_effects);
                 program_rules.push_back(ce_rule);
                 rule_schema.emplace_back(a, schema.get_cost());
             }
         }
         auto program = make_shared<RelaxedProgram>();
         if (build_relaxed_program(program_rules, rule_schema, *program)) {
-            cout << "Relaxed program: " << program->rules.size() << " rules, "
-                 << program->instances.size() << " instances." << endl;
             result.relaxed_program = program;
             result.action_instances.assign(schemas.size(), {});
             result.ce_instances.assign(schemas.size(), {});
@@ -1506,14 +1557,16 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
                 result.ce_instances[a].resize(schemas[a].get_conditional_effects().size());
             result.axiom_instances.assign(axioms.size(), {});
             for (size_t k = 0; k < instance_rules.size(); ++k) {
-                if (instance_rules[k].num_vars < 0 || instance_rule_owner[k].first != 1)
+                if (instance_rules[k].num_vars < 0 || !instance_rule_owner[k].is_axiom)
                     continue;
-                enumerate(instance_rules[k], result.axiom_instances[instance_rule_owner[k].second],
-                          true, max_total);
+                enumerate(instance_rules[k],
+                          result.axiom_instances[instance_rule_owner[k].index],
+                          true,
+                          max_total);
             }
             result.atoms.resize(num_predicates);
             for (int p = 0; p < num_predicates; ++p)
-                result.atoms[p] = export_tuples(p);
+                result.atoms[p] = relations[p].tuples;
         }
         return false;
     }
@@ -1524,16 +1577,16 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
     for (size_t k = 0; k < instance_rules.size(); ++k) {
         if (instance_rules[k].num_vars < 0)
             continue;
-        auto [kind, index] = instance_rule_owner[k];
-        vector<GroundAtom> &out = kind == 0 ? result.action_instances[index]
-                                            : result.axiom_instances[index];
+        const InstanceRuleOwner &owner = instance_rule_owner[k];
+        vector<GroundAtom> &out = owner.is_axiom ? result.axiom_instances[owner.index]
+                                                 : result.action_instances[owner.index];
         enumerate(instance_rules[k], out, true, max_operators);
         if (aborted)
             return false;
-        if (kind == 0)
+        if (!owner.is_axiom)
             num_instances += out.size();
         if (num_instances > max_operators) {
-            result.too_many_operators = true;
+            too_many_operators = true;
             return false;
         }
     }
@@ -1542,7 +1595,7 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
             continue;
         Relation &rel = relations[action_relation[a]];
         for (const GroundAtom &t : result.action_instances[a])
-            rel.add(t, clock++);
+            rel.add(t, next_time++);
         for (Rule &ce_rule : ce_instance_rules[a]) {
             result.ce_instances[a].emplace_back();
             if (ce_rule.num_vars < 0)
@@ -1552,25 +1605,33 @@ bool Grounder::run(RelaxedReachabilityResult &result) {
                 return false;
             num_instances += result.ce_instances[a].back().size();
             if (num_instances > max_operators) {
-                result.too_many_operators = true;
+                too_many_operators = true;
                 return false;
             }
         }
     }
     result.atoms.resize(num_predicates);
     for (int p = 0; p < num_predicates; ++p)
-        result.atoms[p] = export_tuples(p);
+        result.atoms[p] = relations[p].tuples;
     return true;
 }
 }  // namespace
 
-bool compute_relaxed_reachability(const Task &task, size_t max_instances,
-                                  size_t max_operators, double max_seconds,
-                                  RelaxedReachabilityResult &result) {
-    Grounder grounder(task, max_instances, max_operators, max_seconds);
-    bool complete = grounder.run(result);
-    result.timed_out = grounder.is_timed_out();
-    if (result.timed_out)
+ReachabilityOutcome compute_relaxed_reachability(const Task &task,
+                                                 size_t max_instances,
+                                                 size_t max_operators,
+                                                 double max_seconds,
+                                                 RelaxedReachabilityResult &result)
+{
+    ReachabilityAnalysis analysis(task, max_instances, max_operators, max_seconds);
+    bool complete = analysis.run(result);
+    if (analysis.is_timed_out()) {
         result.relaxed_program.reset();
-    return complete && !result.timed_out;
+        return ReachabilityOutcome::TIMED_OUT;
+    }
+    if (complete)
+        return ReachabilityOutcome::COMPLETE;
+    if (analysis.has_too_many_operators())
+        return ReachabilityOutcome::TOO_MANY_OPERATORS;
+    return ReachabilityOutcome::TOO_MANY_ATOMS;
 }

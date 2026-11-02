@@ -1,5 +1,8 @@
 from .pddl_types import Type
 from .pddl_types import TypedObject
+from .pddl_types import get_either_type_members
+from .pddl_types import get_either_type_name
+from .pddl_types import is_either_type
 
 from .tasks import Task
 from .tasks import Requirements

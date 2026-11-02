@@ -32,11 +32,11 @@ class PreconditionProxy(ConditionProxy):
         rule_body = condition_to_rule_body(action.parameters, self.condition, add_inequalities)
         rules.append((rule_body, rule_head, action))
     def get_type_map(self):
-        # Powerlifted actions do not uniquify their variables upfront
-        # (Action.uniquify_variables is disabled), so collect the type map
-        # here: the action parameters plus the quantifier-bound variables of
-        # the precondition. Storing the re-uniquified condition also renames
-        # any bound variable that shadows an action parameter.
+        # The type map of the condition: the action parameters plus the
+        # quantifier-bound variables of the precondition (which may have
+        # been introduced by the normalization). Storing the re-uniquified
+        # condition also renames any bound variable that shadows an action
+        # parameter.
         type_map = dict((par.name, par.type_name)
                         for par in self.owner.parameters)
         self.set(self.condition.uniquify_variables(type_map))
@@ -204,8 +204,8 @@ def remove_trivially_inapplicable_actions(task):
                     type_name = graph.edges[type_name]
 
     for t in task.types:
-        if t.name.startswith("either@") and any(
-                m in object_types_in_task for m in t.name[len("either@"):].split("@")):
+        if pddl.is_either_type(t.name) and any(
+                m in object_types_in_task for m in pddl.get_either_type_members(t.name)):
             object_types_in_task.add(t.name)
 
     new_actions = []

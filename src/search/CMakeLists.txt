@@ -13,10 +13,6 @@ endif()
 
 set(CORE_SOURCES
         main.cc
-        grounding/fast_grounder.cc
-        grounding/ground_task.cc
-        grounded/grounded_search.cc
-        grounded/landmarks.cc
         action.cc
         action_schema.cc
         axiom_evaluator.cc
@@ -45,17 +41,23 @@ set(DATALOG_SOURCES
         datalog/rule_matcher.cc
         datalog/rules/rule_base.cc)
 
+set(GROUNDING_SOURCES
+        grounding/ground_task.cc
+        grounding/relaxed_reachability.cc)
+
 set(HEURISTIC_SOURCES
         heuristics/add_heuristic.cc
         heuristics/ff_heuristic.cc
         heuristics/goalcount.cc
-        heuristics/grounded_heuristic.cc
+        heuristics/ground_delete_relaxation_heuristic.cc
+        heuristics/ground_landmarks.cc
         heuristics/heuristic_factory.cc
         heuristics/hmax_heuristic.cc
         heuristics/rff_heuristic.cc
         heuristics/utils.cc)
 
 set(NOVELTY_SOURCES
+        novelty/ground_novelty.cc
         novelty/standard_novelty.cc)
 
 set(SEARCH_ENGINE_SOURCES
@@ -64,6 +66,7 @@ set(SEARCH_ENGINE_SOURCES
         search_engines/best_first_width_search.cc
         search_engines/breadth_first_search.cc
         search_engines/dual_queue_bfws.cc
+        search_engines/ground_search.cc
         search_engines/greedy_best_first_search.cc
         search_engines/lazy_search.cc
         search_engines/nodes.cc
@@ -73,6 +76,7 @@ set(SEARCH_ENGINE_SOURCES
         search_engines/utils.cc)
 
 set(STATE_SOURCES
+        states/ground_state_registry.cc
         states/sparse_states.cc
         states/state.cc)
 
@@ -84,6 +88,7 @@ set(SUCCESSOR_GENERATOR_SOURCES
         successor_generators/conditional_effects.cc
         successor_generators/full_reducer_successor_generator.cc
         successor_generators/generic_join_successor.cc
+        successor_generators/ground_successor_generator.cc
         successor_generators/ordered_join_successor.cc
         successor_generators/random_successor.cc
         successor_generators/successor_generator_factory.cc
@@ -101,6 +106,7 @@ add_executable(search
         ${CORE_SOURCES}
         ${DATABASE_SOURCES}
         ${DATALOG_SOURCES}
+        ${GROUNDING_SOURCES}
         ${HEURISTIC_SOURCES}
         ${NOVELTY_SOURCES}
         ${SEARCH_ENGINE_SOURCES}

@@ -198,8 +198,7 @@ static vector<Argument> parse_literal_arguments(int arguments_size, const string
     return arguments;
 }
 
-static void parse_conditional_effect(Task &task, const string &action_name,
-                                     ConditionalEffect &ce)
+static void parse_conditional_effect(Task &task, const string &action_name, ConditionalEffect &ce)
 {
     int num_vars, cond_size, eff_size;
     cin >> num_vars >> cond_size >> eff_size;
@@ -254,10 +253,9 @@ void parse_action_schemas(Task &task, int number_action_schemas)
     vector<ActionSchema> actions;
     for (int i = 0; i < number_action_schemas; ++i) {
         string name;
-        int cost, args, num_external_params, num_fresh_vars, precond_size, eff_size,
-            num_cond_effs;
-        cin >> name >> cost >> args >> num_external_params >> num_fresh_vars
-            >> precond_size >> eff_size >> num_cond_effs;
+        int cost, args, num_external_params, num_fresh_vars, precond_size, eff_size, num_cond_effs;
+        cin >> name >> cost >> args >> num_external_params >> num_fresh_vars >> precond_size >>
+            eff_size >> num_cond_effs;
         vector<Parameter> parameters;
         vector<FreshVariable> fresh_vars;
         vector<Atom> preconditions, static_preconditions, effects;

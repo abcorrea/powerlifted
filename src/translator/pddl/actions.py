@@ -22,11 +22,8 @@ class Action(object):
         self.effects = effects
         self.cost = cost
 
-        # TODO We are only dealing with STRIPS + object creation, so we do not uniquify variables.
-        # If we support fancier features (quantifiers, condition effects), we need to do so.
-        # However, as it is, this is not directly possible: you do not want to uniquify variables
-        # of object creation effects.
-        # self.uniquify_variables()
+        # The parser uniquifies the variables of new actions (see
+        # uniquify_variables()).
 
     def __repr__(self):
         return "action_%s" % (self.name)
@@ -49,7 +46,10 @@ class Action(object):
                               for par in self.parameters])
         self.precondition = self.precondition.uniquify_variables(self.type_map)
         for effect in self.effects:
-            effect.uniquify_variables(self.type_map)
+            # The fresh variables of object creation effects keep their
+            # names.
+            if not effect.fresh:
+                effect.uniquify_variables(self.type_map)
 
     def relaxed(self):
         new_effects = []

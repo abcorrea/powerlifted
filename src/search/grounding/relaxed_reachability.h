@@ -1,5 +1,5 @@
-#ifndef SEARCH_GROUNDING_FAST_GROUNDER_H
-#define SEARCH_GROUNDING_FAST_GROUNDER_H
+#ifndef SEARCH_GROUNDING_RELAXED_REACHABILITY_H
+#define SEARCH_GROUNDING_RELAXED_REACHABILITY_H
 
 #include "../structures.h"
 
@@ -9,23 +9,6 @@
 
 class Task;
 
-/**
- * @brief Relaxed reachability analysis computing the ground instances of all
- * action schemas, conditional effects, and axioms reachable in the delete
- * relaxation from the initial state.
- *
- * Every schema, conditional effect, and axiom is a rule whose body is its
- * positive (non-'=') condition atoms and whose head is an instance atom
- * listing all its variables; (in)equalities and negated static atoms are
- * checked as soon as their variables are bound. Rules are evaluated
- * semi-naively: every new atom is joined, in each body position it matches,
- * with the atoms reached so far, by backtracking over the remaining body
- * atoms in a fixed order using hash indices on the bound argument positions.
- * No intermediate join results are materialized.
- *
- * Variables of positive equalities between two variables are unified before
- * evaluation.
- */
 /**
  * @brief Decomposed relaxed program of the action schemas, computed when
  * there are too many ground actions to ground them (see
@@ -71,34 +54,42 @@ struct RelaxedReachabilityResult {
     std::vector<std::vector<std::vector<GroundAtom>>> ce_instances;
     //! Instances per axiom: values of all axiom parameters.
     std::vector<std::vector<GroundAtom>> axiom_instances;
-    //! Number of ground actions, counted before enumerating them, and
-    //! whether they exceed the limit.
+    //! Number of ground actions, counted before enumerating them.
     double counted_operators = -1;
-    bool too_many_operators = false;
-    //! The grounding exceeded its wall-clock budget; the result is
-    //! incomplete.
-    bool timed_out = false;
     //! If there are too many operators: the decomposed relaxed program (if
-    //! it is small enough), and the atoms and axiom instances are complete.
+    //! it is small enough); the atoms and axiom instances are complete.
     std::shared_ptr<RelaxedProgram> relaxed_program;
 };
 
+enum class ReachabilityOutcome {
+    COMPLETE,
+    //! More atoms and instances than allowed.
+    TOO_MANY_ATOMS,
+    //! More ground operators than allowed: only the atoms, the axiom
+    //! instances, and the relaxed program (if small enough) are computed.
+    TOO_MANY_OPERATORS,
+    //! Out of time.
+    TIMED_OUT
+};
+
 /**
- * Compute the relaxed-reachable instances. Returns false (and leaves the
- * result incomplete) if more than `max_instances` atoms and instances are
- * produced in total, or if it takes more than `max_seconds` of wall-clock
- * time (timed_out).
+ * Compute the atoms and the ground instances of all action schemas,
+ * conditional effects, and axioms reachable in the delete relaxation from
+ * the initial state, within the limits: at most `max_instances` atoms and
+ * instances, at most `max_operators` ground operators, and at most
+ * `max_seconds` of wall-clock time.
  *
  * The fixpoint derives no instance atoms: its rules are split by variable
  * elimination (with auxiliary relations), so it costs about as much as the
  * reachable atoms. Then the ground actions are counted by variable
- * elimination; if there are more than `max_operators`, the result is
- * incomplete (too_many_operators). Otherwise the action, conditional effect,
- * and axiom instances are enumerated with one join each over the reachable
- * atoms.
+ * elimination, and only if there are not too many, the action, conditional
+ * effect, and axiom instances are enumerated with one join each over the
+ * reachable atoms.
  */
-bool compute_relaxed_reachability(const Task &task, size_t max_instances,
-                                  size_t max_operators, double max_seconds,
-                                  RelaxedReachabilityResult &result);
+ReachabilityOutcome compute_relaxed_reachability(const Task &task,
+                                                 size_t max_instances,
+                                                 size_t max_operators,
+                                                 double max_seconds,
+                                                 RelaxedReachabilityResult &result);
 
-#endif  // SEARCH_GROUNDING_FAST_GROUNDER_H
+#endif  // SEARCH_GROUNDING_RELAXED_REACHABILITY_H

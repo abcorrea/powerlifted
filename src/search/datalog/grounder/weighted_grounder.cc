@@ -498,9 +498,9 @@ void WeightedGrounder::product(
     for (const auto& arg:args) {
         if (!arg.is_object()) {
             int pos = rule.get_head_position_of_arg(arg);
-            if (pos!=-1) {
-                new_arguments_persistent.set_term_to_object(pos,
-                                                            fact.argument(position_counter).get_index());
+            if (pos != -1) {
+                new_arguments_persistent.set_term_to_object(
+                    pos, fact.argument(position_counter).get_index());
             }
         }
         position_counter++;

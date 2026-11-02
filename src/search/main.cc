@@ -3,10 +3,11 @@
 #include "plan_manager.h"
 #include "task.h"
 
-#include "grounded/grounded_search.h"
 #include "grounding/ground_task.h"
+#include "heuristics/ground_delete_relaxation_heuristic.h"
 #include "heuristics/heuristic.h"
 #include "heuristics/heuristic_factory.h"
+#include "search_engines/ground_search.h"
 #include "search_engines/search.h"
 #include "search_engines/search_factory.h"
 #include "successor_generators/successor_generator.h"
@@ -15,6 +16,7 @@
 
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <set>
 
 using namespace std;
@@ -105,69 +107,39 @@ int main(int argc, char *argv[])
     }
 
     /*
-      If the task can be grounded, the search engines below search on the
-      ground representation; otherwise they fall back to lifted search.
+      With a delete-relaxation heuristic (add, hmax, ff), ground the task. If
+      grounding succeeds, alt-bfws1, alt-bfws2, and bfws2-lmnov search on the
+      ground task; otherwise, they fall back to lifted search. The
+      delete-relaxation heuristics use the ground task (or its decomposed
+      relaxed program, if there are too many ground operators) also in
+      lifted search.
      */
-    if (opt.get_force_lifted())
-        GroundTask::disable_grounding();
-    GroundTask::set_limits(opt.get_max_ground_operators(), opt.get_grounding_time_limit());
     const std::string &engine = opt.get_search_engine();
-    bool grounded_engine = engine == "alt-bfws1" || engine == "alt-bfws2" ||
-        engine == "lama" || engine == "alt-bfws1-lm" || engine == "alt-bfws2-lm" ||
-        engine == "portfolio" || engine == "bfws2-lmnov";
-    if (grounded_engine) {
+    bool ground_engine = engine == "alt-bfws1" || engine == "alt-bfws2" || engine == "bfws2-lmnov";
+    std::optional<GroundDeleteRelaxationHeuristic::Type> heuristic_type =
+        GroundDeleteRelaxationHeuristic::get_type(opt.get_evaluator());
+    if (!opt.get_force_lifted() && heuristic_type) {
+        task.set_ground_task(GroundTask::create(
+            task, opt.get_max_ground_operators(), opt.get_grounding_time_limit()));
+    }
+    const std::shared_ptr<GroundTask> &ground_task = task.get_ground_task();
+    if (ground_engine && ground_task && !ground_task->relaxed_program_only) {
+        PlanManager::set_plan_filename(opt.get_plan_file());
         try {
-            std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
-            if (ground_task) {
-                PlanManager::set_plan_filename(opt.get_plan_file());
-                vector<GroundSearchConfig> configs;
-                auto make_config = [&](const std::string &name) {
-                    GroundSearchConfig c;
-                    c.name = name;
-                    c.novelty = name != "lama";
-                    c.lm = name == "lama" || name == "alt-bfws1-lm" || name == "alt-bfws2-lm";
-                    c.width = (name == "alt-bfws2" || name == "alt-bfws2-lm" ||
-                               name == "bfws2-lmnov") ? 2 : 1;
-                    if (name == "bfws2-lmnov") {
-                        // NOLAN-like: width-2 novelty partitioned by the
-                        // landmark count (eager and lazy), plus h-FF and
-                        // landmark queues.
-                        c.lm = true;
-                        c.novelty_by_lm = true;
-                        c.lazy_queue = true;
-                    }
-                    return c;
-                };
-                if (engine == "portfolio") {
-                    configs.push_back(make_config("alt-bfws2"));
-                    GroundSearchConfig add_config = make_config("alt-bfws1");
-                    add_config.name = "alt-bfws1-add";
-                    add_config.add = true;
-                    configs.push_back(add_config);
-                    configs.push_back(make_config("lama"));
-                }
-                else {
-                    configs.push_back(make_config(engine));
-                }
-                const std::string &queues = opt.get_grounded_queues();
-                if (!queues.empty()) {
-                    auto has = [&](const std::string &q) {
-                        return ("," + queues + ",").find("," + q + ",") != std::string::npos;
-                    };
-                    for (GroundSearchConfig &c : configs) {
-                        c.novelty = has("novelty");
-                        c.ff = has("ff");
-                        c.add = has("add");
-                        c.lm = has("lm");
-                    }
-                }
-                GroundedSearch search(task, ground_task, opt.get_evaluator(),
-                                      opt.use_full_novelty_check());
-                auto exitcode = search.search(configs);
-                search.print_statistics();
-                utils::report_exit_code_reentrant(exitcode);
-                return static_cast<int>(exitcode);
-            }
+            // bfws2-lmnov: width-2 novelty partitioned by the landmark count
+            // (as in NOLAN), plus landmark-count and lazy novelty open lists.
+            int width = engine == "alt-bfws1" ? 1 : 2;
+            bool use_landmarks = engine == "bfws2-lmnov";
+            GroundSearch search(task,
+                                ground_task,
+                                *heuristic_type,
+                                width,
+                                use_landmarks,
+                                opt.use_full_novelty_check());
+            auto exitcode = search.search();
+            search.print_statistics();
+            utils::report_exit_code_reentrant(exitcode);
+            return static_cast<int>(exitcode);
         }
         catch (const bad_alloc &ex) {
             exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
@@ -175,10 +147,10 @@ int main(int argc, char *argv[])
     }
 
     // Let's create a couple unique_ptr's that deal with mem allocation themselves
-    // Without grounding, use width 1 unless lifted search was requested.
+    // Lifted width-2 novelty is expensive: if the task could not be ground,
+    // search with width 1 unless lifted search was requested explicitly.
     std::string lifted_engine = opt.get_search_engine();
-    if ((lifted_engine == "alt-bfws2" || lifted_engine == "bfws2-lmnov") &&
-        !opt.get_force_lifted())
+    if ((lifted_engine == "alt-bfws2" || lifted_engine == "bfws2-lmnov") && !opt.get_force_lifted())
         lifted_engine = "alt-bfws1";
     std::unique_ptr<SearchBase> search(SearchFactory::create(opt, lifted_engine));
     std::unique_ptr<Heuristic> heuristic(HeuristicFactory::create(opt, task));
@@ -186,12 +158,6 @@ int main(int argc, char *argv[])
         SuccessorGeneratorFactory::create(opt.get_successor_generator(), opt.get_seed(), task));
 
     PlanManager::set_plan_filename(opt.get_plan_file());
-
-    // Start search
-    if (task.is_trivially_unsolvable()) {
-        cout << "Problem goal was statically determined to be unsatisfiable." << endl;
-        exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
-    }
 
     try {
         auto exitcode = search->search(task, *sgen, *heuristic);

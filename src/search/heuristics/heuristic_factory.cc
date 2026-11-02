@@ -4,46 +4,40 @@
 #include "blind_heuristic.h"
 #include "ff_heuristic.h"
 #include "goalcount.h"
+#include "ground_delete_relaxation_heuristic.h"
 #include "hmax_heuristic.h"
 #include "rff_heuristic.h"
 
 #include "datalog_transformation_options.h"
-#include "grounded_heuristic.h"
 
 #include "../grounding/ground_task.h"
-#include "../utils/timer.h"
-
-#include <cstdlib>
-#include <memory>
 
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <optional>
 
 #include "../utils/system.h"
 #include "../utils/string_utils.h"
 
-static Heuristic *create_grounded(const std::string &method, const Task &task)
+/*
+  If the task was ground, the delete-relaxation heuristics are computed on
+  the ground task (or on its decomposed relaxed program if it has too many
+  ground operators) instead of the Datalog program.
+*/
+static Heuristic *create_ground_heuristic(const std::string &method, const Task &task)
 {
-    GroundedHeuristic::Type type;
-    if (utils::iequals(method, "add"))
-        type = GroundedHeuristic::ADD;
-    else if (utils::iequals(method, "ff"))
-        type = GroundedHeuristic::FF;
-    else if (utils::iequals(method, "hmax"))
-        type = GroundedHeuristic::MAX;
-    else
+    const std::shared_ptr<GroundTask> &ground_task = task.get_ground_task();
+    std::optional<GroundDeleteRelaxationHeuristic::Type> type =
+        GroundDeleteRelaxationHeuristic::get_type(method);
+    if (!ground_task || !type)
         return nullptr;
-    std::shared_ptr<GroundTask> ground_task = GroundTask::get_cached(task);
-    if (!ground_task) {
-        // Too many ground operators: the relaxed program of the ground facts.
-        ground_task = GroundTask::get_cached_relaxation(task);
-        if (!ground_task)
-            return nullptr;
-        std::cout << "Using " << method << " heuristic on the decomposed relaxed program." << std::endl;
-        return new GroundedHeuristic(task, ground_task, type);
-    }
-    std::cout << "Using grounded " << method << " heuristic." << std::endl;
-    return new GroundedHeuristic(task, ground_task, type);
+    if (ground_task->relaxed_program_only)
+        std::cout << "Using " << method << " heuristic on the decomposed relaxed program."
+                  << std::endl;
+    else
+        std::cout << "Using ground " << method << " heuristic." << std::endl;
+    return new GroundDeleteRelaxationHeuristic(task, ground_task, *type);
 }
 
 Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
@@ -52,7 +46,7 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
 
     std::cout << "Creating heuristic factory..." << std::endl;
 
-    if (Heuristic *h = create_grounded(method, task))
+    if (Heuristic *h = create_ground_heuristic(method, task))
         return h;
 
     if (utils::iequals(method, "blind")) {
@@ -82,7 +76,7 @@ Heuristic *HeuristicFactory::create(const Options &opt, const Task &task)
 Heuristic *HeuristicFactory::create_delete_free_heuristic(const std::string &method,
                                                           const Task &task)
 {
-    if (Heuristic *h = create_grounded(method, task))
+    if (Heuristic *h = create_ground_heuristic(method, task))
         return h;
     if (utils::iequals(method, "add")) {
         return new AdditiveHeuristic(task);

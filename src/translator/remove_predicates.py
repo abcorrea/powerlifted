@@ -3,17 +3,6 @@
 import pddl
 
 
-def conditional_effect_condition_literals(effect):
-    condition = effect.condition
-    if isinstance(condition, pddl.Literal):
-        return [condition]
-    if isinstance(condition, pddl.Truth) or condition is pddl.Truth:
-        return []
-    assert isinstance(condition, pddl.Conjunction), \
-        "Effect condition is not normalized: %r" % condition
-    return list(condition.parts)
-
-
 def remove_unused_predicate_symbols(task):
     used_predicates = set()
     for a in task.actions:
@@ -25,7 +14,7 @@ def remove_unused_predicate_symbols(task):
             pred = l.predicate
             used_predicates.add(pred)
             if e.is_conditional():
-                for literal in conditional_effect_condition_literals(e):
+                for literal in e.condition_literals():
                     used_predicates.add(literal.predicate)
     for p in task.init:
         pred = p.predicate

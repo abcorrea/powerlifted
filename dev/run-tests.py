@@ -64,28 +64,56 @@ SPECIAL_PLAN_TESTS = [
                     ('gbfs', 'rff', 'full_reducer')],
     },
     {
-        # Grounded search (the default alt-bfws1 configuration on groundable
-        # tasks), with conditional effects, axioms, and negated goals.
+        # Search on the ground task (the default bfws2-lmnov configuration
+        # and the ground versions of alt-bfws1 and alt-bfws2).
         'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
-        'label': 'probBLOCKS-4-0-grounded',
+        'label': 'probBLOCKS-4-0-ground',
         'cost': None,
         'validate': True,
-        'configs': [('alt-bfws1', 'ff', 'yannakakis'),
+        'configs': [('bfws2-lmnov', 'ff', 'yannakakis'),
+                    ('alt-bfws1', 'ff', 'yannakakis'),
                     ('alt-bfws1', 'add', 'yannakakis'),
-                    ('alt-bfws2', 'ff', 'yannakakis'),
-                    ('alt-bfws1-lm', 'ff', 'yannakakis'),
-                    ('lama', 'ff', 'yannakakis'),
-                    ('portfolio', 'ff', 'yannakakis')],
-        'required_output': ['Starting grounded search'],
+                    ('alt-bfws2', 'ff', 'yannakakis')],
+        'required_output': ['Starting ground search'],
+        'required_output_by_config': {
+            ('bfws2-lmnov', 'ff', 'yannakakis'): ['Initial landmark count:'],
+        },
+    },
+    {
+        # Too many ground operators: lifted search with the delete-relaxation
+        # heuristic on the decomposed relaxed program.
+        'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
+        'label': 'probBLOCKS-4-0-relaxed-program',
+        'cost': None,
+        'validate': True,
+        'configs': [('bfws2-lmnov', 'ff', 'yannakakis')],
+        'extra_args_by_config': {
+            ('bfws2-lmnov', 'ff', 'yannakakis'): ['--max-ground-operators', '1'],
+        },
+        'required_output': ['Using ff heuristic on the decomposed relaxed program.',
+                            'Starting AlternatedBFWS'],
+    },
+    {
+        # Out of time for grounding: lifted search with lifted heuristics.
+        'instance': 'domains/blocks/probBLOCKS-4-0.pddl',
+        'label': 'probBLOCKS-4-0-grounding-timeout',
+        'cost': None,
+        'validate': True,
+        'configs': [('bfws2-lmnov', 'ff', 'yannakakis')],
+        'extra_args_by_config': {
+            ('bfws2-lmnov', 'ff', 'yannakakis'): ['--grounding-time-limit', '0'],
+        },
+        'required_output': ['Grounding aborted: time limit reached.',
+                            'Starting AlternatedBFWS'],
     },
     {
         'instance': 'domains/negated-preconditions/prob01.pddl',
-        'label': 'negated-preconditions-grounded',
+        'label': 'negated-preconditions-ground',
         'cost': None,
         'validate': True,
-        'configs': [('alt-bfws1', 'ff', 'yannakakis'),
-                    ('lama', 'ff', 'yannakakis')],
-        'required_output': ['Starting grounded search'],
+        'configs': [('bfws2-lmnov', 'ff', 'yannakakis'),
+                    ('alt-bfws1', 'ff', 'yannakakis')],
+        'required_output': ['Starting ground search'],
     },
     {
         # Predicates with (either ...) argument types (storage, IPC 2006).
@@ -117,7 +145,7 @@ SPECIAL_PLAN_TESTS = [
         'configs': [('gbfs', 'ff', 'yannakakis'),
                     ('gbfs', 'add', 'full_reducer'),
                     ('alt-bfws1', 'ff', 'yannakakis'),
-                    ('lama', 'ff', 'yannakakis')],
+                    ('bfws2-lmnov', 'ff', 'yannakakis')],
     },
     {
         'instance': 'domains/blocks/probBLOCKS-4-0.pddl',

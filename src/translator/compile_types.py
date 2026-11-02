@@ -118,7 +118,7 @@ def add_effects_to_actions(task, graph):
                 types.add(type_name)
             for t in types:
                 atom = pddl.Atom(_get_type_predicate_name(t), [name])
-                new_eff.append(pddl.Effect([], pddl.Truth, atom))
+                new_eff.append(pddl.Effect([], pddl.Truth(), atom))
         action.effects = new_eff
 
 
@@ -135,15 +135,7 @@ def add_conditions_to_conditional_effects(task, graph):
         for effect in action.effects:
             if not effect.is_conditional():
                 continue
-            condition = effect.condition
-            if isinstance(condition, pddl.Literal):
-                parts = [condition]
-            elif isinstance(condition, pddl.Truth) or condition is pddl.Truth:
-                parts = []
-            else:
-                assert isinstance(condition, pddl.Conjunction), \
-                    "Effect condition is not normalized: %r" % condition
-                parts = list(condition.parts)
+            parts = effect.condition_literals()
             for param in effect.parameters:
                 parts.append(pddl.Atom(_get_type_predicate_name(param.type_name),
                                        [param.name]))
@@ -182,7 +174,7 @@ def adjust_initial_state(task, graph):
     append them to the initial state description.
 
     """
-    either_types = [t.name for t in task.types if t.name.startswith('either@')]
+    either_types = [t.name for t in task.types if pddl.is_either_type(t.name)]
     for obj in task.objects:
         type_name = obj.type_name
         name = obj.name
@@ -198,7 +190,7 @@ def adjust_initial_state(task, graph):
         types.add('object')
         # Union types (either t1 ... tn).
         for t in either_types:
-            if any(m in types for m in t[len('either@'):].split('@')):
+            if any(m in types for m in pddl.get_either_type_members(t)):
                 types.add(t)
         for t in types:
             task.init.append(pddl.Atom(_get_type_predicate_name(t), [name]))
@@ -227,14 +219,14 @@ def remove_trivially_inapplicable_actions(task, graph):
             object_types_in_task.add(type_name)
             type_name = graph.edges[type_name]
 
-    new_actions = []
+    new_actions = set()
     for action in task.actions:
         keep_action = True
         for param in action.parameters:
             if param.type_name not in object_types_in_task:
                 keep_action = False
         if keep_action:
-            new_actions.append(action)
+            new_actions.add(action)
         else:
             print ("Removing action %s" % action.name)
 

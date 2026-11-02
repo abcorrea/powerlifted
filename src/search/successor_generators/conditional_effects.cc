@@ -3,6 +3,7 @@
 #include "../action_schema.h"
 #include "../states/state.h"
 #include "../task.h"
+#include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>
@@ -26,16 +27,14 @@ ConditionalEffectEvaluator::ConditionalEffectEvaluator(const Task &task)
 }
 
 ConditionalEffectEvaluator::CompiledConditionalEffect
-ConditionalEffectEvaluator::compile(const ActionSchema &action,
-                                    const ConditionalEffect &ce) const
+ConditionalEffectEvaluator::compile(const ActionSchema &action, const ConditionalEffect &ce) const
 {
     CompiledConditionalEffect result;
     int base = action.get_parameters().size() + action.get_fresh_variables().size();
     result.num_slots = base + ce.parameters.size();
-    for (const Parameter &p : ce.parameters) {
-        assert(p.index >= base && p.index < result.num_slots);
-        (void)p;
-    }
+    assert(all_of(ce.parameters.begin(), ce.parameters.end(), [&](const Parameter &p) {
+        return p.index >= base && p.index < result.num_slots;
+    }));
     vector<bool> bound(result.num_slots, false);
     for (int i = 0; i < base; ++i)
         bound[i] = true;
@@ -117,9 +116,8 @@ ConditionalEffectEvaluator::compile(const ActionSchema &action,
     for (int v = 0; v < result.num_slots; ++v) {
         if (!bound[v]) {
             cerr << "Error: quantified variable of a conditional effect of action "
-                 << action.get_name() << " does not occur in a positive condition atom."
-                 << endl;
-            exit(-1);
+                 << action.get_name() << " does not occur in a positive condition atom." << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
         }
     }
     for (const Atom &atom : ce.condition) {
@@ -158,17 +156,17 @@ bool ConditionalEffectEvaluator::check_remaining(const CompiledConditionalEffect
                                                  const DBState &state) const
 {
     for (const CompiledAtom &eq : ce.equalities) {
-        int x = eq.arguments[0].kind == CompiledArgument::CONSTANT
-            ? eq.arguments[0].value : binding[eq.arguments[0].value];
-        int y = eq.arguments[1].kind == CompiledArgument::CONSTANT
-            ? eq.arguments[1].value : binding[eq.arguments[1].value];
+        int x = eq.arguments[0].kind == CompiledArgument::CONSTANT ? eq.arguments[0].value
+                                                                   : binding[eq.arguments[0].value];
+        int y = eq.arguments[1].kind == CompiledArgument::CONSTANT ? eq.arguments[1].value
+                                                                   : binding[eq.arguments[1].value];
         if ((x == y) == eq.negated)
             return false;
     }
     for (const CompiledAtom &atom : ce.negative) {
         const auto &tuples = atom.use_static
-            ? static_information.get_tuples_of_relation(atom.predicate)
-            : state.get_tuples_of_relation(atom.predicate);
+                                 ? static_information.get_tuples_of_relation(atom.predicate)
+                                 : state.get_tuples_of_relation(atom.predicate);
         if (tuples.empty())
             continue;
         if (tuples.count(instantiate(atom, binding)))
@@ -200,9 +198,8 @@ void ConditionalEffectEvaluator::match(const CompiledConditionalEffect &ce,
         return;
     }
     const CompiledAtom &atom = ce.positive[depth];
-    const auto &tuples = atom.use_static
-        ? static_information.get_tuples_of_relation(atom.predicate)
-        : state.get_tuples_of_relation(atom.predicate);
+    const auto &tuples = atom.use_static ? static_information.get_tuples_of_relation(atom.predicate)
+                                         : state.get_tuples_of_relation(atom.predicate);
     if (tuples.empty())
         return;
     if (atom.fully_bound) {

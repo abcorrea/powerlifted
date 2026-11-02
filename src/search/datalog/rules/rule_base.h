@@ -33,10 +33,7 @@ class MapVariablePosition {
 public:
     MapVariablePosition() = default;
 
-    const std::vector<std::pair<int, int>> &get_repeated_positions() const
-    {
-        return repeated;
-    }
+    const std::vector<std::pair<int, int>> &get_repeated_positions() const { return repeated; }
 
     void create_map(const DatalogAtom &effect)
     {

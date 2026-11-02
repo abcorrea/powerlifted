@@ -55,7 +55,8 @@ def run_translator(build_dir, options, extra):
     # order of Python sets, which otherwise varies between runs.
     env = dict(os.environ, PYTHONHASHSEED='0')
     translator = subprocess.Popen([os.path.join(build_dir, 'translator', 'translate.py'),
-                                   options.domain, options.instance, '--output-file', options.translator_file] + extra,
+                                   options.domain, options.instance,
+                                   '--output-file', options.translator_file] + extra,
                                   env=env)
     translator.communicate()
     if translator.returncode != 0:
@@ -82,17 +83,14 @@ def set_extra_options(options):
         CPP_EXTRA_OPTIONS += ['--novelty-early-stop', str(1)]
     if options.force_lifted:
         CPP_EXTRA_OPTIONS.append('--force-lifted')
-    if options.grounded_queues:
-        CPP_EXTRA_OPTIONS += ['--grounded-queues', options.grounded_queues]
     if options.max_ground_operators is not None:
         CPP_EXTRA_OPTIONS += ['--max-ground-operators', str(options.max_ground_operators)]
     if options.grounding_time_limit is not None:
         CPP_EXTRA_OPTIONS += ['--grounding-time-limit', str(options.grounding_time_limit)]
 
-
     # Unit costs by default: plan cost does not matter, and the search
     # (g as tie-breaker) is guided better by plan length.
-    if options.unit_cost or not options.use_action_costs:
+    if not options.use_action_costs:
         PYTHON_EXTRA_OPTIONS += ["--unit-cost"]
 
     return PYTHON_EXTRA_OPTIONS, CPP_EXTRA_OPTIONS

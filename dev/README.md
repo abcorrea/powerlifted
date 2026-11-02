@@ -14,7 +14,7 @@ correctness regressions quickly before running larger experiments elsewhere.
 
 ## Local Test Coverage
 
-`run-tests.py` currently covers four kinds of checks:
+`run-tests.py` currently covers these kinds of checks:
 
 1. Core plan regression tests.
    These run `bfs` and `gbfs` with the `blind` heuristic on a small set of
@@ -52,6 +52,12 @@ correctness regressions quickly before running larger experiments elsewhere.
    existentially quantified action preconditions (including plan printing
    of actions with non-external parameters); `inequality/` is a regression
    test for (in)equality filters on single-table join programs.
+7. Ground search tests.
+   The default `bfws2-lmnov` and the ground `alt-bfws1`/`alt-bfws2` on
+   small tasks, conditional effects (`ce-*` domains), and the fallbacks to
+   lifted search when there are too many ground operators
+   (`--max-ground-operators`) or grounding runs out of time
+   (`--grounding-time-limit`).
 
 The local suite does not try to be exhaustive. The tests are also quite superficial,
 and full experiments should be always used.

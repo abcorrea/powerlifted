@@ -1,6 +1,8 @@
 #ifndef SEARCH_GROUNDING_GROUND_TASK_H
 #define SEARCH_GROUNDING_GROUND_TASK_H
 
+#include "relaxed_reachability.h"
+
 #include "../structures.h"
 
 #include "../parallel_hashmap/phmap.h"
@@ -13,17 +15,6 @@
 class DBState;
 class Task;
 
-/**
- * @brief Ground (propositional) representation of a task, restricted to the
- * relaxed-reachable part (computed by compute_relaxed_reachability() from
- * the initial state).
- *
- * Facts are the reachable ground atoms of non-static predicates (including
- * derived predicates and nullary predicates). Static atoms do not appear:
- * operators whose static preconditions do not hold are never generated.
- *
- * All fact lists are sorted and duplicate-free.
- */
 struct GroundConditionalEffect {
     int op;
     std::vector<int> condition;
@@ -52,11 +43,23 @@ struct GroundAxiom {
     std::vector<int> negated_body;
 };
 
+/**
+ * @brief Ground (propositional) representation of a task, restricted to the
+ * relaxed-reachable part (computed by compute_relaxed_reachability() from
+ * the initial state).
+ *
+ * Facts are the reachable ground atoms of non-static predicates (including
+ * derived predicates and nullary predicates). Static atoms do not appear:
+ * operators whose static preconditions do not hold are never generated.
+ *
+ * All fact lists are sorted and duplicate-free.
+ */
 class GroundTask {
     std::vector<phmap::flat_hash_map<GroundAtom, int, TupleHash>> atom_to_fact;
     std::vector<int> nullary_fact;
 
     int add_fact(int predicate, const GroundAtom &args);
+    bool build(const Task &task, size_t max_instances, size_t max_operators, double max_seconds);
 
 public:
     std::vector<std::pair<int, GroundAtom>> facts;
@@ -80,40 +83,23 @@ public:
       num_facts()) a fact, f < 0 the complement of fact -f - 1, and f >=
       num_facts() the auxiliary fact f - num_facts().
     */
-    bool operators_omitted = false;
-    struct RelaxationRule {
-        int schema;
-        int cost;
-        bool final;
-        //! Variables bound by an instance (schema parameters below the
-        //! schema's number of parameters).
-        std::vector<int> vars;
-    };
-    struct RelaxationOperator {
+    bool relaxed_program_only = false;
+    //! Instance of a rule of the relaxed program, on the encoded facts.
+    struct RelaxedProgramOperator {
         int rule;
         std::vector<int> pre;
         std::vector<int> eff;
         std::vector<int> values;
     };
-    std::vector<RelaxationRule> relaxation_rules;
-    std::vector<RelaxationOperator> relaxation_operators;
-    int num_relaxation_aux = 0;
+    std::vector<RelaxedProgram::Rule> relaxed_program_rules;
+    std::vector<RelaxedProgramOperator> relaxed_program_operators;
+    int num_relaxed_program_aux_facts = 0;
 
-    /**
-     * Ground the task. Returns false if the grounding exceeds the given
-     * limits (number of atoms and instances of the relaxed exploration,
-     * number of ground operators, wall-clock seconds); the object is then
-     * unusable, unless operators_omitted is set.
-     */
-    bool build(const Task &task, size_t max_instances, size_t max_operators,
-               double max_seconds);
-
-    int num_facts() const {
-        return facts.size();
-    }
+    int num_facts() const { return facts.size(); }
 
     //! Fact id of the given atom, or -1 if it is not a (reachable) fact.
-    int get_fact(int predicate, const GroundAtom &args) const {
+    int get_fact(int predicate, const GroundAtom &args) const
+    {
         if (args.empty())
             return nullary_fact[predicate];
         const auto &m = atom_to_fact[predicate];
@@ -125,25 +111,15 @@ public:
     void get_state_facts(const DBState &state, std::vector<int> &out) const;
 
     /**
-     * Ground the task once and cache the result. Returns nullptr if the task
-     * is outside the groundable fragment (object creation) or too large to
-     * ground (or if grounding is disabled).
+     * Ground the task. Returns nullptr if the task is outside the groundable
+     * fragment (object creation), or if grounding takes more than
+     * `max_seconds` of wall-clock time or too much memory. If the task has
+     * more than `max_operators` ground operators, the result has no
+     * operators but the decomposed relaxed program (see relaxed_program_only),
+     * or is nullptr if that program is too large.
      */
-    static std::shared_ptr<GroundTask> get_cached(const Task &task);
-
-    /**
-     * If the task has too many ground operators, the task with facts and the
-     * relaxed program but without operators (see operators_omitted);
-     * nullptr otherwise.
-     */
-    static std::shared_ptr<GroundTask> get_cached_relaxation(const Task &task);
-
-    //! Make get_cached() return nullptr (lifted planning only).
-    static void disable_grounding();
-
-    //! Limits of the grounding in get_cached(): number of ground operators
-    //! (default 3 million) and wall-clock seconds (default 12).
-    static void set_limits(size_t max_operators, double max_seconds);
+    static std::shared_ptr<GroundTask>
+    create(const Task &task, size_t max_operators, double max_seconds);
 };
 
 #endif  // SEARCH_GROUNDING_GROUND_TASK_H

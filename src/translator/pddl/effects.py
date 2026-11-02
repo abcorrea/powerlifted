@@ -34,6 +34,15 @@ class Effect(object):
         if self.fresh:
             return False
         return bool(self.parameters) or not isinstance(self.condition, conditions.Truth)
+    def condition_literals(self):
+        # Literals of the (normalized) condition.
+        if isinstance(self.condition, conditions.Literal):
+            return [self.condition]
+        if isinstance(self.condition, conditions.Truth):
+            return []
+        assert isinstance(self.condition, conditions.Conjunction), \
+            "Effect condition is not normalized: %r" % self.condition
+        return list(self.condition.parts)
     def dump(self):
         indent = "  "
         if self.parameters:

@@ -18,7 +18,9 @@ using namespace std;
 GenericJoinSuccessor::GenericJoinSuccessor(const Task &task)
     : static_information(task.get_static_info()),
       axiom_evaluator(task.get_axiom_evaluator()),
-      is_predicate_static(), action_data(), conditional_effects(task)
+      is_predicate_static(),
+      action_data(),
+      conditional_effects(task)
 {
     is_predicate_static.reserve(static_information.get_relations().size());
     for (const auto &r : static_information.get_relations()) {
@@ -209,8 +211,7 @@ DBState GenericJoinSuccessor::generate_successor(
     vector<bool> new_nullary_atoms(state.get_nullary_atoms());
     vector<Relation> new_relation(state.get_relations());
     if (action.has_conditional_effects()) {
-        apply_effects_with_conditional_effects(op, action, state, new_relation,
-                                               new_nullary_atoms);
+        apply_effects_with_conditional_effects(op, action, state, new_relation, new_nullary_atoms);
     }
     else {
         apply_nullary_effects(action, new_nullary_atoms);
@@ -218,8 +219,8 @@ DBState GenericJoinSuccessor::generate_successor(
             apply_ground_action_effects(action, new_relation, op.get_fresh_vars_mapping());
         }
         else {
-            apply_lifted_action_effects(action, op.get_instantiation(),
-                                        new_relation, op.get_fresh_vars_mapping());
+            apply_lifted_action_effects(
+                action, op.get_instantiation(), new_relation, op.get_fresh_vars_mapping());
         }
     }
 
@@ -239,18 +240,17 @@ DBState GenericJoinSuccessor::generate_successor(
  * applied. All delete effects (unconditional and conditional) are applied
  * before all add effects (add-after-delete semantics).
  */
-void GenericJoinSuccessor::apply_effects_with_conditional_effects(
-    const LiftedOperatorId &op,
-    const ActionSchema &action,
-    const DBState &state,
-    vector<Relation> &new_relation,
-    vector<bool> &new_nullary_atoms)
+void GenericJoinSuccessor::apply_effects_with_conditional_effects(const LiftedOperatorId &op,
+                                                                  const ActionSchema &action,
+                                                                  const DBState &state,
+                                                                  vector<Relation> &new_relation,
+                                                                  vector<bool> &new_nullary_atoms)
 {
     ce_deletes.clear();
     ce_adds.clear();
     const auto new_objs = op.get_fresh_vars_mapping();
-    conditional_effects.evaluate(action, op.get_instantiation(), new_objs, state,
-                                 ce_deletes, ce_adds);
+    conditional_effects.evaluate(
+        action, op.get_instantiation(), new_objs, state, ce_deletes, ce_adds);
 
     const auto &neg_nullary = action.get_negative_nullary_effects();
     for (size_t i = 0; i < neg_nullary.size(); ++i) {

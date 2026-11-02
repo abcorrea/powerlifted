@@ -1,0 +1,294 @@
+#include "ground_landmarks.h"
+
+#include "ground_delete_relaxation_heuristic.h"
+
+#include "../states/ground_state.h"
+
+#include <algorithm>
+#include <deque>
+#include <iostream>
+#include <iterator>
+
+using namespace std;
+using namespace ground_state;
+
+GroundLandmarks::GroundLandmarks(const GroundDeleteRelaxationHeuristic &relaxation,
+                                 const vector<int> &initial_facts,
+                                 long long max_work)
+    : num_base_facts(relaxation.get_num_base_facts()), num_words(1), computed(false)
+{
+    const int num_facts = relaxation.get_num_facts();
+    const int num_ops = relaxation.get_num_relaxed_ops();
+    const auto &pre_start = relaxation.get_op_pre_start();
+    const auto &pre = relaxation.get_op_pre();
+    const auto &eff_start = relaxation.get_op_eff_start();
+    const auto &eff = relaxation.get_op_eff();
+    const auto &pre_of_start = relaxation.get_pre_of_start();
+    const auto &pre_of = relaxation.get_pre_of();
+
+    vector<vector<int>> label(num_facts);
+    vector<char> reached(num_facts, 0);
+    vector<int> pending(num_ops);
+    for (int r = 0; r < num_ops; ++r)
+        pending[r] = pre_start[r + 1] - pre_start[r];
+    vector<char> queued(num_ops, 0);
+    deque<int> queue;
+    long long work = 0;
+
+    auto enqueue = [&](int r) {
+        if (!queued[r]) {
+            queued[r] = 1;
+            queue.push_back(r);
+        }
+    };
+    auto reach = [&](int f) {
+        reached[f] = 1;
+        for (int k = pre_of_start[f]; k < pre_of_start[f + 1]; ++k) {
+            int r = pre_of[k];
+            if (--pending[r] == 0)
+                enqueue(r);
+        }
+    };
+    for (int f : initial_facts) {
+        if (!reached[f]) {
+            label[f] = {f};
+            reach(f);
+        }
+    }
+    for (int r : relaxation.get_no_pre_ops())
+        enqueue(r);
+
+    vector<int> union_label, candidate, intersection;
+    while (!queue.empty()) {
+        int r = queue.front();
+        queue.pop_front();
+        queued[r] = 0;
+        union_label.clear();
+        for (int i = pre_start[r]; i < pre_start[r + 1]; ++i) {
+            const vector<int> &l = label[pre[i]];
+            union_label.insert(union_label.end(), l.begin(), l.end());
+        }
+        sort(union_label.begin(), union_label.end());
+        union_label.erase(unique(union_label.begin(), union_label.end()), union_label.end());
+        work += union_label.size() + 1;
+        for (int i = eff_start[r]; i < eff_start[r + 1]; ++i) {
+            int e = eff[i];
+            candidate = union_label;
+            auto pos = lower_bound(candidate.begin(), candidate.end(), e);
+            if (pos == candidate.end() || *pos != e)
+                candidate.insert(pos, e);
+            if (!reached[e]) {
+                label[e] = candidate;
+                reach(e);
+                continue;
+            }
+            intersection.clear();
+            set_intersection(label[e].begin(),
+                             label[e].end(),
+                             candidate.begin(),
+                             candidate.end(),
+                             back_inserter(intersection));
+            work += label[e].size();
+            if (intersection.size() < label[e].size()) {
+                label[e].swap(intersection);
+                for (int k = pre_of_start[e]; k < pre_of_start[e + 1]; ++k) {
+                    int r2 = pre_of[k];
+                    if (pending[r2] == 0)
+                        enqueue(r2);
+                }
+            }
+        }
+        if (work > max_work) {
+            cout << "Landmark generation aborted (too much work)." << endl;
+            return;
+        }
+    }
+
+    vector<int> landmarks;
+    for (int g : relaxation.get_goal()) {
+        if (!reached[g]) {
+            cout << "Landmark generation: goal not relaxed reachable." << endl;
+            return;
+        }
+        landmarks.insert(landmarks.end(), label[g].begin(), label[g].end());
+    }
+    sort(landmarks.begin(), landmarks.end());
+    landmarks.erase(unique(landmarks.begin(), landmarks.end()), landmarks.end());
+    // Auxiliary facts of decomposed relaxed operators are no landmarks.
+    landmarks.erase(
+        lower_bound(landmarks.begin(), landmarks.end(), relaxation.get_first_aux_fact()),
+        landmarks.end());
+
+    fact_to_lm.assign(num_facts, -1);
+    for (size_t i = 0; i < landmarks.size(); ++i)
+        fact_to_lm[landmarks[i]] = i;
+    int num_lms = landmarks.size();
+    lm_fact = landmarks;
+    lm_base.resize(num_lms);
+    lm_is_complement.resize(num_lms);
+    lm_is_goal.assign(num_lms, 0);
+    for (int i = 0; i < num_lms; ++i) {
+        int f = landmarks[i];
+        if (f < num_base_facts) {
+            lm_base[i] = f;
+            lm_is_complement[i] = 0;
+        }
+        else {
+            lm_base[i] = relaxation.get_complement_base(f);
+            lm_is_complement[i] = 1;
+        }
+    }
+    for (int g : relaxation.get_goal())
+        lm_is_goal[fact_to_lm[g]] = 1;
+
+    predecessors.resize(num_lms);
+    for (int i = 0; i < num_lms; ++i) {
+        for (int f : label[landmarks[i]]) {
+            int j = fact_to_lm[f];
+            if (j >= 0 && j != i)
+                predecessors[i].push_back(j);
+        }
+    }
+
+    // Greedy-necessary predecessors: landmarks in the precondition of every
+    // (reachable) achiever. Decomposed relaxed operators are replaced by
+    // the ground operators they stand for.
+    vector<char> has_gn(num_lms, 0);
+    vector<vector<int>> gn(num_lms);
+    vector<int> pre_lms;
+    auto add_achiever =
+        [&](const int *pre_begin, const int *pre_end, const int *eff_begin, const int *eff_end) {
+            pre_lms.clear();
+            for (const int *p = pre_begin; p != pre_end; ++p) {
+                int j = fact_to_lm[*p];
+                if (j >= 0)
+                    pre_lms.push_back(j);
+            }
+            sort(pre_lms.begin(), pre_lms.end());
+            for (const int *e = eff_begin; e != eff_end; ++e) {
+                int m = fact_to_lm[*e];
+                if (m < 0)
+                    continue;
+                if (!has_gn[m]) {
+                    has_gn[m] = 1;
+                    gn[m] = pre_lms;
+                }
+                else {
+                    intersection.clear();
+                    set_intersection(gn[m].begin(),
+                                     gn[m].end(),
+                                     pre_lms.begin(),
+                                     pre_lms.end(),
+                                     back_inserter(intersection));
+                    gn[m].swap(intersection);
+                }
+            }
+        };
+    const auto &op_action = relaxation.get_op_action();
+    for (int r = 0; r < num_ops; ++r) {
+        if (pending[r] != 0 || op_action[r] == GroundDeleteRelaxationHeuristic::DECOMPOSED_ACTION)
+            continue;
+        add_achiever(pre.data() + pre_start[r],
+                     pre.data() + pre_start[r + 1],
+                     eff.data() + eff_start[r],
+                     eff.data() + eff_start[r + 1]);
+    }
+    vector<int> ground_pre, ground_eff;
+    for (int o : relaxation.get_decomposed_operators()) {
+        relaxation.get_ground_relaxed_operator(o, ground_pre, ground_eff);
+        bool reachable =
+            all_of(ground_pre.begin(), ground_pre.end(), [&](int p) { return reached[p]; });
+        if (reachable)
+            add_achiever(ground_pre.data(),
+                         ground_pre.data() + ground_pre.size(),
+                         ground_eff.data(),
+                         ground_eff.data() + ground_eff.size());
+    }
+    // Store the reverse relation: the landmarks m that have l as
+    // greedy-necessary predecessor.
+    gn_successors.resize(num_lms);
+    for (int m = 0; m < num_lms; ++m) {
+        for (int l : gn[m]) {
+            if (l != m)
+                gn_successors[l].push_back(m);
+        }
+    }
+
+    num_words = ground_state::get_num_words(num_lms);
+    computed = true;
+    int num_orderings = 0;
+    for (const auto &p : predecessors)
+        num_orderings += p.size();
+    cout << "Landmarks: " << num_lms << " (" << num_orderings << " orderings)" << endl;
+}
+
+bool GroundLandmarks::is_true(int lm, const uint64_t *bits) const
+{
+    bool base_true = test_bit(bits, lm_base[lm]);
+    return lm_is_complement[lm] ? !base_true : base_true;
+}
+
+bool GroundLandmarks::are_predecessors_accepted(int lm, const uint64_t *accepted) const
+{
+    for (int p : predecessors[lm]) {
+        if (!test_bit(accepted, p))
+            return false;
+    }
+    return true;
+}
+
+bool GroundLandmarks::is_required_again(int lm, const uint64_t *accepted) const
+{
+    if (lm_is_goal[lm])
+        return true;
+    for (int m : gn_successors[lm]) {
+        if (!test_bit(accepted, m))
+            return true;
+    }
+    return false;
+}
+
+void GroundLandmarks::initial_accepted(const uint64_t *bits, uint64_t *accepted) const
+{
+    fill(accepted, accepted + num_words, 0);
+    for (size_t lm = 0; lm < lm_fact.size(); ++lm) {
+        if (is_true(lm, bits) && predecessors[lm].empty())
+            set_bit(accepted, lm);
+    }
+}
+
+void GroundLandmarks::update_accepted(const uint64_t *parent_accepted,
+                                      const uint64_t *bits,
+                                      uint64_t *accepted) const
+{
+    copy(parent_accepted, parent_accepted + num_words, accepted);
+    for (size_t lm = 0; lm < lm_fact.size(); ++lm) {
+        if (!test_bit(parent_accepted, lm) && is_true(lm, bits) &&
+            are_predecessors_accepted(lm, parent_accepted))
+            set_bit(accepted, lm);
+    }
+}
+
+int GroundLandmarks::compute(const uint64_t *accepted, const uint64_t *bits) const
+{
+    int h = 0;
+    for (size_t lm = 0; lm < lm_fact.size(); ++lm) {
+        if (!test_bit(accepted, lm) || (!is_true(lm, bits) && is_required_again(lm, accepted)))
+            ++h;
+    }
+    return h;
+}
+
+void GroundLandmarks::get_interesting_facts(const uint64_t *accepted,
+                                            const uint64_t *bits,
+                                            vector<int> &facts) const
+{
+    facts.clear();
+    for (size_t lm = 0; lm < lm_fact.size(); ++lm) {
+        bool interesting = test_bit(accepted, lm)
+                               ? !is_true(lm, bits) && is_required_again(lm, accepted)
+                               : are_predecessors_accepted(lm, accepted);
+        if (interesting)
+            facts.push_back(lm_fact[lm]);
+    }
+}

@@ -183,7 +183,9 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
     #      name in plans.
     #    - number of fresh variables (i.e., variables that will be instantiated by new objects)
     #    - size of precondition
-    #    - size of effect
+    #    - size of effect (simple effects)
+    #    - number of universal/conditional effects (see
+    #      print_conditional_effects())
     # - Then we list all parameters, one in each line, containing
     #    - parameter name
     #    - parameter index
@@ -253,7 +255,8 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
                              for k, p in enumerate(eff.parameters))
             parameters = [pddl.TypedObject(renamings[p.name], p.type_name)
                           for p in eff.parameters]
-            condition = rename_condition(eff.condition, renamings)
+            condition = tuple(sorted(literal.rename_variables(renamings)
+                                     for literal in eff.condition_literals()))
             key = (tuple((p.name, p.type_name) for p in parameters),
                    condition)
             if key not in conditional_effect_index:
@@ -261,12 +264,11 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
                 conditional_effects.append((parameters, condition, []))
             conditional_effects[conditional_effect_index[key]][2].append(
                 eff.literal.rename_variables(renamings))
-        action.effects = simple_effects
 
         assert 0 <= action.num_external_parameters <= len(action.parameters)
         print(action.name, action.cost, len(list(action.parameters)),
               action.num_external_parameters, len(fresh_vars),
-              len(precond), len(list(action.effects)),
+              len(precond), len(simple_effects),
               len(conditional_effects), file=output)
         for index, par in enumerate(action.parameters):
             parameter_index[par.name] = index
@@ -291,8 +293,8 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
                   ' '.join(i for i in args_list),
                   file=output)
         # Delete effects first to guarantee add-after-delete semantics
-        action.effects.sort(key=lambda x: int(x.literal.negated), reverse=True)
-        for eff in action.effects:
+        simple_effects.sort(key=lambda x: int(x.literal.negated), reverse=True)
+        for eff in simple_effects:
             assert isinstance(eff, pddl.Effect)
             args_list = []
             for x in eff.literal.args:
@@ -316,15 +318,6 @@ def print_action_schemas(output, task, object_index, predicate_index, type_index
                                   object_index, predicate_index, type_index)
 
 
-def rename_condition(condition, renamings):
-    if isinstance(condition, pddl.Literal):
-        return condition.rename_variables(renamings)
-    if isinstance(condition, pddl.Conjunction):
-        return pddl.Conjunction(
-            sorted(part.rename_variables(renamings) for part in condition.parts))
-    return condition
-
-
 def print_conditional_effects(output, conditional_effects, parameter_index,
                               object_index, predicate_index, type_index):
     # Each universal/conditional effect is printed as
@@ -340,19 +333,11 @@ def print_conditional_effects(output, conditional_effects, parameter_index,
     # All conditions are evaluated in the state where the action is applied.
     for parameters, condition, literals in conditional_effects:
         local_index = dict(parameter_index)
-        if isinstance(condition, pddl.Literal):
-            cond_parts = [condition]
-        elif isinstance(condition, pddl.Truth) or condition is pddl.Truth:
-            cond_parts = []
-        else:
-            assert isinstance(condition, pddl.Conjunction), \
-                "Effect condition is not normalized: %r" % condition
-            cond_parts = list(condition.parts)
-        literals = sorted(set(literals), key=lambda l: (not l.negated, str(l)))
+        literals = sorted(set(literals), key=lambda lit: (not lit.negated, str(lit)))
         # Add-after-delete: a literal both added and deleted is added.
-        added = set(l for l in literals if not l.negated)
-        literals = [l for l in literals if not l.negated or l.negate() not in added]
-        print(len(parameters), len(cond_parts), len(literals), file=output)
+        added = set(lit for lit in literals if not lit.negated)
+        literals = [lit for lit in literals if not lit.negated or lit.negate() not in added]
+        print(len(parameters), len(condition), len(literals), file=output)
         for par in parameters:
             index = len(local_index)
             local_index[par.name] = index
@@ -367,7 +352,7 @@ def print_conditional_effects(output, conditional_effects, parameter_index,
                     args_list += ['c', str(object_index[x])]
             return args_list
 
-        for cond in sorted(cond_parts):
+        for cond in condition:
             assert isinstance(cond, pddl.Literal), \
                 "Effect condition is not normalized: %r" % cond
             print(cond.predicate, predicate_index[cond.predicate],

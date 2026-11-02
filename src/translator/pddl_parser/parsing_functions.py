@@ -29,28 +29,21 @@ uniq_fresh_var_id = naturals_iterator()
 
 def is_tag_supported(tag, allow_quantifiers=False):
     if allow_quantifiers and tag in ("forall", "exists", "imply"):
-        # Quantifiers are allowed in conditions (axiom bodies, action
-        # preconditions, goals): existentials are compiled into extra
-        # parameters and universals into auxiliary axioms by the
-        # normalization pipeline. (The result must still fall into the
-        # supported fragment, which is checked after normalization.) They
-        # remain unsupported in effects.
+        # Quantifiers and implications are allowed in conditions (axiom
+        # bodies, action preconditions, effect conditions, goals):
+        # existentials are compiled into extra parameters and universals
+        # into auxiliary axioms by the normalization pipeline. (The result
+        # must still fall into the supported fragment, which is checked
+        # after normalization.)
         return
     if tag in UNSUPPORTED_FEATURES:
         print('ERROR: PDDL feature "%s" not supported yet.' % tag, file=sys.stderr)
         sys.exit(-1)
 
-EITHER_TYPES = set()
 
-
-def either_type_name(members):
-    name = "either@" + "@".join(sorted(set(members)))
-    EITHER_TYPES.add(name)
-    return name
-
-
-def either_type_members(name):
-    return name[len("either@"):].split("@")
+# Union types (either t1 ... tn) used by the task being parsed; they are
+# added to the types of the task (see parse_task).
+either_types = set()
 
 
 def parse_typed_list(alist, only_variables=False,
@@ -72,7 +65,8 @@ def parse_typed_list(alist, only_variables=False,
                 # (either t1 ... tn): a union type, compiled into its own
                 # type predicate (see compile_types).
                 assert _type and _type[0] == "either", _type
-                _type = either_type_name(_type[1:])
+                _type = pddl.get_either_type_name(_type[1:])
+                either_types.add(_type)
         for item in items:
             assert not only_variables or item.startswith("?"), \
                    "Expected item to be a variable: %s in (%s)" % (
@@ -379,19 +373,14 @@ def parse_action(alist, type_dict, predicate_dict):
     for rest in iterator:
         assert False, rest
     if eff:
+        action = pddl.Action(name, parameters, len(parameters),
+                             precondition, eff, cost)
         # Give every quantified variable (of the precondition and of the
         # universal effects) a name unique within the action, so that the
         # variables of different effects never clash with each other, with
         # the action parameters, or with compiled-away existential variables
         # of the precondition.
-        type_map = dict((par.name, par.type_name) for par in parameters)
-        precondition = precondition.uniquify_variables(type_map)
-        for effect in eff:
-            if not effect.fresh:
-                effect.uniquify_variables(type_map)
-        action = pddl.Action(name, parameters, len(parameters),
-                             precondition, eff, cost)
-        action.type_map = type_map
+        action.uniquify_variables()
         return action
     else:
         return None
@@ -423,6 +412,7 @@ def parse_axiom(alist, type_dict, predicate_dict):
 
 
 def parse_task(domain_pddl, task_pddl):
+    either_types.clear()
     domain_name, domain_requirements, types, type_dict, constants, predicates, predicate_dict, functions, actions, axioms \
                  = parse_domain_pddl(domain_pddl)
     task_name, task_domain_name, task_requirements, objects, init, goal, use_metric = parse_task_pddl(task_pddl, type_dict, predicate_dict)
@@ -433,7 +423,7 @@ def parse_task(domain_pddl, task_pddl):
                 task_requirements.requirements)))
     objects = constants + objects
     known_types = set(t.name for t in types)
-    for name in sorted(EITHER_TYPES):
+    for name in sorted(either_types):
         if name not in known_types:
             types.append(pddl.Type(name, "object"))
     check_for_duplicates(

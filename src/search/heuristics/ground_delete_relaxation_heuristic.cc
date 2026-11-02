@@ -1,26 +1,49 @@
-#include "grounded_heuristic.h"
+#include "ground_delete_relaxation_heuristic.h"
 
 #include "../action_schema.h"
 #include "../grounding/ground_task.h"
-#include "../task.h"
 #include "../states/state.h"
+#include "../task.h"
+#include "../utils/string_utils.h"
 #include "../utils/system.h"
 
 #include <algorithm>
 #include <cassert>
-#include <map>
-#include <set>
 #include <iostream>
 #include <limits>
+#include <map>
+#include <set>
 
 using namespace std;
 
 static const int INF = numeric_limits<int>::max() / 2;
 
-GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt, Type type)
-    : type(type), ground_task(std::move(gt)) {
-    const GroundTask &g = *ground_task;
-    num_base_facts = g.num_facts();
+// A negated axiom head gets the bodies of the negation (in disjunctive normal
+// form) of the axiom bodies, if there are at most this many; otherwise the
+// negation is relaxed away.
+static const long long MAX_NEGATED_AXIOM_BODIES = 32;
+
+// Action schemas with fewer ground operators are not decomposed.
+static const size_t MIN_OPERATORS_TO_DECOMPOSE = 1000;
+
+optional<GroundDeleteRelaxationHeuristic::Type>
+GroundDeleteRelaxationHeuristic::get_type(const string &name)
+{
+    if (utils::iequals(name, "add"))
+        return ADD;
+    if (utils::iequals(name, "hmax"))
+        return MAX;
+    if (utils::iequals(name, "ff"))
+        return FF;
+    return nullopt;
+}
+
+GroundDeleteRelaxationHeuristic::GroundDeleteRelaxationHeuristic(const Task &task,
+                                                                 shared_ptr<GroundTask> gt,
+                                                                 Type type)
+    : type(type), ground_task(std::move(gt))
+{
+    num_base_facts = ground_task->num_facts();
     complement.assign(num_base_facts, -1);
     num_facts = num_base_facts;
     /*
@@ -33,15 +56,15 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
       negated axioms); otherwise the negated derived atom is relaxed away.
     */
     auto is_derived = [&](int f) {
-        return task.predicates[g.facts[f].first].isDerivedPredicate();
+        return task.predicates[ground_task->facts[f].first].isDerivedPredicate();
     };
     vector<int> needed;
-    for (const GroundOperator &op : g.operators)
+    for (const GroundOperator &op : ground_task->operators)
         needed.insert(needed.end(), op.negated_pre.begin(), op.negated_pre.end());
-    for (const GroundConditionalEffect &ce : g.conditional_effects)
+    for (const GroundConditionalEffect &ce : ground_task->conditional_effects)
         needed.insert(needed.end(), ce.negated_condition.begin(), ce.negated_condition.end());
-    needed.insert(needed.end(), g.negated_goal.begin(), g.negated_goal.end());
-    for (const GroundTask::RelaxationOperator &op : g.relaxation_operators) {
+    needed.insert(needed.end(), ground_task->negated_goal.begin(), ground_task->negated_goal.end());
+    for (const GroundTask::RelaxedProgramOperator &op : ground_task->relaxed_program_operators) {
         for (int f : op.pre) {
             if (f < 0)
                 needed.push_back(-1 - f);
@@ -51,8 +74,8 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
     needed.erase(unique(needed.begin(), needed.end()), needed.end());
 
     vector<vector<int>> axioms_by_head(num_base_facts);
-    for (size_t i = 0; i < g.axioms.size(); ++i)
-        axioms_by_head[g.axioms[i].head].push_back(i);
+    for (size_t i = 0; i < ground_task->axioms.size(); ++i)
+        axioms_by_head[ground_task->axioms[i].head].push_back(i);
     // Combinations per negated derived fact; a requirement r >= 0 is the fact
     // r itself, r < 0 is the complement of fact -r - 1.
     vector<pair<int, vector<vector<int>>>> negated_axioms;
@@ -67,7 +90,7 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
         bool possible = true;
         long long combinations = 1;
         for (int a : axioms_by_head[d]) {
-            const GroundAxiom &ax = g.axioms[a];
+            const GroundAxiom &ax = ground_task->axioms[a];
             vector<int> literals;
             for (int f : ax.body) {
                 if (is_derived(f)) {
@@ -81,7 +104,7 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
             if (!possible)
                 break;
             combinations *= max<size_t>(literals.size(), 1);
-            if (combinations > 32) {
+            if (combinations > MAX_NEGATED_AXIOM_BODIES) {
                 possible = false;
                 break;
             }
@@ -132,41 +155,47 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
 
     first_aux_fact = num_facts;
     vector<char> decomposed(task.get_action_schemas().size(), 0);
-    add_decomposed_operators(task, g, decomposed);
-    for (size_t o = 0; o < g.operators.size(); ++o) {
-        const GroundOperator &op = g.operators[o];
+    add_decomposed_operators(task, decomposed);
+    for (size_t o = 0; o < ground_task->operators.size(); ++o) {
+        const GroundOperator &op = ground_task->operators[o];
         if (decomposed[op.schema])
             continue;
-        add_relaxed_op(with_complements(op.pre, op.negated_pre), nullptr,
-                       with_complements(op.add, op.del), op.cost, o);
+        add_relaxed_op(with_complements(op.pre, op.negated_pre),
+                       nullptr,
+                       with_complements(op.add, op.del),
+                       op.cost,
+                       o);
     }
-    for (const GroundConditionalEffect &ce : g.conditional_effects) {
-        const GroundOperator &op = g.operators[ce.op];
+    for (const GroundConditionalEffect &ce : ground_task->conditional_effects) {
+        const GroundOperator &op = ground_task->operators[ce.op];
         vector<int> cond = with_complements(ce.condition, ce.negated_condition);
-        add_relaxed_op(with_complements(op.pre, op.negated_pre), &cond,
-                       with_complements(ce.add, ce.del), op.cost, ce.op);
+        add_relaxed_op(with_complements(op.pre, op.negated_pre),
+                       &cond,
+                       with_complements(ce.add, ce.del),
+                       op.cost,
+                       ce.op);
     }
-    for (const GroundAxiom &ax : g.axioms) {
-        add_relaxed_op(ax.body, nullptr, vector<int>{ax.head}, 0, -1);
+    for (const GroundAxiom &ax : ground_task->axioms) {
+        add_relaxed_op(ax.body, nullptr, vector<int>{ax.head}, 0, NO_ACTION);
     }
-    if (g.operators_omitted)
-        add_relaxation_operators(task, g);
+    if (ground_task->relaxed_program_only)
+        add_relaxed_program_operators(task);
     for (const auto &entry : negated_axioms) {
         vector<int> eff{complement[entry.first]};
         for (const vector<int> &c : entry.second) {
             vector<int> pre;
             for (int lit : c)
                 pre.push_back(lit >= 0 ? lit : complement[-lit - 1]);
-            add_relaxed_op(pre, nullptr, eff, 0, -1);
+            add_relaxed_op(pre, nullptr, eff, 0, NO_ACTION);
         }
     }
     op_pre_start.push_back(op_pre.size());
     op_eff_start.push_back(op_eff.size());
-    for (const GroundOperator &op : g.operators)
+    for (const GroundOperator &op : ground_task->operators)
         op_action_cost.push_back(op.cost);
 
-    goal = with_complements(g.goal, g.negated_goal);
-    prune_irrelevant(g, num_negations_relaxed_away > 0);
+    goal = with_complements(ground_task->goal, ground_task->negated_goal);
+    prune_irrelevant(num_negations_relaxed_away > 0);
 
     // Precondition-of lists.
     int num_ops = op_base_cost.size();
@@ -184,20 +213,20 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
     }
 
     // Achiever lists.
-    vector<int> ach_count(num_facts + 1, 0);
+    vector<int> achiever_count(num_facts + 1, 0);
     for (int e : op_eff)
-        ++ach_count[e + 1];
+        ++achiever_count[e + 1];
     for (int f = 0; f < num_facts; ++f)
-        ach_count[f + 1] += ach_count[f];
-    ach_start = ach_count;
-    ach.resize(op_eff.size());
-    vector<int> ach_pos(ach_count.begin(), ach_count.end() - 1);
+        achiever_count[f + 1] += achiever_count[f];
+    achiever_start = achiever_count;
+    achievers.resize(op_eff.size());
+    vector<int> achiever_pos(achiever_count.begin(), achiever_count.end() - 1);
     for (int r = 0; r < num_ops; ++r) {
         for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i)
-            ach[ach_pos[op_eff[i]]++] = r;
+            achievers[achiever_pos[op_eff[i]]++] = r;
     }
 
-    goal_unreachable = g.goal_unreachable;
+    goal_unreachable = ground_task->goal_unreachable;
 
     fact_state.assign(num_facts, FactState());
     relaxed_ops.resize(num_ops);
@@ -205,12 +234,16 @@ GroundedHeuristic::GroundedHeuristic(const Task &task, shared_ptr<GroundTask> gt
         relaxed_ops[r].num_pre = op_num_pre[r];
     in_state.assign(num_facts, 0);
     marked_fact.assign(num_facts, 0);
-    marked_action.assign(g.operators.size(), 0);
+    marked_action.assign(ground_task->operators.size(), 0);
     useful_atoms.resize(task.predicates.size());
 }
 
-int GroundedHeuristic::add_relaxed_op(const vector<int> &pre1, const vector<int> *pre2,
-                                      const vector<int> &eff, int base_cost, int action) {
+int GroundDeleteRelaxationHeuristic::add_relaxed_op(const vector<int> &pre1,
+                                                    const vector<int> *pre2,
+                                                    const vector<int> &eff,
+                                                    int base_cost,
+                                                    int action)
+{
     if (eff.empty())
         return -1;
     int id = op_base_cost.size();
@@ -251,9 +284,15 @@ int GroundedHeuristic::add_relaxed_op(const vector<int> &pre1, const vector<int>
   the ground relaxed operators (min and sum distribute over the
   elimination). The ground operator of a final instance in a relaxed plan is
   found by following the supporters of its auxiliary preconditions.
+
+  The relaxed program of a task without ground operators (see
+  compute_relaxed_reachability()) is a decomposition of the same kind,
+  computed from the action schemas and the reachable atoms because there are
+  no ground operators to project.
 */
 namespace {
-vector<int> variables_of(const Atom &atom) {
+vector<int> variables_of(const Atom &atom)
+{
     vector<int> vars;
     for (const Argument &arg : atom.get_arguments()) {
         if (!arg.is_constant())
@@ -264,14 +303,16 @@ vector<int> variables_of(const Atom &atom) {
     return vars;
 }
 
-GroundAtom instantiate(const Atom &atom, const vector<int> &values) {
+GroundAtom instantiate(const Atom &atom, const vector<int> &values)
+{
     GroundAtom ga;
     for (const Argument &arg : atom.get_arguments())
         ga.push_back(arg.is_constant() ? arg.get_index() : values[arg.get_index()]);
     return ga;
 }
 
-GroundAtom project(const vector<int> &values, const vector<int> &vars) {
+GroundAtom project(const vector<int> &values, const vector<int> &vars)
+{
     GroundAtom key;
     for (int v : vars)
         key.push_back(values[v]);
@@ -279,23 +320,22 @@ GroundAtom project(const vector<int> &values, const vector<int> &vars) {
 }
 }  // namespace
 
-void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundTask &g,
-                                                 vector<char> &decomposed) {
+void GroundDeleteRelaxationHeuristic::add_decomposed_operators(const Task &task,
+                                                               vector<char> &decomposed)
+{
     const auto &schemas = task.get_action_schemas();
     vector<vector<int>> ops_of(schemas.size());
-    for (size_t o = 0; o < g.operators.size(); ++o)
-        ops_of[g.operators[o].schema].push_back(o);
+    for (size_t o = 0; o < ground_task->operators.size(); ++o)
+        ops_of[ground_task->operators[o].schema].push_back(o);
     auto is_static = [&](int p) { return task.predicates[p].isStaticPredicate(); };
-    // Smaller schemas are not worth decomposing.
-    const size_t min_operators = 1000;
     size_t total_ground = 0, total_decomposed = 0;
 
     for (size_t a = 0; a < schemas.size(); ++a) {
         const ActionSchema &schema = schemas[a];
         const vector<int> &ops = ops_of[a];
-        if (schema.has_conditional_effects() || ops.size() < min_operators)
+        if (schema.has_conditional_effects() || ops.size() < MIN_OPERATORS_TO_DECOMPOSE)
             continue;
-        const int num_vars = g.operators[ops[0]].instantiation.size();
+        const int num_vars = ground_task->operators[ops[0]].instantiation.size();
 
         // Atoms of the hypergraph: precondition literals (kind 0), static
         // atoms and (in)equalities (kind 1), auxiliary atoms (kind 2).
@@ -323,14 +363,14 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
         const auto &neg_pre = schema.get_negative_nullary_precond();
         for (size_t p = 0; p < pos_pre.size(); ++p) {
             if (pos_pre[p] && !is_static(p)) {
-                int f = g.get_fact(p, GroundAtom());
+                int f = ground_task->get_fact(p, GroundAtom());
                 if (f >= 0)
                     nullary_pre.push_back(f);
             }
         }
         for (size_t p = 0; p < neg_pre.size(); ++p) {
             if (neg_pre[p] && !is_static(p)) {
-                int f = g.get_fact(p, GroundAtom());
+                int f = ground_task->get_fact(p, GroundAtom());
                 if (f >= 0 && complement[f] >= 0)
                     nullary_pre.push_back(complement[f]);
             }
@@ -339,14 +379,14 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
         const auto &neg_eff = schema.get_negative_nullary_effects();
         for (size_t p = 0; p < pos_eff.size(); ++p) {
             if (pos_eff[p]) {
-                int f = g.get_fact(p, GroundAtom());
+                int f = ground_task->get_fact(p, GroundAtom());
                 if (f >= 0)
                     nullary_eff.push_back(f);
             }
         }
         for (size_t p = 0; p < neg_eff.size(); ++p) {
             if (neg_eff[p]) {
-                int f = g.get_fact(p, GroundAtom());
+                int f = ground_task->get_fact(p, GroundAtom());
                 if (f >= 0 && complement[f] >= 0)
                     nullary_eff.push_back(complement[f]);
             }
@@ -363,16 +403,16 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
         for (int v = 0; v < num_vars; ++v) {
             vector<int> values;
             for (int o : ops)
-                values.push_back(g.operators[o].instantiation[v]);
+                values.push_back(ground_task->operators[o].instantiation[v]);
             sort(values.begin(), values.end());
             domain[v] = unique(values.begin(), values.end()) - values.begin();
         }
 
         // Variables with a single value are constants.
         for (HAtom &h : base_atoms) {
-            h.vars.erase(remove_if(h.vars.begin(), h.vars.end(),
-                                   [&](int v) { return domain[v] == 1; }),
-                         h.vars.end());
+            h.vars.erase(
+                remove_if(h.vars.begin(), h.vars.end(), [&](int v) { return domain[v] == 1; }),
+                h.vars.end());
         }
         // True if the projection of the operators onto vars is the product
         // of the projections onto the single variables.
@@ -382,7 +422,7 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
             for (int v : vars)
                 product *= domain[v];
             for (int o : ops) {
-                tuples.insert(project(g.operators[o].instantiation, vars));
+                tuples.insert(project(ground_task->operators[o].instantiation, vars));
                 if (tuples.size() > product)
                     return false;
             }
@@ -530,15 +570,16 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
         vector<int> literal_fact(literals.size());
         bool too_large = false;
         for (int o : ops) {
-            const GroundOperator &op = g.operators[o];
+            const GroundOperator &op = ground_task->operators[o];
             ground_size += op.pre.size() + op.negated_pre.size() + op.add.size() + op.del.size();
         }
         for (int o : ops) {
-            const GroundOperator &op = g.operators[o];
+            const GroundOperator &op = ground_task->operators[o];
             const vector<int> &values = op.instantiation;
             for (size_t i = 0; i < literals.size(); ++i) {
                 const Atom &lit = *literals[i];
-                int f = g.get_fact(lit.get_predicate_symbol_idx(), instantiate(lit, values));
+                int f =
+                    ground_task->get_fact(lit.get_predicate_symbol_idx(), instantiate(lit, values));
                 if (lit.is_negated())
                     f = f >= 0 ? complement[f] : -1;
                 literal_fact[i] = f;
@@ -561,8 +602,8 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
                     inst.pre.push_back(it->second);
                 }
                 if (!r.final) {
-                    auto h = r.head_facts.emplace(project(values, r.head_vars),
-                                                  num_facts + num_aux);
+                    auto h =
+                        r.head_facts.emplace(project(values, r.head_vars), num_facts + num_aux);
                     if (h.second)
                         ++num_aux;
                     inst.eff.push_back(h.first->second);
@@ -570,7 +611,8 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
                 else {
                     inst.pre.insert(inst.pre.end(), nullary_pre.begin(), nullary_pre.end());
                     for (const Atom *e : r.effects) {
-                        int f = g.get_fact(e->get_predicate_symbol_idx(), instantiate(*e, values));
+                        int f = ground_task->get_fact(e->get_predicate_symbol_idx(),
+                                                      instantiate(*e, values));
                         if (e->is_negated())
                             f = f >= 0 ? complement[f] : -1;
                         if (f >= 0)
@@ -582,6 +624,8 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
                 decomposed_size += inst.pre.size() + inst.eff.size();
                 instances.push_back(std::move(inst));
             }
+            // Decompose only if it makes the relaxed operators of the
+            // schema at least 20% smaller.
             if (decomposed_size * 10 > ground_size * 8) {
                 too_large = true;
                 break;
@@ -613,8 +657,7 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
                 sort(key.begin(), key.end());
                 key.erase(unique(key.begin(), key.end()), key.end());
                 // Single-valued variables are no rule variables.
-                key.erase(remove_if(key.begin(), key.end(),
-                                    [&](int v) { return domain[v] == 1; }),
+                key.erase(remove_if(key.begin(), key.end(), [&](int v) { return domain[v] == 1; }),
                           key.end());
                 for (size_t k = 0; k < operator_indices.size(); ++k) {
                     if (operator_indices[k].schema == int(a) && operator_indices[k].vars == key)
@@ -626,8 +669,8 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
                     index.vars = key;
                     index.ops = ops;
                     auto less = [&](int x, int y) {
-                        const auto &vx = g.operators[x].instantiation;
-                        const auto &vy = g.operators[y].instantiation;
+                        const auto &vx = ground_task->operators[x].instantiation;
+                        const auto &vy = ground_task->operators[y].instantiation;
                         for (int v : key) {
                             if (vx[v] != vy[v])
                                 return vx[v] < vy[v];
@@ -650,25 +693,27 @@ void GroundedHeuristic::add_decomposed_operators(const Task &task, const GroundT
             const LRule &r = rules[inst.rule];
             if (!r.final && !seen.emplace(inst.pre, inst.eff[0]).second)
                 continue;
-            int id = add_relaxed_op(inst.pre, nullptr, inst.eff,
-                                    r.final ? schema.get_cost() : 0, r.final ? -2 : -1);
+            int id = add_relaxed_op(inst.pre,
+                                    nullptr,
+                                    inst.eff,
+                                    r.final ? schema.get_cost() : 0,
+                                    r.final ? DECOMPOSED_ACTION : NO_ACTION);
             if (id < 0)
                 continue;
             op_rule[id] = rule_id[inst.rule];
             op_values_start[id] = rule_values.size();
             rule_values.insert(rule_values.end(), inst.values.begin(), inst.values.end());
         }
-        cout << "Decomposed schema " << schema.get_name() << ": " << ops.size()
-             << " operators, " << instances.size() << " rule instances, " << num_aux
-             << " auxiliary facts." << endl;
     }
     if (total_ground > 0)
         cout << "Decomposition: relaxed operator size " << total_decomposed << " instead of "
              << total_ground << "." << endl;
 }
 
-void GroundedHeuristic::get_ground_relaxed_operator(int o, vector<int> &pre,
-                                                    vector<int> &eff) const {
+void GroundDeleteRelaxationHeuristic::get_ground_relaxed_operator(int o,
+                                                                  vector<int> &pre,
+                                                                  vector<int> &eff) const
+{
     const GroundOperator &op = ground_task->operators[o];
     pre = op.pre;
     for (int f : op.negated_pre) {
@@ -682,11 +727,12 @@ void GroundedHeuristic::get_ground_relaxed_operator(int o, vector<int> &pre,
     }
 }
 
-void GroundedHeuristic::add_relaxation_operators(const Task &task, const GroundTask &g) {
+void GroundDeleteRelaxationHeuristic::add_relaxed_program_operators(const Task &task)
+{
     const int aux_base = num_facts;
-    num_facts += g.num_relaxation_aux;
+    num_facts += ground_task->num_relaxed_program_aux_facts;
     const int rule_base = decomposed_rules.size();
-    for (const GroundTask::RelaxationRule &rule : g.relaxation_rules) {
+    for (const RelaxedProgram::Rule &rule : ground_task->relaxed_program_rules) {
         DecomposedRule dr;
         dr.vars = rule.vars;
         dr.op_index = -1;
@@ -694,7 +740,7 @@ void GroundedHeuristic::add_relaxation_operators(const Task &task, const GroundT
         dr.num_params = task.get_action_schema_by_index(rule.schema).get_parameters().size();
         decomposed_rules.push_back(std::move(dr));
     }
-    const int num_ground_facts = g.num_facts();
+    const int num_ground_facts = ground_task->num_facts();
     auto map_fact = [&](int f) {
         if (f >= num_ground_facts)
             return aux_base + (f - num_ground_facts);
@@ -703,7 +749,7 @@ void GroundedHeuristic::add_relaxation_operators(const Task &task, const GroundT
         return complement[-1 - f];
     };
     vector<int> pre, eff;
-    for (const GroundTask::RelaxationOperator &op : g.relaxation_operators) {
+    for (const GroundTask::RelaxedProgramOperator &op : ground_task->relaxed_program_operators) {
         pre.clear();
         eff.clear();
         for (int f : op.pre) {
@@ -716,18 +762,19 @@ void GroundedHeuristic::add_relaxation_operators(const Task &task, const GroundT
             if (x >= 0)
                 eff.push_back(x);
         }
-        const GroundTask::RelaxationRule &rule = g.relaxation_rules[op.rule];
-        int id = add_relaxed_op(pre, nullptr, eff, rule.cost, rule.final ? -3 : -1);
+        const RelaxedProgram::Rule &rule = ground_task->relaxed_program_rules[op.rule];
+        int id = add_relaxed_op(
+            pre, nullptr, eff, rule.cost, rule.final ? RELAXED_PROGRAM_ACTION : NO_ACTION);
         if (id < 0)
             continue;
         op_rule[id] = rule_base + op.rule;
         op_values_start[id] = rule_values.size();
         rule_values.insert(rule_values.end(), op.values.begin(), op.values.end());
     }
-    cout << "Relaxed program operators: " << g.relaxation_operators.size() << "." << endl;
 }
 
-int GroundedHeuristic::extract_lifted_action(int r) {
+int GroundDeleteRelaxationHeuristic::extract_relaxed_program_action(int r)
+{
     const DecomposedRule &final_rule = decomposed_rules[op_rule[r]];
     vector<int> action(final_rule.num_params + 1, -1);
     action[0] = final_rule.schema;
@@ -758,7 +805,8 @@ int GroundedHeuristic::extract_lifted_action(int r) {
     return op_base_cost[r];
 }
 
-int GroundedHeuristic::reconstruct_operator(int r) {
+int GroundDeleteRelaxationHeuristic::reconstruct_operator(int r)
+{
     const DecomposedRule &final_rule = decomposed_rules[op_rule[r]];
     const OperatorIndex &index = operator_indices[final_rule.op_index];
     const auto &ops = ground_task->operators;
@@ -807,7 +855,8 @@ int GroundedHeuristic::reconstruct_operator(int r) {
   needed in a plan, unless some negated condition was relaxed away
   (negated derived atoms without negated axioms, negated axiom bodies).
 */
-void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation_relaxed) {
+void GroundDeleteRelaxationHeuristic::prune_irrelevant(bool some_negation_relaxed)
+{
     int num_ops = op_base_cost.size();
     vector<int> count(num_facts + 1, 0);
     for (int e : op_eff)
@@ -849,7 +898,7 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
     vector<int> new_pre_start, new_pre, new_eff_start, new_eff, new_base_cost, new_num_pre,
         new_action, new_rule, new_values_start;
     no_pre_ops.clear();
-    relevant_action.assign(g.operators.size(), 0);
+    relevant_action.assign(ground_task->operators.size(), 0);
     bool some_decomposed = false;
     // Number the relevant operators by the layer (unit-cost h-max) at which
     // they become applicable in the relaxed exploration from the initial
@@ -866,9 +915,9 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
     vector<int> fact_level(num_facts, numeric_limits<int>::max());
     vector<int> op_level(num_ops, numeric_limits<int>::max());
     vector<int> unsat(op_num_pre.begin(), op_num_pre.end());
-    vector<int> init = g.initial_facts;
+    vector<int> init = ground_task->initial_facts;
     vector<char> init_true(num_base_facts, 0);
-    for (int f : g.initial_facts)
+    for (int f : ground_task->initial_facts)
         init_true[f] = 1;
     for (int c = num_base_facts; c < first_aux_fact; ++c) {
         if (!init_true[complement_base[c - num_base_facts]])
@@ -912,8 +961,8 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
     for (int r : order) {
         int id = new_base_cost.size();
         new_pre_start.push_back(new_pre.size());
-        new_pre.insert(new_pre.end(), op_pre.begin() + op_pre_start[r],
-                       op_pre.begin() + op_pre_start[r + 1]);
+        new_pre.insert(
+            new_pre.end(), op_pre.begin() + op_pre_start[r], op_pre.begin() + op_pre_start[r + 1]);
         new_eff_start.push_back(new_eff.size());
         for (int i = op_eff_start[r]; i < op_eff_start[r + 1]; ++i) {
             if (relevant_fact[op_eff[i]])
@@ -926,7 +975,7 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
         new_values_start.push_back(op_values_start[r]);
         if (op_action[r] >= 0)
             relevant_action[op_action[r]] = 1;
-        else if (op_action[r] == -2)
+        else if (op_action[r] == DECOMPOSED_ACTION)
             some_decomposed = true;
         if (op_num_pre[r] == 0)
             no_pre_ops.push_back(id);
@@ -936,8 +985,8 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
     if (some_decomposed) {
         // Ground actions of decomposed schemas: relevant if they achieve a
         // relevant fact.
-        for (size_t o = 0; o < g.operators.size(); ++o) {
-            const GroundOperator &op = g.operators[o];
+        for (size_t o = 0; o < ground_task->operators.size(); ++o) {
+            const GroundOperator &op = ground_task->operators[o];
             if (relevant_action[o])
                 continue;
             for (int f : op.add) {
@@ -950,11 +999,11 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
             }
         }
     }
-    int num_relevant_actions = count_if(relevant_action.begin(), relevant_action.end(),
-                                        [](char c) { return c; });
+    int num_relevant_actions =
+        count_if(relevant_action.begin(), relevant_action.end(), [](char c) { return c; });
     cout << "Relevance analysis: " << new_base_cost.size() << " of " << num_ops
-         << " relaxed operators, " << num_relevant_actions << " of " << g.operators.size()
-         << " actions relevant." << endl;
+         << " relaxed operators, " << num_relevant_actions << " of "
+         << ground_task->operators.size() << " actions relevant." << endl;
     op_pre_start.swap(new_pre_start);
     op_pre.swap(new_pre);
     op_eff_start.swap(new_eff_start);
@@ -966,12 +1015,12 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
     op_values_start.swap(new_values_start);
 
     bool negated_axiom_bodies = false;
-    for (const GroundAxiom &ax : g.axioms) {
+    for (const GroundAxiom &ax : ground_task->axioms) {
         if (!ax.negated_body.empty())
             negated_axiom_bodies = true;
     }
     if (some_negation_relaxed || negated_axiom_bodies)
-        relevant_action.assign(g.operators.size(), 1);
+        relevant_action.assign(ground_task->operators.size(), 1);
 }
 
 /*
@@ -983,7 +1032,8 @@ void GroundedHeuristic::prune_irrelevant(const GroundTask &g, bool some_negation
 static const int BUCKET_LIMIT = 1 << 16;
 static const int MAX_COST = 1000000000;
 
-void GroundedHeuristic::push(int fact, int cost) {
+void GroundDeleteRelaxationHeuristic::push(int fact, int cost)
+{
     if (cost < BUCKET_LIMIT) {
         if (cost >= int(buckets.size()))
             buckets.resize(cost + 1);
@@ -995,7 +1045,8 @@ void GroundedHeuristic::push(int fact, int cost) {
     }
 }
 
-int GroundedHeuristic::explore() {
+int GroundDeleteRelaxationHeuristic::explore()
+{
     // Generation stamps make untouched facts and operators implicitly reset.
     if (++generation == numeric_limits<int>::max()) {
         generation = 1;
@@ -1008,9 +1059,7 @@ int GroundedHeuristic::explore() {
     for (auto &b : buckets)
         b.clear();
     overflow.clear();
-    auto cost_of = [&](int f) {
-        return fact_state[f].stamp == gen ? fact_state[f].cost : INF;
-    };
+    auto cost_of = [&](int f) { return fact_state[f].stamp == gen ? fact_state[f].cost : INF; };
     auto improve = [&](int f, int cost, int r) {
         FactState &fs = fact_state[f];
         if (fs.stamp != gen) {
@@ -1064,8 +1113,8 @@ int GroundedHeuristic::explore() {
         }
     };
     auto goals_closed = [&]() {
-        for (int g : goal) {
-            if (cost_of(g) >= 0)
+        for (int goal_fact : goal) {
+            if (cost_of(goal_fact) >= 0)
                 return false;
         }
         return true;
@@ -1097,8 +1146,8 @@ int GroundedHeuristic::explore() {
     }
 
     int h = 0;
-    for (int g : goal) {
-        int cost = cost_of(g);
+    for (int goal_fact : goal) {
+        int cost = cost_of(goal_fact);
         if (cost >= 0)
             return UNSOLVABLE_STATE;
         cost = -1 - cost;
@@ -1110,7 +1159,9 @@ int GroundedHeuristic::explore() {
     return h;
 }
 
-void GroundedHeuristic::add_complement_facts(const vector<int> &facts, vector<int> &out) {
+void GroundDeleteRelaxationHeuristic::add_complement_facts(const vector<int> &facts,
+                                                           vector<int> &out)
+{
     if (first_aux_fact == num_base_facts)
         return;
     // Complement facts of the base facts that are false.
@@ -1124,13 +1175,16 @@ void GroundedHeuristic::add_complement_facts(const vector<int> &facts, vector<in
         in_state[f] = 0;
 }
 
-int GroundedHeuristic::compute_heuristic(const DBState &s, const Task &task) {
+int GroundDeleteRelaxationHeuristic::compute_heuristic(const DBState &s, const Task &task)
+{
     vector<int> facts;
     ground_task->get_state_facts(s, facts);
     return compute_for_facts(facts, true);
 }
 
-int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_useful_atoms) {
+int GroundDeleteRelaxationHeuristic::compute_for_facts(const vector<int> &facts,
+                                                       bool fill_useful_atoms)
+{
     if (fill_useful_atoms) {
         for (auto &atoms : useful_atoms)
             atoms.clear();
@@ -1138,14 +1192,12 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
     relaxed_plan.clear();
     relaxed_plan_levels.clear();
     useful_facts.clear();
-    last_hadd = UNSOLVABLE_STATE;
     if (goal_unreachable)
         return UNSOLVABLE_STATE;
 
     state_facts = facts;
     add_complement_facts(facts, state_facts);
     int h = explore();
-    last_hadd = h;
     if (h == UNSOLVABLE_STATE || h == 0 || type != FF)
         return h;
 
@@ -1155,9 +1207,9 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
     int ff = 0;
     lifted_plan_actions.clear();
     stack.clear();
-    for (int g : goal) {
-        if (!in_state[g])
-            stack.push_back(g);
+    for (int goal_fact : goal) {
+        if (!in_state[goal_fact])
+            stack.push_back(goal_fact);
     }
     while (!stack.empty()) {
         int f = stack.back();
@@ -1170,29 +1222,28 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
         int a = op_action[r];
         if (a >= 0 && !marked_action[a]) {
             // Prefer an equally expensive achiever of an action already in
-            // the relaxed plan (e.g., another effect of an action with many
+            // the relaxed plan (e.ground_task->, another effect of an action with many
             // conditional effects).
             int c = -1 - fact_state[f].cost;
-            for (int k = ach_start[f]; k < ach_start[f + 1]; ++k) {
-                int r2 = ach[k];
+            for (int k = achiever_start[f]; k < achiever_start[f + 1]; ++k) {
+                int r2 = achievers[k];
                 int a2 = op_action[r2];
                 if (a2 < 0 || !marked_action[a2])
                     continue;
                 const RelaxedOp &o = relaxed_ops[r2];
-                if (o.stamp == generation && o.unsatisfied == 0 &&
-                    o.cost + op_base_cost[r2] <= c) {
+                if (o.stamp == generation && o.unsatisfied == 0 && o.cost + op_base_cost[r2] <= c) {
                     r = r2;
                     a = a2;
                     break;
                 }
             }
         }
-        if (a == -3) {
+        if (a == RELAXED_PROGRAM_ACTION) {
             // Relaxed program operator (no ground operators).
-            ff += extract_lifted_action(r);
+            ff += extract_relaxed_program_action(r);
             continue;
         }
-        if (a == -2) {
+        if (a == DECOMPOSED_ACTION) {
             // Decomposed operator: the ground operator and its precondition.
             a = reconstruct_operator(r);
             if (a < 0) {
@@ -1225,11 +1276,10 @@ int GroundedHeuristic::compute_for_facts(const vector<int> &facts, bool fill_use
             ff += op_action_cost[a];
         }
     }
-    const GroundTask &g = *ground_task;
     for (int f : marked_facts_list) {
         marked_fact[f] = 0;
         if (fill_useful_atoms && f < num_base_facts)
-            useful_atoms[g.facts[f].first].push_back(g.facts[f].second);
+            useful_atoms[ground_task->facts[f].first].push_back(ground_task->facts[f].second);
     }
     useful_facts.swap(marked_facts_list);
     marked_facts_list.clear();

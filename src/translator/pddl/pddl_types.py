@@ -17,6 +17,20 @@ def _get_type_predicate_name(type_name):
     return "type@%s" % type_name
 
 
+# Union types (either t1 ... tn) are types of their own, named
+# "either@t1@...@tn" (members sorted).
+def get_either_type_name(members):
+    return "either@" + "@".join(sorted(set(members)))
+
+
+def is_either_type(type_name):
+    return type_name.startswith("either@")
+
+
+def get_either_type_members(type_name):
+    return type_name[len("either@"):].split("@")
+
+
 class Type(object):
     def __init__(self, name, basetype_name=None):
         self.name = name

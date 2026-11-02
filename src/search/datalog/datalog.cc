@@ -83,7 +83,8 @@ void Datalog::generate_axiom_rules(AnnotationGenerator &annotation_generator) {
     }
 }
 
-DatalogAtom Datalog::get_true_atom() {
+DatalogAtom Datalog::get_true_atom()
+{
     if (true_predicate_idx < 0) {
         true_predicate_idx = get_next_auxiliary_predicate_idx();
         map_new_predicates_to_idx.emplace("@true", true_predicate_idx);
@@ -150,7 +151,8 @@ void Datalog::generate_action_effect_rules(const ActionSchema &schema, Annotatio
             if (eff.is_negated())
                 continue;
             std::unique_ptr<Annotation> ann = annotation_generator(-1, task);
-            rules.emplace_back(make_unique<GenericRule>(0, DatalogAtom(eff), ce_body, std::move(ann)));
+            rules.emplace_back(
+                make_unique<GenericRule>(0, DatalogAtom(eff), ce_body, std::move(ann)));
         }
         for (int eff_idx : ce.positive_nullary_effects) {
             DatalogAtom eff(Arguments(), eff_idx, false);

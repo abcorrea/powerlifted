@@ -23,6 +23,7 @@ Examples:
 import argparse
 import glob
 import json
+import math
 import os
 import re
 import resource
@@ -181,10 +182,10 @@ def run(args):
             if args.out:
                 with open(args.out, 'w') as f:
                     json.dump({'configs': configs, 'results': results}, f, indent=1)
-    summarize(results)
+    summarize(results, args.time)
 
 
-def summarize(results):
+def summarize(results, time_limit):
     names = list(results.keys())
     keys = sorted(set().union(*[results[n].keys() for n in names]))
     domains = sorted(set(k.split('/')[0] for k in keys))
@@ -195,7 +196,9 @@ def summarize(results):
     for d in domains:
         row = f'{d:32s}'
         for n in names:
-            row += f"{sum(1 for k in keys if k.startswith(d + '/') and results[n].get(k, {}).get('solved')):12d}"
+            solved = sum(1 for k in keys
+                         if k.startswith(d + '/') and results[n].get(k, {}).get('solved'))
+            row += f'{solved:12d}'
         print(row)
     print(f"{'TOTAL':32s}" + ''.join(
         f"{sum(1 for k in keys if results[n].get(k, {}).get('solved')):12d}" for n in names))
@@ -204,7 +207,6 @@ def summarize(results):
     common = [k for k in keys if all(results[n].get(k, {}).get('solved') for n in names)]
     if common and len(names) >= 2:
         print(f'\nOn {len(common)} commonly solved tasks (sum / geometric mean):')
-        import math
         for metric in ['wall', 'memory_mb', 'expanded']:
             row = f'{metric:32s}'
             for n in names:
@@ -214,27 +216,26 @@ def summarize(results):
             print(row)
 
     # Per-domain score: IPC agile-like score (1 if <=1s, 0 if >= limit, log scale)
-    import math
-
     def agile(r):
         if not r.get('solved'):
             return 0.0
         t = r['wall']
         if t <= 1:
             return 1.0
-        return max(0.0, 1 - math.log(t) / math.log(120))
-    print('\nAgile score (log-scale on wall time, 120s)')
+        return max(0.0, 1 - math.log(t) / math.log(time_limit))
+    print(f'\nAgile score (log-scale on wall time, {time_limit}s)')
     print(header)
     for d in domains:
         row = f'{d:32s}'
         for n in names:
-            row += f"{sum(agile(results[n].get(k, {})) for k in keys if k.startswith(d + '/')):12.2f}"
+            score = sum(agile(results[n].get(k, {})) for k in keys if k.startswith(d + '/'))
+            row += f'{score:12.2f}'
         print(row)
     print(f"{'TOTAL':32s}" + ''.join(
         f"{sum(agile(results[n].get(k, {})) for k in keys):12.2f}" for n in names))
 
 
-def compare(files):
+def compare(files, time_limit):
     results = {}
     for f in files:
         with open(f) as fh:
@@ -242,7 +243,7 @@ def compare(files):
         for name, res in data['results'].items():
             label = name if name not in results else f'{name}@{Path(f).stem}'
             results[label] = res
-    summarize(results)
+    summarize(results, time_limit)
 
 
 def main():
@@ -261,10 +262,11 @@ def main():
     p.add_argument('--keep-logs', action='store_true')
     p.add_argument('--compare', nargs='+', default=None)
     args = p.parse_args()
+    # Limits of the development machine.
     assert args.jobs <= 2, 'never run more than two problems in parallel'
     assert args.time <= 120 and args.memory <= 4096, 'resource limits exceeded'
     if args.compare:
-        compare(args.compare)
+        compare(args.compare, args.time)
     else:
         run(args)
 

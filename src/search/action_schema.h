@@ -133,15 +133,15 @@ public:
         return negative_nullary_effects;
     }
 
-    const std::vector<ConditionalEffect> &get_conditional_effects() const {
+    const std::vector<ConditionalEffect> &get_conditional_effects() const
+    {
         return conditional_effects;
     }
 
-    bool has_conditional_effects() const {
-        return !conditional_effects.empty();
-    }
+    bool has_conditional_effects() const { return !conditional_effects.empty(); }
 
-    void set_conditional_effects(std::vector<ConditionalEffect> &&ces) {
+    void set_conditional_effects(std::vector<ConditionalEffect> &&ces)
+    {
         conditional_effects = std::move(ces);
     }
 

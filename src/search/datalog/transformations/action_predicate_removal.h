@@ -37,8 +37,8 @@ void Datalog::remove_action_predicates(AnnotationGenerator &annotation_generator
         if (!head_is_action_predicate and !body_is_action_predicate) {
             new_rules.emplace_back(std::move(rule));
         }
-        else if (head_is_action_predicate
-                 and kept_action_predicates.count(rule->get_effect().get_predicate_index())) {
+        else if (head_is_action_predicate and
+                 kept_action_predicates.count(rule->get_effect().get_predicate_index())) {
             GenericRule *r = dynamic_cast<GenericRule *>(rule.get());
             std::unique_ptr<Annotation> ann = annotation_generator(r->get_schema_index(), task);
             auto copy = std::make_unique<GenericRule>(rule->get_weight(),
