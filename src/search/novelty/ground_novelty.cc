@@ -7,11 +7,11 @@
 using namespace std;
 
 namespace {
-// Beyond this memory for pair tables, new partitions get width-1 tables.
+// Beyond this memory for pair (triple) tables, new partitions get tables of
+// smaller width.
 const size_t MAX_PAIR_TABLE_BYTES = size_t(512) * 1024 * 1024;
+const size_t MAX_TRIPLE_TABLE_BYTES = size_t(1024) * 1024 * 1024;
 
-// Average number of pairs per check beyond which width 2 is too expensive.
-const long long MAX_PAIRS_PER_CHECK = 100000;
 
 bool test_and_set(vector<uint64_t> &bits, size_t i)
 {
@@ -22,12 +22,26 @@ bool test_and_set(vector<uint64_t> &bits, size_t i)
     word |= mask;
     return true;
 }
+
+void sort3(int &a, int &b, int &c)
+{
+    if (a > b)
+        swap(a, b);
+    if (b > c)
+        swap(b, c);
+    if (a > b)
+        swap(a, b);
+}
 }  // namespace
 
 GroundNovelty::GroundNovelty(int width, int num_facts)
     : width(width), num_facts(num_facts), num_words(ground_state::get_num_words(num_facts))
 {
-    if (width > 1 && num_facts > MAX_FACTS_FOR_WIDTH_2) {
+    if (this->width > 2 && num_facts > MAX_FACTS_FOR_WIDTH_3) {
+        cout << "Too many facts for width-3 novelty; using width 2." << endl;
+        this->width = 2;
+    }
+    if (this->width > 1 && num_facts > MAX_FACTS_FOR_WIDTH_2) {
         cout << "Too many facts for width-2 novelty; using width 1." << endl;
         this->width = 1;
     }
@@ -39,41 +53,77 @@ GroundNovelty::Table &GroundNovelty::get_table(long long partition)
     if (it == tables.end()) {
         Table table;
         table.singles.assign(num_words, 0);
-        size_t pair_words = (size_t(num_facts) * num_facts + 63) / 64;
-        size_t bytes = pair_words * sizeof(uint64_t);
-        if (width > 1 && pair_table_bytes + bytes <= MAX_PAIR_TABLE_BYTES) {
+        size_t n = num_facts;
+        size_t pair_words = (n * n + 63) / 64;
+        size_t pair_bytes = pair_words * sizeof(uint64_t);
+        if (width > 1 && pair_table_bytes + pair_bytes <= MAX_PAIR_TABLE_BYTES) {
             table.pairs.assign(pair_words, 0);
-            pair_table_bytes += bytes;
+            pair_table_bytes += pair_bytes;
+            size_t triple_words = (n * n * n + 63) / 64;
+            size_t triple_bytes = triple_words * sizeof(uint64_t);
+            if (width > 2 && triple_table_bytes + triple_bytes <= MAX_TRIPLE_TABLE_BYTES) {
+                table.triples.assign(triple_words, 0);
+                triple_table_bytes += triple_bytes;
+            }
         }
         it = tables.emplace(partition, std::move(table)).first;
     }
     return it->second;
 }
 
+int GroundNovelty::get_novelty(const Table &table,
+                               bool novel_fact,
+                               bool novel_pair,
+                               bool novel_triple) const
+{
+    if (novel_fact)
+        return 1;
+    if (novel_pair && !table.pairs.empty())
+        return 2;
+    if (novel_triple && !table.triples.empty())
+        return 3;
+    return NOT_NOVEL;
+}
+
 int GroundNovelty::compute(const uint64_t *bits, const vector<int> &facts, long long partition)
 {
     ++num_checks;
     if (width > 1)
-        num_pairs_checked += (long long)facts.size() * facts.size() / 2;
+        num_tuples_checked += (long long)facts.size() * facts.size() / 2;
+    if (width > 2)
+        num_tuples_checked += (long long)facts.size() * facts.size() * facts.size() / 6;
     Table &table = get_table(partition);
-    bool novel = false;
+    bool novel_fact = false;
     for (int w = 0; w < num_words; ++w) {
         if (bits[w] & ~table.singles[w]) {
-            novel = true;
+            novel_fact = true;
             table.singles[w] |= bits[w];
         }
     }
-    if (width == 1 || table.pairs.empty())
-        return novel ? 1 : NOT_NOVEL;
     bool novel_pair = false;
-    for (size_t i = 0; i < facts.size(); ++i) {
-        size_t row = size_t(facts[i]) * num_facts;
-        for (size_t j = i + 1; j < facts.size(); ++j) {
-            if (test_and_set(table.pairs, row + facts[j]))
-                novel_pair = true;
+    bool novel_triple = false;
+    if (!table.pairs.empty()) {
+        size_t n = num_facts;
+        for (size_t i = 0; i < facts.size(); ++i) {
+            size_t row = size_t(facts[i]) * n;
+            for (size_t j = i + 1; j < facts.size(); ++j) {
+                if (test_and_set(table.pairs, row + facts[j]))
+                    novel_pair = true;
+            }
+        }
+        if (!table.triples.empty()) {
+            for (size_t i = 0; i < facts.size(); ++i) {
+                for (size_t j = i + 1; j < facts.size(); ++j) {
+                    size_t row = (size_t(facts[i]) * n + facts[j]) * n;
+                    for (size_t k = j + 1; k < facts.size(); ++k) {
+                        if (test_and_set(table.triples, row + facts[k]))
+                            novel_triple = true;
+                    }
+                }
+            }
         }
     }
-    return novel ? 1 : (novel_pair ? 2 : NOT_NOVEL);
+    return get_novelty(table, novel_fact, novel_pair, novel_triple);
 }
 
 int GroundNovelty::compute_for_added_facts(const vector<int> &added,
@@ -82,39 +132,73 @@ int GroundNovelty::compute_for_added_facts(const vector<int> &added,
 {
     ++num_checks;
     if (width > 1)
-        num_pairs_checked += (long long)added.size() * facts.size();
+        num_tuples_checked += (long long)added.size() * facts.size();
+    if (width > 2)
+        num_tuples_checked += (long long)added.size() * facts.size() * facts.size() / 2;
     Table &table = get_table(partition);
-    bool novel = false;
+    bool novel_fact = false;
     for (int f : added) {
         if (test_and_set(table.singles, f))
-            novel = true;
+            novel_fact = true;
     }
-    if (width == 1 || table.pairs.empty())
-        return novel ? 1 : NOT_NOVEL;
     bool novel_pair = false;
-    for (int a : added) {
-        for (int f : facts) {
-            if (f == a)
-                continue;
-            size_t i = f < a ? size_t(f) * num_facts + a : size_t(a) * num_facts + f;
-            if (test_and_set(table.pairs, i))
-                novel_pair = true;
+    bool novel_triple = false;
+    if (!table.pairs.empty()) {
+        size_t n = num_facts;
+        for (int a : added) {
+            for (int f : facts) {
+                if (f == a)
+                    continue;
+                size_t i = f < a ? size_t(f) * n + a : size_t(a) * n + f;
+                if (test_and_set(table.pairs, i))
+                    novel_pair = true;
+            }
+        }
+        if (!table.triples.empty()) {
+            for (int a : added) {
+                for (size_t i = 0; i < facts.size(); ++i) {
+                    if (facts[i] == a)
+                        continue;
+                    for (size_t j = i + 1; j < facts.size(); ++j) {
+                        if (facts[j] == a)
+                            continue;
+                        int x = a, y = facts[i], z = facts[j];
+                        sort3(x, y, z);
+                        if (test_and_set(table.triples, (size_t(x) * n + y) * n + z))
+                            novel_triple = true;
+                    }
+                }
+            }
         }
     }
-    return novel ? 1 : (novel_pair ? 2 : NOT_NOVEL);
+    return get_novelty(table, novel_fact, novel_pair, novel_triple);
 }
 
 bool GroundNovelty::is_too_expensive() const
 {
-    return width > 1 && num_checks > 0 && num_pairs_checked / num_checks > MAX_PAIRS_PER_CHECK;
+    return width > 1 && num_checks > 0 && num_tuples_checked / num_checks > max_tuples_per_check;
 }
 
-void GroundNovelty::downgrade_to_width_1()
+void GroundNovelty::downgrade()
 {
-    cout << "Width-2 novelty too expensive (" << num_pairs_checked / num_checks
-         << " pairs per check); using width 1." << endl;
-    width = 1;
-    for (auto &entry : tables)
-        vector<uint64_t>().swap(entry.second.pairs);
+    cout << "Width-" << width << " novelty too expensive (" << num_tuples_checked / num_checks
+         << " tuples per check); using width " << width - 1 << "." << endl;
+    --width;
+    for (auto &entry : tables) {
+        vector<uint64_t>().swap(entry.second.triples);
+        if (width < 2)
+            vector<uint64_t>().swap(entry.second.pairs);
+    }
+    triple_table_bytes = 0;
+    if (width < 2)
+        pair_table_bytes = 0;
+    num_tuples_checked = 0;
+    num_checks = 0;
+}
+
+void GroundNovelty::reset()
+{
+    tables.clear();
     pair_table_bytes = 0;
+    triple_table_bytes = 0;
 }

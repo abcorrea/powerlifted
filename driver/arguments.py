@@ -111,6 +111,8 @@ def parse_options():
     parser.add_argument("--grounding-time-limit", type=float, default=None,
                         help="search on the lifted task if grounding takes more seconds "
                              "(default: 12)")
+    parser.add_argument("--experimental", default=None,
+                        help="experimental options of the ground search (temporary)")
     parser.add_argument("--keep-translator-file", action="store_true",
                         help="flag if the translator file should be kept")
     parser.add_argument("--validate", action="store_true",

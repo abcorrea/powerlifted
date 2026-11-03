@@ -37,8 +37,17 @@ class GroundLandmarks {
     std::vector<std::vector<int>> gn_successors;
     //! Landmark index of each (relaxed) fact, or -1.
     std::vector<int> fact_to_lm;
+    // The orderings in compressed sparse rows (for speed): the predecessors
+    // of landmark l are predecessor_list[predecessor_start[l] ..
+    // predecessor_start[l + 1]), same for the greedy-necessary successors.
+    std::vector<int> predecessor_start, predecessor_list;
+    std::vector<int> gn_successor_start, gn_successor_list;
+    //! Landmarks that can be required again (goals and landmarks with
+    //! greedy-necessary successors).
+    std::vector<uint64_t> may_be_required_again;
     int num_words;
     bool computed;
+    bool require_accepted_predecessors = true;
 
     bool is_true(int lm, const uint64_t *bits) const;
     bool are_predecessors_accepted(int lm, const uint64_t *accepted) const;
@@ -58,6 +67,9 @@ public:
                     long long max_work);
 
     bool is_computed() const { return computed; }
+
+    // TODO: experimental. Accept true landmarks without accepted predecessors.
+    void set_require_accepted_predecessors(bool value) { require_accepted_predecessors = value; }
 
     int get_num_landmarks() const { return lm_fact.size(); }
 

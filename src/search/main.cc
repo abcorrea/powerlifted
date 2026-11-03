@@ -128,14 +128,44 @@ int main(int argc, char *argv[])
         try {
             // bfws2-lmnov: width-2 novelty partitioned by the landmark count
             // (as in NOLAN), plus landmark-count and lazy novelty open lists.
-            int width = engine == "alt-bfws1" ? 1 : 2;
-            bool use_landmarks = engine == "bfws2-lmnov";
-            GroundSearch search(task,
-                                ground_task,
-                                *heuristic_type,
-                                width,
-                                use_landmarks,
-                                opt.use_full_novelty_check());
+            GroundSearchOptions search_options;
+            search_options.heuristic_type = *heuristic_type;
+            search_options.width = engine == "alt-bfws1" ? 1 : 2;
+            search_options.use_landmarks = engine == "bfws2-lmnov";
+            search_options.full_novelty_check = opt.use_full_novelty_check();
+            if (engine == "bfws2-lmnov") {
+                // Type-based exploration list, greedy boosts (300 pops of the
+                // preferred heuristic and landmark lists) after heuristic
+                // improvements, and width 2 only while its checks are cheap.
+                search_options.type_based = true;
+                search_options.greedy_boost = true;
+                search_options.preferred_boost = 300;
+                search_options.max_tuples_per_check = 5000;
+            }
+            // TODO: experimental variants, to be removed.
+            const std::string &experimental = "," + opt.get_experimental() + ",";
+            auto has = [&](const std::string &name) {
+                return experimental.find("," + name + ",") != std::string::npos;
+            };
+            search_options.type_based = search_options.type_based || has("tb");
+            search_options.progress_novelty = has("pn") || has("pn1");
+            if (has("pn1"))
+                search_options.progress_novelty_width = 1;
+            search_options.accept_landmarks_without_predecessors = has("lmpast");
+            search_options.helpful_actions = has("ha");
+            search_options.greedy_boost =
+                search_options.greedy_boost || has("gb") || has("gbt") || has("gbn");
+            search_options.boost_type_based = has("gbt");
+            search_options.boost_novelty = has("gbn");
+            size_t boost = experimental.find(",boost");
+            if (boost != std::string::npos)
+                search_options.preferred_boost = std::stoi(experimental.substr(boost + 6));
+            size_t tpc = experimental.find(",tpc");
+            if (tpc != std::string::npos)
+                search_options.max_tuples_per_check = std::stoll(experimental.substr(tpc + 4));
+            if (has("w3"))
+                search_options.width = 3;
+            GroundSearch search(task, ground_task, search_options);
             auto exitcode = search.search();
             search.print_statistics();
             utils::report_exit_code_reentrant(exitcode);

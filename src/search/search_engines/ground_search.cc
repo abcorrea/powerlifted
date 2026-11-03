@@ -20,8 +20,6 @@ using namespace std;
 using namespace ground_state;
 
 namespace {
-// Priority of the preferred open lists after every heuristic improvement.
-const int PREFERRED_PRIORITY_BOOST = 1000;
 
 // Give up computing landmarks after this many set operations.
 const long long MAX_LANDMARK_WORK = 200000000;
@@ -45,26 +43,30 @@ void print_goal_found_time(clock_t timer_start)
 
 GroundSearch::GroundSearch(const Task &task,
                            shared_ptr<GroundTask> ground_task_,
-                           GroundDeleteRelaxationHeuristic::Type heuristic_type,
-                           int width,
-                           bool use_landmarks,
-                           bool full_novelty_check)
+                           const GroundSearchOptions &options)
     : task(task),
       ground_task(std::move(ground_task_)),
-      use_landmarks(use_landmarks),
-      full_novelty_check(full_novelty_check),
+      options(options),
       generator(*ground_task),
-      heuristic(make_unique<GroundDeleteRelaxationHeuristic>(task, ground_task, heuristic_type)),
+      heuristic(
+          make_unique<GroundDeleteRelaxationHeuristic>(task, ground_task, options.heuristic_type)),
       num_words(get_num_words(ground_task->num_facts())),
       num_base_facts(heuristic->get_num_base_facts()),
       goal_facts(ground_task->goal),
       negated_goal_facts(ground_task->negated_goal),
       registry(ground_task->num_facts()),
-      novelty(width, ground_task->num_facts())
+      novelty(options.width, ground_task->num_facts())
 {
     generator.restrict_operators(heuristic->get_relevant_actions());
-    if (use_landmarks)
-        lazy_novelty = make_unique<GroundNovelty>(width, ground_task->num_facts());
+    if (options.use_landmarks)
+        lazy_novelty = make_unique<GroundNovelty>(options.width, ground_task->num_facts());
+    if (options.progress_novelty)
+        progress_novelty =
+            make_unique<GroundNovelty>(options.progress_novelty_width, ground_task->num_facts());
+    for (GroundNovelty *tables : {&novelty, lazy_novelty.get(), progress_novelty.get()}) {
+        if (tables)
+            tables->set_max_tuples_per_check(options.max_tuples_per_check);
+    }
 }
 
 GroundSearch::~GroundSearch() = default;
@@ -95,6 +97,27 @@ int GroundSearch::count_unsatisfied_relevant(const uint64_t *bits) const
             ++count;
     }
     return count;
+}
+
+int GroundSearch::get_unsatisfied_change(const vector<int> &added_facts,
+                                         const vector<int> &removed_facts,
+                                         FactRole positive_role,
+                                         FactRole negated_role) const
+{
+    int change = 0;
+    for (int f : added_facts) {
+        if (fact_roles[f] & positive_role)
+            --change;
+        if (fact_roles[f] & negated_role)
+            ++change;
+    }
+    for (int f : removed_facts) {
+        if (fact_roles[f] & positive_role)
+            ++change;
+        if (fact_roles[f] & negated_role)
+            --change;
+    }
+    return change;
 }
 
 long long GroundSearch::get_novelty_partition(int unsatisfied_goals,
@@ -156,6 +179,12 @@ void GroundSearch::insert(int state_id,
         case LANDMARKS:
             key = {h_landmarks, h, 0};
             break;
+        case TYPE_BASED:
+            type_based_open_list.push({h, g}, state_id);
+            continue;
+        case PROGRESS_NOVELTY:
+            // See insert_progress_novelty().
+            continue;
         }
         regular_open_lists[i].push(key, state_id);
         if (preferred)
@@ -163,11 +192,55 @@ void GroundSearch::insert(int state_id,
     }
 }
 
+/*
+  Insert a new state into the progress novelty open list if it is novel:
+  states inserted after more heuristic improvements come first, then states
+  with smaller novelty (FIFO).
+*/
+void GroundSearch::insert_progress_novelty(int state_id, const vector<int> &added_facts)
+{
+    if (!progress_novelty)
+        return;
+    if (progress_novelty->get_width() > 1)
+        get_true_facts(child_bits.data(), num_words, child_facts);
+    int novelty_value = progress_novelty->compute_for_added_facts(added_facts, child_facts, 0);
+    if (novelty_value != GroundNovelty::NOT_NOVEL)
+        regular_open_lists[progress_novelty_list].push({-num_progress_events, novelty_value, 0},
+                                                       state_id);
+}
+
 int GroundSearch::pop()
 {
     size_t num_open_lists = open_list_types.size();
+    if (options.greedy_boost && preferred_priority > 0) {
+        for (size_t k = 0; k < num_open_lists; ++k) {
+            size_t i = (next_open_list + k) % num_open_lists;
+            OpenListType type = open_list_types[i];
+            if (type == TYPE_BASED && options.boost_type_based) {
+                if (type_based_open_list.empty())
+                    continue;
+                next_open_list = i + 1;
+                --preferred_priority;
+                return type_based_open_list.pop();
+            }
+            if (type != HEURISTIC && type != LANDMARKS &&
+                !(type == NOVELTY && options.boost_novelty))
+                continue;
+            if (preferred_open_lists[i].empty())
+                continue;
+            next_open_list = i + 1;
+            --preferred_priority;
+            return preferred_open_lists[i].pop();
+        }
+    }
     for (size_t k = 0; k < num_open_lists; ++k) {
         size_t i = (next_open_list + k) % num_open_lists;
+        if (open_list_types[i] == TYPE_BASED) {
+            if (type_based_open_list.empty())
+                continue;
+            next_open_list = i + 1;
+            return type_based_open_list.pop();
+        }
         KeyedOpenList<3> &regular = regular_open_lists[i];
         KeyedOpenList<3> &preferred = preferred_open_lists[i];
         if (regular.empty() && preferred.empty())
@@ -194,9 +267,15 @@ void GroundSearch::initialize_search(const vector<uint64_t> &initial_bits)
     open_list_types.push_back(HEURISTIC);
     if (landmarks)
         open_list_types.push_back(LANDMARKS);
+    if (options.type_based)
+        open_list_types.push_back(TYPE_BASED);
+    if (progress_novelty) {
+        progress_novelty_list = open_list_types.size();
+        open_list_types.push_back(PROGRESS_NOVELTY);
+    }
     regular_open_lists.resize(open_list_types.size());
     preferred_open_lists.resize(open_list_types.size());
-    preferred_priority = PREFERRED_PRIORITY_BOOST;
+    preferred_priority = options.preferred_boost;
 
     if (landmarks)
         num_landmark_words = landmarks->get_num_words();
@@ -225,10 +304,16 @@ void GroundSearch::initialize_search(const vector<uint64_t> &initial_bits)
                         num_unsatisfied_goals[root], num_unsatisfied_relevant[root], h_landmarks));
     best_h_landmarks = h_landmarks;
     insert(root, best_h, h_landmarks, 0, num_unsatisfied_goals[root], 1, false);
+    if (progress_novelty) {
+        get_true_facts(root_bits, num_words, child_facts);
+        progress_novelty->compute(root_bits, child_facts, 0);
+        regular_open_lists[progress_novelty_list].push({0, 1, 0}, root);
+    }
 
     cout << "Open lists: novelty (width " << novelty.get_width() << ")"
          << (lazy_novelty ? ", lazy novelty" : "") << ", heuristic"
-         << (landmarks ? ", landmarks" : "") << endl;
+         << (landmarks ? ", landmarks" : "") << (options.type_based ? ", type-based" : "")
+         << (progress_novelty ? ", progress novelty" : "") << endl;
 }
 
 void GroundSearch::expand(int state_id)
@@ -269,7 +354,11 @@ void GroundSearch::expand(int state_id)
                                                         parent_h_landmarks));
     }
     if (progress) {
-        preferred_priority += PREFERRED_PRIORITY_BOOST;
+        preferred_priority += options.preferred_boost;
+        if (progress_novelty) {
+            progress_novelty->reset();
+            ++num_progress_events;
+        }
         cout << "New heuristic value expanded: h=" << best_h;
         if (landmarks)
             cout << ", h_landmarks=" << best_h_landmarks;
@@ -299,6 +388,11 @@ void GroundSearch::expand(int state_id)
             mark(f, INTERESTING_LANDMARK, COMPLEMENT_INTERESTING_LANDMARK);
     }
 
+    if (options.helpful_actions) {
+        in_relaxed_plan.resize(ground_task->operators.size(), 0);
+        for (int op : heuristic->get_relaxed_plan())
+            in_relaxed_plan[op] = 1;
+    }
     generator.get_applicable(state_bits.data(), applicable);
     statistics.inc_generated(applicable.size());
     for (int op : applicable) {
@@ -311,7 +405,9 @@ void GroundSearch::expand(int state_id)
             landmarks->update_accepted(
                 parent_accepted.data(), child_bits.data(), child_accepted.data());
         chain.assign(1, op);
-        if (!follow_forced_chain(g, true)) {
+        int child_unsatisfied_goals = num_unsatisfied_goals[state_id] +
+                                      get_unsatisfied_change(added, removed, GOAL, NEGATED_GOAL);
+        if (!follow_forced_chain(g, child_unsatisfied_goals, true)) {
             statistics.inc_pruned_states();
             continue;
         }
@@ -330,6 +426,10 @@ void GroundSearch::expand(int state_id)
         relaxed_plan_lookahead(state_id, h);
     for (int f : marked_facts)
         fact_marks[f] = 0;
+    if (options.helpful_actions) {
+        for (int op : heuristic->get_relaxed_plan())
+            in_relaxed_plan[op] = 0;
+    }
 }
 
 /*
@@ -340,13 +440,13 @@ void GroundSearch::expand(int state_id)
   a state without applicable operators, or a cycle (detected with Brent's
   algorithm), which never reaches a goal.
 */
-bool GroundSearch::follow_forced_chain(int &g, bool update_landmarks)
+bool GroundSearch::follow_forced_chain(int &g, int unsatisfied_goals, bool update_landmarks)
 {
     cycle_bits = child_bits;
     int power = 1;
     int length = 0;
     for (int step = 0; step < MAX_CHAIN_LENGTH; ++step) {
-        if (count_unsatisfied_goals(child_bits.data()) == 0)
+        if (unsatisfied_goals == 0)
             break;
         // Only whether there are 0, 1, or more applicable operators matters.
         generator.get_applicable(child_bits.data(), chain_ops, 2);
@@ -361,6 +461,7 @@ bool GroundSearch::follow_forced_chain(int &g, bool update_landmarks)
         child_bits.swap(chain_bits);
         chain.push_back(op);
         g += ground_task->operators[op].cost;
+        unsatisfied_goals += get_unsatisfied_change(chain_added, chain_removed, GOAL, NEGATED_GOAL);
         if (update_landmarks && landmarks) {
             landmarks->update_accepted(
                 child_accepted.data(), child_bits.data(), chain_accepted.data());
@@ -418,8 +519,11 @@ bool GroundSearch::insert_child(int state_id, int op_ref, int g, int h, bool for
     parent[child_id] = state_id;
     parent_op[child_id] = op_ref;
     g_value[child_id] = g;
-    int unsatisfied_goals = count_unsatisfied_goals(child_bits.data());
-    int unsatisfied_relevant = count_unsatisfied_relevant(child_bits.data());
+    // The added and removed facts are relative to the parent.
+    int unsatisfied_goals = num_unsatisfied_goals[state_id] +
+                            get_unsatisfied_change(added, removed, GOAL, NEGATED_GOAL);
+    int unsatisfied_relevant = num_unsatisfied_relevant[state_id] +
+                               get_unsatisfied_change(added, removed, RELEVANT, NEGATED_RELEVANT);
     num_unsatisfied_goals[child_id] = unsatisfied_goals;
     num_unsatisfied_relevant[child_id] = unsatisfied_relevant;
     if (unsatisfied_goals == 0) {
@@ -438,7 +542,7 @@ bool GroundSearch::insert_child(int state_id, int op_ref, int g, int h, bool for
     long long parent_partition = get_novelty_partition(
         num_unsatisfied_goals[state_id], num_unsatisfied_relevant[state_id], parent_h_landmarks);
     int novelty_value;
-    if (!full_novelty_check && partition == parent_partition) {
+    if (!options.full_novelty_check && partition == parent_partition) {
         if (novelty.get_width() > 1)
             get_true_facts(child_bits.data(), num_words, child_facts);
         novelty_value = novelty.compute_for_added_facts(added, child_facts, partition);
@@ -447,21 +551,33 @@ bool GroundSearch::insert_child(int state_id, int op_ref, int g, int h, bool for
         novelty_value = compute_novelty(child_bits.data(), partition);
     }
     bool preferred = force_preferred;
-    for (int f : added) {
-        if (fact_marks[f] & (IN_RELAXED_PLAN | INTERESTING_LANDMARK)) {
-            preferred = true;
-            break;
+    int added_marks = IN_RELAXED_PLAN | INTERESTING_LANDMARK;
+    int removed_marks = COMPLEMENT_IN_RELAXED_PLAN | COMPLEMENT_INTERESTING_LANDMARK;
+    if (options.helpful_actions) {
+        added_marks = INTERESTING_LANDMARK;
+        removed_marks = COMPLEMENT_INTERESTING_LANDMARK;
+        if (op_ref >= 0) {
+            preferred = preferred || in_relaxed_plan[op_ref];
+        }
+        else {
+            for (int op : chain)
+                preferred = preferred || in_relaxed_plan[op];
         }
     }
-    if (!preferred) {
-        for (int f : removed) {
-            if (fact_marks[f] & (COMPLEMENT_IN_RELAXED_PLAN | COMPLEMENT_INTERESTING_LANDMARK)) {
-                preferred = true;
-                break;
-            }
-        }
+    for (int f : added) {
+        if (preferred)
+            break;
+        if (fact_marks[f] & added_marks)
+            preferred = true;
+    }
+    for (int f : removed) {
+        if (preferred)
+            break;
+        if (fact_marks[f] & removed_marks)
+            preferred = true;
     }
     insert(child_id, h, h_landmarks, g, unsatisfied_goals, novelty_value, preferred);
+    insert_progress_novelty(child_id, added);
     return true;
 }
 
@@ -487,6 +603,7 @@ void GroundSearch::relaxed_plan_lookahead(int state_id, int h)
     child_bits = state_bits;
     chain.clear();
     int g = g_value[state_id];
+    int unsatisfied_goals = num_unsatisfied_goals[state_id];
     while (true) {
         int found = -1;
         for (int i : lookahead_order) {
@@ -505,14 +622,15 @@ void GroundSearch::relaxed_plan_lookahead(int state_id, int h)
         child_bits.swap(chain_bits);
         chain.push_back(op);
         g += ground_task->operators[op].cost;
-        if (count_unsatisfied_goals(child_bits.data()) == 0)
+        unsatisfied_goals += get_unsatisfied_change(chain_added, chain_removed, GOAL, NEGATED_GOAL);
+        if (unsatisfied_goals == 0)
             break;
     }
     if (chain.size() < 2)
         return;
     // Continue with forced operators (e.g., to finish a sequence of
     // operators that only makes sense as a whole).
-    if (!follow_forced_chain(g, false))
+    if (!follow_forced_chain(g, unsatisfied_goals, false))
         return;
     ++num_lookahead_states;
     added.clear();
@@ -578,6 +696,15 @@ utils::ExitCode GroundSearch::search()
         else
             relevant_negated_facts.push_back(heuristic->get_complement_base(f));
     }
+    fact_roles.assign(ground_task->num_facts(), 0);
+    for (int f : goal_facts)
+        fact_roles[f] |= GOAL;
+    for (int f : negated_goal_facts)
+        fact_roles[f] |= NEGATED_GOAL;
+    for (int f : relevant_facts)
+        fact_roles[f] |= RELEVANT;
+    for (int f : relevant_negated_facts)
+        fact_roles[f] |= NEGATED_RELEVANT;
 
     if (count_unsatisfied_goals(initial_bits.data()) == 0) {
         print_goal_found_time(timer_start);
@@ -589,11 +716,13 @@ utils::ExitCode GroundSearch::search()
         return utils::ExitCode::SEARCH_UNSOLVABLE;
     }
 
-    if (use_landmarks) {
+    if (options.use_landmarks) {
         vector<int> initial_relaxed_facts = state_facts;
         heuristic->add_complement_facts(state_facts, initial_relaxed_facts);
         landmarks =
             make_unique<GroundLandmarks>(*heuristic, initial_relaxed_facts, MAX_LANDMARK_WORK);
+        landmarks->set_require_accepted_predecessors(
+            !options.accept_landmarks_without_predecessors);
         if (landmarks->is_computed())
             cout << "Initial landmark count: " << landmarks->get_num_landmarks() << endl;
         else
@@ -612,9 +741,9 @@ utils::ExitCode GroundSearch::search()
         expand(state_id);
         int expanded = statistics.get_expanded();
         if (expanded == 32 || expanded == 256) {
-            for (GroundNovelty *tables : {&novelty, lazy_novelty.get()}) {
+            for (GroundNovelty *tables : {&novelty, lazy_novelty.get(), progress_novelty.get()}) {
                 if (tables && tables->is_too_expensive())
-                    tables->downgrade_to_width_1();
+                    tables->downgrade();
             }
         }
         if (goal_state >= 0) {

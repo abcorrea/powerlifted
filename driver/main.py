@@ -83,6 +83,8 @@ def set_extra_options(options):
         CPP_EXTRA_OPTIONS += ['--novelty-early-stop', str(1)]
     if options.force_lifted:
         CPP_EXTRA_OPTIONS.append('--force-lifted')
+    if options.experimental:
+        CPP_EXTRA_OPTIONS += ['--experimental', options.experimental]
     if options.max_ground_operators is not None:
         CPP_EXTRA_OPTIONS += ['--max-ground-operators', str(options.max_ground_operators)]
     if options.grounding_time_limit is not None:

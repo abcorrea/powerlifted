@@ -215,6 +215,20 @@ GroundLandmarks::GroundLandmarks(const GroundDeleteRelaxationHeuristic &relaxati
     }
 
     num_words = ground_state::get_num_words(num_lms);
+    auto flatten = [](const vector<vector<int>> &lists, vector<int> &start, vector<int> &list) {
+        start.assign(1, 0);
+        for (const vector<int> &l : lists) {
+            list.insert(list.end(), l.begin(), l.end());
+            start.push_back(list.size());
+        }
+    };
+    flatten(predecessors, predecessor_start, predecessor_list);
+    flatten(gn_successors, gn_successor_start, gn_successor_list);
+    may_be_required_again.assign(num_words, 0);
+    for (int lm = 0; lm < num_lms; ++lm) {
+        if (lm_is_goal[lm] || !gn_successors[lm].empty())
+            set_bit(may_be_required_again.data(), lm);
+    }
     computed = true;
     int num_orderings = 0;
     for (const auto &p : predecessors)
@@ -230,8 +244,8 @@ bool GroundLandmarks::is_true(int lm, const uint64_t *bits) const
 
 bool GroundLandmarks::are_predecessors_accepted(int lm, const uint64_t *accepted) const
 {
-    for (int p : predecessors[lm]) {
-        if (!test_bit(accepted, p))
+    for (int i = predecessor_start[lm]; i < predecessor_start[lm + 1]; ++i) {
+        if (!test_bit(accepted, predecessor_list[i]))
             return false;
     }
     return true;
@@ -241,8 +255,8 @@ bool GroundLandmarks::is_required_again(int lm, const uint64_t *accepted) const
 {
     if (lm_is_goal[lm])
         return true;
-    for (int m : gn_successors[lm]) {
-        if (!test_bit(accepted, m))
+    for (int i = gn_successor_start[lm]; i < gn_successor_start[lm + 1]; ++i) {
+        if (!test_bit(accepted, gn_successor_list[i]))
             return true;
     }
     return false;
@@ -262,19 +276,35 @@ void GroundLandmarks::update_accepted(const uint64_t *parent_accepted,
                                       uint64_t *accepted) const
 {
     copy(parent_accepted, parent_accepted + num_words, accepted);
-    for (size_t lm = 0; lm < lm_fact.size(); ++lm) {
-        if (!test_bit(parent_accepted, lm) && is_true(lm, bits) &&
-            are_predecessors_accepted(lm, parent_accepted))
-            set_bit(accepted, lm);
+    // Only landmarks not accepted in the parent can become accepted.
+    int num_lms = lm_fact.size();
+    for (int w = 0; w < num_words; ++w) {
+        uint64_t candidates = ~parent_accepted[w];
+        while (candidates) {
+            int lm = w * 64 + __builtin_ctzll(candidates);
+            candidates &= candidates - 1;
+            if (lm >= num_lms)
+                break;
+            if (is_true(lm, bits) &&
+                (!require_accepted_predecessors || are_predecessors_accepted(lm, parent_accepted)))
+                set_bit(accepted, lm);
+        }
     }
 }
 
 int GroundLandmarks::compute(const uint64_t *accepted, const uint64_t *bits) const
 {
-    int h = 0;
-    for (size_t lm = 0; lm < lm_fact.size(); ++lm) {
-        if (!test_bit(accepted, lm) || (!is_true(lm, bits) && is_required_again(lm, accepted)))
-            ++h;
+    // Landmarks not accepted, plus accepted landmarks required again.
+    int h = lm_fact.size();
+    for (int w = 0; w < num_words; ++w) {
+        h -= __builtin_popcountll(accepted[w]);
+        uint64_t candidates = accepted[w] & may_be_required_again[w];
+        while (candidates) {
+            int lm = w * 64 + __builtin_ctzll(candidates);
+            candidates &= candidates - 1;
+            if (!is_true(lm, bits) && is_required_again(lm, accepted))
+                ++h;
+        }
     }
     return h;
 }

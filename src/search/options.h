@@ -20,6 +20,7 @@ class Options {
     bool force_lifted = false;
     unsigned max_ground_operators = 3000000;
     double grounding_time_limit = 12;
+    std::string experimental;
     unsigned seed;
 
     static void print_help()
@@ -210,6 +211,10 @@ public:
                         parse_unsigned_value(take_required_value(args, i, "--max-ground-operators"),
                                              "--max-ground-operators");
                 }
+                else if (is_named_option(arg, "--experimental") ||
+                         has_inline_value(arg, "--experimental")) {
+                    experimental = take_required_value(args, i, "--experimental");
+                }
                 else if (is_named_option(arg, "--grounding-time-limit") ||
                          has_inline_value(arg, "--grounding-time-limit")) {
                     grounding_time_limit =
@@ -255,6 +260,8 @@ public:
     unsigned get_max_ground_operators() const { return max_ground_operators; }
 
     double get_grounding_time_limit() const { return grounding_time_limit; }
+
+    const std::string &get_experimental() const { return experimental; }
 
     unsigned get_seed() const { return seed; }
 };

@@ -76,10 +76,14 @@ These are also the default values for `-s`, `-e`, and `-g`. On ground
 tasks, `bfws2-lmnov` alternates between a width-2 novelty open list
 partitioned by the landmark count (as in NOLAN, Corrêa and Seipp 2025), a
 lazy novelty open list (the novelty of the expanded state, in separate
-tables, inherited by its successors), an h-FF open list, and a
-landmark-count open list, each with a preferred variant (falling back to
-width 1 for tasks with more than 4096 facts); if the task cannot be
-grounded, Powerlifted falls back to lifted `alt-bfws1`. By default,
+tables, inherited by its successors), an h-FF open list, a landmark-count
+open list, each with a preferred variant, and a type-based exploration list
+(a random state of a random (h-FF, g) bucket, Xie et al. 2014). After every
+heuristic improvement, the next 300 expansions come from the preferred h-FF
+and landmark lists (greedy boost). Novelty falls back to width 1 for tasks
+with more than 4096 facts or when the width-2 checks of a state get too
+expensive. If the task cannot be grounded, Powerlifted falls back to lifted
+`alt-bfws1`. By default,
 Powerlifted uses the lazy effects-only novelty check from Corrêa and Seipp
 (2022). Actions are treated as unit-cost actions by default, since plan
 cost is ignored and the search (which breaks ties by g) is guided better by
